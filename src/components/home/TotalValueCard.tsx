@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { useTicking } from "@/hooks/useTicking";
 import { fmtUSD } from "@/lib/format";
 import { cn } from "@/lib/cn";
+import { useGetWalletBalance } from "@/services/api/endpoints/wallet/wallet";
 
 interface TotalValueCardProps {
   seed?: number;
@@ -19,11 +20,13 @@ interface TotalValueCardProps {
  * `.flash-up` / `.flash-dn` keyframes in globals.css).
  */
 export function TotalValueCard({
-  seed = 2500.5,
-  ticking = true,
+  ticking = false,
   onDeposit,
 }: TotalValueCardProps) {
-  const { value, dir, pulse } = useTicking(seed, ticking, 2000);
+  const { data: walletData, isLoading, refetch } = useGetWalletBalance();
+  const balance = Number(walletData?.balance || 0);
+
+  const { value, dir, pulse } = useTicking(balance, ticking, 2000);
   const [spinning, setSpinning] = useState(false);
   const amountRef = useRef<HTMLSpanElement>(null);
 
@@ -38,9 +41,9 @@ export function TotalValueCard({
     if (dir < 0) el.classList.add("flash-dn");
   }, [pulse, dir]);
 
-  const change = +(value - seed).toFixed(2);
-  const pct = (change / seed) * 100;
-  const up = change >= 0;
+  const change = 0;
+  const pct = 0;
+  const up = true;
 
   return (
     <div
@@ -53,7 +56,7 @@ export function TotalValueCard({
     >
       <div>
         <div className="text-xs font-semibold uppercase tracking-[0.14em] text-[#f4eedb]/60">
-          Total Value
+          Wallet Balance
         </div>
         <div className="mt-0.5 flex items-center gap-2.5 text-[32px] font-bold tracking-[-0.01em] max-lg:text-[26px]">
           <span ref={amountRef} className="tnum">
@@ -64,6 +67,7 @@ export function TotalValueCard({
             aria-label="Refresh"
             onClick={() => {
               setSpinning(true);
+              refetch();
               setTimeout(() => setSpinning(false), 700);
             }}
             className={cn(
