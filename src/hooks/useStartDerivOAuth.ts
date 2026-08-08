@@ -30,7 +30,8 @@ export function useStartDerivOAuth() {
   async function start() {
     setRedirecting(true);
     try {
-      const { authorize_url, state } = await derivApi.authorize();
+      const redirectUri = window.location.origin + "/deriv/callback";
+      const { authorize_url, state } = await derivApi.authorize(redirectUri);
       sessionStorage.setItem(DERIV_STATE_KEY, state);
       // Capture intent NOW (authenticated → link, else → Deriv-as-login) so the
       // callback doesn't have to race the auth bootstrap to decide.

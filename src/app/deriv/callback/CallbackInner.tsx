@@ -8,9 +8,9 @@ import { useDerivLink } from "@/services/api/endpoints/trading/trading";
 import { derivStatusKey } from "@/hooks/useDerivStatus";
 import {
   derivApi,
-  parseDerivCallback,
   type DerivAccount,
 } from "@/services/tradingApi";
+import { api } from "@/services/api";
 import { useAuthStore } from "@/stores/authStore";
 
 /** sessionStorage key written by whoever calls derivApi.authorize() before redirect. */
@@ -32,6 +32,7 @@ type Phase =
   | {
       name: "pick";
       accounts: DerivAccount[];
+      accessToken: string;
       /** ID of the currently linked account, if any — shown as a warning. */
       currentAccountId: string | undefined;
     }
@@ -50,8 +51,9 @@ export function CallbackInner() {
 
   useEffect(() => {
     oauthStateRef.current = sessionStorage.getItem(DERIV_STATE_KEY);
+    const codeVerifier = sessionStorage.getItem('pkce_code_verifier');
 
-    if (!oauthStateRef.current) {
+    if (!oauthStateRef.current || !codeVerifier) {
       setPhase({
         name: "error",
         message:
@@ -60,12 +62,13 @@ export function CallbackInner() {
       return;
     }
 
-    const accounts = parseDerivCallback(searchParams.toString());
-    if (accounts.length === 0) {
+    const code = searchParams.get('code');
+    const stateParam = searchParams.get('state');
+    if (!code || stateParam !== oauthStateRef.current) {
       setPhase({
         name: "error",
         message:
-          "Deriv did not return any accounts. This can happen if you cancelled the authorisation — please try again.",
+          "Invalid authorization code or state. This can happen if you cancelled the authorisation — please try again.",
       });
       return;
     }
@@ -74,19 +77,35 @@ export function CallbackInner() {
     derivApi
       .status()
       .then((status) => {
-        setPhase({
-          name: "pick",
-          accounts,
-          currentAccountId: status.linked ? status.deriv_account_id : undefined,
+        // Exchange code for token and get accounts
+        return api.post("/api/v1/deriv/oauth/exchange", {
+          code,
+          code_verifier: codeVerifier,
+          state: oauthStateRef.current,
+          redirect_uri: window.location.origin + "/deriv/callback",
+        }).then(res => {
+          const accounts = res.data.accounts as DerivAccount[];
+          const accessToken = res.data.access_token as string;
+          if (!accounts || accounts.length === 0) {
+            setPhase({ name: "error", message: "No accounts found in your Deriv profile." });
+            return;
+          }
+          setPhase({
+            name: "pick",
+            accounts,
+            accessToken,
+            currentAccountId: status.linked ? status.deriv_account_id : undefined,
+          });
         });
       })
-      .catch(() => {
-        // Status check is best-effort — proceed without existing account info.
-        setPhase({ name: "pick", accounts, currentAccountId: undefined });
+      .catch((e) => {
+        setPhase({ name: "error", message: e?.response?.data?.detail ?? "Failed to exchange authorization code." });
       });
   }, [searchParams]);
 
   async function handleSelect(account: DerivAccount) {
+    if (phase.name !== "pick") return;
+    const accessToken = phase.accessToken;
     const state = oauthStateRef.current;
     if (!state) {
       setPhase({ name: "error", message: "OAuth state missing. Please try again." });
@@ -96,7 +115,9 @@ export function CallbackInner() {
     try {
       const payload = {
         state,
-        token: account.token,
+        code: "", // Legacy compat
+        code_verifier: "", // Legacy compat
+        token: accessToken,
         deriv_account_id: account.account,
         currency: account.currency,
         is_virtual: account.isVirtual,

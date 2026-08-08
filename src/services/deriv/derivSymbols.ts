@@ -17,24 +17,9 @@ import type { ChartTypeId, IntervalId } from "@/components/options/chart/chartSe
 const DERIV_WS_BASE =
   process.env.NEXT_PUBLIC_DERIV_WS_URL ?? "wss://ws.derivws.com/websockets/v3";
 
-function resolveAppId(): string {
-  const fromEnv = process.env.NEXT_PUBLIC_DERIV_APP_ID;
-  if (fromEnv && fromEnv.trim() !== "") return fromEnv;
-  if (process.env.NODE_ENV !== "production") {
-    console.warn(
-      "[deriv] NEXT_PUBLIC_DERIV_APP_ID is not set — falling back to the shared " +
-        "test app_id 1089. Add it to .env.local.",
-    );
-  }
-  return "1089";
-}
-
-const DERIV_APP_ID = resolveAppId();
-
-/** Full WS endpoint incl. the app_id query (built with query-string). */
+/** Full WS endpoint (no app_id needed for V2 public endpoint). */
 export function derivWsUrl(): string {
-  return `${DERIV_WS_BASE}?${queryString.stringify({
-    app_id: DERIV_APP_ID,
+  return `wss://api.derivws.com/trading/v1/options/ws/public?${queryString.stringify({
     l: "en",
     brand: "deriv",
   })}`;

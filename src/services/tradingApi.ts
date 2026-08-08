@@ -13,11 +13,9 @@ import type { ContractTypeId } from "@/components/options/layout/contractTypes";
 // ─── Deriv OAuth ────────────────────────────────────────────────────────────
 
 export interface DerivAccount {
-  /** loginid, e.g. CR123456 (real) or VRTC987654 (demo). */
   account: string;
   token: string;
   currency: string;
-  /** Demo account — derived from the VRTC loginid prefix. */
   isVirtual: boolean;
 }
 
@@ -29,20 +27,53 @@ export interface AccountStatus {
 }
 
 export const derivApi = {
-  /** Start linking — returns the Deriv authorize URL + CSRF state. */
-  async authorize(): Promise<{ authorize_url: string; state: string }> {
-    const res = await api.get("/api/v1/deriv/oauth/authorize");
-    return res.data;
+  /** 
+   * Start linking — Generates PKCE parameters, stores code_verifier in sessionStorage,
+   * and returns the Deriv authorize URL + state.
+   */
+  async authorize(redirectUri: string): Promise<{ authorize_url: string; state: string }> {
+    // 1. Generate code_verifier
+    const array = crypto.getRandomValues(new Uint8Array(64));
+    const codeVerifier = Array.from(array)
+      .map(v => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~'[v % 66])
+      .join('');
+
+    // 2. Generate code_challenge (S256)
+    const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(codeVerifier));
+    const codeChallenge = btoa(String.fromCharCode(...new Uint8Array(hash)))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+
+    // 3. Generate state
+    const state = crypto.getRandomValues(new Uint8Array(16))
+      .reduce((s, b) => s + b.toString(16).padStart(2, '0'), '');
+
+    sessionStorage.setItem('pkce_code_verifier', codeVerifier);
+    sessionStorage.setItem('oauth_state', state);
+
+    const clientId = process.env.NEXT_PUBLIC_DERIV_APP_ID || '1089';
+    const authUrl = new URL('https://auth.deriv.com/oauth2/auth');
+    authUrl.searchParams.set('response_type', 'code');
+    authUrl.searchParams.set('client_id', clientId);
+    authUrl.searchParams.set('redirect_uri', redirectUri);
+    authUrl.searchParams.set('scope', 'trade account_manage');
+    authUrl.searchParams.set('state', state);
+    authUrl.searchParams.set('code_challenge', codeChallenge);
+    authUrl.searchParams.set('code_challenge_method', 'S256');
+
+    return { authorize_url: authUrl.toString(), state };
   },
 
-  /** Link the account the user picked from the callback list. No auto-link. */
-  async link(account: DerivAccount, state: string): Promise<void> {
+  /** Link the account via Backend V2 Token Exchange. */
+  async link(code: string, codeVerifier: string, state: string, accountId: string, currency: string, isVirtual: boolean): Promise<void> {
     await api.post("/api/v1/deriv/oauth/link", {
+      code,
+      code_verifier: codeVerifier,
       state,
-      token: account.token,
-      deriv_account_id: account.account,
-      currency: account.currency,
-      is_virtual: account.isVirtual,
+      deriv_account_id: accountId,
+      currency,
+      is_virtual: isVirtual,
     });
   },
 
@@ -55,30 +86,6 @@ export const derivApi = {
     await api.delete("/api/v1/deriv/oauth");
   },
 };
-
-/**
- * Parse the account list Deriv appends to the OAuth callback URL:
- *   ?acct1=CR123&token1=a1-x&cur1=USD&acct2=VRTC9&token2=a1-y&cur2=USD
- *
- * Returns the accounts in order; demo accounts (VRTC*) are flagged so the FE
- * picker can label them clearly.
- */
-export function parseDerivCallback(search: string): DerivAccount[] {
-  const params = new URLSearchParams(search);
-  const accounts: DerivAccount[] = [];
-  for (let i = 1; ; i++) {
-    const account = params.get(`acct${i}`);
-    const token = params.get(`token${i}`);
-    if (!account || !token) break;
-    accounts.push({
-      account,
-      token,
-      currency: params.get(`cur${i}`) ?? "USD",
-      isVirtual: account.toUpperCase().startsWith("VRTC"),
-    });
-  }
-  return accounts;
-}
 
 // ─── Orders: proposal → confirm ─────────────────────────────────────────────
 
