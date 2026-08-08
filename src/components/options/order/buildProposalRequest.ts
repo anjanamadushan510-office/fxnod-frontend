@@ -1,6 +1,7 @@
 import type { ContractTypeId } from "../layout/contractTypes";
 import type { DurationUnit } from "./fields/DurationField";
 import type { ProposalRequest } from "@/services/tradingApi";
+import { toDerivSymbol } from "@/services/deriv/derivSymbols";
 
 /**
  * Maps an order panel's local state into the backend proposal body.
@@ -43,7 +44,7 @@ export function buildProposalRequest(
 ): ProposalRequest {
   const body: ProposalRequest = {
     contract_type: input.contractType,
-    symbol: input.symbol,
+    symbol: toDerivSymbol(input.symbol) ?? input.symbol,
     stake: input.stake.toString(),
   };
 

@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { usePlaceTrade } from "@/services/api/endpoints/trading/trading";
 import { findMarket } from "@/components/options/market/catalog";
+import { fromDerivSymbol } from "@/services/deriv/derivSymbols";
 import { useLiveMarket } from "@/stores/useLiveMarket";
 import { useOpenPositions } from "@/stores/useOpenPositions";
 import { usePositionsUI } from "@/stores/usePositionsUI";
@@ -134,7 +135,8 @@ export function usePanelBuy(request: ProposalRequest | null): PanelBuyResult {
  */
 function applyPostTrade(request: ProposalRequest, trade: ConfirmResponse) {
   const live = useLiveMarket.getState();
-  const symbol = request.symbol;
+  const rawSymbol = request.symbol;
+  const symbol = fromDerivSymbol(rawSymbol) ?? rawSymbol;
   const side = request.side === "fall" ? "fall" : "rise";
   const stake = Number(request.stake) || Number(trade.buy_price) || 0;
   const entry = live.price ?? 0;
