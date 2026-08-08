@@ -356,18 +356,18 @@ function AccountRow({
   );
 }
 
-function DemoBadge() {
-  return (
-    <span className="inline-flex items-center rounded-full bg-[#fef3c7] px-2 py-0.5 text-[11px] font-bold tracking-wide text-[#92400e] border border-[#fcd34d]/60">
-      DEMO
-    </span>
-  );
-}
+	export function DemoBadge() {
+	  return (
+	    <span className="inline-flex items-center rounded-full bg-[#fef3c7] px-2 py-0.5 text-[11px] font-bold tracking-wide text-[#92400e] border border-[#fcd34d]/60">
+	      DEMO
+	    </span>
+	  );
+	}
 
-function RealBadge({ currency }: { currency: string }) {
-  return (
-    <span className="inline-flex items-center rounded-full bg-[#e8f5ec] px-2 py-0.5 text-[11px] font-bold tracking-wide text-[#2d7a46] border border-[#86efac]/60">
-      REAL · {currency}
-    </span>
-  );
-}
+	export function RealBadge({ currency }: { currency: string }) {
+	  return (
+	    <span className="inline-flex items-center rounded-full bg-[#e8f5ec] px-2 py-0.5 text-[11px] font-bold tracking-wide text-[#2d7a46] border border-[#86efac]/60">
+	      REAL · {currency}
+	    </span>
+	  );
+	}

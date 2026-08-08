@@ -4,30 +4,31 @@ import { useDerivStatus } from "@/hooks/useDerivStatus";
 import { useStartDerivOAuth } from "@/hooks/useStartDerivOAuth";
 import { cn } from "@/lib/cn";
 
-/**
- * Top-bar control for Deriv account linking (authenticated users).
- *
- *  - Reads link status via the Orval-generated `derivAccountStatus` query
- *    (→ GET /api/v1/deriv/account/status through the shared axios instance).
- *  - When unlinked, starts the OAuth flow via `useStartDerivOAuth` (shared with
- *    the login modal's "Continue with Deriv" button).
- */
-export function ConnectDerivButton() {
-  const { linked, accountId, isLoading } = useDerivStatus();
-  const { start, redirecting } = useStartDerivOAuth();
+	import { DemoBadge, RealBadge } from "@/app/deriv/callback/CallbackInner";
 
-  if (linked) {
-    return (
-      <div
-        className="flex flex-shrink-0 items-center gap-1.5 rounded-[10px] bg-opt-rise-soft px-3 py-1.5 text-[12px] font-medium text-opt-rise"
-        title={`Linked Deriv account ${accountId ?? ""}`}
-      >
-        <span className="h-1.5 w-1.5 rounded-full bg-opt-rise" />
-        Deriv
-        <span className="font-mono text-opt-ink-2">{accountId}</span>
-      </div>
-    );
-  }
+	/**
+	 * Top-bar control for Deriv account linking (authenticated users).
+	 *
+	 *  - Reads link status via the Orval-generated `derivAccountStatus` query
+	 *    (→ GET /api/v1/deriv/account/status through the shared axios instance).
+	 *  - When unlinked, starts the OAuth flow via `useStartDerivOAuth` (shared with
+	 *    the login modal's "Continue with Deriv" button).
+	 */
+	export function ConnectDerivButton() {
+	  const { linked, accountId, isVirtual, isLoading } = useDerivStatus();
+	  const { start, redirecting } = useStartDerivOAuth();
+
+	  if (linked) {
+	    return (
+	      <div
+	        className="flex flex-shrink-0 items-center gap-2 px-3 py-1.5"
+	        title={`Linked Deriv account ${accountId ?? ""}`}
+	      >
+	        {isVirtual ? <DemoBadge /> : <RealBadge currency="USD" />}
+	        <span className="font-mono text-[12px] font-semibold text-opt-ink-2">{accountId}</span>
+	      </div>
+	    );
+	  }
 
   return (
     <button
