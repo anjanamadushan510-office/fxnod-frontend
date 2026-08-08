@@ -18,7 +18,7 @@ import { defineConfig } from "orval";
 export default defineConfig({
   fxnod: {
     input: {
-      target: "../backend/openapi.yaml",
+      target: "../fxnod-backend/openapi.yaml",
       // Native tag exclusion — only public-facing hooks are generated.
       filters: {
         tags: ["Internal"],

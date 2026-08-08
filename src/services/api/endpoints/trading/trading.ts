@@ -60,6 +60,7 @@ import type {
   Error,
   ProposalRequest,
   ProposalResponse,
+  TradeHistoryEntry,
   UnauthorizedResponse
 } from '../../model';
 
@@ -586,4 +587,95 @@ export const usePlaceTrade = <TError = ErrorType<Error | UnauthorizedResponse>,
 
       return useMutation(mutationOptions, queryClient);
     }
+    /**
+ * @summary Get user trade history
+ */
+export const getTradeHistory = (
     
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<TradeHistoryEntry[]>(
+      {url: `/api/v1/orders/history`, method: 'GET', signal
+    },
+      options);
+    }
+  
+
+
+
+export const getGetTradeHistoryQueryKey = () => {
+    return [
+    `/api/v1/orders/history`
+    ] as const;
+    }
+
+    
+export const getGetTradeHistoryQueryOptions = <TData = Awaited<ReturnType<typeof getTradeHistory>>, TError = ErrorType<UnauthorizedResponse>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTradeHistory>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetTradeHistoryQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTradeHistory>>> = ({ signal }) => getTradeHistory(requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTradeHistory>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetTradeHistoryQueryResult = NonNullable<Awaited<ReturnType<typeof getTradeHistory>>>
+export type GetTradeHistoryQueryError = ErrorType<UnauthorizedResponse>
+
+
+export function useGetTradeHistory<TData = Awaited<ReturnType<typeof getTradeHistory>>, TError = ErrorType<UnauthorizedResponse>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTradeHistory>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTradeHistory>>,
+          TError,
+          Awaited<ReturnType<typeof getTradeHistory>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetTradeHistory<TData = Awaited<ReturnType<typeof getTradeHistory>>, TError = ErrorType<UnauthorizedResponse>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTradeHistory>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTradeHistory>>,
+          TError,
+          Awaited<ReturnType<typeof getTradeHistory>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetTradeHistory<TData = Awaited<ReturnType<typeof getTradeHistory>>, TError = ErrorType<UnauthorizedResponse>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTradeHistory>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get user trade history
+ */
+
+export function useGetTradeHistory<TData = Awaited<ReturnType<typeof getTradeHistory>>, TError = ErrorType<UnauthorizedResponse>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTradeHistory>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetTradeHistoryQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+

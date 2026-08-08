@@ -131,13 +131,45 @@ function mk(p: {
   };
 }
 
-/** Mock closed contracts spread over two days (newest first). */
-export const MOCK_CLOSED_CONTRACTS: ContractDetail[] = [
-  mk({ id: "c1", marketId: "vol_100_1s", marketName: "Volatility 100 (1s) Index", side: "rise", entry: 786.72, exit: 786.52, start: D(2026, 6, 28, 20, 13, 42), stake: 10, payout: 19.23, outcome: "lost" }),
-  mk({ id: "c2", marketId: "vol_100_1s", marketName: "Volatility 100 (1s) Index", side: "fall", entry: 772.1, exit: 771.3, start: D(2026, 6, 28, 18, 2, 10), stake: 10, payout: 19.55, outcome: "won" }),
-  mk({ id: "c3", marketId: "btc_usd", marketName: "BTC/USD", side: "rise", entry: 67800, exit: 67861, start: D(2026, 6, 27, 9, 30, 0), stake: 25, payout: 48.0, outcome: "won" }),
-  mk({ id: "c4", marketId: "eur_usd", marketName: "EUR/USD", side: "fall", entry: 1.0875, exit: 1.0879, start: D(2026, 6, 27, 7, 15, 0), stake: 10, payout: 19.1, outcome: "lost" }),
-];
+import type { TradeHistoryEntry } from "@/services/api/model";
+
+export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
+  const stake = Number(h.stake_amount) || 0;
+  const payout = Number(h.payout_amount) || 0;
+  const won = payout > 0;
+  const pnl = won ? +(payout - stake).toFixed(2) : -stake;
+  // For a closed contract, sellPrice == payout (if won) or 0 (if lost)
+  const contractValue = won ? payout : 0;
+
+  // TradeHistoryEntry created_at is an ISO string, parse it to epoch seconds
+  const exitTime = Math.floor(new Date(h.created_at).getTime() / 1000);
+  const startTime = exitTime - 5; // placeholder for 5-tick trades
+
+  return {
+    id: h.id,
+    marketId: h.symbol,
+    marketName: h.symbol, // We could map symbol to a nice name, but this works for now
+    tradeTypeLabel: h.frontend_contract_type || (h.side === "rise" ? "Rise" : "Fall"),
+    side: h.side === "fall" ? "fall" : "rise",
+    outcome: won ? "won" : "lost",
+    stake,
+    payout,
+    contractValue,
+    pnl,
+    buyPrice: stake,
+    sellPrice: contractValue,
+    referenceBuy: 0,
+    referenceSell: 0,
+    duration: "5 ticks", // Placeholder
+    barrier: 0, // We don't have entry/exit spot in history yet
+    startTime,
+    entrySpot: 0,
+    entryTime: startTime + 1,
+    exitSpot: 0,
+    exitTime,
+    ticks: [], // GenTicks could be used here if we had entry/exit spot
+  };
+}
 
 /** Best-effort ContractDetail for an in-progress (sim) open position. */
 export function simPositionToDetail(p: Position): ContractDetail {

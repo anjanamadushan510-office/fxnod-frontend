@@ -89,6 +89,7 @@ export * from './settlementResult';
 export * from './tokenPair';
 export * from './tradeCompletedEvent';
 export * from './tradeCompletedEventEventType';
+export * from './tradeHistoryEntry';
 export * from './transactionDirection';
 export * from './transactionHistoryResponse';
 export * from './transactionResponse';

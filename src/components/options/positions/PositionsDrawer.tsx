@@ -7,11 +7,12 @@ import { useOpenPositions } from "@/stores/useOpenPositions";
 import { cn } from "@/lib/cn";
 import { ClosedPositionCard } from "./ClosedPositionCard";
 import {
-  MOCK_CLOSED_CONTRACTS,
   formatContractDate,
   simPositionToDetail,
+  historyToDetail,
   type ContractDetail,
 } from "./contractDetail";
+import { useTradeHistory } from "@/hooks/useTradeHistory";
 import { EmptyPositionsState } from "./EmptyPositionsState";
 import { PositionCard } from "./PositionCard";
 
@@ -36,28 +37,25 @@ export function PositionsDrawer({ open, onClose }: PositionsDrawerProps) {
     () => positions.reduce((acc, p) => acc + p.pnl, 0),
     [positions],
   );
-  const closedTotal = useMemo(
-    () => MOCK_CLOSED_CONTRACTS.reduce((acc, c) => acc + c.pnl, 0),
-    [],
-  );
+  const closedTotal = useMemo(() => {
+    return 0; // We will handle total inside ClosedTab or leave it as 0 if we don't have it locally
+  }, []);
 
-  // Escape closes; drift P/L while open.
+  // Escape closes
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     document.addEventListener("keydown", onKey);
-    const id = setInterval(tick, 1500);
     return () => {
       document.removeEventListener("keydown", onKey);
-      clearInterval(id);
     };
-  }, [open, onClose, tick]);
+  }, [open, onClose]);
 
-  const footerCount =
-    tab === "open" ? positions.length : MOCK_CLOSED_CONTRACTS.length;
-  const footerPnl = tab === "open" ? openTotal : closedTotal;
+  // TODO: Fix footer logic if needed, hiding for now or just using 0 for closed
+  const footerCount = tab === "open" ? positions.length : 0;
+  const footerPnl = tab === "open" ? openTotal : 0;
   const footerPositive = footerPnl >= 0;
 
   return (
@@ -142,17 +140,21 @@ function ClosedTab({
 }) {
   const [filter, setFilter] = useState<FilterKey>("all");
   const nowRef = useRef<number>(0);
+  const { data: historyData, isLoading } = useTradeHistory();
 
   const contracts = useMemo(() => {
-    if (filter === "all") return MOCK_CLOSED_CONTRACTS;
+    if (!historyData) return [];
+    const mapped = historyData.map(historyToDetail);
+
+    if (filter === "all") return mapped;
     // Capture "now" lazily so the default ("all") render is SSR-deterministic.
     if (!nowRef.current) nowRef.current = Math.floor(Date.now() / 1000);
     const win =
       filter === "today" ? 86400 : filter === "7d" ? 7 * 86400 : 30 * 86400;
-    return MOCK_CLOSED_CONTRACTS.filter(
+    return mapped.filter(
       (c) => nowRef.current - c.exitTime <= win,
     );
-  }, [filter]);
+  }, [filter, historyData]);
 
   const groups = useMemo(() => {
     const m = new Map<string, ContractDetail[]>();
