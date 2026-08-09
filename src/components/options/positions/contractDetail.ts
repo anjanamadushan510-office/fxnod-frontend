@@ -148,12 +148,12 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
   const exitTime = Math.floor(new Date(h.created_at).getTime() / 1000);
   const startTime = exitTime - 5; // placeholder for 5-tick trades
 
-  const entrySpot = Number((h as any).entry_spot) || 0;
-  const exitSpot = Number((h as any).exit_spot) || 0;
+  let entrySpot = Number((h as any).entry_spot) || 0;
+  let exitSpot = Number((h as any).exit_spot) || 0;
 
   let ticks: ContractTick[] = [];
   const ts = (h as any).tick_stream;
-  if (ts && Array.isArray(ts)) {
+  if (ts && Array.isArray(ts) && ts.length > 0) {
     ticks = ts.map((t: any, i: number) => {
       const time = t.epoch || (startTime + i);
       const value = Number(t.tick_display_value) || Number(t.tick) || 0;
@@ -162,6 +162,8 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
       if (i === ts.length - 1) kind = "exit";
       return { time, value, kind };
     });
+    if (entrySpot === 0) entrySpot = ticks[0].value;
+    if (exitSpot === 0) exitSpot = ticks[ticks.length - 1].value;
   } else if (entrySpot && exitSpot) {
     ticks = genTicks(entrySpot, exitSpot, startTime, 5);
   }
