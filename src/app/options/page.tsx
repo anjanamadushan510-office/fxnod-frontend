@@ -23,7 +23,7 @@ import type { OptionsAccountMode } from "@/components/options/layout/AccountSele
  * live — set NEXT_PUBLIC_POSITIONS_WS=1 to enable. Off → the drawer keeps using
  * the placeholder P/L drift.
  */
-const POSITIONS_WS_ENABLED = process.env.NEXT_PUBLIC_POSITIONS_WS === "1";
+const POSITIONS_WS_ENABLED = true;
 
 /**
  * /options — Deriv options trading page.
