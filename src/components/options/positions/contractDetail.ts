@@ -135,8 +135,11 @@ import type { TradeHistoryEntry } from "@/services/api/model";
 
 export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
   const stake = Number(h.stake_amount) || 0;
-  const payout = Number(h.payout_amount) || 0;
-  const won = payout > 0;
+  // Use final_payout_amount if present, else payout_amount
+  const payoutStr = (h as any).final_payout_amount || h.payout_amount;
+  const payout = Number(payoutStr) || 0;
+  const outcomeStr = (h as any).outcome;
+  const won = outcomeStr ? outcomeStr === "won" : (payout > 0);
   const pnl = won ? +(payout - stake).toFixed(2) : -stake;
   // For a closed contract, sellPrice == payout (if won) or 0 (if lost)
   const contractValue = won ? payout : 0;
@@ -145,10 +148,28 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
   const exitTime = Math.floor(new Date(h.created_at).getTime() / 1000);
   const startTime = exitTime - 5; // placeholder for 5-tick trades
 
+  const entrySpot = Number((h as any).entry_spot) || 0;
+  const exitSpot = Number((h as any).exit_spot) || 0;
+
+  let ticks: ContractTick[] = [];
+  const ts = (h as any).tick_stream;
+  if (ts && Array.isArray(ts)) {
+    ticks = ts.map((t: any, i: number) => {
+      const time = t.epoch || (startTime + i);
+      const value = Number(t.tick_display_value) || Number(t.tick) || 0;
+      let kind: "entry" | "exit" | "normal" = "normal";
+      if (i === 0) kind = "entry";
+      if (i === ts.length - 1) kind = "exit";
+      return { time, value, kind };
+    });
+  } else if (entrySpot && exitSpot) {
+    ticks = genTicks(entrySpot, exitSpot, startTime, 5);
+  }
+
   return {
     id: h.id,
     marketId: h.symbol,
-    marketName: h.symbol, // We could map symbol to a nice name, but this works for now
+    marketName: h.symbol,
     tradeTypeLabel: h.frontend_contract_type || (h.side === "rise" ? "Rise" : "Fall"),
     side: h.side === "fall" ? "fall" : "rise",
     outcome: won ? "won" : "lost",
@@ -160,14 +181,14 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
     sellPrice: contractValue,
     referenceBuy: 0,
     referenceSell: 0,
-    duration: "5 ticks", // Placeholder
-    barrier: 0, // We don't have entry/exit spot in history yet
+    duration: "5 ticks",
+    barrier: entrySpot,
     startTime,
-    entrySpot: 0,
+    entrySpot,
     entryTime: startTime + 1,
-    exitSpot: 0,
+    exitSpot,
     exitTime,
-    ticks: [], // GenTicks could be used here if we had entry/exit spot
+    ticks,
   };
 }
 

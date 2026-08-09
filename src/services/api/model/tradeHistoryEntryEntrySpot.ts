@@ -31,37 +31,8 @@ library, not a float.
  * OpenAPI spec version: 0.1.0
  */
 import type { DecimalString } from './decimalString';
-import type { TradeHistoryEntryOutcome } from './tradeHistoryEntryOutcome';
-import type { TradeHistoryEntryFinalPayoutAmount } from './tradeHistoryEntryFinalPayoutAmount';
-import type { TradeHistoryEntryEntrySpot } from './tradeHistoryEntryEntrySpot';
-import type { TradeHistoryEntryExitSpot } from './tradeHistoryEntryExitSpot';
-import type { TradeHistoryEntryTickStreamItem } from './tradeHistoryEntryTickStreamItem';
 
-export interface TradeHistoryEntry {
-  id: string;
-  user_id: string;
-  /** @nullable */
-  proposal_id?: string | null;
-  deriv_contract_id: string;
-  platform: string;
-  symbol: string;
-  frontend_contract_type: string;
-  side: string;
-  contract_type: string;
-  stake_amount: DecimalString;
-  payout_amount: DecimalString;
-  accrued_markup_amount: DecimalString;
-  deriv_settlement_period: string;
-  currency: string;
-  created_at: string;
-  /** @nullable */
-  outcome?: TradeHistoryEntryOutcome;
-  /** @nullable */
-  final_payout_amount?: TradeHistoryEntryFinalPayoutAmount;
-  /** @nullable */
-  entry_spot?: TradeHistoryEntryEntrySpot;
-  /** @nullable */
-  exit_spot?: TradeHistoryEntryExitSpot;
-  /** @nullable */
-  tick_stream?: TradeHistoryEntryTickStreamItem[] | null;
-}
+/**
+ * @nullable
+ */
+export type TradeHistoryEntryEntrySpot = DecimalString | null;
