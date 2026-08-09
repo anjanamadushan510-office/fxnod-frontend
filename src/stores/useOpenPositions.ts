@@ -45,11 +45,19 @@ export const useOpenPositions = create<OpenPositionsState>((set) => ({
   applySnapshot: (frames) =>
     set((s) => ({ positions: frames.reduce(upsert, s.positions) })),
   markClosed: (frame) =>
-    set((s) => ({
-      positions: s.positions.map((p) =>
-        p.contractId === frame.contract_id ? { ...p, ...framePatch(frame) } : p,
-      ),
-    })),
+    set((s) => {
+      setTimeout(() => {
+        useOpenPositions.setState((curr) => ({
+          positions: curr.positions.filter((p) => p.contractId !== frame.contract_id),
+        }));
+      }, 3000);
+
+      return {
+        positions: s.positions.map((p) =>
+          p.contractId === frame.contract_id ? { ...p, ...framePatch(frame) } : p,
+        ),
+      };
+    }),
   tick: () =>
     set((s) => ({
       positions: s.positions.map((p) => ({
@@ -118,7 +126,8 @@ function frameToPosition(frame: PositionFrame): Position {
 /** "Tick 3" / "3/5 ticks" display sub-label, when the backend sends tick counts. */
 function statusLabel(frame: PositionFrame): string | undefined {
   if (frame.ticks_elapsed != null && frame.ticks_total != null) {
-    return `${frame.ticks_elapsed}/${frame.ticks_total} ticks`;
+    const elapsed = Math.min(frame.ticks_elapsed, frame.ticks_total);
+    return `${elapsed}/${frame.ticks_total} ticks`;
   }
   if (frame.ticks_elapsed != null) return `Tick ${frame.ticks_elapsed}`;
   return undefined;
