@@ -181,7 +181,7 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
     pnl,
     buyPrice: stake,
     sellPrice: contractValue,
-    referenceBuy: 0,
+    referenceBuy: Number((h as any).deriv_contract_id) || 0,
     referenceSell: 0,
     duration: "5 ticks",
     barrier: entrySpot,
