@@ -121,6 +121,7 @@ function frameToPosition(frame: PositionFrame): Position {
     outcome:
       frame.status === "won" || frame.status === "lost" ? frame.status : null,
     expiryTime: frame.expiry_time,
+    isTick: frame.ticks_total != null || frame.ticks_elapsed != null,
   };
 }
 

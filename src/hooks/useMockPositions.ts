@@ -32,6 +32,8 @@ export interface Position {
   outcome?: "won" | "lost" | null;
   /** Target completion epoch seconds for time-based trades. */
   expiryTime?: number;
+  /** True if the contract duration is in ticks. */
+  isTick?: boolean;
 }
 
 /**

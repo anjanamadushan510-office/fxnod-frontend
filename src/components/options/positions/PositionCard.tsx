@@ -49,7 +49,7 @@ function PositionCardInner({
 }: PositionCardProps) {
   const pnlPositive = position.pnl >= 0;
   const tradeType = SIDE_LABEL[position.side] ?? position.contractType;
-  const remain = useCountdown(position.expiryTime);
+  const remain = useCountdown(position.isTick ? undefined : position.expiryTime);
   const statusDisplay = remain != null ? `${remain} secs` : (position.status ?? "—");
 
   return (
