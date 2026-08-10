@@ -168,29 +168,32 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
     ticks = genTicks(entrySpot, exitSpot, startTime, 5);
   }
 
-  return {
-    id: h.id,
-    marketId: h.symbol,
-    marketName: h.symbol,
-    tradeTypeLabel: h.frontend_contract_type || (h.side === "rise" ? "Rise" : "Fall"),
-    side: h.side === "fall" ? "fall" : "rise",
-    outcome: won ? "won" : "lost",
-    stake,
-    payout,
-    contractValue,
-    pnl,
-    buyPrice: stake,
-    sellPrice: contractValue,
-    referenceBuy: Number((h as any).deriv_contract_id) || 0,
-    referenceSell: 0,
-    duration: "5 ticks",
-    barrier: entrySpot,
-    startTime,
-    entrySpot,
-    entryTime: startTime + 1,
-    exitSpot,
-    exitTime,
-    ticks,
+		const seconds = Math.max(1, exitTime - startTime);
+		const durationLabel = (ts && Array.isArray(ts) && ts.length > 0) ? `${ts.length} ticks` : `${seconds} secs`;
+
+    return {
+      id: h.id,
+      marketId: h.symbol,
+      marketName: h.symbol,
+      tradeTypeLabel: h.frontend_contract_type || (h.side === "rise" ? "Rise" : "Fall"),
+      side: h.side === "fall" ? "fall" : "rise",
+      outcome: won ? "won" : "lost",
+      stake,
+      payout,
+      contractValue,
+      pnl,
+      buyPrice: stake,
+      sellPrice: contractValue,
+      referenceBuy: Number((h as any).deriv_contract_id) || 0,
+      referenceSell: 0,
+      duration: durationLabel,
+      barrier: entrySpot,
+      startTime,
+      entrySpot,
+      entryTime: startTime + 1,
+      exitSpot,
+      exitTime,
+      ticks,
   };
 }
 
