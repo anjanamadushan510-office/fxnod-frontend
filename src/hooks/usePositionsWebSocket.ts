@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { parsePositionsMessage } from "@/services/positionsStream";
 import { buildWsUrl } from "@/services/ws";
 import { useOpenPositions } from "@/stores/useOpenPositions";
+import { useAccountBalance } from "@/stores/useAccountBalance";
 
 export type PositionsSocketStatus =
   | "idle"
@@ -72,6 +73,9 @@ export function usePositionsWebSocket(enabled = true): PositionsSocketStatus {
           break;
         case "closed":
           store.markClosed(msg.data);
+          break;
+        case "balance":
+          useAccountBalance.getState().setBalance(msg.data.balance, msg.data.currency);
           break;
         case "pong":
           break;

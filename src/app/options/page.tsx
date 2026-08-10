@@ -14,6 +14,7 @@ import { PositionsDrawer } from "@/components/options/positions/PositionsDrawer"
 import { ContractDetailsModal } from "@/components/options/positions/ContractDetailsModal";
 import { usePositionsUI } from "@/stores/usePositionsUI";
 import { useOpenPositions } from "@/stores/useOpenPositions";
+import { useAccountBalance } from "@/stores/useAccountBalance";
 import { usePositionsWebSocket } from "@/hooks/usePositionsWebSocket";
 import { useAuthStore } from "@/stores/authStore";
 import type { OptionsAccountMode } from "@/components/options/layout/AccountSelector";
@@ -90,8 +91,7 @@ function OptionsPageInner() {
   // alongside chart_type + interval. No local state for either.
   const { symbol, setSymbol, tradeType, setTradeType } = useChartSettings();
 
-  // TODO Phase F: replace with useAccountBalance() subscription.
-  const accountBalance = 2503.2;
+  const accountBalance = useAccountBalance((s) => s.balance);
 
   // `parseSymbol` already guarantees a catalog hit, so `market` is defined —
   // the `!` is just to satisfy the type without a redundant runtime branch.
