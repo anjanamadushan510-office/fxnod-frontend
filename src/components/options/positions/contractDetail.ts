@@ -169,7 +169,10 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
   }
 
 		const seconds = Math.max(1, exitTime - startTime);
-		const durationLabel = (ts && Array.isArray(ts) && ts.length > 0) ? `${ts.length} ticks` : `${seconds} secs`;
+		// ts[0] is the entry/start tick; Deriv counts only the ticks *after* entry.
+		// So a "5 ticks" contract produces ts.length === 6. Subtract 1 to match Deriv's display.
+		const tickCount = (ts && Array.isArray(ts) && ts.length > 1) ? ts.length - 1 : 0;
+		const durationLabel = tickCount > 0 ? `${tickCount} ticks` : `${seconds} secs`;
 
     return {
       id: h.id,
