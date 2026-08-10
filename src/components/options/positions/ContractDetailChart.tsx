@@ -69,14 +69,31 @@ export function ContractDetailChart({ detail }: { detail: ContractDetail }) {
     });
 
     // Numbered tick nodes; exit node coloured by outcome, entry node teal.
-    const markers: SeriesMarker<Time>[] = detail.ticks.map((t, i) => ({
-      time: t.time as UTCTimestamp,
-      position: "aboveBar",
-      color:
-        t.kind === "exit" ? exitColor : t.kind === "entry" ? rise : inkFaint,
-      shape: "circle",
-      text: String(i + 1),
-    }));
+    // i=0 is the entry/start tick (Deriv shows it as an open circle, unnumbered).
+    // Subsequent ticks are numbered 1, 2, 3 ... matching Deriv's display.
+    const markers: SeriesMarker<Time>[] = detail.ticks.map((t, i) => {
+      // Format timestamp as HH:MM:SS for the label
+      const date = new Date(t.time * 1000);
+      const hh = String(date.getUTCHours()).padStart(2, "0");
+      const mm = String(date.getUTCMinutes()).padStart(2, "0");
+      const ss = String(date.getUTCSeconds()).padStart(2, "0");
+      const timeLabel = `${hh}:${mm}:${ss}`;
+
+      // Entry tick (i=0): no number, just an open circle feel via inkFaint color
+      // Exit tick: colored by outcome
+      // Other ticks: numbered 1, 2, 3 …
+      const tickNumber = i === 0 ? "" : String(i);
+      const label = i === 0 ? timeLabel : `${tickNumber}\n${timeLabel}`;
+
+      return {
+        time: t.time as UTCTimestamp,
+        position: "aboveBar",
+        color:
+          t.kind === "exit" ? exitColor : t.kind === "entry" ? inkFaint : inkFaint,
+        shape: "circle",
+        text: label,
+      };
+    });
     createSeriesMarkers(series, markers);
 
     chart.timeScale().fitContent();
