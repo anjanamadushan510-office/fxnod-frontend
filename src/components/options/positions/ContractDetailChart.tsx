@@ -68,6 +68,10 @@ export function ContractDetailChart({ detail }: { detail: ContractDetail }) {
       title: "Barrier",
     });
 
+    // Circled unicode digits ①–⑩ so the number appears inside a circle like Deriv.
+    const CIRCLED = ["", "①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩"];
+    const circled = (n: number) => CIRCLED[n] ?? String(n);
+
     // Numbered tick nodes; exit node coloured by outcome, entry node teal.
     // i=0 is the entry/start tick (Deriv shows it as an open circle, unnumbered).
     // Subsequent ticks are numbered 1, 2, 3 ... matching Deriv's display.
@@ -79,17 +83,13 @@ export function ContractDetailChart({ detail }: { detail: ContractDetail }) {
       const ss = String(date.getUTCSeconds()).padStart(2, "0");
       const timeLabel = `${hh}:${mm}:${ss}`;
 
-      // Entry tick (i=0): no number, just an open circle feel via inkFaint color
-      // Exit tick: colored by outcome
-      // Other ticks: numbered 1, 2, 3 …
-      const tickNumber = i === 0 ? "" : String(i);
-      const label = i === 0 ? timeLabel : `${tickNumber}\n${timeLabel}`;
+      // Entry tick (i=0): no number, just timestamp
+      const label = i === 0 ? timeLabel : `${circled(i)} ${timeLabel}`;
 
       return {
         time: t.time as UTCTimestamp,
         position: "aboveBar",
-        color:
-          t.kind === "exit" ? exitColor : t.kind === "entry" ? inkFaint : inkFaint,
+        color: t.kind === "exit" ? exitColor : inkFaint,
         shape: "circle",
         text: label,
       };
