@@ -30,6 +30,8 @@ export interface Position {
   pnl: number;
   /** "won" / "lost" / null when ongoing. */
   outcome?: "won" | "lost" | null;
+  /** Target completion epoch seconds for time-based trades. */
+  expiryTime?: number;
 }
 
 /**

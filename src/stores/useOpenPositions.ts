@@ -120,6 +120,7 @@ function frameToPosition(frame: PositionFrame): Position {
     pnl: toNum(frame.profit) ?? 0,
     outcome:
       frame.status === "won" || frame.status === "lost" ? frame.status : null,
+    expiryTime: frame.expiry_time,
   };
 }
 

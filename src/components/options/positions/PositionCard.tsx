@@ -1,6 +1,6 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useState, useEffect } from "react";
 import { BarsIcon, ClockIcon, ExpandIcon } from "@/components/ui/Icons";
 import { cn } from "@/lib/cn";
 import type { Position } from "@/hooks/useMockPositions";
@@ -22,6 +22,18 @@ const SIDE_LABEL: Record<string, string> = {
   accum: "Accumulator",
 };
 
+function useCountdown(expiryTime?: number) {
+  const [now, setNow] = useState(() => Math.floor(Date.now() / 1000));
+  useEffect(() => {
+    if (!expiryTime) return;
+    const i = setInterval(() => setNow(Math.floor(Date.now() / 1000)), 1000);
+    return () => clearInterval(i);
+  }, [expiryTime]);
+  if (!expiryTime) return null;
+  const diff = expiryTime - now;
+  return diff > 0 ? diff : 0;
+}
+
 /**
  * Open-position card (Deriv §8, Step 4): asset icon + name + expand, then the
  * trade type / stake row, the timer / live-P&L row, and a resale slot
@@ -37,6 +49,8 @@ function PositionCardInner({
 }: PositionCardProps) {
   const pnlPositive = position.pnl >= 0;
   const tradeType = SIDE_LABEL[position.side] ?? position.contractType;
+  const remain = useCountdown(position.expiryTime);
+  const statusDisplay = remain != null ? `${remain} secs` : (position.status ?? "—");
 
   return (
     <article className="flex flex-col gap-2 rounded-[10px] border border-opt-line bg-opt-bg-elev px-3 py-2.5">
@@ -73,7 +87,7 @@ function PositionCardInner({
       <div className="flex items-center justify-between text-[12px]">
         <span className="flex items-center gap-1 text-opt-ink-3">
           <ClockIcon className="h-3.5 w-3.5" />
-          {position.status ?? "—"}
+          {statusDisplay}
         </span>
         <span
           className={cn(

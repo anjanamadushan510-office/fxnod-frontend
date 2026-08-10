@@ -157,6 +157,7 @@ function applyPostTrade(request: ProposalRequest, trade: ConfirmResponse) {
     stake,
     contractValue: Number(trade.buy_price) || stake,
     entrySpot: entry || undefined,
+    expiryTime: now + durationSeconds(request),
   });
 
   if (entry > 0) {
