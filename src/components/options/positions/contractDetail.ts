@@ -32,8 +32,6 @@ export interface ContractDetail {
   sellPrice: number;
   referenceBuy: number;
   referenceSell: number;
-  /** Deriv contract ID — used for the dtrader.deriv.com/contract/{id} URL link. */
-  derivContractId: string;
   duration: string;
   barrier: number;
   startTime: number;
@@ -122,7 +120,6 @@ function mk(p: {
     sellPrice: contractValue,
     referenceBuy: refBase,
     referenceSell: refBase + 1,
-    derivContractId: String(refBase),
     duration: "5 ticks",
     barrier: p.entry,
     startTime: p.start,
@@ -214,10 +211,8 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
       pnl,
       buyPrice: stake,
       sellPrice: contractValue,
-      referenceBuy: Number((h as any).buy_transaction_id) || Number((h as any).deriv_contract_id) || 0,
-      referenceSell: Number((h as any).sell_transaction_id) || 0,
-      // deriv_contract_id is used for the Deriv URL link (not the same as transaction IDs)
-      derivContractId: String((h as any).deriv_contract_id || ""),
+      referenceBuy: Number((h as any).deriv_contract_id) || 0,
+      referenceSell: 0,
       duration: durationLabel,
       barrier: entrySpot,
       startTime,
@@ -251,7 +246,6 @@ export function simPositionToDetail(p: Position): ContractDetail {
     sellPrice: p.contractValue,
     referenceBuy: 4290000123,
     referenceSell: 0,
-    derivContractId: "4290000123",
     duration: p.status ?? "5 ticks",
     barrier: entry,
     startTime: start,
