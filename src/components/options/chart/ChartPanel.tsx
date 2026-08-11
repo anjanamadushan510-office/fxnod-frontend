@@ -4,7 +4,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useChartSettings } from "@/hooks/useChartSettings";
 import { useChartOverlays } from "@/hooks/useChartOverlays";
 import { useTradeOverlays } from "@/stores/useTradeOverlays";
+import { useAccumulatorPreview } from "@/stores/useAccumulatorPreview";
 import { useLiveMarket } from "@/stores/useLiveMarket";
+import { LineStyle } from "lightweight-charts";
+import type { PriceLineSpec } from "./LiveChart";
 import { MarketPicker } from "../market/MarketPicker";
 import { ChartFooter } from "./ChartFooter";
 import { ChartToolbar, ChartNavControls } from "./ChartToolbar";
@@ -63,7 +66,31 @@ export function ChartPanel({
     () => allOverlays.filter((o) => o.symbol === marketId),
     [allOverlays, marketId],
   );
-  useChartOverlays(chartRef, overlays);
+
+  const accuGrowthRate = useAccumulatorPreview((s) => s.growthRate);
+  const extraLines = useMemo((): PriceLineSpec[] => {
+    if (!accuGrowthRate || !livePrice || tradeType !== "accumulators") return [];
+    // §6.2: Barrier is roughly growthRate * 0.012666.
+    const barrierOffset = livePrice * (accuGrowthRate * 0.012666 / 100);
+    return [
+      {
+        price: livePrice + barrierOffset,
+        color: "#2962FF", // Match drawing color or use a brand blue
+        lineStyle: LineStyle.Dashed,
+        lineWidth: 1,
+        title: `+${(barrierOffset).toFixed(3)}`,
+      },
+      {
+        price: livePrice - barrierOffset,
+        color: "#2962FF",
+        lineStyle: LineStyle.Dashed,
+        lineWidth: 1,
+        title: `-${(barrierOffset).toFixed(3)}`,
+      },
+    ];
+  }, [accuGrowthRate, livePrice, tradeType]);
+
+  useChartOverlays(chartRef, overlays, extraLines);
 
   // Reset the price readout when the market changes — the next stream seeds it.
   useEffect(() => {

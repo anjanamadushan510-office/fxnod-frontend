@@ -27,6 +27,7 @@ import { OVERLAY_COLORS, type TradeOverlay } from "@/stores/useTradeOverlays";
 export function useChartOverlays(
   chartRef: React.RefObject<LiveChartHandle | null>,
   overlays: TradeOverlay[],
+  extraLines: PriceLineSpec[] = []
 ) {
   useEffect(() => {
     const handle = chartRef.current;
@@ -64,7 +65,7 @@ export function useChartOverlays(
       // lightweight-charts requires markers in ascending time order.
       .sort((a, b) => (a.time as number) - (b.time as number));
 
-    handle.setPriceLines(lines);
+    handle.setPriceLines([...lines, ...extraLines]);
     handle.setMarkers(markers);
-  }, [chartRef, overlays]);
+  }, [chartRef, overlays, extraLines]);
 }

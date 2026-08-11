@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePanelBuy } from "@/hooks/usePanelBuy";
+import { useAccumulatorPreview } from "@/stores/useAccumulatorPreview";
 import { buildProposalRequest } from "../buildProposalRequest";
 import { TradeConfirmed } from "../TradeConfirmed";
 import { HowToTradeLink } from "../HowToTradeLink";
@@ -33,6 +34,11 @@ export function AccumulatorsPanel({ symbol }: AccumulatorsPanelProps) {
 
   const { buyPhase, lastTrade, canBuy, errorMsg, handleBuy, handleNewTrade } =
     usePanelBuy(request);
+
+  useEffect(() => {
+    useAccumulatorPreview.getState().setGrowthRate(growthRate);
+    return () => useAccumulatorPreview.getState().setGrowthRate(null);
+  }, [growthRate]);
 
   if (buyPhase === "confirmed" && lastTrade) {
     return <TradeConfirmed trade={lastTrade} side="neutral" onNewTrade={handleNewTrade} />;
