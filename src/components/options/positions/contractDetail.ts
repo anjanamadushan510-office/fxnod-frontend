@@ -135,14 +135,16 @@ import type { TradeHistoryEntry } from "@/services/api/model";
 
 export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
   const stake = Number(h.stake_amount) || 0;
-  // Use final_payout_amount if present, else payout_amount
-  const payoutStr = (h as any).final_payout_amount || h.payout_amount;
-  const payout = Number(payoutStr) || 0;
+  // potential_payout = the quoted payout from the proposal (always > 0).
+  // final_payout_amount = actual received payout (0 if lost).
+  const potentialPayout = Number(h.payout_amount) || 0;  // always show quoted payout
+  const finalPayout = Number((h as any).final_payout_amount) || 0;
   const outcomeStr = (h as any).outcome;
-  const won = outcomeStr ? outcomeStr === "won" : (payout > 0);
-  const pnl = won ? +(payout - stake).toFixed(2) : -stake;
-  // For a closed contract, sellPrice == payout (if won) or 0 (if lost)
-  const contractValue = won ? payout : 0;
+  const won = outcomeStr ? outcomeStr === "won" : (finalPayout > 0);
+  const payout = potentialPayout; // Potential payout = quoted, matches Deriv display
+  const pnl = won ? +(finalPayout - stake).toFixed(2) : -stake;
+  // contractValue = what was actually received
+  const contractValue = won ? finalPayout : 0;
 
   // TradeHistoryEntry created_at is an ISO string, parse it to epoch seconds
   const exitTime = Math.floor(new Date(h.created_at).getTime() / 1000);

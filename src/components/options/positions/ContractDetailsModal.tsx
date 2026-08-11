@@ -121,7 +121,18 @@ function LeftPanel({
 
       <div className="flex flex-col gap-2.5">
         <Row label="Reference ID">
-          <span className="font-mono">{detail.referenceBuy} (Buy)</span>
+          {detail.referenceBuy > 0 ? (
+            <a
+              href={`https://dtrader.deriv.com/contract/${detail.referenceBuy}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-mono text-opt-ink hover:underline"
+            >
+              {detail.referenceBuy} (Buy)
+            </a>
+          ) : (
+            <span className="font-mono">—</span>
+          )}
           {detail.referenceSell > 0 && (
             <span className="font-mono">{detail.referenceSell} (Sell)</span>
           )}
