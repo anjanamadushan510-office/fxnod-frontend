@@ -175,7 +175,8 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
     if (exitSpot === 0) exitSpot = ticks[ticks.length - 1].value;
   } else if (entrySpot && exitSpot) {
     const isTickFallback = backendDurUnit === "t";
-    ticks = genTicks(entrySpot, exitSpot, startTime, exitTime, isTickFallback ? Math.max(5, backendDurSecs) : 2);
+    const numPoints = isTickFallback ? Math.max(5, backendDurSecs) : Math.max(10, backendDurSecs);
+    ticks = genTicks(entrySpot, exitSpot, startTime, exitTime, numPoints);
   }
 
 		const seconds = Math.max(1, exitTime - startTime);
