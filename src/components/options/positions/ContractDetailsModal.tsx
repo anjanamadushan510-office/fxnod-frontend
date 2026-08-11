@@ -123,7 +123,7 @@ function LeftPanel({
         <Row label="Reference ID">
           {detail.referenceBuy > 0 ? (
             <a
-              href={`https://dtrader.deriv.com/contract/${detail.referenceBuy}`}
+              href={`https://dtrader.deriv.com/contract/${detail.derivContractId || detail.referenceBuy}`}
               target="_blank"
               rel="noopener noreferrer"
               className="font-mono text-opt-ink hover:underline"
