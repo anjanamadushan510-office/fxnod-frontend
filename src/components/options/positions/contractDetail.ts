@@ -172,7 +172,29 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
 		// ts[0] is the entry/start tick; Deriv counts only the ticks *after* entry.
 		// So a "5 ticks" contract produces ts.length === 6. Subtract 1 to match Deriv's display.
 		const tickCount = (ts && Array.isArray(ts) && ts.length > 1) ? ts.length - 1 : 0;
-		const durationLabel = tickCount > 0 ? `${tickCount} ticks` : `${seconds} secs`;
+
+		// Prefer the authoritative values persisted from the proposal:
+		//   duration_unit "t" → ticks, any other unit → seconds/mins etc.
+		const backendDurSecs: number = Number((h as any).duration_seconds) || 0;
+		const backendDurUnit: string  = String((h as any).duration_unit  || "");
+		let durationLabel: string;
+		if (backendDurUnit === "t" && tickCount > 0) {
+			// Tick-based trade: use tick count (already correct from tick_stream)
+			durationLabel = `${tickCount} ticks`;
+		} else if (backendDurSecs > 0) {
+			// Time-based trade (secs, mins, hours): show the stored value directly.
+			durationLabel = backendDurUnit === "m"
+				? `${backendDurSecs} mins`
+				: backendDurUnit === "h"
+					? `${backendDurSecs} hours`
+					: `${backendDurSecs} secs`;
+		} else if (tickCount > 0) {
+			// Fallback: infer from tick_stream if duration_unit not yet stored
+			durationLabel = `${tickCount} ticks`;
+		} else {
+			// Last resort: epoch diff
+			durationLabel = `${seconds} secs`;
+		}
 
     return {
       id: h.id,
