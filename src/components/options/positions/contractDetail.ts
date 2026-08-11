@@ -69,15 +69,17 @@ function genTicks(
   entry: number,
   exit: number,
   startSec: number,
+  endSec: number,
   n = 5,
 ): ContractTick[] {
   const amp = Math.max(0.2, Math.abs(exit - entry) * 0.6);
   const out: ContractTick[] = [];
+  const duration = Math.max(1, endSec - startSec);
   for (let i = 0; i < n; i++) {
     const frac = n > 1 ? i / (n - 1) : 0;
     const wiggle = i === 0 || i === n - 1 ? 0 : Math.sin(i * 1.7) * amp;
     out.push({
-      time: startSec + i,
+      time: startSec + Math.round(frac * duration),
       value: +(entry + (exit - entry) * frac + wiggle).toFixed(
         Math.abs(entry) < 10 ? 4 : 2,
       ),
@@ -129,7 +131,7 @@ function mk(p: {
     entryTime: p.start + 1,
     exitSpot: p.exit,
     exitTime: p.start + 5,
-    ticks: genTicks(p.entry, p.exit, p.start, 5),
+    ticks: genTicks(p.entry, p.exit, p.start, p.start + 5, 5),
   };
 }
 
@@ -148,9 +150,12 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
   // contractValue = what was actually received
   const contractValue = won ? finalPayout : 0;
 
+  const backendDurSecs: number = Number((h as any).duration_seconds) || 0;
+  const backendDurUnit: string  = String((h as any).duration_unit  || "");
+
   // TradeHistoryEntry created_at is an ISO string, parse it to epoch seconds
   const exitTime = Math.floor(new Date(h.created_at).getTime() / 1000);
-  const startTime = exitTime - 5; // placeholder for 5-tick trades
+  const startTime = backendDurSecs > 0 ? exitTime - backendDurSecs : exitTime - 5;
 
   let entrySpot = Number((h as any).entry_spot) || 0;
   let exitSpot = Number((h as any).exit_spot) || 0;
@@ -169,8 +174,8 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
     if (entrySpot === 0) entrySpot = ticks[0].value;
     if (exitSpot === 0) exitSpot = ticks[ticks.length - 1].value;
   } else if (entrySpot && exitSpot) {
-    const isTickFallback = String((h as any).duration_unit || "") === "t";
-    ticks = genTicks(entrySpot, exitSpot, startTime, isTickFallback ? 5 : 2);
+    const isTickFallback = backendDurUnit === "t";
+    ticks = genTicks(entrySpot, exitSpot, startTime, exitTime, isTickFallback ? Math.max(5, backendDurSecs) : 2);
   }
 
 		const seconds = Math.max(1, exitTime - startTime);
@@ -180,8 +185,6 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
 
 		// Prefer the authoritative values persisted from the proposal:
 		//   duration_unit "t" → ticks, any other unit → seconds/mins etc.
-		const backendDurSecs: number = Number((h as any).duration_seconds) || 0;
-		const backendDurUnit: string  = String((h as any).duration_unit  || "");
 		let durationLabel: string;
 		if (backendDurUnit === "t" && tickCount > 0) {
 			// Tick-based trade: use tick count (already correct from tick_stream)
