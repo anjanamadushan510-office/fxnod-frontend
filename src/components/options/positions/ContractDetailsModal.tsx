@@ -51,7 +51,7 @@ export function ContractDetailsModal() {
         onClick={close}
       />
 
-      <div className="relative z-10 flex h-[min(620px,calc(100vh-32px))] w-[min(900px,calc(100vw-32px))] flex-col overflow-hidden rounded-2xl border border-opt-line bg-opt-bg-elev shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
+      <div className="relative z-10 flex h-[min(700px,calc(100vh-64px))] w-[min(1200px,calc(100vw-64px))] flex-col overflow-hidden rounded-2xl border border-opt-line bg-opt-bg-elev shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-opt-line px-4 py-3">
           <h2 className="text-[15px] font-bold text-opt-ink">Contract details</h2>
