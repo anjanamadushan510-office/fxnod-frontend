@@ -121,21 +121,23 @@ function LeftPanel({
 
       <div className="flex flex-col gap-2.5">
         <Row label="Reference ID">
-          {detail.referenceBuy > 0 ? (
-            <a
-              href={`https://dtrader.deriv.com/contract/${detail.referenceBuy}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-mono text-opt-ink hover:underline"
-            >
-              {detail.referenceBuy} (Buy)
-            </a>
-          ) : (
-            <span className="font-mono">—</span>
-          )}
-          {detail.referenceSell > 0 && (
-            <span className="font-mono">{detail.referenceSell} (Sell)</span>
-          )}
+          <div className="flex flex-col gap-0.5">
+            {detail.buyTransactionId > 0 ? (
+              <a
+                href={`https://dtrader.deriv.com/contract/${detail.derivContractId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-mono text-opt-ink hover:underline"
+              >
+                {detail.buyTransactionId} (Buy)
+              </a>
+            ) : (
+              <span className="font-mono">—</span>
+            )}
+            {detail.sellTransactionId > 0 && (
+              <span className="font-mono">{detail.sellTransactionId} (Sell)</span>
+            )}
+          </div>
         </Row>
         <Row label="Duration">{detail.duration}</Row>
         <Row label="Barrier">

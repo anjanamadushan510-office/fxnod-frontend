@@ -72,10 +72,14 @@ export function ContractDetailChart({ detail }: { detail: ContractDetail }) {
     const CIRCLED = ["", "①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩"];
     const circled = (n: number) => CIRCLED[n] ?? String(n);
 
+    const isTickContract = detail.duration.includes("tick");
+
     // Numbered tick nodes; exit node coloured by outcome, entry node teal.
     // i=0 is the entry/start tick (Deriv shows it as an open circle, unnumbered).
-    // Subsequent ticks are numbered 1, 2, 3 ... matching Deriv's display.
-    const markers: SeriesMarker<Time>[] = detail.ticks.map((t, i) => {
+    // Subsequent ticks are numbered 1, 2, 3 ... matching Deriv's display (only for tick contracts).
+    const markers: SeriesMarker<Time>[] = [];
+    
+    detail.ticks.forEach((t, i) => {
       // Format timestamp as HH:MM:SS for the label
       const date = new Date(t.time * 1000);
       const hh = String(date.getUTCHours()).padStart(2, "0");
@@ -83,17 +87,24 @@ export function ContractDetailChart({ detail }: { detail: ContractDetail }) {
       const ss = String(date.getUTCSeconds()).padStart(2, "0");
       const timeLabel = `${hh}:${mm}:${ss}`;
 
-      // Entry tick (i=0): no number, just timestamp
-      const label = i === 0 ? timeLabel : `${circled(i)} ${timeLabel}`;
+      const isEntry = i === 0;
+      const isExit = i === detail.ticks.length - 1;
 
-      return {
-        time: t.time as UTCTimestamp,
-        position: "aboveBar",
-        color: t.kind === "exit" ? exitColor : inkFaint,
-        shape: "circle",
-        text: label,
-      };
+      // Only show markers for entry, exit, or all ticks if it's a tick contract
+      if (isEntry || isExit || isTickContract) {
+        // Entry tick (i=0) and Exit tick on non-tick contracts: no number, just timestamp
+        const label = isEntry || (!isTickContract && isExit) ? timeLabel : `${circled(i)} ${timeLabel}`;
+
+        markers.push({
+          time: t.time as UTCTimestamp,
+          position: "aboveBar",
+          color: t.kind === "exit" ? exitColor : inkFaint,
+          shape: "circle",
+          text: label,
+        });
+      }
     });
+    
     createSeriesMarkers(series, markers);
 
     chart.timeScale().fitContent();

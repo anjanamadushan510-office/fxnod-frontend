@@ -30,8 +30,9 @@ export interface ContractDetail {
   pnl: number;
   buyPrice: number;
   sellPrice: number;
-  referenceBuy: number;
-  referenceSell: number;
+  derivContractId: number;
+  buyTransactionId: number;
+  sellTransactionId: number;
   duration: string;
   barrier: number;
   startTime: number;
@@ -118,8 +119,9 @@ function mk(p: {
     pnl,
     buyPrice: p.stake,
     sellPrice: contractValue,
-    referenceBuy: refBase,
-    referenceSell: refBase + 1,
+    derivContractId: refBase,
+    buyTransactionId: refBase + 1000,
+    sellTransactionId: refBase + 1001,
     duration: "5 ticks",
     barrier: p.entry,
     startTime: p.start,
@@ -167,7 +169,8 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
     if (entrySpot === 0) entrySpot = ticks[0].value;
     if (exitSpot === 0) exitSpot = ticks[ticks.length - 1].value;
   } else if (entrySpot && exitSpot) {
-    ticks = genTicks(entrySpot, exitSpot, startTime, 5);
+    const isTickFallback = String((h as any).duration_unit || "") === "t";
+    ticks = genTicks(entrySpot, exitSpot, startTime, isTickFallback ? 5 : 2);
   }
 
 		const seconds = Math.max(1, exitTime - startTime);
@@ -211,8 +214,9 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
       pnl,
       buyPrice: stake,
       sellPrice: contractValue,
-      referenceBuy: Number((h as any).deriv_contract_id) || 0,
-      referenceSell: 0,
+      derivContractId: Number((h as any).deriv_contract_id) || 0,
+      buyTransactionId: Number((h as any).buy_transaction_id) || 0,
+      sellTransactionId: Number((h as any).sell_transaction_id) || 0,
       duration: durationLabel,
       barrier: entrySpot,
       startTime,
@@ -244,8 +248,9 @@ export function simPositionToDetail(p: Position): ContractDetail {
     pnl: p.pnl,
     buyPrice: p.stake,
     sellPrice: p.contractValue,
-    referenceBuy: 4290000123,
-    referenceSell: 0,
+    derivContractId: 4290000123,
+    buyTransactionId: 17000000001,
+    sellTransactionId: 0,
     duration: p.status ?? "5 ticks",
     barrier: entry,
     startTime: start,
