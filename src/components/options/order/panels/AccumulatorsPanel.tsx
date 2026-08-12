@@ -90,7 +90,7 @@ export function AccumulatorsPanel({ symbol }: AccumulatorsPanelProps) {
       <div className="flex flex-col gap-1.5 py-1">
         <SummaryRow label="Max. payout" value="6,000.00 USD" />
         <SummaryRow label="Barrier" value={barrierText} />
-        <SummaryRow label="Max. duration" value="250 ticks" />
+        <SummaryRow label="Max. duration" value={`${getMaxDuration(growthRate)} ticks`} />
       </div>
       {errorMsg && (
         <p className="px-1 text-[11px] leading-snug text-opt-fall">{errorMsg}</p>
@@ -112,4 +112,15 @@ export function AccumulatorsPanel({ symbol }: AccumulatorsPanelProps) {
 
 function approximateBarrier(growthPct: number): number {
   return growthPct * 0.012666;
+}
+
+function getMaxDuration(growthPct: number): number {
+  switch (growthPct) {
+    case 1: return 250;
+    case 2: return 125;
+    case 3: return 85;
+    case 4: return 65;
+    case 5: return 50;
+    default: return 250;
+  }
 }
