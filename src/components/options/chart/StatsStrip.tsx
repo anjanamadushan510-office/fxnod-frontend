@@ -42,7 +42,7 @@ export function StatsStrip({
               key={i}
               className={cn(
                 "font-medium tabular-nums",
-                i === 0 &&
+                i === runs.length - 1 &&
                   "font-bold text-opt-ink border-b-2 border-opt-ink pb-[1px]",
               )}
             >
