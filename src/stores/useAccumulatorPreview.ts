@@ -18,9 +18,10 @@ export const useAccumulatorPreview = create<AccumulatorPreviewState>((set) => ({
   setStats: (newStats) => set((state) => {
     if (!newStats || newStats.length === 0) return { stats: state.stats };
     
-    // If the API sends multiple stats (history included), just use them
+    // If the API sends multiple stats (history included), Deriv API usually sends newest first (index 0 is active).
+    // So we reverse it to match Deriv UI where the active stat is on the far right (last element).
     if (newStats.length > 1) {
-      return { stats: newStats };
+      return { stats: [...newStats].reverse() };
     }
     
     // If the API only sends 1 stat (current run), accumulate it locally
