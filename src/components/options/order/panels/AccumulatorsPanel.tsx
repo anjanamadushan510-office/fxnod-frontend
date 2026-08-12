@@ -37,12 +37,7 @@ export function AccumulatorsPanel({ symbol }: AccumulatorsPanelProps) {
 
   useEffect(() => {
     let barrierPct: number | null = null;
-    if (proposal?.tick_size_barrier_percentage) {
-      const p = parseFloat(proposal.tick_size_barrier_percentage.replace('%', ''));
-      if (!isNaN(p)) {
-        barrierPct = p / 100;
-      }
-    } else if (proposal?.high_barrier && proposal?.low_barrier) {
+    if (proposal?.high_barrier && proposal?.low_barrier) {
       const h = parseFloat(proposal.high_barrier);
       const l = parseFloat(proposal.low_barrier);
       if (!isNaN(h) && !isNaN(l)) {
@@ -50,6 +45,8 @@ export function AccumulatorsPanel({ symbol }: AccumulatorsPanelProps) {
         barrierPct = ((h - l) / 2) / spot;
       }
     }
+
+
 
     useAccumulatorPreview.getState().setGrowthRate(growthRate);
     useAccumulatorPreview.getState().setBarrierPct(barrierPct);
