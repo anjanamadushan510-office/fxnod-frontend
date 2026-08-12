@@ -124,13 +124,16 @@ export function PositionsDrawer({ open, onClose }: PositionsDrawerProps) {
 
 // ─── Closed tab ──────────────────────────────────────────────────────────────
 
-type FilterKey = "all" | "today" | "7d" | "30d";
+type FilterKey = "all" | "today" | "yesterday" | "7d" | "30d" | "60d" | "90d";
 
 const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "all", label: "All time" },
   { key: "today", label: "Today" },
+  { key: "yesterday", label: "Yesterday" },
   { key: "7d", label: "Last 7 days" },
   { key: "30d", label: "Last 30 days" },
+  { key: "60d", label: "Last 60 days" },
+  { key: "90d", label: "Last 90 days" },
 ];
 
 function ClosedTab({
@@ -147,13 +150,22 @@ function ClosedTab({
     const mapped = historyData.map(historyToDetail);
 
     if (filter === "all") return mapped;
-    // Capture "now" lazily so the default ("all") render is SSR-deterministic.
-    if (!nowRef.current) nowRef.current = Math.floor(Date.now() / 1000);
-    const win =
-      filter === "today" ? 86400 : filter === "7d" ? 7 * 86400 : 30 * 86400;
-    return mapped.filter(
-      (c) => nowRef.current - c.exitTime <= win,
-    );
+
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() / 1000;
+    const startOfYesterday = startOfToday - 86400;
+
+    return mapped.filter((c) => {
+      if (filter === "today") return c.exitTime >= startOfToday;
+      if (filter === "yesterday") return c.exitTime >= startOfYesterday && c.exitTime < startOfToday;
+      
+      const nowSec = now.getTime() / 1000;
+      if (filter === "7d") return nowSec - c.exitTime <= 7 * 86400;
+      if (filter === "30d") return nowSec - c.exitTime <= 30 * 86400;
+      if (filter === "60d") return nowSec - c.exitTime <= 60 * 86400;
+      if (filter === "90d") return nowSec - c.exitTime <= 90 * 86400;
+      return true;
+    });
   }, [filter, historyData]);
 
   const groups = useMemo(() => {
