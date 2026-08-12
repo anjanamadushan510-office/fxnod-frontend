@@ -90,7 +90,7 @@ export function AccumulatorsPanel({ symbol }: AccumulatorsPanelProps) {
       <div className="flex flex-col gap-1.5 py-1">
         <SummaryRow label="Max. payout" value="6,000.00 USD" />
         <SummaryRow label="Barrier" value={barrierText} />
-        <SummaryRow label="Max. duration" value={`${getMaxDuration(growthRate)} ticks`} />
+        <SummaryRow label="Max. duration" value={`${proposal?.maximum_ticks ?? getMaxDuration(growthRate)} ticks`} />
       </div>
       {errorMsg && (
         <p className="px-1 text-[11px] leading-snug text-opt-fall">{errorMsg}</p>
