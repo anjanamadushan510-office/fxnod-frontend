@@ -34,6 +34,8 @@ export interface Position {
   expiryTime?: number;
   /** True if the contract duration is in ticks. */
   isTick?: boolean;
+  /** Live tick stream from the backend. */
+  tickStream?: any[];
 }
 
 /**

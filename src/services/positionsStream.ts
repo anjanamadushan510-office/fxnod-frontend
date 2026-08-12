@@ -36,6 +36,7 @@ export interface PositionFrame {
   ticks_elapsed?: number;
   ticks_total?: number;
   updated_at?: number; // epoch seconds
+  tickStream?: any[];
 
   // ── display / static (required in `snapshot`, optional in `update`) ────────
   market_id?: string;

@@ -154,8 +154,8 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
   const backendDurUnit: string  = String((h as any).duration_unit  || "");
 
   // TradeHistoryEntry created_at is an ISO string, parse it to epoch seconds
-  const exitTime = Math.floor(new Date(h.created_at).getTime() / 1000);
-  const startTime = backendDurSecs > 0 ? exitTime - backendDurSecs : exitTime - 5;
+  const startTime = Math.floor(new Date(h.created_at).getTime() / 1000);
+  let exitTime = backendDurSecs > 0 ? startTime + backendDurSecs : startTime;
 
   let entrySpot = Number((h as any).entry_spot) || 0;
   let exitSpot = Number((h as any).exit_spot) || 0;
@@ -173,7 +173,9 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
     });
     if (entrySpot === 0) entrySpot = ticks[0].value;
     if (exitSpot === 0) exitSpot = ticks[ticks.length - 1].value;
+    exitTime = ticks[ticks.length - 1].time;
   } else if (entrySpot && exitSpot) {
+    if (exitTime === startTime) exitTime = startTime + 5; // fallback
     const isTickFallback = backendDurUnit === "t";
     const numPoints = isTickFallback ? Math.max(5, backendDurSecs) : Math.max(10, backendDurSecs);
     ticks = genTicks(entrySpot, exitSpot, startTime, exitTime, numPoints);
@@ -262,6 +264,10 @@ export function simPositionToDetail(p: Position): ContractDetail {
     entryTime: start + 1,
     exitSpot: exit,
     exitTime: start + 5,
-    ticks: genTicks(entry, exit || entry, start, 5),
+    ticks: p.tickStream && p.tickStream.length > 0 ? p.tickStream.map((t: any, i: number) => ({
+      time: t.epoch || (start + i),
+      value: Number(t.tick_display_value) || Number(t.tick) || 0,
+      kind: i === 0 ? "entry" : (i === p.tickStream!.length - 1 && p.outcome ? "exit" : "normal"),
+    })) : genTicks(entry, exit || entry, start, 5),
   };
 }

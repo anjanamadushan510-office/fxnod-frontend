@@ -91,6 +91,7 @@ function framePatch(frame: PositionFrame): Partial<Position> {
     pnl: toNum(frame.profit) ?? 0,
     outcome:
       frame.status === "won" || frame.status === "lost" ? frame.status : null,
+    tickStream: frame.tickStream,
   };
   const value = toNum(frame.bid_price);
   if (value !== undefined) patch.contractValue = value;
