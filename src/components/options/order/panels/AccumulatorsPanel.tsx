@@ -50,10 +50,12 @@ export function AccumulatorsPanel({ symbol }: AccumulatorsPanelProps) {
 
     useAccumulatorPreview.getState().setGrowthRate(growthRate);
     useAccumulatorPreview.getState().setBarrierPct(barrierPct);
+    useAccumulatorPreview.getState().setStats(proposal?.ticks_stayed_in ?? null);
 
     return () => {
       useAccumulatorPreview.getState().setGrowthRate(null);
       useAccumulatorPreview.getState().setBarrierPct(null);
+      useAccumulatorPreview.getState().setStats(null);
     };
   }, [growthRate, proposal]);
 

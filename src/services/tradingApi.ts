@@ -118,6 +118,7 @@ export interface ProposalResponse {
   high_barrier?: string;
   low_barrier?: string;
   tick_size_barrier_percentage?: string;
+  ticks_stayed_in?: number[];
 }
 
 export interface ConfirmResponse {

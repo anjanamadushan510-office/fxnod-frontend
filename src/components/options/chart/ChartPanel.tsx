@@ -69,6 +69,7 @@ export function ChartPanel({
 
   const accuGrowthRate = useAccumulatorPreview((s) => s.growthRate);
   const accuBarrierPct = useAccumulatorPreview((s) => s.barrierPct);
+  const accuStats = useAccumulatorPreview((s) => s.stats);
 
   const extraLines = useMemo((): PriceLineSpec[] => {
     if (!accuGrowthRate || !livePrice || tradeType !== "accumulators") return [];
@@ -166,7 +167,7 @@ export function ChartPanel({
         </div>
       </div>
 
-      {showStatsStrip && <StatsStrip />}
+      {showStatsStrip && <StatsStrip runs={accuStats || undefined} />}
 
       <ChartFooter />
     </div>

@@ -21,7 +21,7 @@ interface StatsStripProps {
  * by it, so the chart canvas doesn't re-render when you toggle visibility.
  */
 export function StatsStrip({
-  runs = [100, 4, 17, 35, 81, 219, 38, 7, 50, 13],
+  runs = [],
 }: StatsStripProps) {
   const [open, setOpen] = useState(true);
   return (
