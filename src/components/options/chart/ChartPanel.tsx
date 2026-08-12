@@ -68,10 +68,14 @@ export function ChartPanel({
   );
 
   const accuGrowthRate = useAccumulatorPreview((s) => s.growthRate);
+  const accuBarrierPct = useAccumulatorPreview((s) => s.barrierPct);
+
   const extraLines = useMemo((): PriceLineSpec[] => {
     if (!accuGrowthRate || !livePrice || tradeType !== "accumulators") return [];
-    // §6.2: Barrier is roughly growthRate * 0.012666.
-    const barrierOffset = livePrice * (accuGrowthRate * 0.012666 / 100);
+    
+    // Use exact percentage from API if available, else approximate.
+    const pct = accuBarrierPct ?? (accuGrowthRate * 0.012666 / 100);
+    const barrierOffset = livePrice * pct;
     return [
       {
         price: livePrice + barrierOffset,

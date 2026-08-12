@@ -32,19 +32,42 @@ export function AccumulatorsPanel({ symbol }: AccumulatorsPanelProps) {
         })
       : null;
 
-  const { buyPhase, lastTrade, canBuy, errorMsg, handleBuy, handleNewTrade } =
+  const { buyPhase, lastTrade, canBuy, errorMsg, proposal, handleBuy, handleNewTrade } =
     usePanelBuy(request);
 
   useEffect(() => {
+    let barrierPct: number | null = null;
+    if (proposal?.high_barrier && proposal?.low_barrier) {
+      const h = parseFloat(proposal.high_barrier);
+      const l = parseFloat(proposal.low_barrier);
+      if (!isNaN(h) && !isNaN(l)) {
+        const spot = (h + l) / 2;
+        barrierPct = ((h - l) / 2) / spot;
+      }
+    }
+
     useAccumulatorPreview.getState().setGrowthRate(growthRate);
-    return () => useAccumulatorPreview.getState().setGrowthRate(null);
-  }, [growthRate]);
+    useAccumulatorPreview.getState().setBarrierPct(barrierPct);
+
+    return () => {
+      useAccumulatorPreview.getState().setGrowthRate(null);
+      useAccumulatorPreview.getState().setBarrierPct(null);
+    };
+  }, [growthRate, proposal]);
 
   if (buyPhase === "confirmed" && lastTrade) {
     return <TradeConfirmed trade={lastTrade} side="neutral" onNewTrade={handleNewTrade} />;
   }
 
-  const barrier = approximateBarrier(growthRate);
+  let barrier = approximateBarrier(growthRate);
+  if (proposal?.high_barrier && proposal?.low_barrier) {
+    const h = parseFloat(proposal.high_barrier);
+    const l = parseFloat(proposal.low_barrier);
+    if (!isNaN(h) && !isNaN(l)) {
+      const spot = (h + l) / 2;
+      barrier = (((h - l) / 2) / spot) * 100;
+    }
+  }
 
   return (
     <div className="flex h-full flex-col gap-3 p-4">

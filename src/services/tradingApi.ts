@@ -115,6 +115,8 @@ export interface ProposalResponse {
   currency: string;
   expires_at: string;
   expires_in_seconds: number;
+  high_barrier?: string;
+  low_barrier?: string;
 }
 
 export interface ConfirmResponse {

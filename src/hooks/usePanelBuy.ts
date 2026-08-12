@@ -11,7 +11,7 @@ import { usePositionsUI } from "@/stores/usePositionsUI";
 import { useTradeOverlays } from "@/stores/useTradeOverlays";
 import { useDerivStatus } from "./useDerivStatus";
 import { useProposal } from "./useProposal";
-import type { ConfirmResponse, ProposalRequest } from "@/services/tradingApi";
+import type { ConfirmResponse, ProposalRequest, ProposalResponse } from "@/services/tradingApi";
 
 export type BuyPhase = "idle" | "buying" | "confirmed";
 
@@ -22,8 +22,8 @@ export interface PanelBuyResult {
   canBuy: boolean;
   /** Sub-text for BuyButton — "Fetching payout…" while quoting, real value once ready, null when disabled. */
   payoutLabel: string | null;
-  /** Gate hint (not linked) or the last quote/trade error. */
   errorMsg: string | null;
+  proposal: ProposalResponse | null;
   handleBuy: () => void;
   handleNewTrade: () => void;
 }
@@ -119,6 +119,7 @@ export function usePanelBuy(request: ProposalRequest | null): PanelBuyResult {
     canBuy,
     payoutLabel,
     errorMsg,
+    proposal,
     handleBuy,
     handleNewTrade,
   };
