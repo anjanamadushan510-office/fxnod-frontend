@@ -16,8 +16,11 @@ export function buildWsUrl(
   path: string,
   params: Record<string, string | number | undefined> = {},
 ): string {
-  const base = env.wsUrl.replace(/\/+$/, "");
-  const cleanPath = path.startsWith("/") ? path : `/${path}`;
+  let base = env.wsUrl.replace(/\/+$/, "");
+  let cleanPath = path.startsWith("/") ? path : `/${path}`;
+  if (base.endsWith("/ws") && cleanPath.startsWith("/ws/")) {
+    base = base.slice(0, -3);
+  }
   const url = new URL(base + cleanPath);
 
   for (const [key, value] of Object.entries(params)) {

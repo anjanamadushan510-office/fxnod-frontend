@@ -8,6 +8,7 @@ import {
   type ProposalResponse,
 } from "@/services/tradingApi";
 import { buildWsUrl } from "@/services/ws";
+import { useAuthStore } from "@/stores/authStore";
 
 interface UseProposalStreamOptions {
   enabled?: boolean;
@@ -27,6 +28,7 @@ export function useProposalStream(
   const [proposal, setProposal] = useState<ProposalResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const authStatus = useAuthStore((s) => s.status);
 
   const requestRef = useRef<ProposalRequest | null>(request);
   const proposalRef = useRef<ProposalResponse | null>(null);
@@ -37,7 +39,7 @@ export function useProposalStream(
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    if (!enabled || !request) {
+    if (!enabled || !request || authStatus !== "authenticated") {
       setProposal(null);
       if (wsRef.current) {
         wsRef.current.close();
@@ -66,6 +68,7 @@ export function useProposalStream(
           return;
         }
         reconnectAttempts = 0;
+        setError(null);
         ws.send(JSON.stringify(requestRef.current));
         
         pingInterval = setInterval(() => {
@@ -117,7 +120,7 @@ export function useProposalStream(
         wsRef.current = null;
       }
     };
-  }, [key, enabled]);
+  }, [key, enabled, authStatus]);
 
   const confirm = async (): Promise<ConfirmResponse> => {
     let current = proposalRef.current;
