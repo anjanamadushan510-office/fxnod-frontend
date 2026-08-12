@@ -160,20 +160,16 @@ export function ChartPanel({
         />
 
         {/* Floating lower-left controls */}
-        <div className="pointer-events-none absolute bottom-4 left-[52px] z-10 flex items-end gap-3">
+        <div className="pointer-events-none absolute bottom-10 left-[52px] z-10 flex items-end gap-3">
           <div className="pointer-events-auto">
             <ChartNavControls />
           </div>
-        </div>
-
-        {/* Floating center stats strip */}
-        {showStatsStrip && (
-          <div className="pointer-events-none absolute bottom-10 left-0 right-0 z-10 flex justify-center items-end">
+          {showStatsStrip && (
             <div className="pointer-events-auto">
               <StatsStrip runs={accuStats || undefined} />
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       <ChartFooter />
