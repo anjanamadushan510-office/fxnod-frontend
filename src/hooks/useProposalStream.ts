@@ -37,7 +37,7 @@ export function useProposalStream(
 
   const key = request ? JSON.stringify(request) : null;
   const wsRef = useRef<WebSocket | null>(null);
-
+  useEffect(() => {
     if (!enabled || !request || authStatus !== "authenticated") {
       setProposal(null);
       setLoading(false);
