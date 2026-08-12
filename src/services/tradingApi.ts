@@ -117,6 +117,7 @@ export interface ProposalResponse {
   expires_in_seconds: number;
   high_barrier?: string;
   low_barrier?: string;
+  tick_size_barrier_percentage?: string;
 }
 
 export interface ConfirmResponse {

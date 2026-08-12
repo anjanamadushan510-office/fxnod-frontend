@@ -37,7 +37,12 @@ export function AccumulatorsPanel({ symbol }: AccumulatorsPanelProps) {
 
   useEffect(() => {
     let barrierPct: number | null = null;
-    if (proposal?.high_barrier && proposal?.low_barrier) {
+    if (proposal?.tick_size_barrier_percentage) {
+      const p = parseFloat(proposal.tick_size_barrier_percentage.replace('%', ''));
+      if (!isNaN(p)) {
+        barrierPct = p / 100;
+      }
+    } else if (proposal?.high_barrier && proposal?.low_barrier) {
       const h = parseFloat(proposal.high_barrier);
       const l = parseFloat(proposal.low_barrier);
       if (!isNaN(h) && !isNaN(l)) {
@@ -59,13 +64,17 @@ export function AccumulatorsPanel({ symbol }: AccumulatorsPanelProps) {
     return <TradeConfirmed trade={lastTrade} side="neutral" onNewTrade={handleNewTrade} />;
   }
 
-  let barrier = approximateBarrier(growthRate);
-  if (proposal?.high_barrier && proposal?.low_barrier) {
+  let barrierText = `± ${approximateBarrier(growthRate).toFixed(5)}%`;
+  if (proposal?.tick_size_barrier_percentage) {
+    const val = proposal.tick_size_barrier_percentage;
+    barrierText = val.includes('%') ? `± ${val}` : `± ${val}%`;
+  } else if (proposal?.high_barrier && proposal?.low_barrier) {
     const h = parseFloat(proposal.high_barrier);
     const l = parseFloat(proposal.low_barrier);
     if (!isNaN(h) && !isNaN(l)) {
       const spot = (h + l) / 2;
-      barrier = (((h - l) / 2) / spot) * 100;
+      const barrier = (((h - l) / 2) / spot) * 100;
+      barrierText = `± ${barrier.toFixed(5)}%`;
     }
   }
 
@@ -81,7 +90,7 @@ export function AccumulatorsPanel({ symbol }: AccumulatorsPanelProps) {
       />
       <div className="flex flex-col gap-1.5 py-1">
         <SummaryRow label="Max. payout" value="6,000.00 USD" />
-        <SummaryRow label="Barrier" value={`± ${barrier.toFixed(5)}%`} />
+        <SummaryRow label="Barrier" value={barrierText} />
         <SummaryRow label="Max. duration" value="250 ticks" />
       </div>
       {errorMsg && (
