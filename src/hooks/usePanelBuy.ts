@@ -10,7 +10,7 @@ import { useOpenPositions } from "@/stores/useOpenPositions";
 import { usePositionsUI } from "@/stores/usePositionsUI";
 import { useTradeOverlays } from "@/stores/useTradeOverlays";
 import { useDerivStatus } from "./useDerivStatus";
-import { useProposal } from "./useProposal";
+import { useProposalStream } from "./useProposalStream";
 import type { ConfirmResponse, ProposalRequest, ProposalResponse } from "@/services/tradingApi";
 
 export type BuyPhase = "idle" | "buying" | "confirmed";
@@ -52,7 +52,7 @@ export function usePanelBuy(request: ProposalRequest | null): PanelBuyResult {
   requestRef.current = request;
 
   // Quote is for display only (single-phase trade re-quotes server-side).
-  const { proposal, loading: quoting, error: quoteError } = useProposal(
+  const { proposal, loading: quoting, error: quoteError } = useProposalStream(
     request,
     { enabled: isIdle },
   );
