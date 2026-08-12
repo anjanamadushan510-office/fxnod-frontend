@@ -168,7 +168,7 @@ export function ChartPanel({
 
         {/* Floating center stats strip */}
         {showStatsStrip && (
-          <div className="pointer-events-none absolute bottom-4 left-0 right-0 z-10 flex justify-center items-end">
+          <div className="pointer-events-none absolute bottom-10 left-0 right-0 z-10 flex justify-center items-end">
             <div className="pointer-events-auto">
               <StatsStrip runs={accuStats || undefined} />
             </div>
