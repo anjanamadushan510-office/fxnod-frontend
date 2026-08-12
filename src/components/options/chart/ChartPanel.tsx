@@ -159,15 +159,18 @@ export function ChartPanel({
           onPrice={handlePrice}
         />
 
-        {/* Floating lower-left chart navigation controls (§4.4) */}
-        <div className="pointer-events-none absolute bottom-4 left-[52px] z-10">
+        {/* Floating lower-left controls */}
+        <div className="pointer-events-none absolute bottom-4 left-[52px] z-10 flex items-end gap-3">
           <div className="pointer-events-auto">
             <ChartNavControls />
           </div>
+          {showStatsStrip && (
+            <div className="pointer-events-auto">
+              <StatsStrip runs={accuStats || undefined} />
+            </div>
+          )}
         </div>
       </div>
-
-      {showStatsStrip && <StatsStrip runs={accuStats || undefined} />}
 
       <ChartFooter />
     </div>

@@ -27,18 +27,20 @@ export function StatsStrip({ runs = [] }: StatsStripProps) {
   const stripRuns = runs.slice(0, 10);
 
   return (
-    <div className="relative flex items-center gap-3.5 px-4 py-2 text-[12px] bg-opt-surface">
-      <span className="font-semibold text-opt-ink-2">
+    <div className="relative inline-flex items-center gap-4 px-4 py-2 text-[12px] bg-opt-surface rounded-lg shadow-md border border-opt-surface-2">
+      <span className="font-medium text-opt-ink-2 underline decoration-dashed decoration-opt-ink-3/60 underline-offset-[4px]">
         Stats
       </span>
 
-      <div className="flex flex-1 gap-[18px] overflow-hidden font-mono text-opt-ink-2">
+      <div className="flex items-center gap-[18px] overflow-hidden font-mono text-opt-ink-2">
         {stripRuns.map((n, i) => (
           <span
             key={i}
             className={cn(
-              "tabular-nums",
-              i === 0 ? "font-bold text-opt-ink" : "font-medium"
+              "tabular-nums leading-none",
+              i === 0
+                ? "font-bold text-opt-ink border-b-2 border-[#00a79e] pb-[3px]"
+                : "font-medium"
             )}
           >
             {n}
@@ -64,7 +66,7 @@ export function StatsStrip({ runs = [] }: StatsStripProps) {
 
       {/* Popover Grid */}
       {open && runs.length > 0 && (
-        <div className="absolute bottom-full left-4 mb-2 z-50 w-[420px] rounded-lg bg-opt-surface p-4 text-opt-ink shadow-xl border border-opt-surface-2">
+        <div className="absolute bottom-full left-0 mb-3 z-50 w-[420px] rounded-lg bg-opt-surface p-4 text-opt-ink shadow-xl border border-opt-surface-2">
           <div className="flex items-center justify-between mb-4">
             <span className="font-semibold text-[12px] text-opt-ink-2 underline decoration-opt-ink-3/60 underline-offset-[4px]">
               Stats
