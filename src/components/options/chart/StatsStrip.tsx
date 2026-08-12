@@ -27,7 +27,7 @@ export function StatsStrip({ runs = [] }: StatsStripProps) {
   const stripRuns = runs.slice(0, 10);
 
   return (
-    <div className="relative inline-flex items-center gap-4 px-4 py-2 text-[12px] bg-opt-surface rounded-lg shadow-md border border-opt-surface-2">
+    <div className="relative inline-flex items-center gap-4 px-4 py-2 text-[12px] bg-opt-bg-elev rounded-lg shadow-md border border-opt-line">
       <span className="font-medium text-opt-ink-2 underline decoration-dashed decoration-opt-ink-3/60 underline-offset-[4px]">
         Stats
       </span>
@@ -66,7 +66,7 @@ export function StatsStrip({ runs = [] }: StatsStripProps) {
 
       {/* Popover Grid */}
       {open && runs.length > 0 && (
-        <div className="absolute bottom-full left-0 mb-3 z-50 w-[420px] rounded-lg bg-opt-surface p-4 text-opt-ink shadow-xl border border-opt-surface-2">
+        <div className="absolute bottom-full left-0 mb-3 z-50 w-[420px] rounded-lg bg-opt-bg-elev p-4 text-opt-ink shadow-xl border border-opt-line">
           <div className="flex items-center justify-between mb-4">
             <span className="font-semibold text-[12px] text-opt-ink-2 underline decoration-opt-ink-3/60 underline-offset-[4px]">
               Stats
