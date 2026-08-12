@@ -20,37 +20,31 @@ interface StatsStripProps {
  * Owns a tiny local state for the collapsed flag — the chart isn't affected
  * by it, so the chart canvas doesn't re-render when you toggle visibility.
  */
-export function StatsStrip({
-  runs = [],
-}: StatsStripProps) {
-  const [open, setOpen] = useState(true);
+export function StatsStrip({ runs = [] }: StatsStripProps) {
+  const [open, setOpen] = useState(false);
+
+  // Strip shows up to 10 recent runs
+  const stripRuns = runs.slice(0, 10);
+
   return (
-    <div className="flex items-center gap-3.5 px-4 py-2 text-[12px]">
-      <span
-        className={cn(
-          "font-semibold text-opt-ink-2",
-          "underline decoration-opt-ink-3/60 underline-offset-[4px]",
-        )}
-      >
+    <div className="relative flex items-center gap-3.5 px-4 py-2 text-[12px] bg-opt-surface">
+      <span className="font-semibold text-opt-ink-2">
         Stats
       </span>
 
-      {open && (
-        <div className="flex flex-1 gap-[18px] overflow-x-auto font-mono text-opt-ink-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {runs.map((n, i) => (
-            <span
-              key={i}
-              className={cn(
-                "font-medium tabular-nums",
-                i === 0 &&
-                  "font-bold text-opt-ink border-b-2 border-opt-ink pb-[1px]",
-              )}
-            >
-              {n}
-            </span>
-          ))}
-        </div>
-      )}
+      <div className="flex flex-1 gap-[18px] overflow-hidden font-mono text-opt-ink-2">
+        {stripRuns.map((n, i) => (
+          <span
+            key={i}
+            className={cn(
+              "tabular-nums",
+              i === 0 ? "font-bold text-opt-ink" : "font-medium"
+            )}
+          >
+            {n}
+          </span>
+        ))}
+      </div>
 
       <button
         type="button"
@@ -58,15 +52,36 @@ export function StatsStrip({
         onClick={() => setOpen((v) => !v)}
         className={cn(
           "grid h-6 w-6 place-items-center rounded-md border-0 bg-transparent text-opt-ink-3",
-          "ml-auto hover:bg-opt-bg-sunk hover:text-opt-ink",
+          "hover:bg-opt-surface-2 hover:text-opt-ink transition-colors",
         )}
       >
         {open ? (
-          <CaretUpIcon className="h-3.5 w-3.5" />
-        ) : (
           <CaretDownIcon className="h-3.5 w-3.5" />
+        ) : (
+          <CaretUpIcon className="h-3.5 w-3.5" />
         )}
       </button>
+
+      {/* Popover Grid */}
+      {open && runs.length > 0 && (
+        <div className="absolute bottom-full right-4 mb-2 z-50 w-[420px] rounded-lg bg-[#11141A] p-4 text-opt-ink shadow-2xl border border-white/5">
+          <div className="flex items-center justify-between mb-4">
+            <span className="font-semibold text-[12px] text-opt-ink-2 underline decoration-opt-ink-3/60 underline-offset-[4px]">
+              Stats
+            </span>
+            <div className="flex items-center gap-1.5 text-[12px] font-medium text-opt-ink-2 cursor-pointer hover:text-opt-ink" onClick={() => setOpen(false)}>
+              History of tick counts <CaretDownIcon className="h-3 w-3" />
+            </div>
+          </div>
+          <div className="grid grid-cols-10 gap-y-4 gap-x-2 text-center font-mono text-[12px] tabular-nums text-opt-ink-2">
+            {runs.slice(0, 100).map((n, i) => (
+              <span key={i} className={i === 0 ? "font-bold text-opt-ink" : ""}>
+                {n}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
