@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePanelBuy } from "@/hooks/usePanelBuy";
 import { buildProposalRequest } from "../buildProposalRequest";
 import { TradeConfirmed } from "../TradeConfirmed";
@@ -20,6 +20,11 @@ export function HigherLowerPanel({ symbol }: HigherLowerPanelProps) {
   const [duration, setDuration] = useDefaultDuration();
   const [barrier, setBarrier] = useState<number>(0.41);
   const [stake, setStake] = useState<number>(10);
+
+  // Flip barrier sign when side changes
+  useEffect(() => {
+    setBarrier((b) => (side === "fall" ? -Math.abs(b) : Math.abs(b)));
+  }, [side]);
 
   const request =
     stake > 0
