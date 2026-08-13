@@ -92,15 +92,25 @@ export function ContractDetailChart({ detail }: { detail: ContractDetail }) {
 
       // Only show markers for entry, exit, or all ticks if it's a tick contract
       if (isEntry || isExit || isTickContract) {
-        // Entry tick (i=0) and Exit tick on non-tick contracts: no number, just timestamp
-        const label = isEntry || (!isTickContract && isExit) ? timeLabel : `${circled(i)} ${timeLabel}`;
+        const isAccumulator = detail.tradeTypeLabel.includes("Accumulator");
+        let label = "";
+
+        if (isAccumulator) {
+          // Deriv's accumulator chart only labels the exit tick, intermediate ticks are just plain dots
+          if (isExit) {
+            label = timeLabel;
+          }
+        } else {
+          // Entry tick (i=0) and Exit tick on non-tick contracts: no number, just timestamp
+          label = isEntry || (!isTickContract && isExit) ? timeLabel : `${circled(i)} ${timeLabel}`;
+        }
 
         markers.push({
           time: t.time as UTCTimestamp,
           position: "aboveBar",
           color: t.kind === "exit" ? exitColor : inkFaint,
           shape: "circle",
-          text: label,
+          ...(label ? { text: label } : {}),
         });
       }
     });
