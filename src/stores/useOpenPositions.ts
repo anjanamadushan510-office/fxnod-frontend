@@ -81,18 +81,28 @@ function upsert(list: Position[], frame: PositionFrame): Position[] {
     return [frameToPosition(frame), ...list];
   }
   const next = list.slice();
-  next[idx] = { ...next[idx]!, ...framePatch(frame) };
+  next[idx] = { ...next[idx]!, ...framePatch(frame, next[idx]) };
   return next;
 }
 
 /** Live fields to merge onto an existing position. */
-function framePatch(frame: PositionFrame): Partial<Position> {
+function framePatch(frame: PositionFrame, existing?: Position): Partial<Position> {
   const patch: Partial<Position> = {
     pnl: toNum(frame.profit) ?? 0,
     outcome:
       frame.status === "won" || frame.status === "lost" ? frame.status : null,
-    tickStream: frame.tickStream,
   };
+  
+  if (frame.tickStream && existing) {
+    const existingTicks = existing.tickStream || [];
+    const newTicks = frame.tickStream;
+    const tickMap = new Map();
+    existingTicks.forEach((t: any) => tickMap.set(t.epoch, t));
+    newTicks.forEach((t: any) => tickMap.set(t.epoch, t));
+    patch.tickStream = Array.from(tickMap.values()).sort((a: any, b: any) => a.epoch - b.epoch);
+  } else if (frame.tickStream) {
+    patch.tickStream = frame.tickStream;
+  }
   const value = toNum(frame.bid_price);
   if (value !== undefined) patch.contractValue = value;
   const entry = toNum(frame.entry_spot);
