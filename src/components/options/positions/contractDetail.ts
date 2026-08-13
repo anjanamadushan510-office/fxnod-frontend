@@ -9,7 +9,7 @@
  */
 import type { Position } from "@/hooks/useMockPositions";
 import { fromDerivSymbol } from "@/services/deriv/derivSymbols";
-import { MARKETS } from "@/components/Options/market/catalog";
+import { MARKETS } from "@/components/options/market/catalog";
 
 export interface ContractTick {
   /** Epoch seconds (UTCTimestamp). */
