@@ -115,7 +115,7 @@ function mk(p: {
     id: p.id,
     marketId: p.marketId,
     marketName: p.marketName,
-    tradeTypeLabel: p.side === "rise" ? "Rise" : "Fall",
+    tradeTypeLabel: formatTradeTypeLabel("rise_fall", p.side),
     side: p.side,
     outcome: p.outcome,
     stake: p.stake,
@@ -136,6 +136,22 @@ function mk(p: {
     exitTime: p.start + 5,
     ticks: genTicks(p.entry, p.exit, p.start, p.start + 5, 5),
   };
+}
+
+export function formatTradeTypeLabel(type: string, side: string): string {
+  if (type === "rise_fall") return side === "rise" ? "Rise" : "Fall";
+  if (type === "higher_lower") return side === "higher" ? "Higher" : "Lower";
+  if (type === "touch_no_touch") return side === "touch" ? "Touch" : "No Touch";
+  if (type === "accumulators") return "Accumulators";
+  if (type === "multipliers") return side === "up" ? "Multiplier Up" : side === "down" ? "Multiplier Down" : "Multipliers";
+  
+  if (side && side !== "null" && side !== "") {
+    return side.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  }
+  if (type && type !== "null" && type !== "") {
+    return type.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  }
+  return "Unknown";
 }
 
 import type { TradeHistoryEntry } from "@/services/api/model";
@@ -218,7 +234,7 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
       id: h.id,
       marketId: h.symbol,
       marketName: marketName,
-      tradeTypeLabel: h.frontend_contract_type || (h.side === "rise" ? "Rise" : "Fall"),
+      tradeTypeLabel: formatTradeTypeLabel(h.frontend_contract_type, h.side),
       side: h.side === "fall" ? "fall" : "rise",
       growthRate: Number((h as any).growth_rate) || undefined,
       outcome: won ? "won" : "lost",
@@ -253,7 +269,7 @@ export function simPositionToDetail(p: Position): ContractDetail {
     id: p.id,
     marketId: p.marketId,
     marketName: p.marketName,
-    tradeTypeLabel: p.contractType === "accumulators" ? "Accumulators" : side === "rise" ? "Rise" : "Fall",
+    tradeTypeLabel: formatTradeTypeLabel(p.contractType, side),
     side,
     growthRate: p.growthRate,
     outcome: won ? "won" : "lost",
