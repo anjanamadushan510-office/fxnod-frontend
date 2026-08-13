@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { X } from "lucide-react";
+import { X, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { useContractDetails } from "@/stores/useContractDetails";
 import { cn } from "@/lib/cn";
 import { ContractDetailChart } from "./ContractDetailChart";
@@ -88,18 +88,43 @@ function LeftPanel({
   const pnlClass = lost ? "text-opt-fall" : "text-opt-rise";
   const dp = Math.abs(detail.entrySpot) < 10 ? 4 : 2;
 
+  let mainName = detail.marketName;
+  let subName = "";
+  const parenIdx = detail.marketName.indexOf("(");
+  if (parenIdx > 0) {
+    mainName = detail.marketName.slice(0, parenIdx).trim();
+    subName = detail.marketName.slice(parenIdx).trim();
+  }
+
+  const tradeTypeColor = detail.side === "fall" ? "text-opt-fall" : "text-opt-rise";
+  const TradeIcon = detail.side === "fall" ? ArrowDownRight : ArrowUpRight;
+
   return (
     <div className="flex min-h-0 flex-col gap-3 overflow-y-auto border-r border-opt-line p-4 [scrollbar-width:thin]">
-      <div className="flex items-center gap-2">
-        <span className="grid h-7 w-7 place-items-center rounded-md bg-opt-bg-sunk text-[11px] font-bold text-opt-ink-3">
-          {detail.marketName.slice(0, 1)}
-        </span>
-        <span className="flex-1 truncate text-[13px] font-semibold text-opt-ink">
-          {detail.marketName}
-        </span>
-        <span className="text-[12px] font-medium text-opt-ink-2">
-          {detail.tradeTypeLabel}
-        </span>
+      
+      {/* Header Badge */}
+      <div className="flex items-center gap-3 rounded-lg border border-opt-line bg-gradient-to-r from-opt-bg-sunk to-transparent px-3 py-2">
+        <div className="flex items-center gap-2">
+          <span className="grid h-7 w-7 place-items-center rounded bg-opt-bg-elev text-[10px] font-bold text-opt-ink shadow-sm">
+            {mainName.slice(0, 3)}
+          </span>
+          <div className="flex flex-col justify-center">
+            <span className="text-[12.5px] font-bold leading-tight text-opt-ink">
+              {mainName}
+            </span>
+            {subName && (
+              <span className="text-[11px] font-medium leading-tight text-opt-ink-3">
+                {subName}
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="flex flex-1 items-center justify-end gap-1">
+          <TradeIcon className={`h-[18px] w-[18px] ${tradeTypeColor}`} strokeWidth={2.5} />
+          <span className="text-[12.5px] font-bold text-opt-ink">
+            {detail.tradeTypeLabel}
+          </span>
+        </div>
       </div>
 
       <span className="w-fit rounded bg-opt-bg-sunk px-2 py-0.5 text-[11px] font-semibold text-opt-ink-3">

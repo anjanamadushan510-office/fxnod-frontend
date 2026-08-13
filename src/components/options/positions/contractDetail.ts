@@ -8,6 +8,8 @@
  * (clipped) even when closed.
  */
 import type { Position } from "@/hooks/useMockPositions";
+import { fromDerivSymbol } from "@/services/deriv/derivSymbols";
+import { MARKETS } from "@/components/Options/market/catalog";
 
 export interface ContractTick {
   /** Epoch seconds (UTCTimestamp). */
@@ -208,10 +210,13 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
 			durationLabel = `${seconds} secs`;
 		}
 
+    const catalogId = fromDerivSymbol(h.symbol);
+    const marketName = catalogId && MARKETS[catalogId] ? MARKETS[catalogId].name : h.symbol;
+
     return {
       id: h.id,
       marketId: h.symbol,
-      marketName: h.symbol,
+      marketName: marketName,
       tradeTypeLabel: h.frontend_contract_type || (h.side === "rise" ? "Rise" : "Fall"),
       side: h.side === "fall" ? "fall" : "rise",
       outcome: won ? "won" : "lost",
