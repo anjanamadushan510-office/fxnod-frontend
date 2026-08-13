@@ -119,11 +119,18 @@ function LeftPanel({
             )}
           </div>
         </div>
-        <div className="flex flex-1 items-center justify-end gap-1">
-          <TradeIcon className={`h-[18px] w-[18px] ${tradeTypeColor}`} strokeWidth={2.5} />
-          <span className="text-[12.5px] font-bold text-opt-ink">
-            {detail.tradeTypeLabel}
-          </span>
+        <div className="flex flex-1 items-start justify-end gap-1">
+          <TradeIcon className={`mt-0.5 h-[18px] w-[18px] ${tradeTypeColor}`} strokeWidth={2.5} />
+          <div className="flex flex-col items-start gap-0.5">
+            <span className="text-[12.5px] font-bold leading-tight text-opt-ink">
+              {detail.tradeTypeLabel}
+            </span>
+            {detail.growthRate !== undefined && detail.growthRate > 0 && (
+              <span className="rounded-full border border-opt-line bg-opt-bg px-1.5 py-[1px] text-[10px] font-bold text-opt-ink-2 shadow-sm">
+                {Math.round(detail.growthRate * 100)}%
+              </span>
+            )}
+          </div>
         </div>
       </div>
 

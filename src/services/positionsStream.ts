@@ -43,6 +43,7 @@ export interface PositionFrame {
   market_name?: string;
   contract_type?: "rise_fall" | "accumulators" | "multipliers" | "turbos";
   side?: "rise" | "fall" | "up" | "down" | "accum";
+  growth_rate?: number;
   stake?: string;
   entry_spot?: string;
   barrier?: string;

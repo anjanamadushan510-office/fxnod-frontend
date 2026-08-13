@@ -25,6 +25,7 @@ export interface ContractDetail {
   /** "Rise" / "Fall" / "Up" … */
   tradeTypeLabel: string;
   side: "rise" | "fall";
+  growthRate?: number;
   outcome: "won" | "lost";
   stake: number;
   payout: number;
@@ -219,6 +220,7 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
       marketName: marketName,
       tradeTypeLabel: h.frontend_contract_type || (h.side === "rise" ? "Rise" : "Fall"),
       side: h.side === "fall" ? "fall" : "rise",
+      growthRate: Number((h as any).growth_rate) || undefined,
       outcome: won ? "won" : "lost",
       stake,
       payout,
@@ -251,8 +253,9 @@ export function simPositionToDetail(p: Position): ContractDetail {
     id: p.id,
     marketId: p.marketId,
     marketName: p.marketName,
-    tradeTypeLabel: side === "rise" ? "Rise" : "Fall",
+    tradeTypeLabel: p.contractType === "accumulators" ? "Accumulators" : side === "rise" ? "Rise" : "Fall",
     side,
+    growthRate: p.growthRate,
     outcome: won ? "won" : "lost",
     stake: p.stake,
     payout: +(p.stake * 1.92).toFixed(2),

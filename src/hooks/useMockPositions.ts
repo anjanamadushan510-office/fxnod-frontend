@@ -17,6 +17,7 @@ export interface Position {
   marketName: string;
   contractType: PositionContractType;
   side: "rise" | "fall" | "up" | "down" | "accum";
+  growthRate?: number;
   /** Display sub-label: "Tick 3", "1/85 ticks", etc. */
   status?: string;
   stake: number;

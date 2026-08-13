@@ -123,6 +123,7 @@ function frameToPosition(frame: PositionFrame): Position {
     marketName: frame.market_name ?? frame.market_id ?? "",
     contractType: frame.contract_type ?? "rise_fall",
     side: frame.side ?? "rise",
+    growthRate: frame.growth_rate,
     status: statusLabel(frame),
     stake,
     contractValue: toNum(frame.bid_price) ?? stake,
