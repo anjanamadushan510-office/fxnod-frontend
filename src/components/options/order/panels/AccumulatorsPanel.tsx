@@ -35,28 +35,32 @@ export function AccumulatorsPanel({ symbol }: AccumulatorsPanelProps) {
   const { buyPhase, lastTrade, canBuy, errorMsg, proposal, handleBuy, handleNewTrade } =
     usePanelBuy(request);
 
+  // Cleanup on unmount
   useEffect(() => {
-    let barrierPct: number | null = null;
-    if (proposal?.high_barrier && proposal?.low_barrier) {
-      const h = parseFloat(proposal.high_barrier);
-      const l = parseFloat(proposal.low_barrier);
-      if (!isNaN(h) && !isNaN(l)) {
-        const spot = (h + l) / 2;
-        barrierPct = ((h - l) / 2) / spot;
-      }
-    }
-
-
-
-    useAccumulatorPreview.getState().setGrowthRate(growthRate);
-    useAccumulatorPreview.getState().setBarrierPct(barrierPct);
-    useAccumulatorPreview.getState().setStats(proposal?.ticks_stayed_in ?? null);
-
     return () => {
       useAccumulatorPreview.getState().setGrowthRate(null);
       useAccumulatorPreview.getState().setBarrierPct(null);
       useAccumulatorPreview.getState().setStats(null);
     };
+  }, []);
+
+  // Sync state to preview store
+  useEffect(() => {
+    useAccumulatorPreview.getState().setGrowthRate(growthRate);
+
+    if (proposal?.high_barrier && proposal?.low_barrier) {
+      const h = parseFloat(proposal.high_barrier);
+      const l = parseFloat(proposal.low_barrier);
+      if (!isNaN(h) && !isNaN(l)) {
+        const spot = (h + l) / 2;
+        const barrierPct = ((h - l) / 2) / spot;
+        useAccumulatorPreview.getState().setBarrierPct(barrierPct);
+      }
+    }
+
+    if (proposal?.ticks_stayed_in !== undefined) {
+      useAccumulatorPreview.getState().setStats(proposal.ticks_stayed_in);
+    }
   }, [growthRate, proposal]);
 
   if (buyPhase === "confirmed" && lastTrade) {
