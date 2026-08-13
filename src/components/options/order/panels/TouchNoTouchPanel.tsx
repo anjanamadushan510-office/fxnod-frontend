@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePanelBuy } from "@/hooks/usePanelBuy";
 import { buildProposalRequest } from "../buildProposalRequest";
 import { TradeConfirmed } from "../TradeConfirmed";
 import { HowToTradeLink } from "../HowToTradeLink";
+import { useBarrierPreview } from "@/stores/useBarrierPreview";
 import { BuyButton } from "../fields/BuyButton";
 import { DurationField, useDefaultDuration } from "../fields/DurationField";
 import { OffsetField } from "../fields/OffsetField";
@@ -20,6 +21,12 @@ export function TouchNoTouchPanel({ symbol }: TouchNoTouchPanelProps) {
   const [duration, setDuration] = useDefaultDuration();
   const [barrier, setBarrier] = useState<number>(1.17);
   const [stake, setStake] = useState<number>(10);
+
+  // Sync preview to chart
+  useEffect(() => {
+    useBarrierPreview.getState().setBarrier(barrier);
+    return () => useBarrierPreview.getState().setBarrier(null);
+  }, [barrier]);
 
   const request =
     stake > 0

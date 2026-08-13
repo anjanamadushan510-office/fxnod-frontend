@@ -5,8 +5,13 @@ import { useChartSettings } from "@/hooks/useChartSettings";
 import { useChartOverlays } from "@/hooks/useChartOverlays";
 import { useTradeOverlays } from "@/stores/useTradeOverlays";
 import { useAccumulatorPreview } from "@/stores/useAccumulatorPreview";
+import { useBarrierPreview } from "@/stores/useBarrierPreview";
 import { useLiveMarket } from "@/stores/useLiveMarket";
 import { LineStyle } from "lightweight-charts";
+
+function formatBarrierTitle(offset: number): string {
+  return `= ${offset > 0 ? "+" : ""}${offset.toFixed(3)}`;
+}
 import type { PriceLineSpec } from "./LiveChart";
 import { CHART_COLORS } from "./chartColors";
 import { MarketPicker } from "../market/MarketPicker";
@@ -71,30 +76,47 @@ export function ChartPanel({
   const accuGrowthRate = useAccumulatorPreview((s) => s.growthRate);
   const accuBarrierPct = useAccumulatorPreview((s) => s.barrierPct);
   const accuStats = useAccumulatorPreview((s) => s.stats);
+  const standardBarrier = useBarrierPreview((s) => s.barrier);
 
   const extraLines = useMemo((): PriceLineSpec[] => {
-    if (!accuGrowthRate || !livePrice || tradeType !== "accumulators") return [];
-    
-    // Use exact percentage from API if available, else approximate.
-    const pct = accuBarrierPct ?? (accuGrowthRate * 0.012666 / 100);
-    const barrierOffset = livePrice * pct;
-    return [
-      {
-        price: livePrice + barrierOffset,
-        color: CHART_COLORS.rise,
-        lineStyle: LineStyle.Solid,
-        lineWidth: 1,
-        title: `+${(barrierOffset).toFixed(3)}`,
-      },
-      {
-        price: livePrice - barrierOffset,
-        color: CHART_COLORS.rise,
-        lineStyle: LineStyle.Solid,
-        lineWidth: 1,
-        title: `-${(barrierOffset).toFixed(3)}`,
-      },
-    ];
-  }, [accuGrowthRate, livePrice, tradeType, accuBarrierPct]);
+    if (!livePrice) return [];
+
+    if (tradeType === "accumulators") {
+      if (!accuGrowthRate) return [];
+      const pct = accuBarrierPct ?? (accuGrowthRate * 0.012666 / 100);
+      const barrierOffset = livePrice * pct;
+      return [
+        {
+          price: livePrice + barrierOffset,
+          color: CHART_COLORS.rise,
+          lineStyle: LineStyle.Solid,
+          lineWidth: 1,
+          title: `+${(barrierOffset).toFixed(3)}`,
+        },
+        {
+          price: livePrice - barrierOffset,
+          color: CHART_COLORS.rise,
+          lineStyle: LineStyle.Solid,
+          lineWidth: 1,
+          title: `-${(barrierOffset).toFixed(3)}`,
+        },
+      ];
+    }
+
+    if (standardBarrier !== null) {
+      return [
+        {
+          price: livePrice + standardBarrier,
+          color: "#2962FF", // Match drawing color / deriv blue
+          lineStyle: LineStyle.Dashed,
+          lineWidth: 2,
+          title: formatBarrierTitle(standardBarrier),
+        }
+      ];
+    }
+
+    return [];
+  }, [accuGrowthRate, livePrice, tradeType, accuBarrierPct, standardBarrier]);
 
   useChartOverlays(chartRef, overlays, extraLines);
 

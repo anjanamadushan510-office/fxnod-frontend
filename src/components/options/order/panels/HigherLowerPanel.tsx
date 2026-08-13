@@ -5,6 +5,7 @@ import { usePanelBuy } from "@/hooks/usePanelBuy";
 import { buildProposalRequest } from "../buildProposalRequest";
 import { TradeConfirmed } from "../TradeConfirmed";
 import { HowToTradeLink } from "../HowToTradeLink";
+import { useBarrierPreview } from "@/stores/useBarrierPreview";
 import { BuyButton } from "../fields/BuyButton";
 import { DurationField, useDefaultDuration } from "../fields/DurationField";
 import { OffsetField } from "../fields/OffsetField";
@@ -21,10 +22,14 @@ export function HigherLowerPanel({ symbol }: HigherLowerPanelProps) {
   const [barrier, setBarrier] = useState<number>(0.41);
   const [stake, setStake] = useState<number>(10);
 
-  // Flip barrier sign when side changes
+  // Flip barrier sign when side changes and sync preview to chart
   useEffect(() => {
-    setBarrier((b) => (side === "fall" ? -Math.abs(b) : Math.abs(b)));
-  }, [side]);
+    const nextBarrier = side === "fall" ? -Math.abs(barrier) : Math.abs(barrier);
+    if (barrier !== nextBarrier) setBarrier(nextBarrier);
+    
+    useBarrierPreview.getState().setBarrier(nextBarrier);
+    return () => useBarrierPreview.getState().setBarrier(null);
+  }, [side, barrier]);
 
   const request =
     stake > 0
