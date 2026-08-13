@@ -33,7 +33,9 @@ export function useChartOverlays(
     const handle = chartRef.current;
     if (!handle) return;
 
-    const lines: PriceLineSpec[] = overlays.map((o) => ({
+    const lines: PriceLineSpec[] = overlays
+      .filter((o) => o.contractType !== "accum")
+      .map((o) => ({
       price: o.strikePrice,
       color: o.contractType === "rise" ? OVERLAY_COLORS.rise : OVERLAY_COLORS.fall,
       title: o.contractType === "rise" ? "Rise" : "Fall",
@@ -44,13 +46,13 @@ export function useChartOverlays(
     const markers: SeriesMarker<Time>[] = overlays
       .flatMap((o): SeriesMarker<Time>[] => {
         const color =
-          o.contractType === "rise" ? OVERLAY_COLORS.rise : OVERLAY_COLORS.fall;
+          o.contractType === "fall" ? OVERLAY_COLORS.fall : OVERLAY_COLORS.rise;
         return [
           {
             time: o.startTime as UTCTimestamp,
-            position: o.contractType === "rise" ? "belowBar" : "aboveBar",
+            position: o.contractType === "fall" ? "aboveBar" : "belowBar",
             color,
-            shape: o.contractType === "rise" ? "arrowUp" : "arrowDown",
+            shape: o.contractType === "fall" ? "arrowDown" : "arrowUp",
             text: "IN",
           },
           {

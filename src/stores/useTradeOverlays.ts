@@ -4,7 +4,7 @@ import { create } from "zustand";
 
 /** Option direction that carries a barrier overlay. Extend as more types gain
  *  chart overlays (touch/no-touch barriers, accumulator bands, …). */
-export type OverlayContractType = "rise" | "fall";
+export type OverlayContractType = "rise" | "fall" | "accum";
 
 export interface TradeOverlay {
   /** Stable id for keying + removal. */

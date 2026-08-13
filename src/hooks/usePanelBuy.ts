@@ -138,7 +138,7 @@ function applyPostTrade(request: ProposalRequest, trade: ConfirmResponse) {
   const live = useLiveMarket.getState();
   const rawSymbol = request.symbol;
   const symbol = fromDerivSymbol(rawSymbol) ?? rawSymbol;
-  const side = request.side === "fall" ? "fall" : "rise";
+  const side = request.contract_type === "accumulators" ? "accum" : (request.side === "fall" ? "fall" : "rise");
   const stake = Number(request.stake) || Number(trade.buy_price) || 0;
   const entry = live.price ?? 0;
   const now = Math.floor(Date.now() / 1000);

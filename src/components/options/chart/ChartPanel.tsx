@@ -8,6 +8,7 @@ import { useAccumulatorPreview } from "@/stores/useAccumulatorPreview";
 import { useLiveMarket } from "@/stores/useLiveMarket";
 import { LineStyle } from "lightweight-charts";
 import type { PriceLineSpec } from "./LiveChart";
+import { CHART_COLORS } from "./chartColors";
 import { MarketPicker } from "../market/MarketPicker";
 import { ChartFooter } from "./ChartFooter";
 import { ChartToolbar, ChartNavControls } from "./ChartToolbar";
@@ -80,20 +81,20 @@ export function ChartPanel({
     return [
       {
         price: livePrice + barrierOffset,
-        color: "#2962FF", // Match drawing color or use a brand blue
-        lineStyle: LineStyle.Dashed,
+        color: CHART_COLORS.rise,
+        lineStyle: LineStyle.Solid,
         lineWidth: 1,
         title: `+${(barrierOffset).toFixed(3)}`,
       },
       {
         price: livePrice - barrierOffset,
-        color: "#2962FF",
-        lineStyle: LineStyle.Dashed,
+        color: CHART_COLORS.rise,
+        lineStyle: LineStyle.Solid,
         lineWidth: 1,
         title: `-${(barrierOffset).toFixed(3)}`,
       },
     ];
-  }, [accuGrowthRate, livePrice, tradeType]);
+  }, [accuGrowthRate, livePrice, tradeType, accuBarrierPct]);
 
   useChartOverlays(chartRef, overlays, extraLines);
 
