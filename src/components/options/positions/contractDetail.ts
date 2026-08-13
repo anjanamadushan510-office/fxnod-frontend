@@ -154,7 +154,7 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
   const backendDurUnit: string  = String((h as any).duration_unit  || "");
 
   // TradeHistoryEntry created_at is an ISO string, parse it to epoch seconds
-  const startTime = Math.floor(new Date(h.created_at).getTime() / 1000);
+  let startTime = Math.floor(new Date(h.created_at).getTime() / 1000);
   let exitTime = backendDurSecs > 0 ? startTime + backendDurSecs : startTime;
 
   let entrySpot = Number((h as any).entry_spot) || 0;
@@ -173,6 +173,7 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
     });
     if (entrySpot === 0) entrySpot = ticks[0].value;
     if (exitSpot === 0) exitSpot = ticks[ticks.length - 1].value;
+    startTime = ticks[0].time;
     exitTime = ticks[ticks.length - 1].time;
   } else if (entrySpot && exitSpot) {
     if (exitTime === startTime) exitTime = startTime + 5; // fallback
