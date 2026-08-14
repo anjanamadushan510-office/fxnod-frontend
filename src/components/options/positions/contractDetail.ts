@@ -140,7 +140,7 @@ function mk(p: {
 
 export function formatTradeTypeLabel(type: string, side: string): string {
   if (type === "rise_fall") return side === "rise" ? "Rise" : "Fall";
-  if (type === "higher_lower") return side === "higher" ? "Higher" : "Lower";
+  if (type === "higher_lower") return side === "rise" || side === "higher" ? "Higher" : "Lower";
   if (type === "touch_no_touch") return side === "touch" ? "Touch" : "No Touch";
   if (type === "accumulators") return "Accumulators";
   if (type === "multipliers") return side === "up" ? "Multiplier Up" : side === "down" ? "Multiplier Down" : "Multipliers";
@@ -248,7 +248,7 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
       buyTransactionId: Number((h as any).buy_transaction_id) || 0,
       sellTransactionId: Number((h as any).sell_transaction_id) || 0,
       duration: durationLabel,
-      barrier: entrySpot,
+      barrier: h.barrier != null ? Number(h.barrier) : entrySpot,
       startTime,
       entrySpot,
       entryTime: startTime + 1,
@@ -283,7 +283,7 @@ export function simPositionToDetail(p: Position): ContractDetail {
     buyTransactionId: 17000000001,
     sellTransactionId: 0,
     duration: p.status ?? "5 ticks",
-    barrier: entry,
+    barrier: p.barrier != null ? Number(p.barrier) : entry,
     startTime: start,
     entrySpot: entry,
     entryTime: start + 1,

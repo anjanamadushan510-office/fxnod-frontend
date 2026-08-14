@@ -63,5 +63,7 @@ export interface TradeHistoryEntry {
   /** @nullable */
   exit_spot?: TradeHistoryEntryExitSpot;
   /** @nullable */
+  barrier?: string | null;
+  /** @nullable */
   tick_stream?: TradeHistoryEntryTickStreamItem[] | null;
 }
