@@ -22,6 +22,7 @@ export interface ContractDetail {
   id: string;
   marketId: string;
   marketName: string;
+  type: string;
   /** "Rise" / "Fall" / "Up" … */
   tradeTypeLabel: string;
   side: "rise" | "fall";
@@ -115,6 +116,7 @@ function mk(p: {
     id: p.id,
     marketId: p.marketId,
     marketName: p.marketName,
+    type: "rise_fall",
     tradeTypeLabel: formatTradeTypeLabel("rise_fall", p.side),
     side: p.side,
     outcome: p.outcome,
@@ -234,6 +236,7 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
       id: h.id,
       marketId: h.symbol,
       marketName: marketName,
+      type: h.frontend_contract_type,
       tradeTypeLabel: formatTradeTypeLabel(h.frontend_contract_type, h.side),
       side: h.side === "fall" ? "fall" : "rise",
       growthRate: Number((h as any).growth_rate) || undefined,
@@ -279,6 +282,7 @@ export function simPositionToDetail(p: Position): ContractDetail {
     id: p.id,
     marketId: p.marketId,
     marketName: p.marketName,
+    type: p.contractType,
     tradeTypeLabel: formatTradeTypeLabel(p.contractType, side),
     side,
     growthRate: p.growthRate,

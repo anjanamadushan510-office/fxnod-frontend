@@ -58,15 +58,17 @@ export function ContractDetailChart({ detail }: { detail: ContractDetail }) {
       detail.ticks.map((t) => ({ time: t.time as UTCTimestamp, value: t.value })),
     );
 
-    // Entry barrier line (dashed).
-    series.createPriceLine({
-      price: detail.barrier,
-      color: fall,
-      lineWidth: 1,
-      lineStyle: LineStyle.Dashed,
-      axisLabelVisible: true,
-      title: "Barrier",
-    });
+    // Entry barrier line (dashed) for contracts that have a distinct fixed barrier
+    if (detail.type !== "accumulators" && detail.type !== "multipliers") {
+      series.createPriceLine({
+        price: detail.barrier,
+        color: fall,
+        lineWidth: 1,
+        lineStyle: LineStyle.Dashed,
+        axisLabelVisible: true,
+        title: "Barrier",
+      });
+    }
 
     // Circled unicode digits ①–⑩ so the number appears inside a circle like Deriv.
     const CIRCLED = ["", "①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩"];

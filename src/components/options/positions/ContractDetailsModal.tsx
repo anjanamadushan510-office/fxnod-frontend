@@ -172,9 +172,11 @@ function LeftPanel({
           </div>
         </Row>
         <Row label="Duration">{detail.duration}</Row>
-        <Row label="Barrier">
-          <span className="font-mono">{detail.barrier}</span>
-        </Row>
+        {(detail.type !== "accumulators" && detail.type !== "multipliers") && (
+          <Row label="Barrier">
+            <span className="font-mono">{detail.barrier}</span>
+          </Row>
+        )}
         <Row label="Start time">
           <span className="font-mono text-[11px]">
             {formatContractTime(detail.startTime)}
