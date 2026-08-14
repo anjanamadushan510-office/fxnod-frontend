@@ -248,7 +248,7 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
       buyTransactionId: Number((h as any).buy_transaction_id) || 0,
       sellTransactionId: Number((h as any).sell_transaction_id) || 0,
       duration: durationLabel,
-      barrier: h.barrier != null ? Number(h.barrier) : entrySpot,
+      barrier: parseBarrier(h.barrier, entrySpot),
       startTime,
       entrySpot,
       entryTime: startTime + 1,
@@ -256,6 +256,16 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
       exitTime,
       ticks,
   };
+}
+
+function parseBarrier(barrierVal: string | number | null | undefined, entrySpot: number): number {
+  if (barrierVal == null) return entrySpot;
+  const str = String(barrierVal);
+  const num = Number(str);
+  if (str.startsWith("+") || str.startsWith("-")) {
+    return entrySpot + num;
+  }
+  return num;
 }
 
 /** Best-effort ContractDetail for an in-progress (sim) open position. */
@@ -283,7 +293,7 @@ export function simPositionToDetail(p: Position): ContractDetail {
     buyTransactionId: 17000000001,
     sellTransactionId: 0,
     duration: p.status ?? "5 ticks",
-    barrier: p.barrier != null ? Number(p.barrier) : entry,
+    barrier: parseBarrier(p.barrier, entry),
     startTime: start,
     entrySpot: entry,
     entryTime: start + 1,
