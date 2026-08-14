@@ -263,7 +263,7 @@ function parseBarrier(barrierVal: string | number | null | undefined, entrySpot:
   const str = String(barrierVal);
   const num = Number(str);
   if (str.startsWith("+") || str.startsWith("-")) {
-    return entrySpot + num;
+    return Number((entrySpot + num).toFixed(5));
   }
   return num;
 }
