@@ -17,6 +17,7 @@ export interface DurationValue {
 interface DurationFieldProps {
   value: DurationValue;
   onChange?: (v: DurationValue) => void;
+  allowTicks?: boolean;
 }
 
 /**
@@ -24,7 +25,7 @@ interface DurationFieldProps {
  * {@link DurationPicker} on click (Deriv §6.1). The field takes the teal
  * focus highlight while its picker is open.
  */
-export function DurationField({ value, onChange }: DurationFieldProps) {
+export function DurationField({ value, onChange, allowTicks = true }: DurationFieldProps) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -48,8 +49,7 @@ export function DurationField({ value, onChange }: DurationFieldProps) {
 
       {open && (
         <AnchoredPopover anchorRef={triggerRef} onClose={() => setOpen(false)}>
-          <DurationPicker
-            value={value}
+          <DurationPicker allowTicks={allowTicks} value={value}
             onSelect={(v) => {
               onChange?.(v);
               setOpen(false);
@@ -84,3 +84,5 @@ export function useDefaultDuration(
   const [v, setV] = useState<DurationValue>(initial);
   return [v, setV];
 }
+
+

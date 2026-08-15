@@ -18,7 +18,7 @@ interface VanillasPanelProps {
 
 export function VanillasPanel({ symbol }: VanillasPanelProps) {
   const [side, setSide] = useState<Side>("rise");
-  const [duration, setDuration] = useDefaultDuration();
+  const [duration, setDuration] = useDefaultDuration({ amount: 15, unit: 's' });
   const [strike, setStrike] = useState<number>(0);
   const [stake, setStake] = useState<number>(10);
 
@@ -52,7 +52,7 @@ export function VanillasPanel({ symbol }: VanillasPanelProps) {
         onChange={setSide}
         labels={{ rise: "Call", fall: "Put" }}
       />
-      <DurationField value={duration} onChange={setDuration} />
+      <DurationField value={duration} onChange={setDuration} allowTicks={false} />
       <OffsetField
         label="Strike price"
         value={strike}
@@ -81,3 +81,4 @@ export function VanillasPanel({ symbol }: VanillasPanelProps) {
     </div>
   );
 }
+
