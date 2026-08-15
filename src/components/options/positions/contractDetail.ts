@@ -44,6 +44,7 @@ export interface ContractDetail {
   entryTime: number;
   exitSpot: number;
   exitTime: number;
+    expiryTime?: number;
   ticks: ContractTick[];
 }
 
@@ -323,8 +324,10 @@ export function simPositionToDetail(p: Position): ContractDetail {
     entryTime: start,
     exitSpot: exit,
     exitTime: now,
+    expiryTime: p.expiryTime,
     ticks: ticks as any,
   };
 }
+
 
 
