@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/cn";
 import { Field } from "./Field";
 import { InfoDot } from "./InfoDot";
@@ -36,6 +36,12 @@ export function OffsetField({
 
   const [text, setText] = useState(() => fmt(value));
 
+    useEffect(() => {
+    const n = Number(text);
+    if (!Number.isFinite(n) || n !== value) {
+      setText(fmt(value));
+    }
+  }, [value, decimals]);
   return (
     <Field
       label={label}
@@ -60,3 +66,4 @@ export function OffsetField({
     </Field>
   );
 }
+

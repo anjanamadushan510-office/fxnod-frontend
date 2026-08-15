@@ -36,7 +36,7 @@ const UNIT_MAP: Record<DurationUnit, "t" | "s" | "m" | "h" | "d"> = {
 };
 
 function signed(n: number): string {
-  return (n >= 0 ? "+" : "") + n.toString();
+  return (n >= 0 ? "+" : "") + n.toFixed(2);
 }
 
 export function buildProposalRequest(
@@ -62,3 +62,4 @@ export function buildProposalRequest(
 
   return body;
 }
+
