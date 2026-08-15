@@ -53,10 +53,17 @@ export function ContractDetailChart({ detail }: { detail: ContractDetail }) {
       timeScale: { borderColor: line, timeVisible: true, secondsVisible: true },
     });
 
-    const series = chart.addSeries(LineSeries, { color: ink, lineWidth: 2 });
-    series.setData(
-      detail.ticks.map((t) => ({ time: t.time as UTCTimestamp, value: t.value })),
-    );
+        const series = chart.addSeries(LineSeries, { color: ink, lineWidth: 2 });
+    const chartData: any[] = detail.ticks.map((t) => ({ time: t.time as UTCTimestamp, value: t.value }));
+
+    if (detail.expiryTime && detail.expiryTime > detail.exitTime) {
+      const lastTime = detail.ticks.length > 0 ? detail.ticks[detail.ticks.length - 1].time : detail.exitTime;
+      for (let t = lastTime + 1; t <= detail.expiryTime; t++) {
+        chartData.push({ time: t as UTCTimestamp });
+      }
+    }
+
+    series.setData(chartData);
 
     // Entry barrier line (dashed) for contracts that have a distinct fixed barrier
     if (detail.type !== "accumulators" && detail.type !== "multipliers") {
@@ -135,3 +142,5 @@ export function ContractDetailChart({ detail }: { detail: ContractDetail }) {
 
   return <div ref={containerRef} className="h-full w-full" />;
 }
+
+
