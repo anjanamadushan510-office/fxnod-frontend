@@ -19,6 +19,7 @@ interface DurationPickerProps {
   value: DurationValue;
   onSelect: (v: DurationValue) => void;
   allowTicks?: boolean;
+  allowSeconds?: boolean;
 }
 
 /**
@@ -27,13 +28,14 @@ interface DurationPickerProps {
  * with ⚡ quick-grid and ⌨ keyboard-entry modes. The "End time" type shows a
  * date + time + Save form (§6.1).
  */
-export function DurationPicker({ value, onSelect, allowTicks = true }: DurationPickerProps) {
+export function DurationPicker({ value, onSelect, allowTicks = true, allowSeconds = true }: DurationPickerProps) {
   const [activeType, setActiveType] = useState<ActiveType>(value.unit);
   const [mode, setMode] = useState<"grid" | "keyboard">("grid");
   const [manual, setManual] = useState(String(value.amount));
 
   const isEnd = activeType === "endtime";
-  const availableTypes = allowTicks ? TYPES : TYPES.filter(t => t.unit !== 'ticks');
+  let availableTypes = allowTicks ? TYPES : TYPES.filter(t => t.unit !== 'ticks');
+  availableTypes = allowSeconds ? availableTypes : availableTypes.filter(t => t.unit !== 's');
   const active = availableTypes.find((t) => t.unit === activeType) ?? availableTypes[0]!;
 
   const commitManual = () => {
@@ -253,4 +255,3 @@ function fromSeconds(sec: number): DurationValue {
   if (sec >= 60) return { amount: Math.round(sec / 60), unit: "min" };
   return { amount: sec, unit: "s" };
 }
-
