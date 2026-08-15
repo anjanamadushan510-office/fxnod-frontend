@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePanelBuy } from "@/hooks/usePanelBuy";
 import { buildProposalRequest } from "../buildProposalRequest";
 import { TradeConfirmed } from "../TradeConfirmed";
@@ -34,15 +34,29 @@ export function VanillasPanel({ symbol }: VanillasPanelProps) {
         })
       : null;
 
-  const { buyPhase, lastTrade, canBuy, errorMsg, handleBuy, handleNewTrade } =
-    usePanelBuy(request);
+  const { buyPhase, lastTrade, canBuy, errorMsg, handleBuy, handleNewTrade, proposal } = usePanelBuy(request);
+
+  useEffect(() => {
+    if (errorMsg && errorMsg.includes("Barriers available are")) {
+      const match = errorMsg.match(/Barriers available are (.*)/);
+      if (match) {
+        const barriers = match[1].split(',').map(s => Number(s.trim().replace(/\.$/, '')));
+        if (barriers.length > 0 && !barriers.includes(strike)) {
+          // Default to the first available positive barrier, or just the first one
+          const defaultBarrier = barriers.find(b => b > 0) ?? barriers[0];
+          setStrike(defaultBarrier);
+        }
+      }
+    }
+  }, [errorMsg, strike]);
+
 
   if (buyPhase === "confirmed" && lastTrade) {
     return <TradeConfirmed trade={lastTrade} side={side} onNewTrade={handleNewTrade} />;
   }
 
   // Payout per point is a Deriv-proposal field not yet in ProposalResponse — placeholder.
-  const payoutPerPoint = (stake * 0.97769).toFixed(6);
+  const payoutPerPoint = proposal?.payout_amount ?? '...';
 
   return (
     <div className="flex h-full flex-col gap-3 p-4">
@@ -81,4 +95,6 @@ export function VanillasPanel({ symbol }: VanillasPanelProps) {
     </div>
   );
 }
+
+
 
