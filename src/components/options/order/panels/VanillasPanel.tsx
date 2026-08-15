@@ -6,6 +6,7 @@ import { buildProposalRequest } from "../buildProposalRequest";
 import { TradeConfirmed } from "../TradeConfirmed";
 import { HowToTradeLink } from "../HowToTradeLink";
 import { BuyButton } from "../fields/BuyButton";
+import { useBarrierPreview } from "@/stores/useBarrierPreview";
 import { DurationField, useDefaultDuration } from "../fields/DurationField";
 import { OffsetField } from "../fields/OffsetField";
 import { RiseFallToggle, type Side } from "../fields/RiseFallToggle";
@@ -21,6 +22,12 @@ export function VanillasPanel({ symbol }: VanillasPanelProps) {
   const [duration, setDuration] = useDefaultDuration({ amount: 1, unit: 'min' });
   const [strike, setStrike] = useState<number>(0);
   const [stake, setStake] = useState<number>(10);
+
+  // Sync strike price to chart preview line
+  useEffect(() => {
+    useBarrierPreview.getState().setBarrier(strike);
+    return () => useBarrierPreview.getState().setBarrier(null);
+  }, [strike]);
 
   const request =
     stake > 0
