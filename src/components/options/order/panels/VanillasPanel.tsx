@@ -50,13 +50,12 @@ export function VanillasPanel({ symbol }: VanillasPanelProps) {
     }
   }, [errorMsg, strike]);
 
-
   if (buyPhase === "confirmed" && lastTrade) {
     return <TradeConfirmed trade={lastTrade} side={side} onNewTrade={handleNewTrade} />;
   }
 
-  // Payout per point is a Deriv-proposal field not yet in ProposalResponse — placeholder.
-  const payoutPerPoint = proposal?.payout_amount ?? '...';
+  // Payout per point for Vanillas is the 'display_number_of_contracts' field from the API.
+  const payoutPerPoint = proposal?.display_number_of_contracts ?? proposal?.payout_amount ?? '...';
 
   return (
     <div className="flex h-full flex-col gap-3 p-4">
@@ -95,6 +94,3 @@ export function VanillasPanel({ symbol }: VanillasPanelProps) {
     </div>
   );
 }
-
-
-

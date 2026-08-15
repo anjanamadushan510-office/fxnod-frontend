@@ -46,4 +46,5 @@ export interface ProposalResponse {
   tick_size_barrier_percentage?: string;
   ticks_stayed_in?: number[];
   maximum_ticks?: number;
+  display_number_of_contracts?: string;
 }
