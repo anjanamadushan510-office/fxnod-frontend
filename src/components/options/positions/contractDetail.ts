@@ -68,7 +68,7 @@ export function formatContractTime(epochSec: number): string {
   );
 }
 
-/** Deterministic tick path from entry → exit with a fixed wiggle. */
+/** Deterministic tick path from entry -> exit with a fixed wiggle. */
 function genTicks(
   entry: number,
   exit: number,
@@ -76,9 +76,10 @@ function genTicks(
   endSec: number,
   n = 5,
 ): ContractTick[] {
+  const duration = Math.max(1, endSec - startSec);
+  n = Math.max(2, Math.min(n, duration + 1));
   const amp = Math.max(0.2, Math.abs(exit - entry) * 0.6);
   const out: ContractTick[] = [];
-  const duration = Math.max(1, endSec - startSec);
   for (let i = 0; i < n; i++) {
     const frac = n > 1 ? i / (n - 1) : 0;
     const wiggle = i === 0 || i === n - 1 ? 0 : Math.sin(i * 1.7) * amp;
@@ -89,6 +90,11 @@ function genTicks(
       ),
       kind: i === 0 ? "entry" : i === n - 1 ? "exit" : "normal",
     });
+  }
+  for (let i = 1; i < out.length; i++) {
+    if (out[i].time <= out[i-1].time) {
+      out[i].time = out[i-1].time + 1;
+    }
   }
   return out;
 }
@@ -320,4 +326,5 @@ export function simPositionToDetail(p: Position): ContractDetail {
     ticks: ticks as any,
   };
 }
+
 
