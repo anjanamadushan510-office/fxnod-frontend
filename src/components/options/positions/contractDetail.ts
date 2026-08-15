@@ -1,10 +1,10 @@
 /**
- * Contract-details model + mock data (Deriv §10).
+ * Contract-details model + mock data (Deriv Â§10).
  *
  * `ContractDetail` is the rich shape the details modal renders: metadata for
  * the left panel + the isolated tick path for the right-panel chart. The mock
  * closed contracts are deterministic (no Math.random / Date.now) so the
- * server and client markup match — important since the drawer is in the DOM
+ * server and client markup match â€” important since the drawer is in the DOM
  * (clipped) even when closed.
  */
 import type { Position } from "@/hooks/useMockPositions";
@@ -23,7 +23,7 @@ export interface ContractDetail {
   marketId: string;
   marketName: string;
   type: string;
-  /** "Rise" / "Fall" / "Up" … */
+  /** "Rise" / "Fall" / "Up" â€¦ */
   tradeTypeLabel: string;
   side: "rise" | "fall";
   growthRate?: number;
@@ -69,32 +69,61 @@ export function formatContractTime(epochSec: number): string {
   );
 }
 
-/** Deterministic tick path from entry -> exit with a fixed wiggle. */
+/** Deterministic tick path from entry -> exit with a realistic Brownian bridge. */
 function genTicks(
   entry: number,
   exit: number,
   startSec: number,
   endSec: number,
-  n = 5,
+  n = 15,
 ): ContractTick[] {
   const duration = Math.max(1, endSec - startSec);
   n = Math.max(2, Math.min(n, duration + 1));
-  const amp = Math.max(0.2, Math.abs(exit - entry) * 0.6);
   const out: ContractTick[] = [];
+
+  let seed = startSec;
+  const seededRandom = () => {
+    let t = (seed += 0x6d2b79f5);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+
+  let walk = [0];
+  for (let i = 1; i < n; i++) {
+    const step = seededRandom() - 0.5;
+    walk.push(walk[i - 1] + step);
+  }
+
+  const walkEnd = walk[n - 1];
+  let maxAbsWiggle = 0;
   for (let i = 0; i < n; i++) {
     const frac = n > 1 ? i / (n - 1) : 0;
-    const wiggle = i === 0 || i === n - 1 ? 0 : Math.sin(i * 1.7) * amp;
+    walk[i] = walk[i] - walkEnd * frac;
+    if (Math.abs(walk[i]) > maxAbsWiggle) {
+      maxAbsWiggle = Math.abs(walk[i]);
+    }
+  }
+
+  const diff = Math.abs(exit - entry);
+  const amp = diff > 0 ? diff * 0.8 : 0.5;
+  const scale = maxAbsWiggle > 0 ? amp / maxAbsWiggle : 0;
+
+  for (let i = 0; i < n; i++) {
+    const frac = n > 1 ? i / (n - 1) : 0;
+    const base = entry + (exit - entry) * frac;
+    const wiggle = walk[i] * scale;
+
     out.push({
       time: startSec + Math.round(frac * duration),
-      value: +(entry + (exit - entry) * frac + wiggle).toFixed(
-        Math.abs(entry) < 10 ? 4 : 2,
-      ),
+      value: +(base + wiggle).toFixed(Math.abs(entry) < 10 ? 4 : 2),
       kind: i === 0 ? "entry" : i === n - 1 ? "exit" : "normal",
     });
   }
+
   for (let i = 1; i < out.length; i++) {
-    if (out[i].time <= out[i-1].time) {
-      out[i].time = out[i-1].time + 1;
+    if (out[i].time <= out[i - 1].time) {
+      out[i].time = out[i - 1].time + 1;
     }
   }
   return out;
@@ -216,7 +245,7 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
 		const tickCount = (ts && Array.isArray(ts) && ts.length > 1) ? ts.length - 1 : 0;
 
 		// Prefer the authoritative values persisted from the proposal:
-		//   duration_unit "t" → ticks, any other unit → seconds/mins etc.
+		//   duration_unit "t" â†’ ticks, any other unit â†’ seconds/mins etc.
 		let durationLabel: string;
 		if (backendDurUnit === "t" && tickCount > 0) {
 			// Tick-based trade: use tick count (already correct from tick_stream)
