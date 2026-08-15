@@ -24,6 +24,7 @@ export interface Position {
   contractValue: number;
   /** Where the contract was opened. */
   entrySpot?: number;
+  currentSpot?: number;
   /** For Accumulators / Turbos / Multipliers. */
   barrier?: number | string;
   takeProfit?: number | null;
@@ -33,6 +34,7 @@ export interface Position {
   outcome?: "won" | "lost" | null;
   /** Target completion epoch seconds for time-based trades. */
   expiryTime?: number;
+  startTime?: number;
   /** True if the contract duration is in ticks. */
   isTick?: boolean;
   /** Live tick stream from the backend. */
@@ -83,3 +85,5 @@ function seed(): Position[] {
     },
   ];
 }
+
+

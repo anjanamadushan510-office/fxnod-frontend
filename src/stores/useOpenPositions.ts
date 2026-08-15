@@ -106,6 +106,8 @@ function framePatch(frame: PositionFrame, existing?: Position): Partial<Position
   const value = toNum(frame.bid_price);
   if (value !== undefined) patch.contractValue = value;
   const entry = toNum(frame.entry_spot);
+  const current = toNum(frame.current_spot);
+  if (current !== undefined) patch.currentSpot = current;
   if (entry !== undefined) patch.entrySpot = entry;
   if (frame.barrier !== undefined) patch.barrier = frame.barrier;
   const label = statusLabel(frame);
@@ -128,11 +130,13 @@ function frameToPosition(frame: PositionFrame): Position {
     stake,
     contractValue: toNum(frame.bid_price) ?? stake,
     entrySpot: toNum(frame.entry_spot),
+    currentSpot: toNum(frame.current_spot),
     barrier: frame.barrier,
     pnl: toNum(frame.profit) ?? 0,
     outcome:
       frame.status === "won" || frame.status === "lost" ? frame.status : null,
     expiryTime: frame.expiry_time,
+    startTime: frame.start_time,
     isTick: frame.ticks_total != null || frame.ticks_elapsed != null,
   };
 }
@@ -153,3 +157,5 @@ function toNum(v: string | undefined): number | undefined {
   const n = Number(v);
   return Number.isFinite(n) ? n : undefined;
 }
+
+

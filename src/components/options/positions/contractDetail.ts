@@ -271,13 +271,27 @@ function parseBarrier(barrierVal: string | number | null | undefined, entrySpot:
   return num;
 }
 
-/** Best-effort ContractDetail for an in-progress (sim) open position. */
+/** Best-effort ContractDetail for an in-progress open position. */
 export function simPositionToDetail(p: Position): ContractDetail {
   const entry = p.entrySpot ?? 0;
-  const exit = +(entry + p.pnl * 0.1).toFixed(entry < 10 ? 4 : 2);
-  const start = Math.floor(Date.now() / 1000) - 5;
+  const exit = p.currentSpot ?? +(entry + p.pnl * 0.1).toFixed(entry < 10 ? 4 : 2);
+  const start = p.startTime || (Math.floor(Date.now() / 1000) - 5);
+  let now = Math.floor(Date.now() / 1000);
+  if (now < start + 1) now = start + 1;
   const won = p.pnl >= 0;
   const side = p.side === "fall" ? "fall" : "rise";
+
+  const isTick = p.isTick || (p.status && p.status.includes("tick"));
+  const numPoints = isTick ? Math.max(5, now - start) : Math.max(10, Math.min(100, now - start));
+
+  let ticks = p.tickStream && p.tickStream.length > 0
+    ? p.tickStream.map((t: any, i: number) => ({
+        time: t.epoch || (start + i),
+        value: Number(t.tick_display_value) || Number(t.tick) || 0,
+        kind: i === 0 ? "entry" : "normal",
+      }))
+    : genTicks(entry, exit || entry, start, now, numPoints);
+
   return {
     id: p.id,
     marketId: p.marketId,
@@ -293,20 +307,17 @@ export function simPositionToDetail(p: Position): ContractDetail {
     pnl: p.pnl,
     buyPrice: p.stake,
     sellPrice: p.contractValue,
-    derivContractId: 4290000123,
+    derivContractId: p.contractId ? Number(p.contractId) : 4290000123,
     buyTransactionId: 17000000001,
     sellTransactionId: 0,
-    duration: p.status ?? "5 ticks",
+    duration: p.status ?? "Open",
     barrier: parseBarrier(p.barrier, entry),
     startTime: start,
     entrySpot: entry,
-    entryTime: start + 1,
+    entryTime: start,
     exitSpot: exit,
-    exitTime: start + 5,
-    ticks: p.tickStream && p.tickStream.length > 0 ? p.tickStream.map((t: any, i: number) => ({
-      time: t.epoch || (start + i),
-      value: Number(t.tick_display_value) || Number(t.tick) || 0,
-      kind: i === 0 ? "entry" : (i === p.tickStream!.length - 1 && p.outcome ? "exit" : "normal"),
-    })) : genTicks(entry, exit || entry, start, 5),
+    exitTime: now,
+    ticks: ticks as any,
   };
 }
+

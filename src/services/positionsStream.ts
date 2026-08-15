@@ -47,7 +47,8 @@ export interface PositionFrame {
   stake?: string;
   entry_spot?: string;
   barrier?: string;
-  expiry_time?: number; // epoch seconds
+  expiry_time?: number;
+  start_time?: number; // epoch seconds
 }
 
 /** Frames the server pushes to the client. */
@@ -78,3 +79,4 @@ export function parsePositionsMessage(
   }
   return null;
 }
+
