@@ -1,142 +1,147 @@
-"use client";
-
-import { Suspense, useEffect, useState } from "react";
 import type { Route } from "next";
-import { useRouter, useSearchParams } from "next/navigation";
-import { ChartPanel } from "@/components/options/chart/ChartPanel";
-import { IconSidebar } from "@/components/options/layout/IconSidebar";
-import { OptionsShell } from "@/components/options/layout/OptionsShell";
-import { TopBar } from "@/components/options/layout/TopBar";
-import { findMarket } from "@/components/options/market/catalog";
-import { useChartSettings } from "@/hooks/useChartSettings";
-import { OrderPanel } from "@/components/options/order/OrderPanel";
-import { PositionsDrawer } from "@/components/options/positions/PositionsDrawer";
-import { ContractDetailsModal } from "@/components/options/positions/ContractDetailsModal";
-import { usePositionsUI } from "@/stores/usePositionsUI";
-import { useOpenPositions } from "@/stores/useOpenPositions";
-import { useAccountBalance } from "@/stores/useAccountBalance";
-import { usePositionsWebSocket } from "@/hooks/usePositionsWebSocket";
-import { useAuthStore } from "@/stores/authStore";
-import type { OptionsAccountMode } from "@/components/options/layout/AccountSelector";
+import Link from "next/link";
+import type { ReactNode } from "react";
+import { TopNav } from "@/components/layout/TopNav";
+import { BarsIcon, AppsGridIcon } from "@/components/ui/Icons";
+import { cn } from "@/lib/cn";
 
 /**
- * Gate the positions WS behind a flag until the Go `/ws/positions` stream is
- * live — set NEXT_PUBLIC_POSITIONS_WS=1 to enable. Off → the drawer keeps using
- * the placeholder P/L drift.
+ * /options — platform picker.
+ *
+ * "Options" in the nav used to jump straight into manual trading. It now lands
+ * here, because options trading is no longer one product: dTrader is the manual
+ * ticket, dBot is the automated one, and more platforms are planned. Sending
+ * someone directly to dTrader would make every future platform a second-class
+ * citizen reachable only from inside another one.
+ *
+ * Deliberately a server component — it is static links and copy, so there is no
+ * reason to ship it as client JS. The trading apps themselves stay client-side.
  */
-const POSITIONS_WS_ENABLED = true;
 
-/**
- * /options — Deriv options trading page.
- *
- * Phases A–E live:
- *   A) Shell, IconSidebar, TopBar, AccountSelector, DepositButton
- *   B) ChartPanel — live-ticking SVG
- *   C) OrderPanel — Rise/Fall + Accumulators tickets
- *   D) Multipliers + Turbos tickets + StatsStrip
- *   E.1) MarketPicker dropdown
- *   E.2) PositionsDrawer
- *   E.3) RiskManagement drawer
- *
- * State here is intentionally minimal — only the cross-cutting flags
- * (selected contract type, selected market, positions drawer open) live at
- * the page level. Everything else (live price, balance ticks, ticket
- * inputs) lives in the leaf that owns the subscription.
- */
-export default function OptionsPage() {
-  // ChartPanel reads `useSearchParams()` (via useChartSettings) — Next.js
-  // requires a Suspense boundary around any client subtree that does, or the
-  // production build errors out. The shell renders instantly; only the
-  // search-param read suspends on first paint.
+interface Platform {
+  key: string;
+  name: string;
+  tagline: string;
+  description: string;
+  href: Route;
+  icon: ReactNode;
+  cta: string;
+  /** Renders the muted "not yet available" treatment and disables the link. */
+  comingSoon?: boolean;
+}
+
+const PLATFORMS: Platform[] = [
+  {
+    key: "dtrader",
+    name: "dTrader",
+    tagline: "Trade manually",
+    description:
+      "Place options trades yourself with live charts, market picker and full contract control.",
+    href: "/options/dtrader" as Route,
+    icon: <BarsIcon className="h-7 w-7" />,
+    cta: "Open dTrader",
+  },
+  {
+    key: "dbot",
+    name: "dBot",
+    tagline: "Trade automatically",
+    description:
+      "Run an automated strategy with your own stake, take-profit and session limits. Stops itself when a limit is reached.",
+    href: "/options/dbot" as Route,
+    icon: <AppsGridIcon className="h-7 w-7" />,
+    cta: "Open dBot",
+  },
+];
+
+export default function OptionsHubPage() {
   return (
-    <Suspense fallback={null}>
-      <OptionsPageInner />
-    </Suspense>
+    <>
+      <TopNav />
+
+      <div className="mx-auto flex max-w-[1000px] flex-col gap-8 px-8 pb-20 pt-12 max-lg:gap-6 max-lg:px-4 max-lg:pt-8">
+        <header className="flex flex-col gap-2">
+          <h1 className="m-0 text-[26px] font-bold tracking-[-0.02em] text-ink max-lg:text-[22px]">
+            Options
+          </h1>
+          <p className="m-0 max-w-[52ch] text-[14px] leading-relaxed text-ink-3">
+            Choose how you want to trade. You can switch between platforms at any
+            time — they share the same account and balance.
+          </p>
+        </header>
+
+        <div className="grid grid-cols-2 gap-6 max-lg:grid-cols-1 max-lg:gap-4">
+          {PLATFORMS.map((platform) => (
+            <PlatformCard key={platform.key} platform={platform} />
+          ))}
+        </div>
+      </div>
+    </>
   );
 }
 
-/** Canonical default deep-link for a bare `/options` visit. */
-const DEFAULT_OPTIONS_QUERY =
-  "?chart_type=area&interval=1t&symbol=1HZ100V&trade_type=rise_fall";
+function PlatformCard({ platform }: { platform: Platform }) {
+  const body = (
+    <>
+      <div
+        className={cn(
+          "grid h-14 w-14 place-items-center rounded-full",
+          "bg-[linear-gradient(180deg,var(--navy),var(--navy-3))] text-gold",
+          "shadow-[inset_0_0_0_2.5px_var(--gold),0_0_0_4px_rgba(201,162,78,0.15)]",
+        )}
+      >
+        {platform.icon}
+      </div>
 
-function OptionsPageInner() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+      <div className="flex flex-col gap-1.5">
+        <div className="flex items-center gap-2.5">
+          <h2 className="m-0 text-[19px] font-bold tracking-[-0.01em] text-ink">
+            {platform.name}
+          </h2>
+          <span className="rounded-full bg-gold-soft px-2 py-0.5 text-[11px] font-semibold text-gold-3">
+            {platform.tagline}
+          </span>
+        </div>
+        <p className="m-0 text-[13px] leading-relaxed text-ink-3">
+          {platform.description}
+        </p>
+      </div>
 
-  // Bare /options → pin the full default query so the URL is always explicit
-  // and shareable. The guard (empty params only) means the post-replace render
-  // — now with params — can't re-trigger it, so there's no redirect loop.
-  useEffect(() => {
-    if (searchParams.toString() === "") {
-      router.replace(`/options${DEFAULT_OPTIONS_QUERY}` as Route, {
-        scroll: false,
-      });
-    }
-  }, [searchParams, router]);
+      <span
+        className={cn(
+          "mt-auto inline-flex items-center gap-1.5 text-[13px] font-semibold",
+          platform.comingSoon ? "text-ink-3" : "text-gold-3",
+        )}
+      >
+        {platform.comingSoon ? "Coming soon" : platform.cta}
+        {!platform.comingSoon && <span aria-hidden="true">→</span>}
+      </span>
+    </>
+  );
 
-  const [accountMode, _setAccountMode] = useState<OptionsAccountMode>("demo");
+  const shell = cn(
+    "flex min-h-[230px] flex-col items-start gap-4 rounded-2xl border border-line",
+    "bg-surface p-6 shadow-card",
+  );
 
-  // Drawer open state is a store (a buy can open it from the order panel).
-  const positionsOpen = usePositionsUI((s) => s.open);
-  const togglePositions = usePositionsUI((s) => s.toggle);
-  const setPositionsOpen = usePositionsUI((s) => s.setOpen);
-  const positionsCount = useOpenPositions((s) => s.positions.length);
-
-  // Real-time P/L stream — runs whenever authenticated (needs the access token
-  // for the WS handshake) and the feature flag is on.
-  const authed = useAuthStore((s) => s.status === "authenticated");
-  usePositionsWebSocket(POSITIONS_WS_ENABLED && authed);
-
-  // Market + contract type are URL-driven (`?symbol=`, `?trade_type=`),
-  // alongside chart_type + interval. No local state for either.
-  const { symbol, setSymbol, tradeType, setTradeType } = useChartSettings();
-
-  const accountBalance = useAccountBalance((s) => s.balance);
-
-  // `parseSymbol` already guarantees a catalog hit, so `market` is defined —
-  // the `!` is just to satisfy the type without a redundant runtime branch.
-  const market = findMarket(symbol)!;
+  if (platform.comingSoon) {
+    return (
+      <div className={cn(shell, "opacity-60")} aria-disabled="true">
+        {body}
+      </div>
+    );
+  }
 
   return (
-    <>
-      <OptionsShell
-        drawerOpen={positionsOpen}
-        drawer={
-          <PositionsDrawer
-            open={positionsOpen}
-            onClose={() => setPositionsOpen(false)}
-          />
-        }
-        sidebar={
-          <IconSidebar
-            brandInitials="DT"
-            theme="light"
-            positionsOpen={positionsOpen}
-            onPositionsToggle={togglePositions}
-            positionsBadge={positionsCount || undefined}
-          />
-        }
-        topbar={
-          <TopBar
-            contractType={tradeType}
-            onContractTypeChange={setTradeType}
-            accountMode={accountMode}
-            accountBalance={accountBalance}
-          />
-        }
-        main={
-          <ChartPanel
-            marketId={market.id}
-            marketName={market.name}
-            seedPrice={market.seedPrice}
-            showStatsStrip={tradeType === "accumulators"}
-            onSelectMarket={setSymbol}
-          />
-        }
-        order={<OrderPanel contractType={tradeType} symbol={market.id} />}
-      />
-      {/* Contract Details modal — self-portals into the options subtree (§10) */}
-      <ContractDetailsModal />
-    </>
+    <Link
+      href={platform.href}
+      className={cn(
+        shell,
+        "transition-[transform,box-shadow,border-color] duration-150",
+        "hover:-translate-y-0.5 hover:border-gold hover:shadow-nav",
+        "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold",
+      )}
+    >
+      {body}
+    </Link>
   );
 }

@@ -134,7 +134,7 @@ export function CallbackInner() {
 
       sessionStorage.removeItem(DERIV_STATE_KEY);
       sessionStorage.removeItem(DERIV_INTENT_KEY);
-      // Return the user to wherever they started the flow (default /options).
+      // Return the user to wherever they started the flow (default: dTrader).
       const returnTo = safeReturnPath(sessionStorage.getItem(DERIV_RETURN_TO_KEY));
       sessionStorage.removeItem(DERIV_RETURN_TO_KEY);
       // Refresh the shared link-status cache so the TopBar control + the order
@@ -193,8 +193,13 @@ export function CallbackInner() {
  * and never bounce back to the callback page itself.
  */
 function safeReturnPath(raw: string | null): Route {
-  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return "/options" as Route;
-  if (raw.startsWith("/deriv/callback")) return "/options" as Route;
+  // The fallback is the trading page itself, not the `/options` platform
+  // picker: someone who has just finished linking a Deriv account came here to
+  // trade, and bouncing them to a chooser makes them pick again.
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) {
+    return "/options/dtrader" as Route;
+  }
+  if (raw.startsWith("/deriv/callback")) return "/options/dtrader" as Route;
   return raw as Route;
 }
 
@@ -236,7 +241,7 @@ function ErrorCard({ message }: { message: string }) {
         <h1 className="text-[17px] font-bold text-ink">Something went wrong</h1>
         <p className="text-[13px] leading-relaxed text-ink-3">{message}</p>
         <a
-          href="/options"
+          href="/options/dtrader"
           className="mt-1 inline-flex items-center gap-1.5 text-[13px] font-semibold text-gold-3 hover:text-gold transition-colors"
         >
           ← Back to trading
