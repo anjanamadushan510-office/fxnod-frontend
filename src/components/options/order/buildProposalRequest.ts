@@ -22,6 +22,7 @@ export interface BuildProposalInput {
   digit?: number;
   growthRate?: number; // percent 1–5
   multiplier?: number;
+  payoutPerPoint?: number;
   takeProfit?: number | null;
   stopLoss?: number | null;
 }
@@ -57,6 +58,7 @@ export function buildProposalRequest(
   if (input.digit !== undefined) body.digit = input.digit;
   if (input.growthRate !== undefined) body.growth_rate = input.growthRate;
   if (input.multiplier !== undefined) body.multiplier = input.multiplier;
+  if (input.payoutPerPoint !== undefined) body.payout_per_point = input.payoutPerPoint;
   if (input.takeProfit != null) body.take_profit = input.takeProfit.toString();
   if (input.stopLoss != null) body.stop_loss = input.stopLoss.toString();
 

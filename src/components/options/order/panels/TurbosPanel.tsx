@@ -7,10 +7,10 @@ import { TradeConfirmed } from "../TradeConfirmed";
 import { HowToTradeLink } from "../HowToTradeLink";
 import { BuyButton } from "../fields/BuyButton";
 import { DurationField, useDefaultDuration } from "../fields/DurationField";
-import { OffsetField } from "../fields/OffsetField";
 import { PayoutPerPointField } from "../fields/PayoutPerPointField";
 import { type Side } from "../fields/RiseFallToggle";
 import { StakeField } from "../fields/StakeField";
+import { SummaryRow } from "../fields/SummaryRow";
 import { TakeProfitField } from "../fields/TakeProfitField";
 import { UpDownToggle } from "../fields/UpDownToggle";
 
@@ -23,7 +23,7 @@ export function TurbosPanel({ symbol }: TurbosPanelProps) {
   // §13: Turbos default 5 ticks.
   const [duration, setDuration] = useDefaultDuration({ amount: 5, unit: "ticks" });
   const [stake, setStake] = useState<number>(10);
-  const [barrier, setBarrier] = useState<number>(-6.46); // default to a safe negative/positive value or 0
+  const [payoutPerPoint, setPayoutPerPoint] = useState<number>(1.5);
   const [takeProfit, setTakeProfit] = useState<number | null>(null);
 
   const request =
@@ -35,7 +35,7 @@ export function TurbosPanel({ symbol }: TurbosPanelProps) {
           side,
           duration: { amount: duration.amount, unit: duration.unit },
           takeProfit,
-          barrier,
+          payoutPerPoint,
         })
       : null;
 
@@ -46,7 +46,8 @@ export function TurbosPanel({ symbol }: TurbosPanelProps) {
     return <TradeConfirmed trade={lastTrade} side={side} onNewTrade={handleNewTrade} />;
   }
 
-  const payoutPerPoint = proposal?.display_number_of_contracts ?? proposal?.payout_amount ?? 1.5;
+  // Fallback to placeholder if proposal is not yet loaded
+  const displayBarrier = proposal?.barrier ?? (side === "rise" ? "-6.46" : "+6.46");
 
   return (
     <div className="flex h-full flex-col gap-3 p-4">
@@ -54,19 +55,15 @@ export function TurbosPanel({ symbol }: TurbosPanelProps) {
       <UpDownToggle value={side} onChange={setSide} />
       <DurationField value={duration} onChange={setDuration} />
       <StakeField value={stake} onChange={setStake} min={1} max={2000} />
-      <OffsetField
-        label="Barrier"
-        value={barrier}
-        onChange={setBarrier}
-        withInfo
-        infoLabel="Barrier info"
-      />
-      <PayoutPerPointField value={Number(payoutPerPoint)} />
+      <PayoutPerPointField value={payoutPerPoint} onChange={setPayoutPerPoint} />
       <TakeProfitField
         value={takeProfit}
         onToggle={(on) => setTakeProfit(on ? 20 : null)}
         onChange={setTakeProfit}
       />
+      <div className="py-1">
+        <SummaryRow label="Barrier" value={displayBarrier} />
+      </div>
       {errorMsg && (
         <p className="px-1 text-[11px] leading-snug text-opt-fall">{errorMsg}</p>
       )}

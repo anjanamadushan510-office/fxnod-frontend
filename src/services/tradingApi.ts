@@ -102,6 +102,7 @@ export interface ProposalRequest {
   digit?: number;
   growth_rate?: number; // percent 1–5
   multiplier?: number;
+  payout_per_point?: number;
   take_profit?: string;
   stop_loss?: string;
 }
