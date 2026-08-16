@@ -194,8 +194,8 @@ export function formatTradeTypeLabel(type: string, side: string): string {
     ACCU: "Accumulators",
     MULTUP: "Multiplier Up",
     MULTDOWN: "Multiplier Down",
-    TURBOSLONG: "Turbos Long",
-    TURBOSSHORT: "Turbos Short",
+    TURBOSLONG: "Turbos Up",
+    TURBOSSHORT: "Turbos Down",
     VANILLALONGCALL: "Vanillas Call",
     VANILLALONGPUT: "Vanillas Put",
   };
@@ -206,6 +206,7 @@ export function formatTradeTypeLabel(type: string, side: string): string {
   if (type === "touch_no_touch") return side === "touch" ? "Touch" : "No Touch";
   if (type === "vanillas") return side === "fall" ? "Vanillas Put" : "Vanillas Call";
   if (type === "accumulators") return "Accumulators";
+  if (type === "turbos") return side === "down" ? "Turbos Down" : "Turbos Up";
   if (type === "multipliers") return side === "up" ? "Multiplier Up" : side === "down" ? "Multiplier Down" : "Multipliers";
   
   if (side && side !== "null" && side !== "") {
@@ -249,12 +250,26 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
       const time = t.epoch || (startTime + i);
       const value = Number(t.tick_display_value) || Number(t.tick) || 0;
       let kind: "entry" | "exit" | "normal" = "normal";
-      if (i === 0) kind = "entry";
       if (i === ts.length - 1) kind = "exit";
       return { time, value, kind };
     });
-    if (entrySpot === 0) entrySpot = ticks[0].value;
-    if (exitSpot === 0) exitSpot = ticks[ticks.length - 1].value;
+    
+    // For tick contracts, Deriv plots the start_time (which is before tick 1) as the unnumbered 'entry' circle,
+    // and then the actual stream ticks are numbered 1, 2, 3...
+    if (backendDurUnit === "t" && ticks.length > 0) {
+      // Prepend a dummy tick for the start time, 1 second before the first tick
+      const firstTick = ticks[0];
+      ticks.unshift({
+        time: firstTick.time - 1,
+        value: firstTick.value,
+        kind: "entry",
+      });
+    } else if (ticks.length > 0) {
+      ticks[0].kind = "entry";
+    }
+
+    if (entrySpot === 0 && ticks.length > 0) entrySpot = backendDurUnit === "t" && ticks.length > 2 ? ticks[2].value : ticks[0].value;
+    if (exitSpot === 0 && ticks.length > 0) exitSpot = ticks[ticks.length - 1].value;
     startTime = ticks[0].time;
     exitTime = ticks[ticks.length - 1].time;
   } else if (entrySpot && exitSpot) {
