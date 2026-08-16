@@ -333,7 +333,7 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
       entryTime: startTime + 1,
       exitSpot,
       exitTime,
-      payoutPerPoint: h.frontend_contract_type === "vanillas" ? potentialPayout : undefined,
+      payoutPerPoint: (h.frontend_contract_type === "vanillas" || h.frontend_contract_type === "turbos" || h.frontend_contract_type === "TURBOSLONG" || h.frontend_contract_type === "TURBOSSHORT") ? potentialPayout : undefined,
       ticks,
   };
 }
@@ -395,7 +395,7 @@ export function simPositionToDetail(p: Position): ContractDetail {
     exitSpot: exit,
     exitTime: now,
     expiryTime: p.expiryTime,
-    payoutPerPoint: (p.contractType === "vanillas" || p.contractType === "VANILLALONGCALL" || p.contractType === "VANILLALONGPUT") ? ((p as any).display_number_of_contracts ? Number((p as any).display_number_of_contracts) : p.stake) : undefined,
+    payoutPerPoint: (p.contractType === "vanillas" || p.contractType === "turbos" || p.contractType === "VANILLALONGCALL" || p.contractType === "VANILLALONGPUT" || p.contractType === "TURBOSLONG" || p.contractType === "TURBOSSHORT") ? ((p as any).display_number_of_contracts ? Number((p as any).display_number_of_contracts) : p.stake) : undefined,
     ticks: ticks as any,
   };
 }

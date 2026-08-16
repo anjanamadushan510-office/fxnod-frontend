@@ -146,7 +146,11 @@ function LeftPanel({
             <Stat label="Entry spot" value={detail.entrySpot.toFixed(Math.abs(detail.entrySpot) < 10 ? 4 : 2)} />
             <Stat label="Take profit" value="-" />
             <Stat label="Barrier" value={detail.barrier.toFixed(Math.abs(detail.entrySpot) < 10 ? 4 : 2)} />
-            <div /> {/* Empty cell to push total profit/loss to next row if needed, or we can just leave it to wrap. Actually Deriv puts Total profit/loss on its own block or spans two columns? Let's just span 2 columns or place it normally. */}
+            {detail.payoutPerPoint !== undefined ? (
+              <Stat label="Payout per point" value={`${detail.payoutPerPoint.toFixed(2)} USD`} />
+            ) : (
+              <div />
+            )}
           </>
         ) : (
           <>
