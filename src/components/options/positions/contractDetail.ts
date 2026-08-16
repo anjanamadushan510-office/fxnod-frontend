@@ -380,7 +380,7 @@ export function simPositionToDetail(p: Position): ContractDetail {
     exitSpot: exit,
     exitTime: now,
     expiryTime: p.expiryTime,
-    payoutPerPoint: p.contractType === "vanillas" ? ((p as any).display_number_of_contracts ? Number((p as any).display_number_of_contracts) : p.stake) : undefined,
+    payoutPerPoint: (p.contractType === "vanillas" || p.contractType === "VANILLALONGCALL" || p.contractType === "VANILLALONGPUT") ? ((p as any).display_number_of_contracts ? Number((p as any).display_number_of_contracts) : p.stake) : undefined,
     ticks: ticks as any,
   };
 }
