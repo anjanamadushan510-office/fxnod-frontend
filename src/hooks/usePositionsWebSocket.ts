@@ -5,6 +5,8 @@ import { parsePositionsMessage } from "@/services/positionsStream";
 import { buildWsUrl } from "@/services/ws";
 import { useOpenPositions } from "@/stores/useOpenPositions";
 import { useAccountBalance } from "@/stores/useAccountBalance";
+import { useQueryClient } from "@tanstack/react-query";
+import { getGetTradeHistoryQueryKey } from "@/services/api/endpoints/trading/trading";
 
 export type PositionsSocketStatus =
   | "idle"
@@ -31,6 +33,7 @@ const MAX_BACKOFF_MS = 30_000;
  * even while the Positions drawer is closed.
  */
 export function usePositionsWebSocket(enabled = true): PositionsSocketStatus {
+  const queryClient = useQueryClient();
   const [status, setStatus] = useState<PositionsSocketStatus>("idle");
   const wsRef = useRef<WebSocket | null>(null);
   const pingRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -73,6 +76,7 @@ export function usePositionsWebSocket(enabled = true): PositionsSocketStatus {
           break;
         case "closed":
           store.markClosed(msg.data);
+          queryClient.invalidateQueries({ queryKey: getGetTradeHistoryQueryKey() });
           break;
         case "balance":
           useAccountBalance.getState().setBalance(msg.data.balance, msg.data.currency);
