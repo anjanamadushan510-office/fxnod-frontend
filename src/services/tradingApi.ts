@@ -116,6 +116,7 @@ export interface ProposalResponse {
   currency: string;
   expires_at: string;
   expires_in_seconds: number;
+  barrier?: string;
   high_barrier?: string;
   low_barrier?: string;
   tick_size_barrier_percentage?: string;
