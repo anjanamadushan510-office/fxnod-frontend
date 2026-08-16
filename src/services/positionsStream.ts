@@ -49,6 +49,9 @@ export interface PositionFrame {
   barrier?: string;
   expiry_time?: number;
   start_time?: number; // epoch seconds
+  buy_transaction_id?: number;
+  sell_transaction_id?: number;
+  display_number_of_contracts?: string;
 }
 
 /** Frames the server pushes to the client. */

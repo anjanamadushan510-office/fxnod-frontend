@@ -370,8 +370,8 @@ export function simPositionToDetail(p: Position): ContractDetail {
     buyPrice: p.stake,
     sellPrice: p.contractValue,
     derivContractId: p.contractId ? Number(p.contractId) : 4290000123,
-    buyTransactionId: 17000000001,
-    sellTransactionId: 0,
+    buyTransactionId: (p as any).buy_transaction_id ? Number((p as any).buy_transaction_id) : 17000000001,
+    sellTransactionId: (p as any).sell_transaction_id ? Number((p as any).sell_transaction_id) : 0,
     duration: p.status ?? "Open",
     barrier: parseBarrier(p.barrier, entry),
     startTime: start,
@@ -380,7 +380,7 @@ export function simPositionToDetail(p: Position): ContractDetail {
     exitSpot: exit,
     exitTime: now,
     expiryTime: p.expiryTime,
-    payoutPerPoint: p.contractType === "vanillas" ? p.stake : undefined,
+    payoutPerPoint: p.contractType === "vanillas" ? ((p as any).display_number_of_contracts ? Number((p as any).display_number_of_contracts) : p.stake) : undefined,
     ticks: ticks as any,
   };
 }

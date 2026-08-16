@@ -34,6 +34,9 @@ export interface Position {
   isTick?: boolean;
   /** Live tick stream from the backend. */
   tickStream?: any[];
+  buy_transaction_id?: number;
+  sell_transaction_id?: number;
+  display_number_of_contracts?: string;
 }
 
 /**
