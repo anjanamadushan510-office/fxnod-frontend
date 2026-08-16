@@ -206,8 +206,8 @@ export function formatTradeTypeLabel(type: string, side: string): string {
   if (type === "touch_no_touch") return side === "touch" ? "Touch" : "No Touch";
   if (type === "vanillas") return side === "fall" ? "Vanillas Put" : "Vanillas Call";
   if (type === "accumulators") return "Accumulators";
-  if (type === "turbos") return side === "down" ? "Turbos Down" : "Turbos Up";
-  if (type === "multipliers") return side === "up" ? "Multiplier Up" : side === "down" ? "Multiplier Down" : "Multipliers";
+  if (type === "turbos") return (side === "fall" || side === "down") ? "Turbos Down" : "Turbos Up";
+  if (type === "multipliers") return (side === "up" || side === "rise") ? "Multiplier Up" : (side === "down" || side === "fall") ? "Multiplier Down" : "Multipliers";
   
   if (side && side !== "null" && side !== "") {
     return side.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
@@ -261,7 +261,7 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
       const firstTick = ticks[0];
       ticks.unshift({
         time: firstTick.time - 1,
-        value: firstTick.value,
+        value: entrySpot || firstTick.value,
         kind: "entry",
       });
     } else if (ticks.length > 0) {
