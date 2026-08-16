@@ -146,7 +146,11 @@ function LeftPanel({
           className={lost ? "text-opt-ink-3" : "text-opt-rise"}
         />
         <Stat label="Stake" value={detail.stake.toFixed(2)} />
-        <Stat label="Potential payout" value={detail.payout.toFixed(2)} />
+        {detail.type === "vanillas" && detail.payoutPerPoint !== undefined ? (
+          <Stat label="Payout per point" value={`${detail.payoutPerPoint.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })} USD`} />
+        ) : (
+          <Stat label="Potential payout" value={detail.payout.toFixed(2)} />
+        )}
       </div>
 
       <div className="h-px bg-opt-line" />
@@ -173,7 +177,7 @@ function LeftPanel({
         </Row>
         <Row label="Duration">{detail.duration}</Row>
         {(detail.type !== "accumulators" && detail.type !== "multipliers") && (
-          <Row label="Barrier">
+          <Row label={detail.type === "vanillas" ? "Strike" : "Barrier"}>
             <span className="font-mono">{detail.barrier}</span>
           </Row>
         )}

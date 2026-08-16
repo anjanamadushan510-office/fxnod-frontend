@@ -44,7 +44,8 @@ export interface ContractDetail {
   entryTime: number;
   exitSpot: number;
   exitTime: number;
-    expiryTime?: number;
+  expiryTime?: number;
+  payoutPerPoint?: number;
   ticks: ContractTick[];
 }
 
@@ -180,6 +181,7 @@ export function formatTradeTypeLabel(type: string, side: string): string {
   if (type === "rise_fall") return side === "rise" ? "Rise" : "Fall";
   if (type === "higher_lower") return side === "rise" || side === "higher" ? "Higher" : "Lower";
   if (type === "touch_no_touch") return side === "touch" ? "Touch" : "No Touch";
+  if (type === "vanillas") return side === "fall" ? "Vanillas Put" : "Vanillas Call";
   if (type === "accumulators") return "Accumulators";
   if (type === "multipliers") return side === "up" ? "Multiplier Up" : side === "down" ? "Multiplier Down" : "Multipliers";
   
@@ -293,6 +295,7 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
       entryTime: startTime + 1,
       exitSpot,
       exitTime,
+      payoutPerPoint: h.frontend_contract_type === "vanillas" ? potentialPayout : undefined,
       ticks,
   };
 }
@@ -354,6 +357,7 @@ export function simPositionToDetail(p: Position): ContractDetail {
     exitSpot: exit,
     exitTime: now,
     expiryTime: p.expiryTime,
+    payoutPerPoint: p.contractType === "vanillas" ? p.stake : undefined,
     ticks: ticks as any,
   };
 }

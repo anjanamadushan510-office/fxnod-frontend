@@ -4,6 +4,7 @@ import { memo, useState, useEffect } from "react";
 import { BarsIcon, ClockIcon, ExpandIcon } from "@/components/ui/Icons";
 import { cn } from "@/lib/cn";
 import type { Position } from "@/hooks/useMockPositions";
+import { formatTradeTypeLabel } from "./contractDetail";
 
 interface PositionCardProps {
   position: Position;
@@ -13,14 +14,7 @@ interface PositionCardProps {
   onSell?: (id: string) => void;
 }
 
-/** side → human trade-type label shown on the card. */
-const SIDE_LABEL: Record<string, string> = {
-  rise: "Rise",
-  fall: "Fall",
-  up: "Up",
-  down: "Down",
-  accum: "Accumulator",
-};
+
 
 function useCountdown(expiryTime?: number) {
   const [now, setNow] = useState(() => Math.floor(Date.now() / 1000));
@@ -48,7 +42,7 @@ function PositionCardInner({
   onSell,
 }: PositionCardProps) {
   const pnlPositive = position.pnl >= 0;
-  const tradeType = SIDE_LABEL[position.side] ?? position.contractType;
+  const tradeType = formatTradeTypeLabel(position.contractType, position.side);
   const remain = useCountdown(position.isTick ? undefined : position.expiryTime);
   const statusDisplay = remain != null ? `${remain} secs` : (position.status ?? "—");
 

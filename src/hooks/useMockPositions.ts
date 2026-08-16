@@ -2,12 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-export type PositionContractType =
-  | "rise_fall"
-  | "accumulators"
-  | "multipliers"
-  | "turbos";
-
+export type PositionContractType = string;
 export interface Position {
   id: string;
   /** Deriv contract id — the correlation key for the positions WS stream.
