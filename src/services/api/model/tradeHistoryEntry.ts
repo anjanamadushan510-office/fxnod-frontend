@@ -56,14 +56,18 @@ export interface TradeHistoryEntry {
   created_at: string;
   /** @nullable */
   outcome?: TradeHistoryEntryOutcome;
-  /** @nullable */
   final_payout_amount?: TradeHistoryEntryFinalPayoutAmount;
-  /** @nullable */
   entry_spot?: TradeHistoryEntryEntrySpot;
-  /** @nullable */
   exit_spot?: TradeHistoryEntryExitSpot;
+  tick_stream?: TradeHistoryEntryTickStreamItem[] | null;
+  duration_seconds: number;
+  duration_unit: string;
+  /** @nullable */
+  growth_rate?: number | null;
+  /** @nullable */
+  buy_transaction_id?: number | null;
+  /** @nullable */
+  sell_transaction_id?: number | null;
   /** @nullable */
   barrier?: string | null;
-  /** @nullable */
-  tick_stream?: TradeHistoryEntryTickStreamItem[] | null;
 }

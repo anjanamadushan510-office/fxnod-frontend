@@ -228,9 +228,9 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
   const outcomeStr = (h as any).outcome;
   const won = outcomeStr ? outcomeStr === "won" : (finalPayout > 0);
   const payout = potentialPayout; // Potential payout = quoted, matches Deriv display
-  const pnl = won ? +(finalPayout - stake).toFixed(2) : -stake;
+  const pnl = +(finalPayout - stake).toFixed(2);
   // contractValue = what was actually received
-  const contractValue = won ? finalPayout : 0;
+  const contractValue = finalPayout;
 
   const backendDurSecs: number = Number((h as any).duration_seconds) || 0;
   const backendDurUnit: string  = String((h as any).duration_unit  || "");

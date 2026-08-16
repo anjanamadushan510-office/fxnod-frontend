@@ -110,6 +110,9 @@ function framePatch(frame: PositionFrame, existing?: Position): Partial<Position
   if (current !== undefined) patch.currentSpot = current;
   if (entry !== undefined) patch.entrySpot = entry;
   if (frame.barrier !== undefined) patch.barrier = frame.barrier;
+  if (frame.buy_transaction_id !== undefined) patch.buy_transaction_id = frame.buy_transaction_id;
+  if (frame.sell_transaction_id !== undefined) patch.sell_transaction_id = frame.sell_transaction_id;
+  if (frame.display_number_of_contracts !== undefined) patch.display_number_of_contracts = frame.display_number_of_contracts;
   const label = statusLabel(frame);
   if (label) patch.status = label;
   return patch;
@@ -138,6 +141,9 @@ function frameToPosition(frame: PositionFrame): Position {
     expiryTime: frame.expiry_time,
     startTime: frame.start_time,
     isTick: frame.ticks_total != null || frame.ticks_elapsed != null,
+    buy_transaction_id: frame.buy_transaction_id,
+    sell_transaction_id: frame.sell_transaction_id,
+    display_number_of_contracts: frame.display_number_of_contracts,
   };
 }
 
@@ -153,7 +159,7 @@ function statusLabel(frame: PositionFrame): string | undefined {
 
 /** Parse a decimal string to number at the display boundary; undefined if absent. */
 function toNum(v: string | undefined): number | undefined {
-  if (v == null) return undefined;
+  if (v == null || v === "") return undefined;
   const n = Number(v);
   return Number.isFinite(n) ? n : undefined;
 }
