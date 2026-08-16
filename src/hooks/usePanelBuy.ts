@@ -152,7 +152,7 @@ function applyPostTrade(request: ProposalRequest, trade: ConfirmResponse) {
     contractId: trade.deriv_contract_id,
     marketId: symbol,
     marketName: live.marketName || findMarket(symbol)?.name || symbol,
-    contractType: "rise_fall",
+    contractType: request.contract_type || "rise_fall",
     side,
     status: durationLabel(request),
     stake,

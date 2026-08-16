@@ -178,6 +178,29 @@ function mk(p: {
 }
 
 export function formatTradeTypeLabel(type: string, side: string): string {
+  const rawMap: Record<string, string> = {
+    CALL: "Rise",
+    PUT: "Fall",
+    HIGHER: "Higher",
+    LOWER: "Lower",
+    ONETOUCH: "Touch",
+    NOTOUCH: "No Touch",
+    DIGITMATCH: "Matches",
+    DIGITDIFF: "Differs",
+    DIGITOVER: "Over",
+    DIGITUNDER: "Under",
+    DIGITEVEN: "Even",
+    DIGITODD: "Odd",
+    ACCU: "Accumulators",
+    MULTUP: "Multiplier Up",
+    MULTDOWN: "Multiplier Down",
+    TURBOSLONG: "Turbos Long",
+    TURBOSSHORT: "Turbos Short",
+    VANILLALONGCALL: "Vanillas Call",
+    VANILLALONGPUT: "Vanillas Put",
+  };
+  
+  if (rawMap[type]) return rawMap[type];
   if (type === "rise_fall") return side === "rise" ? "Rise" : "Fall";
   if (type === "higher_lower") return side === "rise" || side === "higher" ? "Higher" : "Lower";
   if (type === "touch_no_touch") return side === "touch" ? "Touch" : "No Touch";
