@@ -30,16 +30,24 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
-import type { DecimalString } from './decimalString';
+import type { BotIndicatorKind } from './botIndicatorKind';
 
-export interface ProposalResponse {
-  /** FXNod proposal id (use this to confirm). */
-  proposal_id: string;
-  deriv_proposal_id: string;
-  stake_amount: DecimalString;
-  payout_amount: DecimalString;
-  accrued_markup_amount: DecimalString;
-  currency: string;
-  expires_at: string;
-  expires_in_seconds: number;
+/**
+ * One configured indicator. Omitted numeric fields take the conventional defaults (RSI 14, SMA/EMA/BB 20, MACD 12/26/9, Stochastic 14/3/3), so a bot reads the same numbers the user sees on their chart.
+ATR is a FILTER only - it measures how much price moves, not which way, and does not unlock the "auto" direction.
+
+ */
+export interface BotIndicator {
+  kind: BotIndicatorKind;
+  period?: number;
+  /** Bollinger band width */
+  std_devs?: number;
+  fast?: number;
+  slow?: number;
+  signal?: number;
+  k_period?: number;
+  smooth?: number;
+  d_period?: number;
+  oversold?: number;
+  overbought?: number;
 }

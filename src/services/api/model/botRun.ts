@@ -30,16 +30,36 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
-import type { DecimalString } from './decimalString';
+import type { BotRunStatus } from './botRunStatus';
+import type { BotRunStopReason } from './botRunStopReason';
+import type { BotContractTemplate } from './botContractTemplate';
+import type { BotRunStrategyParameters } from './botRunStrategyParameters';
+import type { BotRunRiskLimits } from './botRunRiskLimits';
+import type { BotIndicator } from './botIndicator';
 
-export interface ProposalResponse {
-  /** FXNod proposal id (use this to confirm). */
-  proposal_id: string;
-  deriv_proposal_id: string;
-  stake_amount: DecimalString;
-  payout_amount: DecimalString;
-  accrued_markup_amount: DecimalString;
+export interface BotRun {
+  run_id: string;
+  strategy_id: string;
+  strategy_version?: number;
+  deriv_account_id?: string;
+  /** Snapshotted at start; a run cannot migrate between demo and real. */
+  is_virtual: boolean;
+  symbol: string;
   currency: string;
+  status: BotRunStatus;
+  stop_reason?: BotRunStopReason;
+  realized_pnl: string;
+  total_staked: string;
+  trades_total: number;
+  trades_won: number;
+  trades_lost: number;
+  trades_open: number;
+  contract_template?: BotContractTemplate;
+  strategy_parameters?: BotRunStrategyParameters;
+  risk_limits?: BotRunRiskLimits;
+  indicators?: BotIndicator[];
+  created_at: string;
+  started_at?: string;
+  ended_at?: string;
   expires_at: string;
-  expires_in_seconds: number;
 }

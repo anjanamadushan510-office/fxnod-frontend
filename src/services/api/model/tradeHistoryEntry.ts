@@ -54,14 +54,8 @@ export interface TradeHistoryEntry {
   deriv_settlement_period: string;
   currency: string;
   created_at: string;
-  /** @nullable */
-  outcome?: TradeHistoryEntryOutcome;
-  final_payout_amount?: TradeHistoryEntryFinalPayoutAmount;
-  entry_spot?: TradeHistoryEntryEntrySpot;
-  exit_spot?: TradeHistoryEntryExitSpot;
-  tick_stream?: TradeHistoryEntryTickStreamItem[] | null;
-  duration_seconds: number;
-  duration_unit: string;
+  duration_seconds?: number;
+  duration_unit?: string;
   /** @nullable */
   growth_rate?: number | null;
   /** @nullable */
@@ -69,5 +63,15 @@ export interface TradeHistoryEntry {
   /** @nullable */
   sell_transaction_id?: number | null;
   /** @nullable */
+  outcome?: TradeHistoryEntryOutcome;
+  /** @nullable */
   barrier?: string | null;
+  /** @nullable */
+  final_payout_amount?: TradeHistoryEntryFinalPayoutAmount;
+  /** @nullable */
+  entry_spot?: TradeHistoryEntryEntrySpot;
+  /** @nullable */
+  exit_spot?: TradeHistoryEntryExitSpot;
+  /** @nullable */
+  tick_stream?: TradeHistoryEntryTickStreamItem[] | null;
 }

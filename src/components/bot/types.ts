@@ -55,28 +55,6 @@ export interface BotSession {
   currency: string;
 }
 
-/**
- * Everything the user configures before starting a run.
- *
- * The split matters: `stake`/`takeProfit` and the martingale settings are
- * per-trade, while `sessionStopLoss`/`sessionTargetProfit` bound the whole run.
- * The backend enforces the session bounds server-side — these fields are the
- * request, never the enforcement.
- */
-export interface BotConfig {
-  marketId: string;
-  direction: TradeDirection;
-  multiplier: number;
-  currency: string;
-  stake: number;
-  takeProfit: number;
-  martingaleEnabled: boolean;
-  sessionStopLossEnabled: boolean;
-  sessionStopLoss: number;
-  sessionTargetProfitEnabled: boolean;
-  sessionTargetProfit: number;
-}
-
 export function winRate(session: BotSession): number {
   const settled = session.tradesWon + session.tradesLost;
   return settled === 0 ? 0 : (session.tradesWon / settled) * 100;

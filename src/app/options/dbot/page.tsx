@@ -1,63 +1,130 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Route } from "next";
 import Link from "next/link";
 import { cn } from "@/lib/cn";
-import { ExpandIcon } from "@/components/ui/Icons";
 import { BotChart } from "@/components/bot/BotChart";
 import { BotTopBar } from "@/components/bot/BotTopBar";
-import { BOTS } from "@/components/bot/catalog";
 import { HistoryTable } from "@/components/bot/HistoryTable";
-import {
-  SAMPLE_SESSION,
-  SAMPLE_TRADES,
-  sampleCandles,
-} from "@/components/bot/sampleSession";
-import { CounterStrip, SessionStats } from "@/components/bot/SessionStats";
 import { SelectBot } from "@/components/bot/SelectBot";
+import { CounterStrip, SessionStats } from "@/components/bot/SessionStats";
 import { TradeConfiguration } from "@/components/bot/TradeConfiguration";
-import type { BotConfig } from "@/components/bot/types";
+import {
+  buildStartRequest,
+  defaultFormState,
+  type BotFormState,
+} from "@/components/bot/formState";
+import { sampleCandles } from "@/components/bot/sampleSession";
+import type { BotSession, BotTrade } from "@/components/bot/types";
+import {
+  useGetBotLimits,
+  useGetBotRun,
+  useListBotRuns,
+  useListBotStrategies,
+  useStartBotRun,
+  useStopBotRun,
+} from "@/services/api/endpoints/bots/bots";
+import type { BotLimitAdjustment, BotRun, BotStrategy } from "@/services/api/model";
 
 /**
  * /options/dbot — automated trading.
  *
- * PREVIEW. The layout, controls and chart are real components, but the session
- * figures come from `sampleSession.ts`, not from an account: the backend
- * `auto_*` endpoints and the bot worker are still being built. The banner says
- * so on screen — a trading dashboard showing a "Running" bot and a P&L that
- * nothing produced is indistinguishable from a real one at a glance.
- *
- * To wire it up: replace the three sample imports with the generated `auto_*`
- * hooks, drive `status` from the run row, and delete sampleSession.ts. The
- * component props are already shaped like the backend's bot_runs aggregates, so
- * nothing below should need restructuring.
+ * Wired to the backend: the bot list, the platform caps and the run state all
+ * come from the API. Nothing on this page decides anything about money —
+ * starting a run POSTs a configuration, and the bot-worker process does the
+ * trading. That separation is why closing this tab does not stop a bot, and
+ * equally why it cannot disable one's stop loss.
  */
-
-const DEFAULT_CONFIG: BotConfig = {
-  marketId: "vol_75_1s",
-  direction: "up",
-  multiplier: 2,
-  currency: "USD",
-  stake: 10,
-  takeProfit: 50,
-  martingaleEnabled: false,
-  sessionStopLossEnabled: false,
-  sessionStopLoss: 100,
-  sessionTargetProfitEnabled: true,
-  sessionTargetProfit: 100,
-};
-
-type ActivityTab = "history" | "chart" | "positions";
-
 export default function DBotPage() {
-  const [selectedBot, setSelectedBot] = useState(BOTS[0].id);
-  const [config, setConfig] = useState<BotConfig>(DEFAULT_CONFIG);
-  const [tab, setTab] = useState<ActivityTab>("history");
+  const strategiesQuery = useListBotStrategies();
+  const limitsQuery = useGetBotLimits();
+  const runsQuery = useListBotRuns({ limit: 20 });
 
+  const strategies: BotStrategy[] = strategiesQuery.data?.strategies ?? [];
+  const [selectedId, setSelectedId] = useState<string>("");
+  const [form, setForm] = useState<BotFormState>(defaultFormState);
+  const [tab, setTab] = useState<"history" | "chart" | "positions">("history");
+  const [errors, setErrors] = useState<string[]>([]);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  // Select the first bot once the catalogue arrives, rather than hard-coding an
+  // id the backend may not offer.
+  useEffect(() => {
+    if (!selectedId && strategies.length > 0) {
+      setSelectedId(strategies[0].strategy_id);
+    }
+  }, [selectedId, strategies]);
+
+  const selected = strategies.find((s) => s.strategy_id === selectedId);
+
+  // The active run drives the whole screen: an active one locks the form and
+  // turns Start into Stop.
+  const activeRun = useMemo(
+    () => (runsQuery.data?.runs ?? []).find(isActive),
+    [runsQuery.data],
+  );
+
+  // Poll only while a run is live — there is nothing to refresh otherwise.
+  const runQuery = useGetBotRun(activeRun?.run_id ?? "", {
+    query: { enabled: Boolean(activeRun), refetchInterval: 3000 },
+  });
+  const run = runQuery.data ?? activeRun;
+
+  const startMutation = useStartBotRun();
+  const stopMutation = useStopBotRun();
+
+  const busy = startMutation.isPending || stopMutation.isPending;
+  const running = Boolean(run && isActive(run));
+
+  async function handleStart() {
+    if (!selected) return;
+    setErrors([]);
+    setNotice(null);
+
+    const contractType = selected.supported_contract_types[0];
+    const { request, errors: problems } = buildStartRequest(
+      selected.strategy_id,
+      contractType,
+      form,
+    );
+    if (!request) {
+      setErrors(problems);
+      return;
+    }
+
+    try {
+      const res = await startMutation.mutateAsync({ data: request });
+      const adjustments = res.limit_adjustments ?? [];
+      if (adjustments.length > 0) {
+        // A clamped limit is not an error, but the user must not be left
+        // believing the number they typed was honoured.
+        setNotice(
+          "The platform capped: " +
+            adjustments
+              .map((a: BotLimitAdjustment) => `${a.field} ${a.requested} → ${a.applied}`)
+              .join(", "),
+        );
+      }
+      await runsQuery.refetch();
+    } catch (err) {
+      setErrors([apiMessage(err)]);
+    }
+  }
+
+  async function handleStop() {
+    if (!run) return;
+    setErrors([]);
+    try {
+      await stopMutation.mutateAsync({ id: run.run_id });
+      await runsQuery.refetch();
+    } catch (err) {
+      setErrors([apiMessage(err)]);
+    }
+  }
+
+  const session = toSession(run, form.currency);
   const candles = useMemo(() => sampleCandles(90), []);
-  const session = SAMPLE_SESSION;
-  const running = session.status === "running";
 
   return (
     <div
@@ -65,28 +132,51 @@ export default function DBotPage() {
       data-opt-theme="light"
       className="flex min-h-screen flex-col bg-opt-bg font-sans text-opt-ink"
     >
-      <BotTopBar loginId="CR12345678" balance={10245.68} currency="USD" />
+      <BotTopBar
+        loginId={run?.deriv_account_id ?? "—"}
+        balance={0}
+        currency={form.currency}
+        isVirtual={run?.is_virtual ?? true}
+      />
 
-      <PreviewBanner />
+      {strategiesQuery.isError && (
+        <Banner tone="error">
+          Could not load the bot list. The trading engine may be unavailable.
+        </Banner>
+      )}
+      {notice && <Banner tone="info">{notice}</Banner>}
+      {errors.length > 0 && (
+        <Banner tone="error">{errors.join(" · ")}</Banner>
+      )}
 
-      <div className="grid flex-1 grid-cols-[300px_1fr] gap-4 p-4 max-xl:grid-cols-1">
-        {/* ── Left rail: bot picker + configuration ─────────────────── */}
-        <aside className="flex flex-col gap-5 rounded-[var(--opt-radius)] border border-opt-line bg-opt-bg-elev p-4">
+      <div className="grid flex-1 grid-cols-[320px_1fr] gap-4 p-4 max-xl:grid-cols-1">
+        <aside className="flex flex-col gap-5 self-start rounded-[var(--opt-radius)] border border-opt-line bg-opt-bg-elev p-4">
           <SelectBot
-            bots={BOTS}
-            selectedId={selectedBot}
-            onSelect={setSelectedBot}
+            bots={strategies.map((s) => ({
+              id: s.strategy_id,
+              name: s.display_name,
+              tagline: s.description ?? "",
+              contractType: s.supported_contract_types[0] ?? "",
+            }))}
+            selectedId={selectedId}
+            onSelect={setSelectedId}
             disabled={running}
           />
+
           <div className="h-px w-full bg-opt-line" />
-          <TradeConfiguration
-            config={config}
-            onChange={(patch) => setConfig((prev) => ({ ...prev, ...patch }))}
-            disabled={running}
-          />
+
+          {selected && (
+            <TradeConfiguration
+              strategyId={selected.strategy_id}
+              state={form}
+              onChange={(patch) => setForm((prev) => ({ ...prev, ...patch }))}
+              disabled={running}
+              maxStakePerTrade={limitsQuery.data?.max_stake_per_trade}
+              maxSessionLoss={limitsQuery.data?.max_session_loss}
+            />
+          )}
         </aside>
 
-        {/* ── Main: stats, counters, activity ───────────────────────── */}
         <main className="flex min-w-0 flex-col gap-4">
           <SessionStats session={session} />
           <CounterStrip session={session} />
@@ -101,11 +191,8 @@ export default function DBotPage() {
                   label={key === "history" ? "History" : key === "chart" ? "Chart" : "Positions"}
                 />
               ))}
-              <ChartToolbar />
             </div>
 
-            {/* The Chart tab gives the chart the full panel; the other two split
-                it with the trade list, as in the design. */}
             <div
               className={cn(
                 "grid min-h-0 flex-1 max-lg:grid-cols-1",
@@ -114,47 +201,51 @@ export default function DBotPage() {
             >
               {tab !== "chart" && (
                 <div className="flex min-h-0 flex-col border-r border-opt-line max-lg:border-b max-lg:border-r-0">
-                  {tab === "history" ? (
-                    <HistoryTable trades={SAMPLE_TRADES} />
-                  ) : (
-                    <HistoryTable
-                      trades={SAMPLE_TRADES.filter((t) => t.result === "open")}
-                    />
-                  )}
+                  <HistoryTable trades={[] as BotTrade[]} />
                 </div>
               )}
-
               <BotChart candles={candles} />
             </div>
           </section>
 
-          <div className="flex shrink-0 items-center justify-end gap-3">
-            <button
-              type="button"
-              disabled
-              title="Available once the bot API is connected"
-              className={cn(
-                "inline-flex items-center gap-2 rounded-[var(--opt-radius-sm)] px-6 py-2.5",
-                "bg-opt-fall text-[13px] font-bold text-white",
-                "disabled:cursor-not-allowed disabled:opacity-45",
+          <div className="flex shrink-0 flex-wrap items-center justify-between gap-3">
+            <p className="m-0 max-w-[46ch] text-[11px] leading-relaxed text-opt-ink-3">
+              {running
+                ? "Running on the server. You can close this tab — the bot keeps going, and its session limits keep applying."
+                : "The bot stops itself when a session limit is reached, whether or not this tab is open."}
+            </p>
+
+            <div className="flex items-center gap-3">
+              {running ? (
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={handleStop}
+                  className={cn(
+                    "inline-flex items-center gap-2 rounded-[var(--opt-radius-sm)] px-6 py-2.5",
+                    "bg-opt-fall text-[13px] font-bold text-white",
+                    "transition-opacity hover:opacity-90 disabled:opacity-45",
+                  )}
+                >
+                  <span aria-hidden="true">■</span>
+                  {stopMutation.isPending ? "Stopping…" : "Stop Bot"}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  disabled={busy || !selected}
+                  onClick={handleStart}
+                  className={cn(
+                    "inline-flex items-center gap-2 rounded-[var(--opt-radius-sm)] px-6 py-2.5",
+                    "bg-opt-rise text-[13px] font-bold text-white",
+                    "transition-opacity hover:opacity-90 disabled:opacity-45",
+                  )}
+                >
+                  <span aria-hidden="true">▶</span>
+                  {startMutation.isPending ? "Starting…" : "Start Bot"}
+                </button>
               )}
-            >
-              <span aria-hidden="true">■</span>
-              Stop Bot
-            </button>
-            <button
-              type="button"
-              disabled
-              title="Available once the bot API is connected"
-              className={cn(
-                "inline-flex items-center gap-2 rounded-[var(--opt-radius-sm)] border border-opt-line",
-                "bg-opt-bg-elev px-6 py-2.5 text-[13px] font-semibold text-opt-ink-2",
-                "disabled:cursor-not-allowed disabled:opacity-45",
-              )}
-            >
-              <span aria-hidden="true">⚙</span>
-              Setup
-            </button>
+            </div>
           </div>
         </main>
       </div>
@@ -162,19 +253,103 @@ export default function DBotPage() {
   );
 }
 
-function PreviewBanner() {
+// ─── helpers ─────────────────────────────────────────────────────────────────
+
+const ACTIVE_STATUSES = new Set(["pending", "running", "paused", "stopping"]);
+
+function isActive(run: BotRun): boolean {
+  return ACTIVE_STATUSES.has(run.status ?? "");
+}
+
+/** Maps an API run onto the stats components' shape. */
+function toSession(run: BotRun | undefined, currency: string): BotSession {
+  if (!run) {
+    return {
+      status: "idle",
+      realizedPnl: 0,
+      realizedPnlPct: 0,
+      tradesTotal: 0,
+      tradesWon: 0,
+      tradesLost: 0,
+      targetProfitProgress: 0,
+      targetProfitLimit: 0,
+      stopLossProgress: 0,
+      stopLossLimit: 0,
+      currency,
+    };
+  }
+
+  const pnl = Number.parseFloat(run.realized_pnl ?? "0") || 0;
+  const staked = Number.parseFloat(run.total_staked ?? "0") || 0;
+  const limits = (run.risk_limits ?? {}) as Record<string, string>;
+  const stopLossLimit = Number.parseFloat(limits.session_stop_loss ?? "0") || 0;
+  const targetLimit = Number.parseFloat(limits.session_target_profit ?? "0") || 0;
+
+  return {
+    status: mapStatus(run.status),
+    realizedPnl: pnl,
+    // Against capital actually committed. Zero staked means no denominator
+    // yet — 0% is the honest answer, not a division by zero.
+    realizedPnlPct: staked > 0 ? (pnl / staked) * 100 : 0,
+    tradesTotal: run.trades_total ?? 0,
+    tradesWon: run.trades_won ?? 0,
+    tradesLost: run.trades_lost ?? 0,
+    targetProfitProgress: Math.max(0, pnl),
+    targetProfitLimit: targetLimit,
+    // A loss is a negative P&L; the meter measures how much of the allowance
+    // has been used.
+    stopLossProgress: Math.max(0, -pnl),
+    stopLossLimit: stopLossLimit,
+    currency: run.currency ?? currency,
+  };
+}
+
+function mapStatus(status: string | undefined): BotSession["status"] {
+  switch (status) {
+    case "running":
+    case "pending":
+      return "running";
+    case "paused":
+      return "paused";
+    case "stopping":
+      return "stopping";
+    default:
+      return "idle";
+  }
+}
+
+/**
+ * Pulls the server's message out of an Axios error.
+ *
+ * The API returns `{ detail }` and deliberately keeps internal causes in its
+ * own logs, so whatever arrives here is safe to show.
+ */
+function apiMessage(err: unknown): string {
+  const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data
+    ?.detail;
+  return detail ?? "Something went wrong. Please try again.";
+}
+
+function Banner({
+  tone,
+  children,
+}: {
+  tone: "info" | "error";
+  children: React.ReactNode;
+}) {
   return (
-    <div className="flex shrink-0 flex-wrap items-center gap-x-2 gap-y-1 border-b border-opt-line bg-opt-bg-sunk px-5 py-2 text-[11px] text-opt-ink-2">
-      <span className="rounded-full bg-gold-soft px-2 py-0.5 font-semibold text-gold-3">
-        Preview
-      </span>
-      <span>
-        Layout preview with sample figures. No bot is running and nothing here is
-        connected to your account.
-      </span>
+    <div
+      className={cn(
+        "flex shrink-0 flex-wrap items-center gap-2 border-b px-5 py-2 text-[11px]",
+        tone === "error"
+          ? "border-opt-line bg-opt-fall-soft text-opt-fall"
+          : "border-opt-line bg-gold-soft text-gold-3",
+      )}
+    >
+      {children}
       <Link
         href={"/options/dtrader" as Route}
-        className="font-semibold text-gold-3 underline-offset-2 hover:underline"
+        className="ml-auto font-semibold underline-offset-2 hover:underline"
       >
         Go to dTrader
       </Link>
@@ -210,43 +385,5 @@ function Tab({
         />
       )}
     </button>
-  );
-}
-
-/**
- * Chart controls from the design. Inert for now — interval, chart type and the
- * indicator picker all need the live candle feed behind them, so they are
- * disabled rather than wired to nothing.
- */
-function ChartToolbar() {
-  return (
-    <div className="ml-auto flex items-center gap-1.5 pr-2">
-      {["1m", "Candles", "Indicators"].map((label) => (
-        <button
-          key={label}
-          type="button"
-          disabled
-          title="Available once the live candle feed is connected"
-          className={cn(
-            "rounded-[var(--opt-radius-sm)] border border-opt-line px-2.5 py-1",
-            "text-[11px] font-medium text-opt-ink-2 disabled:cursor-not-allowed disabled:opacity-50",
-          )}
-        >
-          {label}
-        </button>
-      ))}
-      <button
-        type="button"
-        disabled
-        aria-label="Expand chart"
-        title="Available once the live candle feed is connected"
-        className={cn(
-          "grid h-[26px] w-[26px] place-items-center rounded-[var(--opt-radius-sm)]",
-          "border border-opt-line text-opt-ink-2 disabled:cursor-not-allowed disabled:opacity-50",
-        )}
-      >
-        <ExpandIcon className="h-3.5 w-3.5" />
-      </button>
-    </div>
   );
 }

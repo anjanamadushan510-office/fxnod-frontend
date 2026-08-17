@@ -30,16 +30,14 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
-import type { DecimalString } from './decimalString';
 
-export interface ProposalResponse {
-  /** FXNod proposal id (use this to confirm). */
-  proposal_id: string;
-  deriv_proposal_id: string;
-  stake_amount: DecimalString;
-  payout_amount: DecimalString;
-  accrued_markup_amount: DecimalString;
-  currency: string;
-  expires_at: string;
-  expires_in_seconds: number;
+export interface BotLimits {
+  max_stake_per_trade?: string;
+  max_session_loss?: string;
+  max_session_target_profit?: string;
+  max_martingale_multiplier?: string;
+  max_martingale_steps?: number;
+  max_trades_per_session?: number;
+  max_run_duration_seconds?: number;
+  max_concurrent_runs?: number;
 }

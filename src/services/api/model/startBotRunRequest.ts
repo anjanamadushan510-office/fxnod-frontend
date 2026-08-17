@@ -30,16 +30,21 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
-import type { DecimalString } from './decimalString';
+import type { BotContractTemplate } from './botContractTemplate';
+import type { StartBotRunRequestStrategyParameters } from './startBotRunRequestStrategyParameters';
+import type { BotIndicator } from './botIndicator';
+import type { BotRiskLimits } from './botRiskLimits';
 
-export interface ProposalResponse {
-  /** FXNod proposal id (use this to confirm). */
-  proposal_id: string;
-  deriv_proposal_id: string;
-  stake_amount: DecimalString;
-  payout_amount: DecimalString;
-  accrued_markup_amount: DecimalString;
-  currency: string;
-  expires_at: string;
-  expires_in_seconds: number;
+export interface StartBotRunRequest {
+  strategy_id: string;
+  contract_template: BotContractTemplate;
+  /** Must validate against the bot's own parameter schema. */
+  strategy_parameters?: StartBotRunRequestStrategyParameters;
+  /** Optional. Required only for "auto" direction, and at least one must be directional (ATR alone does not qualify).
+ */
+  indicators?: BotIndicator[];
+  risk_limits: BotRiskLimits;
+  /** Required on a REAL-money account. Recorded with a timestamp; the schema itself refuses a real-money run without it.
+ */
+  risk_acknowledged?: boolean;
 }

@@ -30,16 +30,16 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
-import type { DecimalString } from './decimalString';
 
-export interface ProposalResponse {
-  /** FXNod proposal id (use this to confirm). */
-  proposal_id: string;
-  deriv_proposal_id: string;
-  stake_amount: DecimalString;
-  payout_amount: DecimalString;
-  accrued_markup_amount: DecimalString;
-  currency: string;
-  expires_at: string;
-  expires_in_seconds: number;
-}
+export type BotRunStatus = typeof BotRunStatus[keyof typeof BotRunStatus];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const BotRunStatus = {
+  pending: 'pending',
+  running: 'running',
+  paused: 'paused',
+  stopping: 'stopping',
+  completed: 'completed',
+  failed: 'failed',
+} as const;

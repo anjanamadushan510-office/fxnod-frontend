@@ -30,16 +30,30 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
-import type { DecimalString } from './decimalString';
+import type { BotContractTemplateDurationUnit } from './botContractTemplateDurationUnit';
 
-export interface ProposalResponse {
-  /** FXNod proposal id (use this to confirm). */
-  proposal_id: string;
-  deriv_proposal_id: string;
-  stake_amount: DecimalString;
-  payout_amount: DecimalString;
-  accrued_markup_amount: DecimalString;
-  currency: string;
-  expires_at: string;
-  expires_in_seconds: number;
+/**
+ * The shape of every contract this run buys. Snapshotted immutably on the run as the record of what the user authorised.
+
+ */
+export interface BotContractTemplate {
+  /** FXNod frontend contract type. */
+  contract_type: string;
+  symbol: string;
+  currency?: string;
+  duration?: number;
+  duration_unit?: BotContractTemplateDurationUnit;
+  barrier?: string;
+  /**
+   * @minimum 0
+   * @maximum 9
+   */
+  digit?: number;
+  /**
+   * @minimum 1
+   * @maximum 5
+   */
+  growth_rate?: number;
+  multiplier?: number;
+  payout_per_point?: number;
 }
