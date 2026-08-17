@@ -254,8 +254,29 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
       return { time, value, kind };
     });
     
-    if (ticks.length > 0) {
-      ticks[0].kind = "entry";
+    // For tick contracts, Deriv plots the start_time (which is before tick 1) as the unnumbered 'entry' circle,
+    // and then the actual stream ticks are numbered 1, 2, 3...
+    if (backendDurUnit === "t" && ticks.length > 0) {
+      if (ticks[0].time > startTime) {
+        // Prepend a dummy tick for the start time
+        ticks.unshift({
+          time: startTime,
+          value: entrySpot || ticks[0].value,
+          kind: "entry",
+        });
+      } else {
+        ticks[0].kind = "entry";
+      }
+    } else if (ticks.length > 0) {
+      if (ticks[0].time > startTime) {
+        ticks.unshift({
+          time: startTime,
+          value: entrySpot || ticks[0].value,
+          kind: "entry",
+        });
+      } else {
+        ticks[0].kind = "entry";
+      }
     }
 
     if (entrySpot === 0 && ticks.length > 0) entrySpot = backendDurUnit === "t" && ticks.length > 2 ? ticks[2].value : ticks[0].value;
@@ -351,13 +372,28 @@ export function simPositionToDetail(p: Position): ContractDetail {
   const isTick = p.isTick || (p.status && p.status.includes("tick"));
   const numPoints = isTick ? Math.max(5, now - start) : Math.max(10, Math.min(100, now - start));
 
-  let ticks = p.tickStream && p.tickStream.length > 0
-    ? p.tickStream.map((t: any, i: number) => ({
-        time: t.epoch || (start + i),
-        value: Number(t.tick_display_value) || Number(t.tick) || 0,
-        kind: i === 0 ? "entry" : "normal",
-      }))
-    : genTicks(entry, exit || entry, start, now, numPoints);
+  let ticks: any[] = [];
+  if (p.tickStream && p.tickStream.length > 0) {
+    ticks = p.tickStream.map((t: any, i: number) => ({
+      time: t.epoch || (start + i),
+      value: Number(t.tick_display_value) || Number(t.tick) || 0,
+      kind: "normal",
+    }));
+    if (ticks[0].time > start) {
+      ticks.unshift({
+        time: start,
+        value: entry || ticks[0].value,
+        kind: "entry",
+      });
+    } else {
+      ticks[0].kind = "entry";
+    }
+    if (p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost") {
+      ticks[ticks.length - 1].kind = "exit";
+    }
+  } else {
+    ticks = genTicks(entry, exit || entry, start, now, numPoints);
+  }
 
   return {
     id: p.id,
