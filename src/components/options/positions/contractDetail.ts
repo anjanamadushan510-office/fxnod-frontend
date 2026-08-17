@@ -254,17 +254,7 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
       return { time, value, kind };
     });
     
-    // For tick contracts, Deriv plots the start_time (which is before tick 1) as the unnumbered 'entry' circle,
-    // and then the actual stream ticks are numbered 1, 2, 3...
-    if (backendDurUnit === "t" && ticks.length > 0) {
-      // Prepend a dummy tick for the start time, 1 second before the first tick
-      const firstTick = ticks[0];
-      ticks.unshift({
-        time: firstTick.time - 1,
-        value: entrySpot || firstTick.value,
-        kind: "entry",
-      });
-    } else if (ticks.length > 0) {
+    if (ticks.length > 0) {
       ticks[0].kind = "entry";
     }
 
