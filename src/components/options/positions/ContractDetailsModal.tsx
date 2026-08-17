@@ -139,19 +139,44 @@ function LeftPanel({
       </span>
 
       <div className="grid grid-cols-2 gap-x-3 gap-y-2">
-        <Stat label="Total profit/loss" value={detail.pnl.toFixed(2)} className={pnlClass} />
-        <Stat
-          label="Contract value"
-          value={detail.contractValue.toFixed(2)}
-          className={lost ? "text-opt-ink-3" : "text-opt-rise"}
-        />
-        <Stat label="Stake" value={detail.stake.toFixed(2)} />
-        {(detail.type === "vanillas" || detail.type === "VANILLALONGCALL" || detail.type === "VANILLALONGPUT") && detail.payoutPerPoint !== undefined ? (
-          <Stat label="Payout per point" value={`${detail.payoutPerPoint.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })} USD`} />
+        {detail.type === "turbos" || detail.type === "TURBOSLONG" || detail.type === "TURBOSSHORT" ? (
+          <>
+            <Stat label="Stake" value={detail.stake.toFixed(2)} />
+            <Stat label="Contract value" value={detail.contractValue.toFixed(2)} className={lost ? "text-opt-ink-3" : "text-opt-rise"} />
+            <Stat label="Entry spot" value={detail.entrySpot.toFixed(Math.abs(detail.entrySpot) < 10 ? 4 : 2)} />
+            <Stat label="Take profit" value="-" />
+            <Stat label="Barrier" value={detail.barrier.toFixed(Math.abs(detail.entrySpot) < 10 ? 4 : 2)} />
+            {detail.payoutPerPoint !== undefined ? (
+              <Stat label="Payout per point" value={`${detail.payoutPerPoint.toFixed(2)} USD`} />
+            ) : (
+              <div />
+            )}
+          </>
         ) : (
-          <Stat label="Potential payout" value={detail.payout.toFixed(2)} />
+          <>
+            <Stat label="Total profit/loss" value={detail.pnl.toFixed(2)} className={pnlClass} />
+            <Stat
+              label="Contract value"
+              value={detail.contractValue.toFixed(2)}
+              className={lost ? "text-opt-ink-3" : "text-opt-rise"}
+            />
+            <Stat label="Stake" value={detail.stake.toFixed(2)} />
+            {(detail.type === "vanillas" || detail.type === "VANILLALONGCALL" || detail.type === "VANILLALONGPUT") && detail.payoutPerPoint !== undefined ? (
+              <Stat label="Payout per point" value={`${detail.payoutPerPoint.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })} USD`} />
+            ) : (
+              <Stat label="Potential payout" value={detail.payout.toFixed(2)} />
+            )}
+          </>
         )}
       </div>
+
+      {/* For Turbos, Deriv separates Total profit/loss out or we can put it below the grid */}
+      {(detail.type === "turbos" || detail.type === "TURBOSLONG" || detail.type === "TURBOSSHORT") && (
+        <div className="mt-2 flex flex-col items-center justify-center rounded bg-opt-bg-elev p-3 border border-opt-line">
+          <span className="text-[11px] font-semibold text-opt-ink-3">Total profit/loss</span>
+          <span className={`text-[15px] font-bold ${pnlClass}`}>{detail.pnl.toFixed(2)}</span>
+        </div>
+      )}
 
       <div className="h-px bg-opt-line" />
 
