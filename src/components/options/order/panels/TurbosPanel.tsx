@@ -55,7 +55,7 @@ export function TurbosPanel({ symbol }: TurbosPanelProps) {
       <UpDownToggle value={side} onChange={setSide} />
       <DurationField value={duration} onChange={setDuration} />
       <StakeField value={stake} onChange={setStake} min={1} max={2000} />
-      <PayoutPerPointField value={payoutPerPoint} onChange={setPayoutPerPoint} />
+      <PayoutPerPointField value={payoutPerPoint} onChange={setPayoutPerPoint} choices={proposal?.payout_choices} />
       <TakeProfitField
         value={takeProfit}
         onToggle={(on) => setTakeProfit(on ? 20 : null)}

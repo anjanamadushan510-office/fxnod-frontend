@@ -123,6 +123,7 @@ export interface ProposalResponse {
   ticks_stayed_in?: number[];
   maximum_ticks?: number;
   display_number_of_contracts?: string;
+  payout_choices?: string[];
 }
 
 export interface ConfirmResponse {
