@@ -52,6 +52,8 @@ import type {
 import type {
   BotLimits,
   BotRun,
+  ListBotRunTrades200,
+  ListBotRunTradesParams,
   ListBotRuns200,
   ListBotRunsParams,
   ListBotStrategies200,
@@ -497,6 +499,110 @@ export function useGetBotRun<TData = Awaited<ReturnType<typeof getBotRun>>, TErr
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetBotRunQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * Newest first. The `summary` covers the WHOLE run, not the requested page — a win rate computed over one page would be actively misleading.
+
+`profit_loss` and `outcome` are absent while a contract is still open. Reporting a profit of 0 for an unsettled contract would read as break-even, which is a different claim from "not yet known".
+
+ * @summary List the trades a bot run has placed
+ */
+export const listBotRunTrades = (
+    id: string,
+    params?: ListBotRunTradesParams,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ListBotRunTrades200>(
+      {url: `/api/v1/bots/runs/${id}/trades`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+  
+
+
+
+export const getListBotRunTradesQueryKey = (id?: string,
+    params?: ListBotRunTradesParams,) => {
+    return [
+    `/api/v1/bots/runs/${id}/trades`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getListBotRunTradesQueryOptions = <TData = Awaited<ReturnType<typeof listBotRunTrades>>, TError = ErrorType<void>>(id: string,
+    params?: ListBotRunTradesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBotRunTrades>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListBotRunTradesQueryKey(id,params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listBotRunTrades>>> = ({ signal }) => listBotRunTrades(id,params, requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listBotRunTrades>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListBotRunTradesQueryResult = NonNullable<Awaited<ReturnType<typeof listBotRunTrades>>>
+export type ListBotRunTradesQueryError = ErrorType<void>
+
+
+export function useListBotRunTrades<TData = Awaited<ReturnType<typeof listBotRunTrades>>, TError = ErrorType<void>>(
+ id: string,
+    params: undefined |  ListBotRunTradesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBotRunTrades>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listBotRunTrades>>,
+          TError,
+          Awaited<ReturnType<typeof listBotRunTrades>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListBotRunTrades<TData = Awaited<ReturnType<typeof listBotRunTrades>>, TError = ErrorType<void>>(
+ id: string,
+    params?: ListBotRunTradesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBotRunTrades>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listBotRunTrades>>,
+          TError,
+          Awaited<ReturnType<typeof listBotRunTrades>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListBotRunTrades<TData = Awaited<ReturnType<typeof listBotRunTrades>>, TError = ErrorType<void>>(
+ id: string,
+    params?: ListBotRunTradesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBotRunTrades>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List the trades a bot run has placed
+ */
+
+export function useListBotRunTrades<TData = Awaited<ReturnType<typeof listBotRunTrades>>, TError = ErrorType<void>>(
+ id: string,
+    params?: ListBotRunTradesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBotRunTrades>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListBotRunTradesQueryOptions(id,params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

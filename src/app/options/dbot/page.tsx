@@ -20,12 +20,18 @@ import type { BotSession, BotTrade } from "@/components/bot/types";
 import {
   useGetBotLimits,
   useGetBotRun,
+  useListBotRunTrades,
   useListBotRuns,
   useListBotStrategies,
   useStartBotRun,
   useStopBotRun,
 } from "@/services/api/endpoints/bots/bots";
-import type { BotLimitAdjustment, BotRun, BotStrategy } from "@/services/api/model";
+import type {
+  BotLimitAdjustment,
+  BotRun,
+  BotRunTrade,
+  BotStrategy,
+} from "@/services/api/model";
 
 /**
  * /options/dbot — automated trading.
@@ -70,6 +76,20 @@ export default function DBotPage() {
     query: { enabled: Boolean(activeRun), refetchInterval: 3000 },
   });
   const run = runQuery.data ?? activeRun;
+
+  // The run's trades. Polled alongside the run itself while it is live, and
+  // fetched once for a finished one — a completed run's history never changes.
+  const tradesQuery = useListBotRunTrades(
+    run?.run_id ?? "",
+    { limit: 50 },
+    {
+      query: {
+        enabled: Boolean(run?.run_id),
+        refetchInterval: run && isActive(run) ? 3000 : false,
+      },
+    },
+  );
+  const trades = tradesQuery.data?.trades ?? [];
 
   const startMutation = useStartBotRun();
   const stopMutation = useStopBotRun();
@@ -123,7 +143,7 @@ export default function DBotPage() {
     }
   }
 
-  const session = toSession(run, form.currency);
+  const session = toSession(run, form.currency, tradesQuery.data?.summary);
   const candles = useMemo(() => sampleCandles(90), []);
 
   return (
@@ -201,7 +221,11 @@ export default function DBotPage() {
             >
               {tab !== "chart" && (
                 <div className="flex min-h-0 flex-col border-r border-opt-line max-lg:border-b max-lg:border-r-0">
-                  <HistoryTable trades={[] as BotTrade[]} />
+                  <HistoryTable
+                    trades={toTradeRows(
+                      tab === "positions" ? trades.filter(isOpenTrade) : trades,
+                    )}
+                  />
                 </div>
               )}
               <BotChart candles={candles} />
@@ -261,8 +285,35 @@ function isActive(run: BotRun): boolean {
   return ACTIVE_STATUSES.has(run.status ?? "");
 }
 
+/**
+ * Turns API trades into the history table's rows.
+ *
+ * Time is rendered in the viewer's locale rather than the server's: a user
+ * reconciling their own trades reads their own clock.
+ */
+function toTradeRows(trades: BotRunTrade[]): BotTrade[] {
+  return trades.map((t) => ({
+    id: t.trade_id,
+    time: new Date(t.created_at).toLocaleTimeString(),
+    direction: t.side === "fall" ? "down" : "up",
+    stake: Number.parseFloat(t.stake_amount) || 0,
+    result: t.outcome === "won" ? "won" : t.outcome === "lost" ? "lost" : "open",
+    // null, not 0, while unsettled — the table renders "--" rather than a
+    // break-even figure the contract has not actually produced.
+    pnl: t.profit_loss === undefined ? null : Number.parseFloat(t.profit_loss),
+  }));
+}
+
+function isOpenTrade(t: BotRunTrade): boolean {
+  return t.outcome === undefined;
+}
+
 /** Maps an API run onto the stats components' shape. */
-function toSession(run: BotRun | undefined, currency: string): BotSession {
+function toSession(
+  run: BotRun | undefined,
+  currency: string,
+  summary?: { total: number; won: number; lost: number; realized_pnl: string; total_staked: string },
+): BotSession {
   if (!run) {
     return {
       status: "idle",
@@ -279,8 +330,11 @@ function toSession(run: BotRun | undefined, currency: string): BotSession {
     };
   }
 
-  const pnl = Number.parseFloat(run.realized_pnl ?? "0") || 0;
-  const staked = Number.parseFloat(run.total_staked ?? "0") || 0;
+  // Prefer the trade summary when it is loaded: it is derived from the same
+  // rows the table below is showing, so the headline figure and the list can
+  // never disagree. The run's own counters are the fallback.
+  const pnl = Number.parseFloat(summary?.realized_pnl ?? run.realized_pnl ?? "0") || 0;
+  const staked = Number.parseFloat(summary?.total_staked ?? run.total_staked ?? "0") || 0;
   const limits = (run.risk_limits ?? {}) as Record<string, string>;
   const stopLossLimit = Number.parseFloat(limits.session_stop_loss ?? "0") || 0;
   const targetLimit = Number.parseFloat(limits.session_target_profit ?? "0") || 0;
@@ -291,9 +345,9 @@ function toSession(run: BotRun | undefined, currency: string): BotSession {
     // Against capital actually committed. Zero staked means no denominator
     // yet — 0% is the honest answer, not a division by zero.
     realizedPnlPct: staked > 0 ? (pnl / staked) * 100 : 0,
-    tradesTotal: run.trades_total ?? 0,
-    tradesWon: run.trades_won ?? 0,
-    tradesLost: run.trades_lost ?? 0,
+    tradesTotal: summary?.total ?? run.trades_total ?? 0,
+    tradesWon: summary?.won ?? run.trades_won ?? 0,
+    tradesLost: summary?.lost ?? run.trades_lost ?? 0,
     targetProfitProgress: Math.max(0, pnl),
     targetProfitLimit: targetLimit,
     // A loss is a negative P&L; the meter measures how much of the allowance
