@@ -246,36 +246,51 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
   let ticks: ContractTick[] = [];
   const ts = (h as any).tick_stream;
   if (ts && Array.isArray(ts) && ts.length > 0) {
-    ticks = ts.map((t: any, i: number) => {
-      const time = t.epoch || (startTime + i);
-      const value = Number(t.tick_display_value) || Number(t.tick) || 0;
-      let kind: "entry" | "exit" | "normal" = "normal";
-      if (i === ts.length - 1) kind = "exit";
-      return { time, value, kind };
-    });
-    
-    // For tick contracts, Deriv plots the start_time (which is before tick 1) as the unnumbered 'entry' circle,
-    // and then the actual stream ticks are numbered 1, 2, 3...
-    if (backendDurUnit === "t" && ticks.length > 0) {
-      if (ticks[0].time > startTime) {
-        // Prepend a dummy tick for the start time
-        ticks.unshift({
-          time: startTime,
-          value: entrySpot || ticks[0].value,
-          kind: "entry",
-        });
-      } else {
-        ticks[0].kind = "entry";
+    if (backendDurUnit === "t" && backendDurSecs > 0) {
+      let exitIdx = ts.length - 1;
+      if (exitSpot > 0) {
+        for (let i = ts.length - 1; i >= 0; i--) {
+          const val = Number(ts[i].tick_display_value) || Number(ts[i].tick) || 0;
+          if (Math.abs(val - exitSpot) < 0.000001) {
+            exitIdx = i;
+            break;
+          }
+        }
       }
-    } else if (ticks.length > 0) {
-      if (ticks[0].time > startTime) {
-        ticks.unshift({
-          time: startTime,
-          value: entrySpot || ticks[0].value,
-          kind: "entry",
-        });
-      } else {
-        ticks[0].kind = "entry";
+      
+      const startIdx = Math.max(0, exitIdx - backendDurSecs + 1);
+      const elapsed = ts.slice(startIdx, exitIdx + 1);
+      
+      ticks = elapsed.map((t: any, i: number) => ({
+        time: t.epoch || (startTime + i + 1),
+        value: Number(t.tick_display_value) || Number(t.tick) || 0,
+        kind: i === elapsed.length - 1 ? "exit" : "normal"
+      }));
+
+      ticks.unshift({
+        time: startTime,
+        value: entrySpot || ticks[0]?.value || 0,
+        kind: "entry"
+      });
+    } else {
+      ticks = ts.map((t: any, i: number) => {
+        const time = t.epoch || (startTime + i);
+        const value = Number(t.tick_display_value) || Number(t.tick) || 0;
+        let kind: "entry" | "exit" | "normal" = "normal";
+        if (i === ts.length - 1) kind = "exit";
+        return { time, value, kind };
+      });
+      
+      if (ticks.length > 0) {
+        if (ticks[0].time > startTime) {
+          ticks.unshift({
+            time: startTime,
+            value: entrySpot || ticks[0].value,
+            kind: "entry",
+          });
+        } else {
+          ticks[0].kind = "entry";
+        }
       }
     }
 
@@ -291,16 +306,13 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
   }
 
 		const seconds = Math.max(1, exitTime - startTime);
-		// ts[0] is the entry/start tick; Deriv counts only the ticks *after* entry.
-		// So a "5 ticks" contract produces ts.length === 6. Subtract 1 to match Deriv's display.
-		const tickCount = (ts && Array.isArray(ts) && ts.length > 1) ? ts.length - 1 : 0;
 
 		// Prefer the authoritative values persisted from the proposal:
-		//   duration_unit "t" â†’ ticks, any other unit â†’ seconds/mins etc.
+		//   duration_unit "t" -> ticks, any other unit -> seconds/mins etc.
 		let durationLabel: string;
-		if (backendDurUnit === "t" && tickCount > 0) {
-			// Tick-based trade: use tick count (already correct from tick_stream)
-			durationLabel = `${tickCount} ticks`;
+		if (backendDurUnit === "t" && backendDurSecs > 0) {
+			// Tick-based trade: use requested duration
+			durationLabel = `${backendDurSecs} ticks`;
 		} else if (backendDurSecs > 0) {
 			// Time-based trade (secs, mins, hours): show the stored value directly.
 			durationLabel = backendDurUnit === "m"
@@ -374,11 +386,29 @@ export function simPositionToDetail(p: Position): ContractDetail {
 
   let ticks: any[] = [];
   if (p.tickStream && p.tickStream.length > 0) {
-    ticks = p.tickStream.map((t: any, i: number) => ({
+    let ts = p.tickStream;
+    // Truncate trailing ticks if the trade is finished
+    if (isTick && (p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost") && exit > 0) {
+      let exitIdx = ts.length - 1;
+      for (let i = ts.length - 1; i >= 0; i--) {
+        const val = Number(ts[i].tick_display_value) || Number(ts[i].tick) || 0;
+        if (Math.abs(val - exit) < 0.000001) {
+          exitIdx = i;
+          break;
+        }
+      }
+      
+      const requestedTicks = parseInt(p.status || "0", 10) || 5; // try to parse from "5 ticks"
+      const startIdx = Math.max(0, exitIdx - requestedTicks + 1);
+      ts = ts.slice(startIdx, exitIdx + 1);
+    }
+    
+    ticks = ts.map((t: any, i: number) => ({
       time: t.epoch || (start + i),
       value: Number(t.tick_display_value) || Number(t.tick) || 0,
       kind: "normal",
     }));
+    
     if (ticks[0].time > start) {
       ticks.unshift({
         time: start,
@@ -388,6 +418,7 @@ export function simPositionToDetail(p: Position): ContractDetail {
     } else {
       ticks[0].kind = "entry";
     }
+    
     if (p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost") {
       ticks[ticks.length - 1].kind = "exit";
     }
