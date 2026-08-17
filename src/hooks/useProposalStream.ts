@@ -86,6 +86,10 @@ export function useProposalStream(
             setProposal(data as ProposalResponse);
             setLoading(false);
             setError(null);
+          } else if (data.type === "payout_choices") {
+            setProposal((prev) => 
+              prev ? { ...prev, payout_choices: data.payout_choices } : { payout_choices: data.payout_choices } as ProposalResponse
+            );
           } else if (data.type === "error") {
             setError(data.message || "Unknown error");
             setLoading(false);

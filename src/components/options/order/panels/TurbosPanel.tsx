@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePanelBuy } from "@/hooks/usePanelBuy";
 import { buildProposalRequest } from "../buildProposalRequest";
 import { TradeConfirmed } from "../TradeConfirmed";
@@ -45,6 +45,18 @@ export function TurbosPanel({ symbol }: TurbosPanelProps) {
   if (buyPhase === "confirmed" && lastTrade) {
     return <TradeConfirmed trade={lastTrade} side={side} onNewTrade={handleNewTrade} />;
   }
+
+  useEffect(() => {
+    if (proposal?.payout_choices && proposal.payout_choices.length > 0) {
+      const choices = proposal.payout_choices;
+      const currentStr = payoutPerPoint.toString();
+      // If current value is invalid, snap to the middle choice
+      if (!choices.includes(currentStr)) {
+        const middleIndex = Math.floor(choices.length / 2);
+        setPayoutPerPoint(parseFloat(choices[middleIndex]));
+      }
+    }
+  }, [proposal?.payout_choices, payoutPerPoint]);
 
   // Fallback to placeholder if proposal is not yet loaded
   const displayBarrier = proposal?.barrier ?? (side === "rise" ? "-6.46" : "+6.46");
