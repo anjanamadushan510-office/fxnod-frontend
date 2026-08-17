@@ -203,7 +203,10 @@ export function formatTradeTypeLabel(type: string, side: string): string {
   if (rawMap[type]) return rawMap[type];
   if (type === "rise_fall") return side === "rise" ? "Rise" : "Fall";
   if (type === "higher_lower") return side === "rise" || side === "higher" ? "Higher" : "Lower";
-  if (type === "touch_no_touch") return side === "touch" ? "Touch" : "No Touch";
+  if (type === "touch_no_touch") return (side === "rise" || side === "touch") ? "Touch" : "No Touch";
+  if (type === "matches_differs") return (side === "rise" || side === "matches") ? "Matches" : "Differs";
+  if (type === "over_under") return (side === "rise" || side === "over") ? "Over" : "Under";
+  if (type === "even_odd") return (side === "rise" || side === "even") ? "Even" : "Odd";
   if (type === "vanillas") return side === "fall" ? "Vanillas Put" : "Vanillas Call";
   if (type === "accumulators") return "Accumulators";
   if (type === "turbos") return (side === "fall" || side === "down") ? "Turbos Down" : "Turbos Up";
