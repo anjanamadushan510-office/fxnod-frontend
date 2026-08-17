@@ -18,7 +18,7 @@ interface TouchNoTouchPanelProps {
 
 export function TouchNoTouchPanel({ symbol }: TouchNoTouchPanelProps) {
   const [side, setSide] = useState<Side>("rise");
-  const [duration, setDuration] = useDefaultDuration();
+  const [duration, setDuration] = useDefaultDuration({ amount: 5, unit: "ticks" });
   const [barrier, setBarrier] = useState<number>(1.17);
   const [stake, setStake] = useState<number>(10);
 
@@ -55,7 +55,7 @@ export function TouchNoTouchPanel({ symbol }: TouchNoTouchPanelProps) {
         onChange={setSide}
         labels={{ rise: "Touch", fall: "No Touch" }}
       />
-      <DurationField value={duration} onChange={setDuration} />
+      <DurationField value={duration} onChange={setDuration} allowSeconds={false} />
       <OffsetField label="Barrier" value={barrier} onChange={setBarrier} />
       <StakeField value={stake} onChange={setStake} min={1} max={2000} />
       {errorMsg && (
