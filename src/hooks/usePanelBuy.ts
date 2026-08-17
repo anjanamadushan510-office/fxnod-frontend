@@ -11,7 +11,11 @@ import { usePositionsUI } from "@/stores/usePositionsUI";
 import { useTradeOverlays } from "@/stores/useTradeOverlays";
 import { useDerivStatus } from "./useDerivStatus";
 import { useProposalStream } from "./useProposalStream";
-import type { ConfirmResponse, ProposalRequest, ProposalResponse } from "@/services/tradingApi";
+import type {
+  ConfirmResponse,
+  ProposalRequest,
+  ProposalStreamFrame,
+} from "@/services/tradingApi";
 
 export type BuyPhase = "idle" | "buying" | "confirmed";
 
@@ -23,7 +27,9 @@ export interface PanelBuyResult {
   /** Sub-text for BuyButton — "Fetching payout…" while quoting, real value once ready, null when disabled. */
   payoutLabel: string | null;
   errorMsg: string | null;
-  proposal: ProposalResponse | null;
+  // The quote comes from the WS stream, which carries payout_choices on top of
+  // the REST shape — so panels get the frame type, not the REST response.
+  proposal: ProposalStreamFrame | null;
   handleBuy: () => void;
   handleNewTrade: () => void;
 }

@@ -94,6 +94,8 @@ export * from './proposalRequest';
 export * from './proposalRequestStopLoss';
 export * from './proposalRequestTakeProfit';
 export * from './proposalResponse';
+export * from './proposalStreamFrame';
+export * from './proposalStreamFrameAllOf';
 export * from './referralCodeResponse';
 export * from './referralStatsResponse';
 export * from './referralTreeNode';

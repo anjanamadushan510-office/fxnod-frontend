@@ -1,5 +1,11 @@
 import { api } from "./api";
 import type { ContractTypeId } from "@/components/options/layout/contractTypes";
+import type {
+  ConfirmResponse as GeneratedConfirmResponse,
+  ProposalRequest as GeneratedProposalRequest,
+  ProposalResponse as GeneratedProposalResponse,
+  ProposalStreamFrame as GeneratedProposalStreamFrame,
+} from "@/services/api/model";
 
 /**
  * Trading service client — Deriv OAuth linking + the two-phase proposal /
@@ -90,50 +96,50 @@ export const derivApi = {
 // ─── Orders: proposal → confirm ─────────────────────────────────────────────
 
 /** Discriminated proposal body. `side` is the toggle's "rise"/"fall". */
-export interface ProposalRequest {
+/**
+ * Order types.
+ *
+ * These are DERIVED from the generated models rather than re-declared. They used
+ * to be hand-written copies, and the copies drifted: fields the backend returns
+ * were missing from openapi.yaml, so someone added them to the GENERATED model
+ * by hand — which every `npm run gen:api` silently reverted. The app kept
+ * working only because this file happened to declare them too.
+ *
+ * The rule now: the wire shape comes from openapi.yaml, and anything narrower
+ * is expressed as a refinement of the generated type, never as a second copy.
+ */
+
+/**
+ * A proposal request, narrowed to the ids this frontend actually sends.
+ *
+ * The generated model types `contract_type` and `duration_unit` as plain
+ * strings because that is all JSON can say. Narrowing them to the app's own
+ * unions is the one thing worth keeping over the generated shape — it catches a
+ * typo'd contract id at compile time instead of as a 422.
+ */
+export type ProposalRequest = Omit<
+  GeneratedProposalRequest,
+  "contract_type" | "side" | "duration_unit"
+> & {
   contract_type: ContractTypeId;
   side?: "rise" | "fall";
-  symbol: string;
-  stake: string; // decimal as string — never a JS float
-  currency?: string;
-  duration?: number;
   duration_unit?: "t" | "s" | "m" | "h" | "d";
-  barrier?: string;
-  digit?: number;
-  growth_rate?: number; // percent 1–5
-  multiplier?: number;
-  payout_per_point?: number;
-  take_profit?: string;
-  stop_loss?: string;
-}
+};
 
-export interface ProposalResponse {
-  proposal_id: string;
-  deriv_proposal_id: string;
-  stake_amount: string;
-  payout_amount: string;
-  accrued_markup_amount: string;
-  currency: string;
-  expires_at: string;
-  expires_in_seconds: number;
-  barrier?: string;
-  high_barrier?: string;
-  low_barrier?: string;
-  tick_size_barrier_percentage?: string;
-  ticks_stayed_in?: number[];
-  maximum_ticks?: number;
-  display_number_of_contracts?: string;
-  payout_choices?: string[];
-}
+/** The REST proposal response, exactly as openapi.yaml declares it. */
+export type ProposalResponse = GeneratedProposalResponse;
 
-export interface ConfirmResponse {
-  trade_id: string;
-  deriv_contract_id: string;
-  buy_price: string;
-  payout_amount: string;
-  accrued_markup_amount: string;
-  deriv_settlement_period: string;
-}
+/**
+ * A frame from the live proposal WebSocket.
+ *
+ * Everything the REST response has, plus the stream-only additions
+ * (`payout_choices`). Declared in openapi.yaml as ProposalStreamFrame, so this
+ * shape is generated too — the WS payload no longer borrows the REST model and
+ * no longer needs a field patched into it by hand.
+ */
+export type ProposalStreamFrame = GeneratedProposalStreamFrame;
+
+export type ConfirmResponse = GeneratedConfirmResponse;
 
 export const ordersApi = {
   /** Get a binding quote (~5s TTL). 422 = invalid params, 428 = no account. */

@@ -30,39 +30,15 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
-import type { DecimalString } from './decimalString';
-import type { ProposalRequestTakeProfit } from './proposalRequestTakeProfit';
-import type { ProposalRequestStopLoss } from './proposalRequestStopLoss';
+import type { ProposalResponse } from './proposalResponse';
+import type { ProposalStreamFrameAllOf } from './proposalStreamFrameAllOf';
 
-export interface ProposalRequest {
-  /** Frontend id: rise_fall, accumulators, matches_differs, … */
-  contract_type: string;
-  /** "rise" / "fall" toggle; empty for accumulators. */
-  side?: string;
-  /** Deriv symbol (e.g. R_100). */
-  symbol: string;
-  /** Stake amount; must parse as a decimal. */
-  stake: DecimalString;
-  currency?: string;
-  /** @nullable */
-  duration?: number | null;
-  /** e.g. t, s, m, h. */
-  duration_unit?: string;
-  barrier?: string;
-  /** @nullable */
-  digit?: number | null;
-  /** @nullable */
-  growth_rate?: number | null;
-  /** @nullable */
-  multiplier?: number | null;
-  /**
-   * Turbos — payout per point. Either this or `barrier` is supplied, not both; the handler rejects the combination. Was missing from this schema while the handler already accepted it.
+/**
+ * A frame from the live proposal WebSocket (`wss://…/ws/proposal`).
 
-   * @nullable
-   */
-  payout_per_point?: number | null;
-  /** @nullable */
-  take_profit?: ProposalRequestTakeProfit;
-  /** @nullable */
-  stop_loss?: ProposalRequestStopLoss;
-}
+OpenAPI 3.0 cannot describe a WebSocket as a path, but the frame still has a wire shape that the frontend must agree with, so it is declared here as a schema. Without it the shape lives only in hand-written TypeScript, which is exactly how `payout_choices` came to be patched into a GENERATED file and silently reverted by the next codegen run.
+
+Everything in ProposalResponse, plus the fields the stream adds. Keep in step with the `out` map in internal/handlers/http/ws.go.
+
+ */
+export type ProposalStreamFrame = ProposalResponse & ProposalStreamFrameAllOf;

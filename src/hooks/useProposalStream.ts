@@ -5,7 +5,7 @@ import {
   ordersApi,
   type ConfirmResponse,
   type ProposalRequest,
-  type ProposalResponse,
+  type ProposalStreamFrame,
 } from "@/services/tradingApi";
 import { buildWsUrl } from "@/services/ws";
 import { useAuthStore } from "@/stores/authStore";
@@ -15,7 +15,7 @@ interface UseProposalStreamOptions {
 }
 
 interface UseProposalStreamResult {
-  proposal: ProposalResponse | null;
+  proposal: ProposalStreamFrame | null;
   loading: boolean;
   error: string | null;
   confirm: () => Promise<ConfirmResponse>;
@@ -25,13 +25,13 @@ export function useProposalStream(
   request: ProposalRequest | null,
   { enabled = true }: UseProposalStreamOptions = {},
 ): UseProposalStreamResult {
-  const [proposal, setProposal] = useState<ProposalResponse | null>(null);
+  const [proposal, setProposal] = useState<ProposalStreamFrame | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const authStatus = useAuthStore((s) => s.status);
 
   const requestRef = useRef<ProposalRequest | null>(request);
-  const proposalRef = useRef<ProposalResponse | null>(null);
+  const proposalRef = useRef<ProposalStreamFrame | null>(null);
   requestRef.current = request;
   proposalRef.current = proposal;
 
@@ -83,7 +83,7 @@ export function useProposalStream(
         try {
           const data = JSON.parse(event.data);
           if (data.type === "proposal") {
-            setProposal(data as ProposalResponse);
+            setProposal(data as ProposalStreamFrame);
             setLoading(false);
             setError(null);
           } else if (data.type === "error") {
