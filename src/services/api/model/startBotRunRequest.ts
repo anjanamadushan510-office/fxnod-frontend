@@ -30,39 +30,21 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
-import type { DecimalString } from './decimalString';
-import type { ProposalRequestTakeProfit } from './proposalRequestTakeProfit';
-import type { ProposalRequestStopLoss } from './proposalRequestStopLoss';
+import type { BotContractTemplate } from './botContractTemplate';
+import type { StartBotRunRequestStrategyParameters } from './startBotRunRequestStrategyParameters';
+import type { BotIndicator } from './botIndicator';
+import type { BotRiskLimits } from './botRiskLimits';
 
-export interface ProposalRequest {
-  /** Frontend id: rise_fall, accumulators, matches_differs, … */
-  contract_type: string;
-  /** "rise" / "fall" toggle; empty for accumulators. */
-  side?: string;
-  /** Deriv symbol (e.g. R_100). */
-  symbol: string;
-  /** Stake amount; must parse as a decimal. */
-  stake: DecimalString;
-  currency?: string;
-  /** @nullable */
-  duration?: number | null;
-  /** e.g. t, s, m, h. */
-  duration_unit?: string;
-  barrier?: string;
-  /** @nullable */
-  digit?: number | null;
-  /** @nullable */
-  growth_rate?: number | null;
-  /** @nullable */
-  multiplier?: number | null;
-  /**
-   * Turbos — payout per point. Either this or `barrier` is supplied, not both; the handler rejects the combination. Was missing from this schema while the handler already accepted it.
-
-   * @nullable
-   */
-  payout_per_point?: number | null;
-  /** @nullable */
-  take_profit?: ProposalRequestTakeProfit;
-  /** @nullable */
-  stop_loss?: ProposalRequestStopLoss;
+export interface StartBotRunRequest {
+  strategy_id: string;
+  contract_template: BotContractTemplate;
+  /** Must validate against the bot's own parameter schema. */
+  strategy_parameters?: StartBotRunRequestStrategyParameters;
+  /** Optional. Required only for "auto" direction, and at least one must be directional (ATR alone does not qualify).
+ */
+  indicators?: BotIndicator[];
+  risk_limits: BotRiskLimits;
+  /** Required on a REAL-money account. Recorded with a timestamp; the schema itself refuses a real-money run without it.
+ */
+  risk_acknowledged?: boolean;
 }

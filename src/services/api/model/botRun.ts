@@ -30,39 +30,36 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
-import type { DecimalString } from './decimalString';
-import type { ProposalRequestTakeProfit } from './proposalRequestTakeProfit';
-import type { ProposalRequestStopLoss } from './proposalRequestStopLoss';
+import type { BotRunStatus } from './botRunStatus';
+import type { BotRunStopReason } from './botRunStopReason';
+import type { BotContractTemplate } from './botContractTemplate';
+import type { BotRunStrategyParameters } from './botRunStrategyParameters';
+import type { BotRunRiskLimits } from './botRunRiskLimits';
+import type { BotIndicator } from './botIndicator';
 
-export interface ProposalRequest {
-  /** Frontend id: rise_fall, accumulators, matches_differs, … */
-  contract_type: string;
-  /** "rise" / "fall" toggle; empty for accumulators. */
-  side?: string;
-  /** Deriv symbol (e.g. R_100). */
+export interface BotRun {
+  run_id: string;
+  strategy_id: string;
+  strategy_version?: number;
+  deriv_account_id?: string;
+  /** Snapshotted at start; a run cannot migrate between demo and real. */
+  is_virtual: boolean;
   symbol: string;
-  /** Stake amount; must parse as a decimal. */
-  stake: DecimalString;
-  currency?: string;
-  /** @nullable */
-  duration?: number | null;
-  /** e.g. t, s, m, h. */
-  duration_unit?: string;
-  barrier?: string;
-  /** @nullable */
-  digit?: number | null;
-  /** @nullable */
-  growth_rate?: number | null;
-  /** @nullable */
-  multiplier?: number | null;
-  /**
-   * Turbos — payout per point. Either this or `barrier` is supplied, not both; the handler rejects the combination. Was missing from this schema while the handler already accepted it.
-
-   * @nullable
-   */
-  payout_per_point?: number | null;
-  /** @nullable */
-  take_profit?: ProposalRequestTakeProfit;
-  /** @nullable */
-  stop_loss?: ProposalRequestStopLoss;
+  currency: string;
+  status: BotRunStatus;
+  stop_reason?: BotRunStopReason;
+  realized_pnl: string;
+  total_staked: string;
+  trades_total: number;
+  trades_won: number;
+  trades_lost: number;
+  trades_open: number;
+  contract_template?: BotContractTemplate;
+  strategy_parameters?: BotRunStrategyParameters;
+  risk_limits?: BotRunRiskLimits;
+  indicators?: BotIndicator[];
+  created_at: string;
+  started_at?: string;
+  ended_at?: string;
+  expires_at: string;
 }

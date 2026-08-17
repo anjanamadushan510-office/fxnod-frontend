@@ -30,39 +30,12 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
-import type { DecimalString } from './decimalString';
-import type { ProposalRequestTakeProfit } from './proposalRequestTakeProfit';
-import type { ProposalRequestStopLoss } from './proposalRequestStopLoss';
+import type { BotRun } from './botRun';
+import type { BotLimitAdjustment } from './botLimitAdjustment';
 
-export interface ProposalRequest {
-  /** Frontend id: rise_fall, accumulators, matches_differs, … */
-  contract_type: string;
-  /** "rise" / "fall" toggle; empty for accumulators. */
-  side?: string;
-  /** Deriv symbol (e.g. R_100). */
-  symbol: string;
-  /** Stake amount; must parse as a decimal. */
-  stake: DecimalString;
-  currency?: string;
-  /** @nullable */
-  duration?: number | null;
-  /** e.g. t, s, m, h. */
-  duration_unit?: string;
-  barrier?: string;
-  /** @nullable */
-  digit?: number | null;
-  /** @nullable */
-  growth_rate?: number | null;
-  /** @nullable */
-  multiplier?: number | null;
-  /**
-   * Turbos — payout per point. Either this or `barrier` is supplied, not both; the handler rejects the combination. Was missing from this schema while the handler already accepted it.
-
-   * @nullable
-   */
-  payout_per_point?: number | null;
-  /** @nullable */
-  take_profit?: ProposalRequestTakeProfit;
-  /** @nullable */
-  stop_loss?: ProposalRequestStopLoss;
+export interface StartBotRunResponse {
+  run?: BotRun;
+  /** Present when a requested limit exceeded its cap. Surface these - the user would otherwise believe their number was honoured.
+ */
+  limit_adjustments?: BotLimitAdjustment[];
 }

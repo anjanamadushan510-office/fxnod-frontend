@@ -35,7 +35,11 @@ export function TotalValueCard({
     const el = amountRef.current;
     if (!el) return;
     el.classList.remove("flash-up", "flash-dn");
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    // Reading offsetWidth forces a reflow, which is what makes the removed
+    // class take effect before it is re-added. `void` already marks the read as
+    // deliberate, so no lint suppression is needed — the disable comment that
+    // used to sit here named a rule this config does not load, which ESLint
+    // reports as an error in its own right.
     void el.offsetWidth;
     if (dir > 0) el.classList.add("flash-up");
     if (dir < 0) el.classList.add("flash-dn");

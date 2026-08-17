@@ -11,7 +11,11 @@ import { usePositionsUI } from "@/stores/usePositionsUI";
 import { useTradeOverlays } from "@/stores/useTradeOverlays";
 import { useDerivStatus } from "./useDerivStatus";
 import { useProposalStream } from "./useProposalStream";
-import type { ConfirmResponse, ProposalRequest, ProposalResponse } from "@/services/tradingApi";
+import type {
+  ConfirmResponse,
+  ProposalRequest,
+  ProposalStreamFrame,
+} from "@/services/tradingApi";
 
 export type BuyPhase = "idle" | "buying" | "confirmed";
 
@@ -23,7 +27,11 @@ export interface PanelBuyResult {
   /** Sub-text for BuyButton — "Fetching payout…" while quoting, real value once ready, null when disabled. */
   payoutLabel: string | null;
   errorMsg: string | null;
-  proposal: ProposalResponse | null;
+  // The quote comes from the WS stream, which carries payout_choices on top of
+  // the REST shape — so panels get the frame type, not the REST response.
+  proposal: ProposalStreamFrame | null;
+  /** Choices that arrived without a proposal — see useProposalStream. */
+  payoutChoices: string[] | undefined;
   handleBuy: () => void;
   handleNewTrade: () => void;
 }
@@ -52,7 +60,12 @@ export function usePanelBuy(request: ProposalRequest | null): PanelBuyResult {
   requestRef.current = request;
 
   // Quote is for display only (single-phase trade re-quotes server-side).
-  const { proposal, loading: quoting, error: quoteError } = useProposalStream(
+  const {
+    proposal,
+    payoutChoices,
+    loading: quoting,
+    error: quoteError,
+  } = useProposalStream(
     request,
     { enabled: isIdle },
   );
@@ -120,6 +133,7 @@ export function usePanelBuy(request: ProposalRequest | null): PanelBuyResult {
     payoutLabel,
     errorMsg,
     proposal,
+    payoutChoices,
     handleBuy,
     handleNewTrade,
   };

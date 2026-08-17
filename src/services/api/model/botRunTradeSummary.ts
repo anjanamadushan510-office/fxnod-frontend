@@ -31,38 +31,17 @@ library, not a float.
  * OpenAPI spec version: 0.1.0
  */
 import type { DecimalString } from './decimalString';
-import type { ProposalRequestTakeProfit } from './proposalRequestTakeProfit';
-import type { ProposalRequestStopLoss } from './proposalRequestStopLoss';
 
-export interface ProposalRequest {
-  /** Frontend id: rise_fall, accumulators, matches_differs, … */
-  contract_type: string;
-  /** "rise" / "fall" toggle; empty for accumulators. */
-  side?: string;
-  /** Deriv symbol (e.g. R_100). */
-  symbol: string;
-  /** Stake amount; must parse as a decimal. */
-  stake: DecimalString;
-  currency?: string;
-  /** @nullable */
-  duration?: number | null;
-  /** e.g. t, s, m, h. */
-  duration_unit?: string;
-  barrier?: string;
-  /** @nullable */
-  digit?: number | null;
-  /** @nullable */
-  growth_rate?: number | null;
-  /** @nullable */
-  multiplier?: number | null;
-  /**
-   * Turbos — payout per point. Either this or `barrier` is supplied, not both; the handler rejects the combination. Was missing from this schema while the handler already accepted it.
+/**
+ * Totals across the run's trades. Derived from the trade rows themselves rather than read off bot_runs, so it cannot disagree with the list the caller is looking at.
 
-   * @nullable
-   */
-  payout_per_point?: number | null;
-  /** @nullable */
-  take_profit?: ProposalRequestTakeProfit;
-  /** @nullable */
-  stop_loss?: ProposalRequestStopLoss;
+ */
+export interface BotRunTradeSummary {
+  total: number;
+  won: number;
+  lost: number;
+  /** Contracts still running. */
+  open: number;
+  realized_pnl: DecimalString;
+  total_staked: DecimalString;
 }

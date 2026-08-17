@@ -42,10 +42,18 @@ export interface ProposalResponse {
   currency: string;
   expires_at: string;
   expires_in_seconds: number;
+  /** Resolved barrier (vanillas, turbos). */
+  barrier?: string;
+  /** Upper barrier for two-barrier contracts. */
+  high_barrier?: string;
+  /** Lower barrier for two-barrier contracts. */
   low_barrier?: string;
+  /** Accumulators — barrier width as a percentage of spot. */
   tick_size_barrier_percentage?: string;
+  /** Accumulators — how many ticks recent contracts survived. */
   ticks_stayed_in?: number[];
+  /** Accumulators — the contract's tick ceiling. */
   maximum_ticks?: number;
+  /** Vanillas — number of contracts, used as the payout figure. */
   display_number_of_contracts?: string;
-  payout_choices?: string[];
 }

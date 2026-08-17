@@ -30,39 +30,27 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
-import type { DecimalString } from './decimalString';
-import type { ProposalRequestTakeProfit } from './proposalRequestTakeProfit';
-import type { ProposalRequestStopLoss } from './proposalRequestStopLoss';
 
-export interface ProposalRequest {
-  /** Frontend id: rise_fall, accumulators, matches_differs, … */
-  contract_type: string;
-  /** "rise" / "fall" toggle; empty for accumulators. */
-  side?: string;
-  /** Deriv symbol (e.g. R_100). */
-  symbol: string;
-  /** Stake amount; must parse as a decimal. */
-  stake: DecimalString;
-  currency?: string;
-  /** @nullable */
-  duration?: number | null;
-  /** e.g. t, s, m, h. */
-  duration_unit?: string;
-  barrier?: string;
-  /** @nullable */
-  digit?: number | null;
-  /** @nullable */
-  growth_rate?: number | null;
-  /** @nullable */
-  multiplier?: number | null;
-  /**
-   * Turbos — payout per point. Either this or `barrier` is supplied, not both; the handler rejects the combination. Was missing from this schema while the handler already accepted it.
+/**
+ * The session envelope. Amounts are decimal STRINGS, not JSON numbers: a stake of 0.1 through a float64 is 0.1000000000000000055, and these end up in NUMERIC columns and broker requests.
+Enforced server-side in the worker, never in the browser - a user closing their tab must not disable their own stop loss.
 
-   * @nullable
-   */
-  payout_per_point?: number | null;
-  /** @nullable */
-  take_profit?: ProposalRequestTakeProfit;
-  /** @nullable */
-  stop_loss?: ProposalRequestStopLoss;
+ */
+export interface BotRiskLimits {
+  stake_per_trade: string;
+  /** Required. There is no representation of a run without one. */
+  session_stop_loss: string;
+  session_target_profit?: string;
+  /** Per-contract limit order, where the contract type supports it. */
+  take_profit?: string;
+  /** Per-contract limit order, distinct from session_stop_loss. */
+  stop_loss?: string;
+  martingale_enabled?: boolean;
+  /** Must exceed 1 when martingale is enabled; one that does not never recovers. */
+  martingale_multiplier?: string;
+  /** The ladder ENDS the run when exhausted rather than restarting at the base stake, which would hide an unrecovered loss.
+ */
+  martingale_max_steps?: number;
+  max_trades?: number;
+  max_duration_seconds?: number;
 }

@@ -30,39 +30,24 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
-import type { DecimalString } from './decimalString';
-import type { ProposalRequestTakeProfit } from './proposalRequestTakeProfit';
-import type { ProposalRequestStopLoss } from './proposalRequestStopLoss';
+import type { BotIndicatorKind } from './botIndicatorKind';
 
-export interface ProposalRequest {
-  /** Frontend id: rise_fall, accumulators, matches_differs, … */
-  contract_type: string;
-  /** "rise" / "fall" toggle; empty for accumulators. */
-  side?: string;
-  /** Deriv symbol (e.g. R_100). */
-  symbol: string;
-  /** Stake amount; must parse as a decimal. */
-  stake: DecimalString;
-  currency?: string;
-  /** @nullable */
-  duration?: number | null;
-  /** e.g. t, s, m, h. */
-  duration_unit?: string;
-  barrier?: string;
-  /** @nullable */
-  digit?: number | null;
-  /** @nullable */
-  growth_rate?: number | null;
-  /** @nullable */
-  multiplier?: number | null;
-  /**
-   * Turbos — payout per point. Either this or `barrier` is supplied, not both; the handler rejects the combination. Was missing from this schema while the handler already accepted it.
+/**
+ * One configured indicator. Omitted numeric fields take the conventional defaults (RSI 14, SMA/EMA/BB 20, MACD 12/26/9, Stochastic 14/3/3), so a bot reads the same numbers the user sees on their chart.
+ATR is a FILTER only - it measures how much price moves, not which way, and does not unlock the "auto" direction.
 
-   * @nullable
-   */
-  payout_per_point?: number | null;
-  /** @nullable */
-  take_profit?: ProposalRequestTakeProfit;
-  /** @nullable */
-  stop_loss?: ProposalRequestStopLoss;
+ */
+export interface BotIndicator {
+  kind: BotIndicatorKind;
+  period?: number;
+  /** Bollinger band width */
+  std_devs?: number;
+  fast?: number;
+  slow?: number;
+  signal?: number;
+  k_period?: number;
+  smooth?: number;
+  d_period?: number;
+  oversold?: number;
+  overbought?: number;
 }

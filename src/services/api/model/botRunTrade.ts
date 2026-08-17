@@ -31,47 +31,28 @@ library, not a float.
  * OpenAPI spec version: 0.1.0
  */
 import type { DecimalString } from './decimalString';
-import type { TradeHistoryEntryOutcome } from './tradeHistoryEntryOutcome';
-import type { TradeHistoryEntryFinalPayoutAmount } from './tradeHistoryEntryFinalPayoutAmount';
-import type { TradeHistoryEntryEntrySpot } from './tradeHistoryEntryEntrySpot';
-import type { TradeHistoryEntryExitSpot } from './tradeHistoryEntryExitSpot';
-import type { TradeHistoryEntryTickStreamItem } from './tradeHistoryEntryTickStreamItem';
+import type { BotRunTradeOutcome } from './botRunTradeOutcome';
 
-export interface TradeHistoryEntry {
-  id: string;
-  user_id: string;
-  /** @nullable */
-  proposal_id?: string | null;
+/**
+ * One trade a bot placed, shaped for the run's history table.
+ */
+export interface BotRunTrade {
+  trade_id: string;
   deriv_contract_id: string;
-  platform: string;
   symbol: string;
-  frontend_contract_type: string;
-  side: string;
+  /** FXNod frontend contract type. */
   contract_type: string;
+  /** "rise" / "fall"; absent for types without a direction. */
+  side?: string;
   stake_amount: DecimalString;
-  payout_amount: DecimalString;
-  accrued_markup_amount: DecimalString;
-  deriv_settlement_period: string;
   currency: string;
+  /** Absent while the contract is still open. */
+  outcome?: BotRunTradeOutcome;
+  /** Realised P&L — payout minus stake. Absent while open: 0 would read as break-even rather than "not yet known".
+ */
+  profit_loss?: DecimalString;
+  /** The run's order number for this trade, from the intent that produced it. Stable and gap-free, which a timestamp is not.
+ */
+  sequence?: number;
   created_at: string;
-  duration_seconds?: number;
-  duration_unit?: string;
-  /** @nullable */
-  growth_rate?: number | null;
-  /** @nullable */
-  buy_transaction_id?: number | null;
-  /** @nullable */
-  sell_transaction_id?: number | null;
-  /** @nullable */
-  outcome?: TradeHistoryEntryOutcome;
-  /** @nullable */
-  barrier?: string | null;
-  /** @nullable */
-  final_payout_amount?: TradeHistoryEntryFinalPayoutAmount;
-  /** @nullable */
-  entry_spot?: TradeHistoryEntryEntrySpot;
-  /** @nullable */
-  exit_spot?: TradeHistoryEntryExitSpot;
-  /** @nullable */
-  tick_stream?: TradeHistoryEntryTickStreamItem[] | null;
 }
