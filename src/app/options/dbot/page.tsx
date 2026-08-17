@@ -10,12 +10,14 @@ import { HistoryTable } from "@/components/bot/HistoryTable";
 import { SelectBot } from "@/components/bot/SelectBot";
 import { CounterStrip, SessionStats } from "@/components/bot/SessionStats";
 import { TradeConfiguration } from "@/components/bot/TradeConfiguration";
+import { BOT_MARKET_IDS } from "@/components/bot/botMeta";
+import { toDerivSymbol } from "@/services/deriv/derivSymbols";
 import {
   buildStartRequest,
   defaultFormState,
   type BotFormState,
 } from "@/components/bot/formState";
-import { sampleCandles } from "@/components/bot/sampleSession";
+import { useBotCandles } from "@/components/bot/useBotCandles";
 import type { BotSession, BotTrade } from "@/components/bot/types";
 import {
   useGetBotLimits,
@@ -47,7 +49,13 @@ export default function DBotPage() {
   const limitsQuery = useGetBotLimits();
   const runsQuery = useListBotRuns({ limit: 20 });
 
-  const strategies: BotStrategy[] = strategiesQuery.data?.strategies ?? [];
+  // Memoised because `?? []` produces a new array on every render, and this
+  // value is a dependency of the effect below — without it that effect re-ran
+  // on each render rather than when the catalogue actually arrived.
+  const strategies: BotStrategy[] = useMemo(
+    () => strategiesQuery.data?.strategies ?? [],
+    [strategiesQuery.data],
+  );
   const [selectedId, setSelectedId] = useState<string>("");
   const [form, setForm] = useState<BotFormState>(defaultFormState);
   const [tab, setTab] = useState<"history" | "chart" | "positions">("history");
@@ -144,7 +152,12 @@ export default function DBotPage() {
   }
 
   const session = toSession(run, form.currency, tradesQuery.data?.summary);
-  const candles = useMemo(() => sampleCandles(90), []);
+
+  // Live candles for the chart. Follows the RUN's symbol while one is active so
+  // the chart shows what the bot is actually trading, and the form's selection
+  // otherwise so a user can look before starting.
+  const chartMarketId = run && isActive(run) ? derivToMarketId(run.symbol) : form.marketId;
+  const { candles, ready: chartReady } = useBotCandles(chartMarketId);
 
   return (
     <div
@@ -228,7 +241,11 @@ export default function DBotPage() {
                   />
                 </div>
               )}
-              <BotChart candles={candles} />
+              {chartReady ? (
+                <BotChart candles={candles} />
+              ) : (
+                <ChartWarmingUp />
+              )}
             </div>
           </section>
 
@@ -382,6 +399,29 @@ function apiMessage(err: unknown): string {
   const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data
     ?.detail;
   return detail ?? "Something went wrong. Please try again.";
+}
+
+/**
+ * Maps a Deriv symbol back to a catalog id, so the chart can follow a run whose
+ * symbol was recorded in Deriv's vocabulary. Falls back to the form's selection
+ * when the symbol is not one the picker offers.
+ */
+function derivToMarketId(derivSymbol: string): string {
+  for (const id of BOT_MARKET_IDS) {
+    if (toDerivSymbol(id) === derivSymbol) return id;
+  }
+  return BOT_MARKET_IDS[0];
+}
+
+function ChartWarmingUp() {
+  return (
+    <div className="grid flex-1 place-items-center px-5 py-12">
+      <p className="m-0 max-w-[30ch] text-center text-[12px] leading-relaxed text-opt-ink-3">
+        Loading price history… the chart needs about 20 minutes of candles before
+        the indicators can be drawn.
+      </p>
+    </div>
+  );
 }
 
 function Banner({
