@@ -12,6 +12,10 @@ import { CounterStrip, SessionStats } from "@/components/bot/SessionStats";
 import { TradeConfiguration } from "@/components/bot/TradeConfiguration";
 import { BOT_MARKET_IDS } from "@/components/bot/botMeta";
 import { toDerivSymbol } from "@/services/deriv/derivSymbols";
+import { useDerivStatus } from "@/hooks/useDerivStatus";
+import { usePositionsWebSocket } from "@/hooks/usePositionsWebSocket";
+import { useAccountBalance } from "@/stores/useAccountBalance";
+import { useAuthStore } from "@/stores/authStore";
 import {
   buildStartRequest,
   defaultFormState,
@@ -45,6 +49,17 @@ import type {
  * equally why it cannot disable one's stop loss.
  */
 export default function DBotPage() {
+  // The Deriv account is the SAME linked account dTrader uses — there is one per
+  // user, so someone who linked from dTrader must not be asked again here.
+  const deriv = useDerivStatus();
+
+  // The balance arrives on the positions stream, the same source dTrader reads.
+  // Without subscribing, the header would sit at 0.00 forever.
+  const authed = useAuthStore((s) => s.status === "authenticated");
+  usePositionsWebSocket(authed);
+  const accountBalance = useAccountBalance((s) => s.balance);
+  const accountCurrency = useAccountBalance((s) => s.currency);
+
   const strategiesQuery = useListBotStrategies();
   const limitsQuery = useGetBotLimits();
   const runsQuery = useListBotRuns({ limit: 20 });
@@ -151,7 +166,7 @@ export default function DBotPage() {
     }
   }
 
-  const session = toSession(run, form.currency, tradesQuery.data?.summary);
+  const session = toSession(run, accountCurrency, tradesQuery.data?.summary);
 
   // Live candles for the chart. Follows the RUN's symbol while one is active so
   // the chart shows what the bot is actually trading, and the form's selection
@@ -166,11 +181,20 @@ export default function DBotPage() {
       className="flex min-h-screen flex-col bg-opt-bg font-sans text-opt-ink"
     >
       <BotTopBar
-        loginId={run?.deriv_account_id ?? "—"}
-        balance={0}
-        currency={form.currency}
-        isVirtual={run?.is_virtual ?? true}
+        loginId={deriv.accountId ?? (deriv.isLoading ? "…" : "Not connected")}
+        balance={accountBalance}
+        currency={accountCurrency}
+        isVirtual={deriv.isVirtual}
       />
+
+      {/* A bot cannot start without a linked account, so say so up front rather
+          than letting Start fail with a 422. */}
+      {!deriv.isLoading && !deriv.linked && (
+        <Banner tone="error">
+          No Deriv account is linked. Connect one in dTrader first — dBot trades
+          the same account.
+        </Banner>
+      )}
 
       {strategiesQuery.isError && (
         <Banner tone="error">
@@ -274,7 +298,7 @@ export default function DBotPage() {
               ) : (
                 <button
                   type="button"
-                  disabled={busy || !selected}
+                  disabled={busy || !selected || !deriv.linked}
                   onClick={handleStart}
                   className={cn(
                     "inline-flex items-center gap-2 rounded-[var(--opt-radius-sm)] px-6 py-2.5",
