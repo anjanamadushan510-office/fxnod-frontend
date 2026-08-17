@@ -320,9 +320,9 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
 				: backendDurUnit === "h"
 					? `${backendDurSecs} hours`
 					: `${backendDurSecs} secs`;
-		} else if (tickCount > 0) {
+		} else if (ticks.length > 1) {
 			// Fallback: infer from tick_stream if duration_unit not yet stored
-			durationLabel = `${tickCount} ticks`;
+			durationLabel = `${ticks.length - 1} ticks`;
 		} else {
 			// Last resort: epoch diff
 			durationLabel = `${seconds} secs`;
