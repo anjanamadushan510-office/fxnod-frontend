@@ -30,6 +30,7 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
+import type { DecimalString } from './decimalString';
 
 export interface BotLimits {
   max_stake_per_trade?: string;
@@ -39,5 +40,11 @@ export interface BotLimits {
   max_martingale_steps?: number;
   max_trades_per_session?: number;
   max_run_duration_seconds?: number;
+  /** How many bots one user may run at the same time. */
   max_concurrent_runs?: number;
+  /** The ceiling on AGGREGATE realised loss across all of a user's active runs, enforced in addition to each run's own session_stop_loss.
+
+It exists because per-run limits alone are only sufficient while one run is allowed at a time: four bots each carrying a $50 stop loss expose the account to $200, while the user configured "$50" believing that was their exposure. Surface this whenever more than one bot is running, or the per-run number on screen understates real risk.
+ */
+  max_account_session_loss?: DecimalString;
 }

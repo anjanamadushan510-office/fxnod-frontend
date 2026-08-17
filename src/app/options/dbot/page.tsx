@@ -1,21 +1,19 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Route } from "next";
 import Link from "next/link";
 import { cn } from "@/lib/cn";
 import { BotChart } from "@/components/bot/BotChart";
+import { BotTabs, type DraftTab } from "@/components/bot/BotTabs";
 import { BotTopBar } from "@/components/bot/BotTopBar";
 import { HistoryTable } from "@/components/bot/HistoryTable";
 import { SelectBot } from "@/components/bot/SelectBot";
-import { CounterStrip, SessionStats } from "@/components/bot/SessionStats";
+import { SessionStats } from "@/components/bot/SessionStats";
+import { SplitHandle } from "@/components/bot/SplitHandle";
 import { TradeConfiguration } from "@/components/bot/TradeConfiguration";
+import { useResizable } from "@/components/bot/useResizable";
 import { BOT_MARKET_IDS } from "@/components/bot/botMeta";
-import { toDerivSymbol } from "@/services/deriv/derivSymbols";
-import { useDerivStatus } from "@/hooks/useDerivStatus";
-import { usePositionsWebSocket } from "@/hooks/usePositionsWebSocket";
-import { useAccountBalance } from "@/stores/useAccountBalance";
-import { useAuthStore } from "@/stores/authStore";
 import {
   buildStartRequest,
   defaultFormState,
@@ -23,9 +21,13 @@ import {
 } from "@/components/bot/formState";
 import { useBotCandles } from "@/components/bot/useBotCandles";
 import type { BotSession, BotTrade } from "@/components/bot/types";
+import { useDerivStatus } from "@/hooks/useDerivStatus";
+import { usePositionsWebSocket } from "@/hooks/usePositionsWebSocket";
+import { toDerivSymbol } from "@/services/deriv/derivSymbols";
+import { useAccountBalance } from "@/stores/useAccountBalance";
+import { useAuthStore } from "@/stores/authStore";
 import {
   useGetBotLimits,
-  useGetBotRun,
   useListBotRunTrades,
   useListBotRuns,
   useListBotStrategies,
@@ -42,19 +44,22 @@ import type {
 /**
  * /options/dbot — automated trading.
  *
- * Wired to the backend: the bot list, the platform caps and the run state all
- * come from the API. Nothing on this page decides anything about money —
- * starting a run POSTs a configuration, and the bot-worker process does the
- * trading. That separation is why closing this tab does not stop a bot, and
- * equally why it cannot disable one's stop loss.
+ * Layout: a tab per bot, a configuration rail, and a work area split between the
+ * trade list and the chart. Both splits are draggable and remembered.
+ *
+ * Two things the structure is deliberate about:
+ *
+ *   A tab for a RUNNING bot is a view of server state, not browser state. It
+ *   survives a refresh, appears on another device, and cannot be closed — only
+ *   stopped. Draft tabs (configurations not yet started) are local and closeable,
+ *   because nothing is at stake in them.
+ *
+ *   Nothing here decides anything about money. Start POSTs a configuration and
+ *   the bot-worker does the trading, which is why closing this tab does not stop
+ *   a bot and equally why it cannot disable one's stop loss.
  */
 export default function DBotPage() {
-  // The Deriv account is the SAME linked account dTrader uses — there is one per
-  // user, so someone who linked from dTrader must not be asked again here.
   const deriv = useDerivStatus();
-
-  // The balance arrives on the positions stream, the same source dTrader reads.
-  // Without subscribing, the header would sit at 0.00 forever.
   const authed = useAuthStore((s) => s.status === "authenticated");
   usePositionsWebSocket(authed);
   const accountBalance = useAccountBalance((s) => s.balance);
@@ -62,73 +67,150 @@ export default function DBotPage() {
 
   const strategiesQuery = useListBotStrategies();
   const limitsQuery = useGetBotLimits();
-  const runsQuery = useListBotRuns({ limit: 20 });
+  const runsQuery = useListBotRuns(
+    { limit: 20 },
+    { query: { refetchInterval: 3000 } },
+  );
 
-  // Memoised because `?? []` produces a new array on every render, and this
-  // value is a dependency of the effect below — without it that effect re-ran
-  // on each render rather than when the catalogue actually arrived.
   const strategies: BotStrategy[] = useMemo(
     () => strategiesQuery.data?.strategies ?? [],
     [strategiesQuery.data],
   );
-  const [selectedId, setSelectedId] = useState<string>("");
-  const [form, setForm] = useState<BotFormState>(defaultFormState);
-  const [tab, setTab] = useState<"history" | "chart" | "positions">("history");
-  const [errors, setErrors] = useState<string[]>([]);
-  const [notice, setNotice] = useState<string | null>(null);
 
-  // Select the first bot once the catalogue arrives, rather than hard-coding an
-  // id the backend may not offer.
-  useEffect(() => {
-    if (!selectedId && strategies.length > 0) {
-      setSelectedId(strategies[0].strategy_id);
-    }
-  }, [selectedId, strategies]);
-
-  const selected = strategies.find((s) => s.strategy_id === selectedId);
-
-  // The active run drives the whole screen: an active one locks the form and
-  // turns Start into Stop.
-  const activeRun = useMemo(
-    () => (runsQuery.data?.runs ?? []).find(isActive),
+  const activeRuns: BotRun[] = useMemo(
+    () => (runsQuery.data?.runs ?? []).filter(isActive),
     [runsQuery.data],
   );
 
-  // Poll only while a run is live — there is nothing to refresh otherwise.
-  const runQuery = useGetBotRun(activeRun?.run_id ?? "", {
-    query: { enabled: Boolean(activeRun), refetchInterval: 3000 },
-  });
-  const run = runQuery.data ?? activeRun;
+  const maxConcurrent = limitsQuery.data?.max_concurrent_runs ?? 1;
+  const accountLossLimit = limitsQuery.data?.max_account_session_loss
+    ? Number.parseFloat(limitsQuery.data.max_account_session_loss)
+    : undefined;
 
-  // The run's trades. Polled alongside the run itself while it is live, and
-  // fetched once for a finished one — a completed run's history never changes.
+  // ── Tabs ──────────────────────────────────────────────────────────────────
+  // Drafts are keyed by a local id; their form state lives alongside them.
+  const [drafts, setDrafts] = useState<DraftTab[]>([]);
+  const [draftForms, setDraftForms] = useState<Record<string, BotFormState>>({});
+  const [draftStrategies, setDraftStrategies] = useState<Record<string, string>>({});
+  const [activeId, setActiveId] = useState<string>("");
+
+  const newDraft = useCallback(() => {
+    const id = `draft-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    setDrafts((prev) => [...prev, { id, label: "New bot" }]);
+    setDraftForms((prev) => ({ ...prev, [id]: defaultFormState() }));
+    setActiveId(id);
+    return id;
+  }, []);
+
+  // Open a draft when there is nothing to look at, so the page is never empty.
+  useEffect(() => {
+    if (activeRuns.length === 0 && drafts.length === 0) {
+      newDraft();
+      return;
+    }
+    // Selection follows the server: a run that ended (or a draft that became a
+    // run) must not leave the page pointing at a tab that no longer exists.
+    const exists =
+      activeRuns.some((r) => r.run_id === activeId) ||
+      drafts.some((d) => d.id === activeId);
+    if (!exists) {
+      setActiveId(activeRuns[0]?.run_id ?? drafts[0]?.id ?? "");
+    }
+  }, [activeRuns, drafts, activeId, newDraft]);
+
+  const closeDraft = useCallback(
+    (id: string) => {
+      setDrafts((prev) => prev.filter((d) => d.id !== id));
+      setDraftForms((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+      setDraftStrategies((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+    },
+    [],
+  );
+
+  const activeRun = activeRuns.find((r) => r.run_id === activeId);
+  const isDraft = !activeRun && Boolean(draftForms[activeId]);
+
+  // ── The selected tab's configuration ──────────────────────────────────────
+  const form = draftForms[activeId] ?? defaultFormState();
+  const patchForm = useCallback(
+    (patch: Partial<BotFormState>) => {
+      setDraftForms((prev) => ({
+        ...prev,
+        [activeId]: { ...(prev[activeId] ?? defaultFormState()), ...patch },
+      }));
+    },
+    [activeId],
+  );
+
+  // A live run's strategy is fixed — it was snapshotted server-side at start.
+  const selectedStrategyId = activeRun
+    ? activeRun.strategy_id
+    : (draftStrategies[activeId] ?? strategies[0]?.strategy_id ?? "");
+  const selected = strategies.find((s) => s.strategy_id === selectedStrategyId);
+
+  const selectStrategy = useCallback(
+    (id: string) => setDraftStrategies((prev) => ({ ...prev, [activeId]: id })),
+    [activeId],
+  );
+
+  // ── Trades for the selected run ───────────────────────────────────────────
   const tradesQuery = useListBotRunTrades(
-    run?.run_id ?? "",
+    activeRun?.run_id ?? "",
     { limit: 50 },
     {
       query: {
-        enabled: Boolean(run?.run_id),
-        refetchInterval: run && isActive(run) ? 3000 : false,
+        enabled: Boolean(activeRun?.run_id),
+        refetchInterval: activeRun ? 3000 : false,
       },
     },
   );
   const trades = tradesQuery.data?.trades ?? [];
 
+  // ── Chart ─────────────────────────────────────────────────────────────────
+  const chartMarketId = activeRun
+    ? derivToMarketId(activeRun.symbol)
+    : form.marketId;
+  const { candles, ready: chartReady } = useBotCandles(chartMarketId);
+
+  // ── Layout ────────────────────────────────────────────────────────────────
+  const railSplit = useResizable({
+    initial: 22,
+    min: 15,
+    max: 42,
+    storageKey: "fxnod.dbot.rail",
+    label: "Resize the configuration panel",
+  });
+  const workSplit = useResizable({
+    initial: 42,
+    min: 20,
+    max: 75,
+    storageKey: "fxnod.dbot.work",
+    label: "Resize the trade list",
+  });
+
+  // ── Actions ───────────────────────────────────────────────────────────────
+  const [errors, setErrors] = useState<string[]>([]);
+  const [notice, setNotice] = useState<string | null>(null);
   const startMutation = useStartBotRun();
   const stopMutation = useStopBotRun();
-
   const busy = startMutation.isPending || stopMutation.isPending;
-  const running = Boolean(run && isActive(run));
 
   async function handleStart() {
     if (!selected) return;
     setErrors([]);
     setNotice(null);
 
-    const contractType = selected.supported_contract_types[0];
     const { request, errors: problems } = buildStartRequest(
       selected.strategy_id,
-      contractType,
+      selected.supported_contract_types[0],
       form,
     );
     if (!request) {
@@ -140,8 +222,6 @@ export default function DBotPage() {
       const res = await startMutation.mutateAsync({ data: request });
       const adjustments = res.limit_adjustments ?? [];
       if (adjustments.length > 0) {
-        // A clamped limit is not an error, but the user must not be left
-        // believing the number they typed was honoured.
         setNotice(
           "The platform capped: " +
             adjustments
@@ -149,6 +229,14 @@ export default function DBotPage() {
               .join(", "),
         );
       }
+      // The draft became a run: drop the draft and follow the new run.
+      //
+      // StartBotRunResponse types `run` as optional, so the id is read
+      // defensively — a 201 without one would otherwise leave the page pointing
+      // at a draft that no longer exists.
+      const newRunId = res.run?.run_id;
+      closeDraft(activeId);
+      if (newRunId) setActiveId(newRunId);
       await runsQuery.refetch();
     } catch (err) {
       setErrors([apiMessage(err)]);
@@ -156,29 +244,31 @@ export default function DBotPage() {
   }
 
   async function handleStop() {
-    if (!run) return;
+    if (!activeRun) return;
     setErrors([]);
     try {
-      await stopMutation.mutateAsync({ id: run.run_id });
+      await stopMutation.mutateAsync({ id: activeRun.run_id });
       await runsQuery.refetch();
     } catch (err) {
       setErrors([apiMessage(err)]);
     }
   }
 
-  const session = toSession(run, accountCurrency, tradesQuery.data?.summary);
-
-  // Live candles for the chart. Follows the RUN's symbol while one is active so
-  // the chart shows what the bot is actually trading, and the form's selection
-  // otherwise so a user can look before starting.
-  const chartMarketId = run && isActive(run) ? derivToMarketId(run.symbol) : form.marketId;
-  const { candles, ready: chartReady } = useBotCandles(chartMarketId);
+  const session = toSession(activeRun, accountCurrency, tradesQuery.data?.summary);
+  const accountPnl = useMemo(
+    () =>
+      activeRuns.reduce(
+        (sum, r) => sum + (Number.parseFloat(r.realized_pnl) || 0),
+        0,
+      ),
+    [activeRuns],
+  );
 
   return (
     <div
       data-app="options"
       data-opt-theme="light"
-      className="flex min-h-screen flex-col bg-opt-bg font-sans text-opt-ink"
+      className="flex h-screen flex-col overflow-hidden bg-opt-bg font-sans text-opt-ink"
     >
       <BotTopBar
         loginId={deriv.accountId ?? (deriv.isLoading ? "…" : "Not connected")}
@@ -187,27 +277,40 @@ export default function DBotPage() {
         isVirtual={deriv.isVirtual}
       />
 
-      {/* A bot cannot start without a linked account, so say so up front rather
-          than letting Start fail with a 422. */}
-      {!deriv.isLoading && !deriv.linked && (
-        <Banner tone="error">
-          No Deriv account is linked. Connect one in dTrader first — dBot trades
-          the same account.
-        </Banner>
-      )}
+      <BotTabs
+        runs={activeRuns}
+        drafts={drafts}
+        activeId={activeId}
+        onSelect={setActiveId}
+        onCloseDraft={closeDraft}
+        onNewDraft={newDraft}
+        maxConcurrent={maxConcurrent}
+        strategyNames={Object.fromEntries(
+          strategies.map((s) => [s.strategy_id, s.display_name]),
+        )}
+      />
 
       {strategiesQuery.isError && (
         <Banner tone="error">
           Could not load the bot list. The trading engine may be unavailable.
         </Banner>
       )}
-      {notice && <Banner tone="info">{notice}</Banner>}
-      {errors.length > 0 && (
-        <Banner tone="error">{errors.join(" · ")}</Banner>
+      {!deriv.isLoading && !deriv.linked && (
+        <Banner tone="error">
+          No Deriv account is linked. Connect one in dTrader first — dBot trades
+          the same account.
+        </Banner>
       )}
+      {notice && <Banner tone="info">{notice}</Banner>}
+      {errors.length > 0 && <Banner tone="error">{errors.join(" · ")}</Banner>}
 
-      <div className="grid flex-1 grid-cols-[320px_1fr] gap-4 p-4 max-xl:grid-cols-1">
-        <aside className="flex flex-col gap-5 self-start rounded-[var(--opt-radius)] border border-opt-line bg-opt-bg-elev p-4">
+      {/* Rail | work area. Percentage-based so the split survives a window
+          resize, which a pixel split does not. */}
+      <div ref={railSplit.containerRef} className="flex min-h-0 flex-1">
+        <aside
+          style={{ width: `${railSplit.size}%` }}
+          className="flex min-w-0 flex-col gap-4 overflow-y-auto border-r border-opt-line bg-opt-bg-elev p-3"
+        >
           <SelectBot
             bots={strategies.map((s) => ({
               id: s.strategy_id,
@@ -215,9 +318,9 @@ export default function DBotPage() {
               tagline: s.description ?? "",
               contractType: s.supported_contract_types[0] ?? "",
             }))}
-            selectedId={selectedId}
-            onSelect={setSelectedId}
-            disabled={running}
+            selectedId={selectedStrategyId}
+            onSelect={selectStrategy}
+            disabled={Boolean(activeRun)}
           />
 
           <div className="h-px w-full bg-opt-line" />
@@ -226,91 +329,84 @@ export default function DBotPage() {
             <TradeConfiguration
               strategyId={selected.strategy_id}
               state={form}
-              onChange={(patch) => setForm((prev) => ({ ...prev, ...patch }))}
-              disabled={running}
+              onChange={patchForm}
+              disabled={Boolean(activeRun)}
               maxStakePerTrade={limitsQuery.data?.max_stake_per_trade}
               maxSessionLoss={limitsQuery.data?.max_session_loss}
             />
           )}
         </aside>
 
-        <main className="flex min-w-0 flex-col gap-4">
-          <SessionStats session={session} />
-          <CounterStrip session={session} />
+        <SplitHandle split={railSplit} />
 
-          <section className="flex min-h-[420px] flex-1 flex-col overflow-hidden rounded-[var(--opt-radius)] border border-opt-line bg-opt-bg-elev">
-            <div className="flex shrink-0 items-center gap-1 border-b border-opt-line px-2">
-              {(["history", "chart", "positions"] as const).map((key) => (
-                <Tab
-                  key={key}
-                  active={tab === key}
-                  onClick={() => setTab(key)}
-                  label={key === "history" ? "History" : key === "chart" ? "Chart" : "Positions"}
-                />
-              ))}
-            </div>
+        <main className="flex min-w-0 flex-1 flex-col gap-2 overflow-hidden p-3">
+          <SessionStats
+            session={session}
+            accountPnl={accountPnl}
+            accountLossLimit={accountLossLimit}
+            activeRuns={activeRuns.length}
+          />
 
+          {/* Trade list | chart, also draggable. */}
+          <div
+            ref={workSplit.containerRef}
+            className="flex min-h-0 flex-1 overflow-hidden rounded-[var(--opt-radius)] border border-opt-line bg-opt-bg-elev"
+          >
             <div
-              className={cn(
-                "grid min-h-0 flex-1 max-lg:grid-cols-1",
-                tab === "chart" ? "grid-cols-1" : "grid-cols-2",
-              )}
+              style={{ width: `${workSplit.size}%` }}
+              className="flex min-w-0 flex-col overflow-hidden"
             >
-              {tab !== "chart" && (
-                <div className="flex min-h-0 flex-col border-r border-opt-line max-lg:border-b max-lg:border-r-0">
-                  <HistoryTable
-                    trades={toTradeRows(
-                      tab === "positions" ? trades.filter(isOpenTrade) : trades,
-                    )}
-                  />
-                </div>
-              )}
-              {chartReady ? (
-                <BotChart candles={candles} />
-              ) : (
-                <ChartWarmingUp />
-              )}
+              <SectionHeader
+                title={activeRun ? "Trades" : "Trades"}
+                hint={activeRun ? undefined : "Start the bot to see its trades"}
+              />
+              <HistoryTable trades={toTradeRows(trades)} />
             </div>
-          </section>
+
+            <SplitHandle split={workSplit} />
+
+            <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+              <SectionHeader title="Chart" hint={chartMarketId} />
+              {chartReady ? <BotChart candles={candles} /> : <ChartWarmingUp />}
+            </div>
+          </div>
 
           <div className="flex shrink-0 flex-wrap items-center justify-between gap-3">
-            <p className="m-0 max-w-[46ch] text-[11px] leading-relaxed text-opt-ink-3">
-              {running
+            <p className="m-0 max-w-[52ch] text-[10px] leading-relaxed text-opt-ink-3">
+              {activeRun
                 ? "Running on the server. You can close this tab — the bot keeps going, and its session limits keep applying."
                 : "The bot stops itself when a session limit is reached, whether or not this tab is open."}
             </p>
 
-            <div className="flex items-center gap-3">
-              {running ? (
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={handleStop}
-                  className={cn(
-                    "inline-flex items-center gap-2 rounded-[var(--opt-radius-sm)] px-6 py-2.5",
-                    "bg-opt-fall text-[13px] font-bold text-white",
-                    "transition-opacity hover:opacity-90 disabled:opacity-45",
-                  )}
-                >
-                  <span aria-hidden="true">■</span>
-                  {stopMutation.isPending ? "Stopping…" : "Stop Bot"}
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  disabled={busy || !selected || !deriv.linked}
-                  onClick={handleStart}
-                  className={cn(
-                    "inline-flex items-center gap-2 rounded-[var(--opt-radius-sm)] px-6 py-2.5",
-                    "bg-opt-rise text-[13px] font-bold text-white",
-                    "transition-opacity hover:opacity-90 disabled:opacity-45",
-                  )}
-                >
-                  <span aria-hidden="true">▶</span>
-                  {startMutation.isPending ? "Starting…" : "Start Bot"}
-                </button>
-              )}
-            </div>
+            {activeRun ? (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={handleStop}
+                className={cn(
+                  "inline-flex items-center gap-2 rounded-[var(--opt-radius-sm)] px-5 py-2",
+                  "bg-opt-fall text-[13px] font-bold text-white",
+                  "transition-opacity hover:opacity-90 disabled:opacity-45",
+                )}
+              >
+                <span aria-hidden="true">■</span>
+                {stopMutation.isPending ? "Stopping…" : "Stop Bot"}
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled={busy || !selected || !deriv.linked || !isDraft}
+                onClick={handleStart}
+                className={cn(
+                  "inline-flex items-center gap-2 rounded-[var(--opt-radius-sm)] px-5 py-2",
+                  "bg-opt-rise text-[13px] font-bold text-white",
+                  "transition-opacity hover:opacity-90 disabled:opacity-45",
+                )}
+              >
+                <span aria-hidden="true">▶</span>
+                {startMutation.isPending ? "Starting…" : "Start Bot"}
+              </button>
+            )}
           </div>
         </main>
       </div>
@@ -323,14 +419,23 @@ export default function DBotPage() {
 const ACTIVE_STATUSES = new Set(["pending", "running", "paused", "stopping"]);
 
 function isActive(run: BotRun): boolean {
-  return ACTIVE_STATUSES.has(run.status ?? "");
+  return ACTIVE_STATUSES.has(run.status);
+}
+
+function SectionHeader({ title, hint }: { title: string; hint?: string }) {
+  return (
+    <div className="flex shrink-0 items-center gap-2 border-b border-opt-line px-3 py-1.5">
+      <span className="text-[11px] font-bold uppercase tracking-wide text-opt-ink-2">
+        {title}
+      </span>
+      {hint && <span className="truncate text-[10px] text-opt-ink-3">{hint}</span>}
+    </div>
+  );
 }
 
 /**
- * Turns API trades into the history table's rows.
- *
- * Time is rendered in the viewer's locale rather than the server's: a user
- * reconciling their own trades reads their own clock.
+ * Turns API trades into the history table's rows. Times render in the viewer's
+ * locale — someone reconciling their own trades reads their own clock.
  */
 function toTradeRows(trades: BotRunTrade[]): BotTrade[] {
   return trades.map((t) => ({
@@ -340,20 +445,21 @@ function toTradeRows(trades: BotRunTrade[]): BotTrade[] {
     stake: Number.parseFloat(t.stake_amount) || 0,
     result: t.outcome === "won" ? "won" : t.outcome === "lost" ? "lost" : "open",
     // null, not 0, while unsettled — the table renders "--" rather than a
-    // break-even figure the contract has not actually produced.
+    // break-even figure the contract has not produced.
     pnl: t.profit_loss === undefined ? null : Number.parseFloat(t.profit_loss),
   }));
 }
 
-function isOpenTrade(t: BotRunTrade): boolean {
-  return t.outcome === undefined;
-}
-
-/** Maps an API run onto the stats components' shape. */
 function toSession(
   run: BotRun | undefined,
   currency: string,
-  summary?: { total: number; won: number; lost: number; realized_pnl: string; total_staked: string },
+  summary?: {
+    total: number;
+    won: number;
+    lost: number;
+    realized_pnl: string;
+    total_staked: string;
+  },
 ): BotSession {
   if (!run) {
     return {
@@ -371,35 +477,31 @@ function toSession(
     };
   }
 
-  // Prefer the trade summary when it is loaded: it is derived from the same
-  // rows the table below is showing, so the headline figure and the list can
-  // never disagree. The run's own counters are the fallback.
-  const pnl = Number.parseFloat(summary?.realized_pnl ?? run.realized_pnl ?? "0") || 0;
-  const staked = Number.parseFloat(summary?.total_staked ?? run.total_staked ?? "0") || 0;
+  // The trade summary wins when loaded: it is derived from the same rows the
+  // table shows, so the headline and the list cannot disagree.
+  const pnl = Number.parseFloat(summary?.realized_pnl ?? run.realized_pnl) || 0;
+  const staked = Number.parseFloat(summary?.total_staked ?? run.total_staked) || 0;
   const limits = (run.risk_limits ?? {}) as Record<string, string>;
-  const stopLossLimit = Number.parseFloat(limits.session_stop_loss ?? "0") || 0;
-  const targetLimit = Number.parseFloat(limits.session_target_profit ?? "0") || 0;
 
   return {
     status: mapStatus(run.status),
     realizedPnl: pnl,
-    // Against capital actually committed. Zero staked means no denominator
-    // yet — 0% is the honest answer, not a division by zero.
+    // Against capital actually committed; no denominator yet means 0%, which is
+    // the honest answer rather than a division by zero.
     realizedPnlPct: staked > 0 ? (pnl / staked) * 100 : 0,
-    tradesTotal: summary?.total ?? run.trades_total ?? 0,
-    tradesWon: summary?.won ?? run.trades_won ?? 0,
-    tradesLost: summary?.lost ?? run.trades_lost ?? 0,
+    tradesTotal: summary?.total ?? run.trades_total,
+    tradesWon: summary?.won ?? run.trades_won,
+    tradesLost: summary?.lost ?? run.trades_lost,
     targetProfitProgress: Math.max(0, pnl),
-    targetProfitLimit: targetLimit,
-    // A loss is a negative P&L; the meter measures how much of the allowance
-    // has been used.
+    targetProfitLimit: Number.parseFloat(limits.session_target_profit ?? "0") || 0,
+    // A loss is negative P&L; the meter shows how much allowance is used.
     stopLossProgress: Math.max(0, -pnl),
-    stopLossLimit: stopLossLimit,
-    currency: run.currency ?? currency,
+    stopLossLimit: Number.parseFloat(limits.session_stop_loss ?? "0") || 0,
+    currency: run.currency,
   };
 }
 
-function mapStatus(status: string | undefined): BotSession["status"] {
+function mapStatus(status: string): BotSession["status"] {
   switch (status) {
     case "running":
     case "pending":
@@ -414,21 +516,8 @@ function mapStatus(status: string | undefined): BotSession["status"] {
 }
 
 /**
- * Pulls the server's message out of an Axios error.
- *
- * The API returns `{ detail }` and deliberately keeps internal causes in its
- * own logs, so whatever arrives here is safe to show.
- */
-function apiMessage(err: unknown): string {
-  const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data
-    ?.detail;
-  return detail ?? "Something went wrong. Please try again.";
-}
-
-/**
- * Maps a Deriv symbol back to a catalog id, so the chart can follow a run whose
- * symbol was recorded in Deriv's vocabulary. Falls back to the form's selection
- * when the symbol is not one the picker offers.
+ * Maps a Deriv symbol back to a catalog id so the chart can follow a run whose
+ * symbol was recorded in Deriv's vocabulary.
  */
 function derivToMarketId(derivSymbol: string): string {
   for (const id of BOT_MARKET_IDS) {
@@ -440,12 +529,22 @@ function derivToMarketId(derivSymbol: string): string {
 function ChartWarmingUp() {
   return (
     <div className="grid flex-1 place-items-center px-5 py-12">
-      <p className="m-0 max-w-[30ch] text-center text-[12px] leading-relaxed text-opt-ink-3">
+      <p className="m-0 max-w-[30ch] text-center text-[11px] leading-relaxed text-opt-ink-3">
         Loading price history… the chart needs about 20 minutes of candles before
         the indicators can be drawn.
       </p>
     </div>
   );
+}
+
+/**
+ * Pulls the server's message out of an Axios error. The API returns `{ detail }`
+ * and keeps internal causes in its own logs, so whatever arrives is safe to show.
+ */
+function apiMessage(err: unknown): string {
+  const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data
+    ?.detail;
+  return detail ?? "Something went wrong. Please try again.";
 }
 
 function Banner({
@@ -458,50 +557,19 @@ function Banner({
   return (
     <div
       className={cn(
-        "flex shrink-0 flex-wrap items-center gap-2 border-b px-5 py-2 text-[11px]",
+        "flex shrink-0 flex-wrap items-center gap-2 border-b border-opt-line px-4 py-1.5 text-[11px]",
         tone === "error"
-          ? "border-opt-line bg-opt-fall-soft text-opt-fall"
-          : "border-opt-line bg-gold-soft text-gold-3",
+          ? "bg-opt-fall-soft text-opt-fall"
+          : "bg-gold-soft text-gold-3",
       )}
     >
       {children}
       <Link
         href={"/options/dtrader" as Route}
-        className="ml-auto font-semibold underline-offset-2 hover:underline"
+        className="ml-auto shrink-0 font-semibold underline-offset-2 hover:underline"
       >
         Go to dTrader
       </Link>
     </div>
-  );
-}
-
-function Tab({
-  label,
-  active,
-  onClick,
-}: {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      role="tab"
-      aria-selected={active}
-      onClick={onClick}
-      className={cn(
-        "relative px-4 py-3 text-[13px] font-semibold transition-colors",
-        active ? "text-opt-rise" : "text-opt-ink-3 hover:text-opt-ink-2",
-      )}
-    >
-      {label}
-      {active && (
-        <span
-          aria-hidden="true"
-          className="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-opt-rise"
-        />
-      )}
-    </button>
   );
 }

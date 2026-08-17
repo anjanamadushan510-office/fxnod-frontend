@@ -41,6 +41,7 @@ export const BotRunStopReason = {
   max_trades: 'max_trades',
   max_duration: 'max_duration',
   user_requested: 'user_requested',
+  account_session_loss: 'account_session_loss',
   martingale_steps_exhausted: 'martingale_steps_exhausted',
   entitlement_lapsed: 'entitlement_lapsed',
   admin_halt: 'admin_halt',
