@@ -201,7 +201,13 @@ function LeftPanel({
           </div>
         </Row>
         <Row label="Duration">{detail.duration}</Row>
-        {(detail.type !== "accumulators" && detail.type !== "multipliers") && (
+        {detail.type === "even_odd" || detail.type === "DIGITEVEN" || detail.type === "DIGITODD" ? (
+          <Row label="Target">
+            <span className="font-mono text-[14px] font-semibold text-opt-ink">
+              {detail.side === "fall" ? "Odd" : "Even"}
+            </span>
+          </Row>
+        ) : (detail.type !== "accumulators" && detail.type !== "multipliers") && (
           <Row label={(detail.type === "vanillas" || detail.type === "VANILLALONGCALL" || detail.type === "VANILLALONGPUT") ? "Strike" : "Barrier"}>
             <span className="font-mono">{detail.barrier}</span>
           </Row>
