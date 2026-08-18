@@ -207,6 +207,18 @@ function LeftPanel({
               {detail.side === "fall" ? "Odd" : "Even"}
             </span>
           </Row>
+        ) : detail.type === "matches_differs" ? (
+          <Row label="Target">
+            <span className="font-mono text-[14px] font-semibold text-opt-ink">
+              {detail.tradeTypeLabel === "Matches" ? "Equals " : "Differs from "} {detail.barrier}
+            </span>
+          </Row>
+        ) : detail.type === "over_under" ? (
+          <Row label="Target">
+            <span className="font-mono text-[14px] font-semibold text-opt-ink">
+              {detail.tradeTypeLabel === "Over" ? "Over " : "Under "} {detail.barrier}
+            </span>
+          </Row>
         ) : (detail.type !== "accumulators" && detail.type !== "multipliers") && (
           <Row label={(detail.type === "vanillas" || detail.type === "VANILLALONGCALL" || detail.type === "VANILLALONGPUT") ? "Strike" : "Barrier"}>
             <span className="font-mono">{detail.barrier}</span>

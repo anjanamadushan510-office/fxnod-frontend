@@ -66,8 +66,8 @@ export function ContractDetailChart({ detail }: { detail: ContractDetail }) {
     series.setData(chartData);
 
     // Entry barrier line (dashed) for contracts that have a distinct fixed barrier
-    const isEvenOdd = detail.type === "even_odd" || detail.type === "DIGITEVEN" || detail.type === "DIGITODD";
-    if (detail.type !== "accumulators" && detail.type !== "multipliers" && !isEvenOdd) {
+    const isDigitContract = detail.type === "even_odd" || detail.type === "DIGITEVEN" || detail.type === "DIGITODD" || detail.type === "matches_differs" || detail.type === "over_under";
+    if (detail.type !== "accumulators" && detail.type !== "multipliers" && !isDigitContract) {
       series.createPriceLine({
         price: detail.barrier,
         color: fall,
