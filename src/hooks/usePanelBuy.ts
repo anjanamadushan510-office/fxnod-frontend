@@ -139,6 +139,8 @@ export function usePanelBuy(request: ProposalRequest | null): PanelBuyResult {
   };
 }
 
+import { formatTradeTypeLabel } from "@/components/options/positions/contractDetail";
+
 /**
  * Post-trade plumbing on a successful single-phase buy (§3): open the drawer,
  * insert the real position, and draw the barrier line + entry marker.
@@ -183,6 +185,7 @@ function applyPostTrade(request: ProposalRequest, trade: ConfirmResponse) {
       strikePrice: entry,
       startTime: now,
       endTime: now + durationSeconds(request),
+      label: formatTradeTypeLabel(request.contract_type || "rise_fall", side),
     });
   }
 }

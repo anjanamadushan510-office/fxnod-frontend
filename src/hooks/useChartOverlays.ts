@@ -38,7 +38,7 @@ export function useChartOverlays(
       .map((o) => ({
       price: o.strikePrice,
       color: o.contractType === "rise" ? OVERLAY_COLORS.rise : OVERLAY_COLORS.fall,
-      title: o.contractType === "rise" ? "Rise" : "Fall",
+      title: o.label || (o.contractType === "rise" ? "Rise" : "Fall"),
       lineWidth: 2,
       lineStyle: LineStyle.Dashed,
     }));

@@ -19,6 +19,8 @@ export interface TradeOverlay {
   startTime: number;
   /** Contract expiry — epoch seconds. */
   endTime: number;
+  /** Custom label to show on the chart (e.g. "Touch", "Matches") */
+  label?: string;
 }
 
 interface TradeOverlaysState {
