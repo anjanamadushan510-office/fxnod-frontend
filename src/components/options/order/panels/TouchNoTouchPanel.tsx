@@ -21,6 +21,7 @@ export function TouchNoTouchPanel({ symbol }: TouchNoTouchPanelProps) {
   const [duration, setDuration] = useDefaultDuration({ amount: 5, unit: "ticks" });
   const [barrier, setBarrier] = useState<number>(1.17);
   const [stake, setStake] = useState<number>(10);
+  const [hasDurationError, setHasDurationError] = useState(false);
 
   // Sync preview to chart
   useEffect(() => {
@@ -29,7 +30,7 @@ export function TouchNoTouchPanel({ symbol }: TouchNoTouchPanelProps) {
   }, [barrier]);
 
   const request =
-    stake > 0
+    stake > 0 && !hasDurationError
       ? buildProposalRequest({
           contractType: "touch_no_touch",
           symbol,
@@ -55,7 +56,7 @@ export function TouchNoTouchPanel({ symbol }: TouchNoTouchPanelProps) {
         onChange={setSide}
         labels={{ rise: "Touch", fall: "No Touch" }}
       />
-      <DurationField value={duration} onChange={setDuration} allowSeconds={false} />
+      <DurationField value={duration} onChange={setDuration} allowSeconds={false} onValidationError={setHasDurationError} />
       <OffsetField label="Barrier" value={barrier} onChange={setBarrier} />
       <StakeField value={stake} onChange={setStake} min={1} max={2000} />
       {errorMsg && (

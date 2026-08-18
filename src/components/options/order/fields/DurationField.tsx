@@ -50,9 +50,16 @@ export function DurationField({ value, onChange, onValidationError, allowTicks =
       </button>
 
       {open && (
-        <AnchoredPopover anchorRef={triggerRef} onClose={() => setOpen(false)}>
+        <AnchoredPopover 
+          anchorRef={triggerRef} 
+          onClose={() => {
+            onValidationError?.(false);
+            setOpen(false);
+          }}
+        >
           <DurationPicker allowTicks={allowTicks} allowSeconds={allowSeconds} value={value}
             onSelect={(v) => {
+              onValidationError?.(false);
               onChange?.(v);
               setOpen(false);
             }}
