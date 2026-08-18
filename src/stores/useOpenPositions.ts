@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import type { Position } from "@/hooks/useMockPositions";
 import type { PositionFrame } from "@/services/positionsStream";
+import { useTradeOverlays } from "@/stores/useTradeOverlays";
 
 /**
  * Open-positions list shown in the Positions drawer.
@@ -50,6 +51,7 @@ export const useOpenPositions = create<OpenPositionsState>((set) => ({
         useOpenPositions.setState((curr) => ({
           positions: curr.positions.filter((p) => p.contractId !== frame.contract_id),
         }));
+        useTradeOverlays.getState().removeOverlay(frame.contract_id);
       }, 3000);
 
       return {

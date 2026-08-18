@@ -26,7 +26,7 @@ export interface TradeOverlay {
 interface TradeOverlaysState {
   overlays: TradeOverlay[];
   /** Add an overlay; returns its generated id. */
-  addOverlay: (overlay: Omit<TradeOverlay, "id">) => string;
+  addOverlay: (overlay: Omit<TradeOverlay, "id"> & { id?: string }) => string;
   removeOverlay: (id: string) => void;
   /** Drop every overlay for one market. */
   clearSymbol: (symbol: string) => void;
@@ -41,7 +41,7 @@ interface TradeOverlaysState {
 export const useTradeOverlays = create<TradeOverlaysState>((set) => ({
   overlays: [],
   addOverlay: (overlay) => {
-    const id = crypto.randomUUID();
+    const id = overlay.id ?? crypto.randomUUID();
     set((s) => ({ overlays: [...s.overlays, { ...overlay, id }] }));
     return id;
   },

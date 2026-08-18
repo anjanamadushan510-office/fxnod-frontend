@@ -180,6 +180,7 @@ function applyPostTrade(request: ProposalRequest, trade: ConfirmResponse) {
 
   if (entry > 0) {
     useTradeOverlays.getState().addOverlay({
+      id: trade.deriv_contract_id,
       symbol,
       contractType: side,
       strikePrice: entry,
