@@ -18,9 +18,10 @@ export function EvenOddPanel({ symbol }: EvenOddPanelProps) {
   const [side, setSide] = useState<Side>("rise");
   const [duration, setDuration] = useState<DurationValue>({ amount: 5, unit: "ticks" });
   const [stake, setStake] = useState<number>(10);
+  const [hasDurationError, setHasDurationError] = useState(false);
 
   const request =
-    stake > 0
+    stake > 0 && !hasDurationError
       ? buildProposalRequest({
           contractType: "even_odd",
           symbol,
@@ -45,7 +46,7 @@ export function EvenOddPanel({ symbol }: EvenOddPanelProps) {
         onChange={setSide}
         labels={{ rise: "Even", fall: "Odd" }}
       />
-      <DurationField value={duration} onChange={setDuration} />
+      <DurationField value={duration} onChange={setDuration} onValidationError={setHasDurationError} />
       <StakeField value={stake} onChange={setStake} min={1} max={2000} />
       {errorMsg && (
         <p className="px-1 text-[11px] leading-snug text-opt-fall">{errorMsg}</p>

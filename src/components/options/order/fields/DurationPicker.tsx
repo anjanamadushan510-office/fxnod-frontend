@@ -19,6 +19,7 @@ type ActiveType = DurationUnit | "endtime";
 interface DurationPickerProps {
   value: DurationValue;
   onSelect: (v: DurationValue) => void;
+  onValidationError?: (hasError: boolean) => void;
   allowTicks?: boolean;
   allowSeconds?: boolean;
 }
@@ -29,12 +30,17 @@ interface DurationPickerProps {
  * with ⚡ quick-grid and ⌨ keyboard-entry modes. The "End time" type shows a
  * date + time + Save form (§6.1).
  */
-export function DurationPicker({ value, onSelect, allowTicks = true, allowSeconds = true }: DurationPickerProps) {
+export function DurationPicker({ value, onSelect, onValidationError, allowTicks = true, allowSeconds = true }: DurationPickerProps) {
   const { tradeType } = useChartSettings();
   const [activeType, setActiveType] = useState<ActiveType>(value.unit);
   const [mode, setMode] = useState<"grid" | "keyboard">("grid");
   const [manual, setManual] = useState(String(value.amount));
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const reportError = (msg: string | null) => {
+    setErrorMsg(msg);
+    onValidationError?.(msg !== null);
+  };
 
   const isEnd = activeType === "endtime";
   let availableTypes = allowTicks ? TYPES : TYPES.filter(t => t.unit !== 'ticks');
@@ -44,6 +50,8 @@ export function DurationPicker({ value, onSelect, allowTicks = true, allowSecond
     availableTypes = availableTypes.map(t => 
       t.unit === "ticks" ? { ...t, presets: [5, 6, 7, 8, 9, 10] } : t
     );
+  } else if (tradeType === "even_odd") {
+    availableTypes = availableTypes.filter(t => t.unit === "ticks");
   }
 
   const active = availableTypes.find((t) => t.unit === activeType) ?? availableTypes[0]!;
@@ -54,12 +62,17 @@ export function DurationPicker({ value, onSelect, allowTicks = true, allowSecond
     
     if (tradeType === "touch_no_touch" && active.unit === "ticks") {
       if (n < 5 || n > 10) {
-        setErrorMsg("Please enter a duration between 5 to 10 ticks.");
+        reportError("Please enter a duration between 5 to 10 ticks.");
+        return;
+      }
+    } else if (tradeType === "even_odd" && active.unit === "ticks") {
+      if (n < 1 || n > 10) {
+        reportError("Please enter a duration between 1 to 10 ticks.");
         return;
       }
     }
     
-    setErrorMsg(null);
+    reportError(null);
     if (Number.isFinite(n) && n > 0) onSelect({ amount: n, unit: active.unit });
   };
 
@@ -137,7 +150,7 @@ export function DurationPicker({ value, onSelect, allowTicks = true, allowSecond
                 value={manual}
                 onChange={(e) => {
                   setManual(e.target.value.replace(/[^0-9]/g, ""));
-                  setErrorMsg(null);
+                  reportError(null);
                 }}
                 aria-label={`Duration in ${active.label.toLowerCase()}`}
                 className={cn(
