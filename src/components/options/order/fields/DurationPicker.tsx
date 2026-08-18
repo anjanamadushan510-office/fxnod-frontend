@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Keyboard, Zap } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { useChartSettings } from "@/hooks/useChartSettings";
 import type { DurationUnit, DurationValue } from "./DurationField";
 
 /** Duration types + preset grids (Deriv §6.1). */
@@ -29,18 +30,36 @@ interface DurationPickerProps {
  * date + time + Save form (§6.1).
  */
 export function DurationPicker({ value, onSelect, allowTicks = true, allowSeconds = true }: DurationPickerProps) {
+  const { tradeType } = useChartSettings();
   const [activeType, setActiveType] = useState<ActiveType>(value.unit);
   const [mode, setMode] = useState<"grid" | "keyboard">("grid");
   const [manual, setManual] = useState(String(value.amount));
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const isEnd = activeType === "endtime";
   let availableTypes = allowTicks ? TYPES : TYPES.filter(t => t.unit !== 'ticks');
   availableTypes = allowSeconds ? availableTypes : availableTypes.filter(t => t.unit !== 's');
+  
+  if (tradeType === "touch_no_touch") {
+    availableTypes = availableTypes.map(t => 
+      t.unit === "ticks" ? { ...t, presets: [5, 6, 7, 8, 9, 10] } : t
+    );
+  }
+
   const active = availableTypes.find((t) => t.unit === activeType) ?? availableTypes[0]!;
 
   const commitManual = () => {
     if (isEnd) return;
     const n = Math.floor(Number(manual));
+    
+    if (tradeType === "touch_no_touch" && active.unit === "ticks") {
+      if (n < 5 || n > 10) {
+        setErrorMsg("Please enter a duration between 5 to 10 ticks.");
+        return;
+      }
+    }
+    
+    setErrorMsg(null);
     if (Number.isFinite(n) && n > 0) onSelect({ amount: n, unit: active.unit });
   };
 
@@ -116,13 +135,23 @@ export function DurationPicker({ value, onSelect, allowTicks = true, allowSecond
                 autoFocus
                 inputMode="numeric"
                 value={manual}
-                onChange={(e) => setManual(e.target.value.replace(/[^0-9]/g, ""))}
+                onChange={(e) => {
+                  setManual(e.target.value.replace(/[^0-9]/g, ""));
+                  setErrorMsg(null);
+                }}
                 aria-label={`Duration in ${active.label.toLowerCase()}`}
-                className="w-full rounded-md border border-opt-line bg-opt-bg-sunk px-3 py-2 text-[14px] font-semibold text-opt-ink outline-none focus:border-[#00A79E]"
+                className={cn(
+                  "w-full rounded-md border bg-opt-bg-sunk px-3 py-2 text-[14px] font-semibold text-opt-ink outline-none",
+                  errorMsg ? "border-red-500 focus:border-red-500" : "border-opt-line focus:border-[#00A79E]"
+                )}
               />
-              <p className="mt-1.5 text-[11px] text-opt-ink-3">
-                {active.label} · press Enter to apply
-              </p>
+              {errorMsg ? (
+                <p className="mt-1.5 text-[11px] text-red-500">{errorMsg}</p>
+              ) : (
+                <p className="mt-1.5 text-[11px] text-opt-ink-3">
+                  {active.label} · press Enter to apply
+                </p>
+              )}
             </form>
           )}
         </div>
