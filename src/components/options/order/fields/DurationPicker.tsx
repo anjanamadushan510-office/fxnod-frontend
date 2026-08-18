@@ -104,11 +104,13 @@ export function DurationPicker({ value, onSelect, onValidationError, allowTicks 
               onClick={() => setActiveType(t.unit)}
             />
           ))}
-          <TypeRow
-            label="End time"
-            active={isEnd}
-            onClick={() => setActiveType("endtime")}
-          />
+          {tradeType !== "even_odd" && (
+            <TypeRow
+              label="End time"
+              active={isEnd}
+              onClick={() => setActiveType("endtime")}
+            />
+          )}
         </div>
 
         {/* Right pane */}
