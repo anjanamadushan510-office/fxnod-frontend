@@ -50,7 +50,7 @@ export function DurationPicker({ value, onSelect, onValidationError, allowTicks 
     availableTypes = availableTypes.map(t => 
       t.unit === "ticks" ? { ...t, presets: [5, 6, 7, 8, 9, 10] } : t
     );
-  } else if (tradeType === "even_odd") {
+  } else if (tradeType === "even_odd" || tradeType === "matches_differs" || tradeType === "over_under") {
     availableTypes = availableTypes.filter(t => t.unit === "ticks");
   }
 
@@ -65,7 +65,7 @@ export function DurationPicker({ value, onSelect, onValidationError, allowTicks 
         reportError("Please enter a duration between 5 to 10 ticks.");
         return;
       }
-    } else if (tradeType === "even_odd" && active.unit === "ticks") {
+    } else if ((tradeType === "even_odd" || tradeType === "matches_differs" || tradeType === "over_under") && active.unit === "ticks") {
       if (n < 1 || n > 10) {
         reportError("Please enter a duration between 1 to 10 ticks.");
         return;
