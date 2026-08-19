@@ -16,14 +16,14 @@ type Category = "Active" | "Momentum" | "Trend" | "Volatility" | "Moving average
 
 const INDICATOR_LIST: { id: string; name: string; category: Category; disabled?: boolean }[] = [
   // Momentum
-  { id: "awesome_oscillator", name: "Awesome Oscillator", category: "Momentum", disabled: true },
+  { id: "awesome_oscillator", name: "Awesome Oscillator", category: "Momentum" },
   { id: "dpo", name: "Detrended Price Oscillator", category: "Momentum", disabled: true },
   { id: "MACD", name: "MACD", category: "Momentum" },
-  { id: "roc", name: "Price Rate of Change", category: "Momentum", disabled: true },
+  { id: "roc", name: "Price Rate of Change", category: "Momentum" },
   { id: "RSI", name: "Relative Strength Index (RSI)", category: "Momentum" },
-  { id: "stochastic", name: "Stochastic Oscillator", category: "Momentum", disabled: true },
+  { id: "stochastic", name: "Stochastic Oscillator", category: "Momentum" },
   { id: "smi", name: "Stochastic Momentum Index", category: "Momentum", disabled: true },
-  { id: "wpr", name: "William's Percent Range", category: "Momentum", disabled: true },
+  { id: "wpr", name: "William's Percent Range", category: "Momentum" },
   // Trend
   { id: "ichimoku", name: "Ichimoku Cloud", category: "Trend", disabled: true },
   { id: "parabolic_sar", name: "Parabolic SAR", category: "Trend", disabled: true },

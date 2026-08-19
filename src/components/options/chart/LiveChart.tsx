@@ -43,9 +43,11 @@ import {
 } from "@/stores/useChartDrawings";
 import { CHART_COLORS } from "./chartColors";
 import { TrendPrimitive, VerticalPrimitive } from "./chartPrimitives";
-import type { ChartTypeId, IntervalId } from "./chartSettings";
 import { useChartIndicators, type IndicatorConfig } from "@/stores/useChartIndicators";
-import { calculateSMA, calculateEMA, calculateRSI, calculateMACD } from "@/lib/indicators";
+import { 
+  calculateSMA, calculateEMA, calculateRSI, calculateMACD,
+  calculateAwesomeOscillator, calculateROC, calculateStochastic, calculateWilliamsR
+} from "@/lib/indicators";
 
 /** Accent color for user-drawn lines (drawn on canvas — needs literal hex). */
 const DRAWING_COLOR = "#2962FF";
@@ -642,17 +644,24 @@ function syncIndicators(
   // Extract ordered values
   const timeArray: UTCTimestamp[] = [];
   const valueArray: number[] = [];
+  const highArray: number[] = [];
+  const lowArray: number[] = [];
+
   if (seriesKind === "candlestick") {
     const ascendingCandles = ascending(candles);
     for (const c of ascendingCandles) {
       timeArray.push(c.time as UTCTimestamp);
       valueArray.push(c.close);
+      highArray.push(c.high);
+      lowArray.push(c.low);
     }
   } else {
     const ascendingTicks = ascending(ticks);
     for (const t of ascendingTicks) {
       timeArray.push(t.time as UTCTimestamp);
       valueArray.push(t.value);
+      highArray.push(t.value);
+      lowArray.push(t.value);
     }
   }
 
@@ -726,6 +735,58 @@ function syncIndicators(
       if (histData.length > 0) hist.setData(histData as any);
       if (macdData.length > 0) macdLine.setData(macdData as any);
       if (signalData.length > 0) signalLine.setData(signalData as any);
+    } else if (ind.type === "awesome_oscillator") {
+      let hist = seriesRef.current.get(ind.id) as ISeriesApi<"Histogram">;
+      if (!hist) {
+        hist = chart.addSeries(HistogramSeries, {
+          color: "#26a69a",
+          priceScaleId: "ao-scale",
+        });
+        chart.priceScale("ao-scale").applyOptions({ scaleMargins: { top: 0.75, bottom: 0 } });
+        seriesRef.current.set(ind.id, hist);
+      }
+      const results = calculateAwesomeOscillator(highArray, lowArray);
+      const data = results.map((val, i) => ({ 
+        time: timeArray[i], 
+        value: val, 
+        color: val > (results[i - 1] || 0) ? "#26a69a" : "#ef5350" 
+      })).filter(d => !isNaN(d.value));
+      if (data.length > 0) hist.setData(data as any);
+    } else if (ind.type === "roc" || ind.type === "wpr") {
+      let series = seriesRef.current.get(ind.id) as ISeriesApi<"Line">;
+      if (!series) {
+        series = chart.addSeries(LineSeries, {
+          color: ind.type === "roc" ? "#2196f3" : "#ff9800",
+          lineWidth: 2,
+          priceScaleId: `${ind.type}-scale`,
+        });
+        chart.priceScale(`${ind.type}-scale`).applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
+        seriesRef.current.set(ind.id, series);
+      }
+      let results: number[] = [];
+      const p = ind.params.period || 14;
+      if (ind.type === "roc") results = calculateROC(valueArray, p);
+      if (ind.type === "wpr") results = calculateWilliamsR(highArray, lowArray, valueArray, p);
+
+      const data = results.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+      if (data.length > 0) series.setData(data as any);
+    } else if (ind.type === "stochastic") {
+      let kLine = seriesRef.current.get(`${ind.id}-k`) as ISeriesApi<"Line">;
+      let dLine = seriesRef.current.get(`${ind.id}-d`) as ISeriesApi<"Line">;
+      if (!kLine || !dLine) {
+        kLine = chart.addSeries(LineSeries, { color: "#2196f3", lineWidth: 2, priceScaleId: "stoch-scale" });
+        dLine = chart.addSeries(LineSeries, { color: "#ff9800", lineWidth: 2, priceScaleId: "stoch-scale" });
+        chart.priceScale("stoch-scale").applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
+        seriesRef.current.set(`${ind.id}-k`, kLine);
+        seriesRef.current.set(`${ind.id}-d`, dLine);
+      }
+      const pK = ind.params.periodK || 14;
+      const pD = ind.params.periodD || 3;
+      const results = calculateStochastic(highArray, lowArray, valueArray, pK, pD);
+      const kData = results.k.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+      const dData = results.d.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+      if (kData.length > 0) kLine.setData(kData as any);
+      if (dData.length > 0) dLine.setData(dData as any);
     }
   }
 }

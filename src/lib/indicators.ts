@@ -129,3 +129,103 @@ export function calculateMACD(data: number[], fastPeriod: number, slowPeriod: nu
     histogram: histogram,
   };
 }
+
+// Rate of Change (ROC)
+export function calculateROC(data: number[], period: number): number[] {
+  const result: number[] = new Array(data.length).fill(NaN);
+  for (let i = period; i < data.length; i++) {
+    const pastPrice = data[i - period];
+    if (pastPrice !== 0) {
+      result[i] = ((data[i] - pastPrice) / pastPrice) * 100;
+    }
+  }
+  return result;
+}
+
+// Awesome Oscillator (AO)
+export function calculateAwesomeOscillator(high: number[], low: number[]): number[] {
+  const result: number[] = new Array(high.length).fill(NaN);
+  const medianPrices: number[] = new Array(high.length).fill(0);
+  for (let i = 0; i < high.length; i++) {
+    medianPrices[i] = (high[i] + low[i]) / 2;
+  }
+  
+  const sma5 = calculateSMA(medianPrices, 5);
+  const sma34 = calculateSMA(medianPrices, 34);
+
+  for (let i = 0; i < high.length; i++) {
+    if (!isNaN(sma5[i]) && !isNaN(sma34[i])) {
+      result[i] = sma5[i] - sma34[i];
+    }
+  }
+  return result;
+}
+
+// William's Percent Range (%R)
+export function calculateWilliamsR(high: number[], low: number[], close: number[], period: number): number[] {
+  const result: number[] = new Array(close.length).fill(NaN);
+  for (let i = period - 1; i < close.length; i++) {
+    let highestHigh = high[i - period + 1];
+    let lowestLow = low[i - period + 1];
+    
+    for (let j = 1; j < period; j++) {
+      const idx = i - period + 1 + j;
+      if (high[idx] > highestHigh) highestHigh = high[idx];
+      if (low[idx] < lowestLow) lowestLow = low[idx];
+    }
+
+    if (highestHigh !== lowestLow) {
+      result[i] = ((highestHigh - close[i]) / (highestHigh - lowestLow)) * -100;
+    } else {
+      result[i] = -50;
+    }
+  }
+  return result;
+}
+
+// Stochastic Oscillator (%K and %D)
+export interface StochasticResult {
+  k: number[];
+  d: number[];
+}
+
+export function calculateStochastic(high: number[], low: number[], close: number[], periodK: number, periodD: number): StochasticResult {
+  const kLine: number[] = new Array(close.length).fill(NaN);
+  for (let i = periodK - 1; i < close.length; i++) {
+    let highestHigh = high[i - periodK + 1];
+    let lowestLow = low[i - periodK + 1];
+    
+    for (let j = 1; j < periodK; j++) {
+      const idx = i - periodK + 1 + j;
+      if (high[idx] > highestHigh) highestHigh = high[idx];
+      if (low[idx] < lowestLow) lowestLow = low[idx];
+    }
+
+    if (highestHigh !== lowestLow) {
+      kLine[i] = ((close[i] - lowestLow) / (highestHigh - lowestLow)) * 100;
+    } else {
+      kLine[i] = 50;
+    }
+  }
+
+  // extract valid values to pass to SMA
+  const validKValues: number[] = [];
+  const validKIndices: number[] = [];
+  for (let i = 0; i < kLine.length; i++) {
+    if (!isNaN(kLine[i])) {
+      validKValues.push(kLine[i]);
+      validKIndices.push(i);
+    }
+  }
+
+  const dLineEma = calculateSMA(validKValues, periodD);
+  const dLine: number[] = new Array(close.length).fill(NaN);
+  for (let i = 0; i < validKValues.length; i++) {
+    const originalIndex = validKIndices[i];
+    if (!isNaN(dLineEma[i])) {
+      dLine[originalIndex] = dLineEma[i];
+    }
+  }
+
+  return { k: kLine, d: dLine };
+}
