@@ -229,3 +229,33 @@ export function calculateStochastic(high: number[], low: number[], close: number
 
   return { k: kLine, d: dLine };
 }
+
+// Commodity Channel Index (CCI)
+export function calculateCCI(high: number[], low: number[], close: number[], period: number): number[] {
+  const result: number[] = new Array(close.length).fill(NaN);
+  const tp: number[] = new Array(close.length).fill(0);
+  
+  for (let i = 0; i < close.length; i++) {
+    tp[i] = (high[i] + low[i] + close[i]) / 3;
+  }
+
+  const smaTp = calculateSMA(tp, period);
+
+  for (let i = period - 1; i < close.length; i++) {
+    if (isNaN(smaTp[i])) continue;
+    
+    let sumDev = 0;
+    for (let j = 0; j < period; j++) {
+      sumDev += Math.abs(tp[i - j] - smaTp[i]);
+    }
+    const meanDev = sumDev / period;
+    
+    if (meanDev !== 0) {
+      result[i] = (tp[i] - smaTp[i]) / (0.015 * meanDev);
+    } else {
+      result[i] = 0;
+    }
+  }
+
+  return result;
+}

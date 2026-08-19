@@ -47,7 +47,8 @@ import type { ChartTypeId, IntervalId } from "./chartSettings";
 import { useChartIndicators, type IndicatorConfig } from "@/stores/useChartIndicators";
 import { 
   calculateSMA, calculateEMA, calculateRSI, calculateMACD,
-  calculateAwesomeOscillator, calculateROC, calculateStochastic, calculateWilliamsR
+  calculateAwesomeOscillator, calculateROC, calculateStochastic, calculateWilliamsR,
+  calculateCCI
 } from "@/lib/indicators";
 
 /** Accent color for user-drawn lines (drawn on canvas — needs literal hex). */
@@ -753,11 +754,11 @@ function syncIndicators(
         color: val > (results[i - 1] || 0) ? "#26a69a" : "#ef5350" 
       })).filter(d => !isNaN(d.value));
       if (data.length > 0) hist.setData(data as any);
-    } else if (ind.type === "roc" || ind.type === "wpr") {
+    } else if (ind.type === "roc" || ind.type === "wpr" || ind.type === "cci") {
       let series = seriesRef.current.get(ind.id) as ISeriesApi<"Line">;
       if (!series) {
         series = chart.addSeries(LineSeries, {
-          color: ind.type === "roc" ? "#2196f3" : "#ff9800",
+          color: ind.type === "roc" ? "#2196f3" : (ind.type === "cci" ? "#00A79E" : "#ff9800"),
           lineWidth: 2,
           priceScaleId: `${ind.type}-scale`,
         });
@@ -768,6 +769,7 @@ function syncIndicators(
       const p = ind.params.period || 14;
       if (ind.type === "roc") results = calculateROC(valueArray, p);
       if (ind.type === "wpr") results = calculateWilliamsR(highArray, lowArray, valueArray, p);
+      if (ind.type === "cci") results = calculateCCI(highArray, lowArray, valueArray, ind.params.period || 20);
 
       const data = results.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
       if (data.length > 0) series.setData(data as any);

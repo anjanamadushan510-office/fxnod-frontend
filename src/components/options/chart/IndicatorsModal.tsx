@@ -25,9 +25,12 @@ const INDICATOR_LIST: { id: string; name: string; category: Category; disabled?:
   { id: "smi", name: "Stochastic Momentum Index", category: "Momentum", disabled: true },
   { id: "wpr", name: "William's Percent Range", category: "Momentum" },
   // Trend
-  { id: "ichimoku", name: "Ichimoku Cloud", category: "Trend", disabled: true },
+  { id: "aroon", name: "Aroon", category: "Trend", disabled: true },
+  { id: "adx", name: "ADX/DMS", category: "Trend", disabled: true },
+  { id: "cci", name: "Commodity Channel Index", category: "Trend" },
+  { id: "ichimoku", name: "Ichimoku Clouds", category: "Trend", disabled: true },
   { id: "parabolic_sar", name: "Parabolic SAR", category: "Trend", disabled: true },
-  { id: "zigzag", name: "ZigZag", category: "Trend", disabled: true },
+  { id: "zigzag", name: "Zig Zag", category: "Trend", disabled: true },
   // Volatility
   { id: "bollinger", name: "Bollinger Bands", category: "Volatility", disabled: true },
   { id: "donchian", name: "Donchian Channel", category: "Volatility", disabled: true },

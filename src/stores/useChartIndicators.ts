@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-export type IndicatorType = "SMA" | "EMA" | "MACD" | "RSI" | "awesome_oscillator" | "roc" | "stochastic" | "wpr";
+export type IndicatorType = "SMA" | "EMA" | "MACD" | "RSI" | "awesome_oscillator" | "roc" | "stochastic" | "wpr" | "cci";
 
 export interface IndicatorConfig {
   id: string; // Unique instance ID
@@ -18,6 +18,7 @@ export const DEFAULT_INDICATOR_PARAMS: Record<IndicatorType, Record<string, numb
   roc: { period: 9 },
   stochastic: { periodK: 14, periodD: 3 },
   wpr: { period: 14 },
+  cci: { period: 20 },
 };
 
 interface ChartIndicatorsState {
