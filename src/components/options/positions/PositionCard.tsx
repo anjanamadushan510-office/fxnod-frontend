@@ -101,12 +101,12 @@ function PositionCardInner({
           onClick={() => position.contractId && onSell(position.contractId)}
           className={cn(
             "rounded-md px-3 py-1.5 text-center font-mono text-[12px] font-semibold tabular-nums transition-[filter] hover:brightness-110",
-            position.contractType.includes("MULT")
+            position.contractType.toLowerCase().includes("mult")
               ? "bg-transparent border border-opt-ink text-opt-ink" // Similar to Deriv's secondary "Close" button
               : "bg-opt-ink text-opt-bg"
           )}
         >
-          {position.contractType.includes("MULT") ? (
+          {position.contractType.toLowerCase().includes("mult") ? (
             "Close"
           ) : (
             <>Sell {position.contractValue.toFixed(2)} USD</>
