@@ -99,6 +99,9 @@ function LeftPanel({
   const tradeTypeColor = detail.side === "fall" ? "text-opt-fall" : "text-opt-rise";
   const TradeIcon = detail.side === "fall" ? ArrowDownRight : ArrowUpRight;
 
+  const isTurbos = detail.type === "turbos" || detail.type === "TURBOSLONG" || detail.type === "TURBOSSHORT";
+  const isMultiplier = detail.type.toLowerCase().includes("mult");
+
   return (
     <div className="flex min-h-0 flex-col gap-3 overflow-y-auto border-r border-opt-line p-4 [scrollbar-width:thin]">
       
@@ -139,7 +142,7 @@ function LeftPanel({
       </span>
 
       <div className="grid grid-cols-2 gap-x-3 gap-y-2">
-        {detail.type === "turbos" || detail.type === "TURBOSLONG" || detail.type === "TURBOSSHORT" ? (
+        {isTurbos ? (
           <>
             <Stat label="Stake" value={detail.stake.toFixed(2)} />
             <Stat label="Contract value" value={detail.contractValue.toFixed(2)} className={lost ? "text-opt-ink-3" : "text-opt-rise"} />
@@ -151,6 +154,15 @@ function LeftPanel({
             ) : (
               <div />
             )}
+          </>
+        ) : isMultiplier ? (
+          <>
+            <Stat label="Contract cost" value={detail.stake.toFixed(2)} />
+            <Stat label="Contract value" value={detail.contractValue.toFixed(2)} className={lost ? "text-opt-ink-3" : "text-opt-rise"} />
+            <Stat label="Deal cancel. fee" value="-" />
+            <Stat label="Take profit" value="-" />
+            <Stat label="Stake" value={detail.stake.toFixed(2)} />
+            <Stat label="Stop loss" value="-" />
           </>
         ) : (
           <>
@@ -170,10 +182,10 @@ function LeftPanel({
         )}
       </div>
 
-      {/* For Turbos, Deriv separates Total profit/loss out or we can put it below the grid */}
-      {(detail.type === "turbos" || detail.type === "TURBOSLONG" || detail.type === "TURBOSSHORT") && (
-        <div className="mt-2 flex flex-col items-center justify-center rounded bg-opt-bg-elev p-3 border border-opt-line">
-          <span className="text-[11px] font-semibold text-opt-ink-3">Total profit/loss</span>
+      {/* For Turbos & Multipliers, Total profit/loss is separated */}
+      {(isTurbos || isMultiplier) && (
+        <div className={cn("mt-2 flex flex-col justify-center p-3", isTurbos ? "items-center rounded bg-opt-bg-elev border border-opt-line" : "items-start")}>
+          <span className="text-[11px] font-semibold text-opt-ink-3">Total profit/loss:</span>
           <span className={`text-[15px] font-bold ${pnlClass}`}>{detail.pnl.toFixed(2)}</span>
         </div>
       )}
@@ -200,7 +212,12 @@ function LeftPanel({
             )}
           </div>
         </Row>
-        <Row label="Duration">{detail.duration}</Row>
+        {isMultiplier && (
+          <Row label="% Commission">
+            <span className="font-mono">0.00 USD</span>
+          </Row>
+        )}
+        {!isMultiplier && <Row label="Duration">{detail.duration}</Row>}
         {detail.type === "even_odd" || detail.type === "DIGITEVEN" || detail.type === "DIGITODD" ? (
           <Row label="Target">
             <span className="font-mono text-[14px] font-semibold text-opt-ink">
@@ -219,7 +236,7 @@ function LeftPanel({
               {detail.tradeTypeLabel === "Over" ? "Over " : "Under "} {detail.barrier}
             </span>
           </Row>
-        ) : (detail.type !== "accumulators" && detail.type !== "multipliers") && (
+        ) : (detail.type !== "accumulators" && !isMultiplier) && (
           <Row label={(detail.type === "vanillas" || detail.type === "VANILLALONGCALL" || detail.type === "VANILLALONGPUT") ? "Strike" : "Barrier"}>
             <span className="font-mono">{detail.barrier}</span>
           </Row>
