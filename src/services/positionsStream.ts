@@ -52,6 +52,7 @@ export interface PositionFrame {
   buy_transaction_id?: number;
   sell_transaction_id?: number;
   display_number_of_contracts?: string;
+  commission?: string;
 }
 
 /** Frames the server pushes to the client. */

@@ -74,4 +74,6 @@ export interface TradeHistoryEntry {
   exit_spot?: TradeHistoryEntryExitSpot;
   /** @nullable */
   tick_stream?: TradeHistoryEntryTickStreamItem[] | null;
+  /** @nullable */
+  commission?: DecimalString | null;
 }

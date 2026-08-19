@@ -115,6 +115,8 @@ function framePatch(frame: PositionFrame, existing?: Position): Partial<Position
   if (frame.buy_transaction_id !== undefined) patch.buy_transaction_id = frame.buy_transaction_id;
   if (frame.sell_transaction_id !== undefined) patch.sell_transaction_id = frame.sell_transaction_id;
   if (frame.display_number_of_contracts !== undefined) patch.display_number_of_contracts = frame.display_number_of_contracts;
+  const commission = toNum(frame.commission);
+  if (commission !== undefined) patch.commission = commission;
   const label = statusLabel(frame);
   if (label) patch.status = label;
   return patch;
@@ -146,6 +148,7 @@ function frameToPosition(frame: PositionFrame): Position {
     buy_transaction_id: frame.buy_transaction_id,
     sell_transaction_id: frame.sell_transaction_id,
     display_number_of_contracts: frame.display_number_of_contracts,
+    commission: toNum(frame.commission),
   };
 }
 

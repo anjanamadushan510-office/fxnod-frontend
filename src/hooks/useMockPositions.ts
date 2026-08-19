@@ -37,6 +37,7 @@ export interface Position {
   buy_transaction_id?: number;
   sell_transaction_id?: number;
   display_number_of_contracts?: string;
+  commission?: number;
 }
 
 /**

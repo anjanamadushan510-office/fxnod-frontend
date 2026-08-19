@@ -214,7 +214,7 @@ function LeftPanel({
         </Row>
         {isMultiplier && (
           <Row label="% Commission">
-            <span className="font-mono">0.00 USD</span>
+            <span className="font-mono">{detail.commission !== undefined ? `${detail.commission.toFixed(2)} USD` : "0.00 USD"}</span>
           </Row>
         )}
         {!isMultiplier && <Row label="Duration">{detail.duration}</Row>}

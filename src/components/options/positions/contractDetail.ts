@@ -46,6 +46,7 @@ export interface ContractDetail {
   exitTime: number;
   expiryTime?: number;
   payoutPerPoint?: number;
+  commission?: number;
   ticks: ContractTick[];
 }
 
@@ -360,6 +361,7 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
       exitSpot,
       exitTime,
       payoutPerPoint: (h.frontend_contract_type === "vanillas" || h.frontend_contract_type === "turbos" || h.frontend_contract_type === "TURBOSLONG" || h.frontend_contract_type === "TURBOSSHORT") ? potentialPayout : undefined,
+      commission: h.commission ? Number(h.commission) : undefined,
       ticks,
   };
 }
@@ -456,6 +458,7 @@ export function simPositionToDetail(p: Position): ContractDetail {
     exitTime: now,
     expiryTime: p.expiryTime,
     payoutPerPoint: (p.contractType === "vanillas" || p.contractType === "turbos" || p.contractType === "VANILLALONGCALL" || p.contractType === "VANILLALONGPUT" || p.contractType === "TURBOSLONG" || p.contractType === "TURBOSSHORT") ? ((p as any).display_number_of_contracts ? Number((p as any).display_number_of_contracts) : p.stake) : undefined,
+    commission: p.commission,
     ticks: ticks as any,
   };
 }
