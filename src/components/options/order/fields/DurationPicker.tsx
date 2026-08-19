@@ -104,7 +104,7 @@ export function DurationPicker({ value, onSelect, onValidationError, allowTicks 
               onClick={() => setActiveType(t.unit)}
             />
           ))}
-          {tradeType !== "even_odd" && (
+          {tradeType !== "even_odd" && tradeType !== "matches_differs" && tradeType !== "over_under" && (
             <TypeRow
               label="End time"
               active={isEnd}
