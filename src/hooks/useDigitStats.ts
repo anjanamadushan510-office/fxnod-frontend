@@ -1,34 +1,95 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useDerivWebSocket } from "./useDerivWebSocket";
+import { toDerivSymbol } from "@/services/deriv/derivSymbols";
+import type { DerivMessage } from "@/hooks/useDerivWebSocket";
 
-// Seed distribution lifted from the Matches/Differs reference screenshot.
-const SEED = [12.4, 10.1, 8.3, 8.8, 8.8, 10, 10.6, 10.9, 10.5, 9.6];
+const SEED = [10, 10, 10, 10, 10, 10, 10, 10, 10, 10];
+
+interface DerivHistoryMsg extends DerivMessage {
+  history?: {
+    prices: number[];
+    times: number[];
+  };
+  tick?: {
+    epoch: number;
+    quote: number;
+    pip_size?: number;
+  };
+}
 
 /**
  * Live last-digit frequency distribution (0–9) for Matches/Differs &
- * Over/Under. Each tick the percentages drift slightly and are re-normalised
- * to sum to 100, so the grid feels alive.
- *
- * Swap for the Trading service's real digit-stats stream later — the return
- * shape (length-10 number[]) stays identical.
+ * Over/Under. Uses Deriv WebSocket to fetch ticks_history and subscribe to live ticks.
  */
-export function useDigitStats(enabled = true, intervalMs = 1500): number[] {
+export function useDigitStats(symbol?: string, enabled = true, count = 100): number[] {
   const [pcts, setPcts] = useState<number[]>(SEED);
+  const derivSymbol = symbol ? toDerivSymbol(symbol) : undefined;
+  const active = enabled && Boolean(derivSymbol);
+  
+  const { subscribe } = useDerivWebSocket(active);
+  const ticksRef = useRef<number[]>([]);
+  const pipSizeRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (!enabled) return;
-    const id = setInterval(() => {
-      setPcts((prev) => {
-        const drifted = prev.map((p) =>
-          Math.max(2, p + (Math.random() - 0.5) * 0.6),
-        );
-        const sum = drifted.reduce((a, b) => a + b, 0);
-        return drifted.map((p) => (p / sum) * 100);
-      });
-    }, intervalMs);
-    return () => clearInterval(id);
-  }, [enabled, intervalMs]);
+    if (!active || !derivSymbol) {
+      setPcts(SEED);
+      return;
+    }
+    
+    ticksRef.current = [];
+    pipSizeRef.current = null;
+    
+    const payload = {
+      ticks_history: derivSymbol,
+      end: "latest",
+      count,
+      style: "ticks",
+      subscribe: 1,
+    };
+    
+    const unsubscribe = subscribe(payload, (raw) => {
+      const msg = raw as DerivHistoryMsg;
+      if (msg.error) return;
+      
+      if (msg.msg_type === "history" && msg.history?.prices) {
+        ticksRef.current = msg.history.prices.map(Number);
+        updatePcts();
+      } else if (msg.msg_type === "tick" && msg.tick?.quote !== undefined) {
+        if (msg.tick.pip_size !== undefined && pipSizeRef.current === null) {
+          pipSizeRef.current = msg.tick.pip_size;
+          updatePcts(); // re-evaluate history now that we have pip_size
+        }
+        ticksRef.current.push(Number(msg.tick.quote));
+        if (ticksRef.current.length > count) {
+          ticksRef.current.shift();
+        }
+        updatePcts();
+      }
+    });
+    
+    return unsubscribe;
+  }, [active, derivSymbol, count, subscribe]);
+
+  function updatePcts() {
+    const ticks = ticksRef.current;
+    if (!ticks.length) return;
+    
+    const pipSize = pipSizeRef.current;
+    if (pipSize === null) return; // Wait for first tick to know decimal places
+
+    const counts = new Array(10).fill(0);
+    for (const t of ticks) {
+      const str = t.toFixed(pipSize);
+      const lastChar = str[str.length - 1];
+      const digit = parseInt(lastChar, 10);
+      if (!isNaN(digit)) counts[digit]++;
+    }
+    
+    const total = ticks.length;
+    setPcts(counts.map(c => Number(((c / total) * 100).toFixed(1))));
+  }
 
   return pcts;
 }

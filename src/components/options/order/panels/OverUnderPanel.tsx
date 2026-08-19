@@ -22,7 +22,7 @@ export function OverUnderPanel({ symbol }: OverUnderPanelProps) {
   const [digit, setDigit] = useState<number>(5);
   const [duration, setDuration] = useState<DurationValue>({ amount: 5, unit: "ticks" });
   const [stake, setStake] = useState<number>(10);
-  const stats = useDigitStats();
+  const stats = useDigitStats(symbol);
 
   const disabledDigits = side === "rise" ? [9] : [0];
   // Keep the pick valid when the direction flips onto a disabled digit.

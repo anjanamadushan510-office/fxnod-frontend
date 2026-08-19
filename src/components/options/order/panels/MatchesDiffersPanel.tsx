@@ -21,7 +21,7 @@ export function MatchesDiffersPanel({ symbol }: MatchesDiffersPanelProps) {
   const [digit, setDigit] = useState<number>(0);
   const [duration, setDuration] = useState<DurationValue>({ amount: 5, unit: "ticks" });
   const [stake, setStake] = useState<number>(10);
-  const stats = useDigitStats();
+  const stats = useDigitStats(symbol);
 
   const request =
     stake > 0
