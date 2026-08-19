@@ -23,7 +23,7 @@ interface DerivHistoryMsg extends DerivMessage {
  * Live last-digit frequency distribution (0–9) for Matches/Differs &
  * Over/Under. Uses Deriv WebSocket to fetch ticks_history and subscribe to live ticks.
  */
-export function useDigitStats(symbol?: string, enabled = true, count = 100): number[] {
+export function useDigitStats(symbol?: string, enabled = true, count = 1000): number[] {
   const [pcts, setPcts] = useState<number[]>(SEED);
   const derivSymbol = symbol ? toDerivSymbol(symbol) : undefined;
   const active = enabled && Boolean(derivSymbol);
