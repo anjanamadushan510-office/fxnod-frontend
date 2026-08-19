@@ -15,6 +15,8 @@ import {
 import { useTradeHistory } from "@/hooks/useTradeHistory";
 import { EmptyPositionsState } from "./EmptyPositionsState";
 import { PositionCard } from "./PositionCard";
+import { useSellPosition } from "@/services/api/endpoints/trading/trading";
+import { toast } from "sonner";
 
 interface PositionsDrawerProps {
   open: boolean;
@@ -32,6 +34,23 @@ export function PositionsDrawer({ open, onClose }: PositionsDrawerProps) {
   const positions = useOpenPositions((s) => s.positions);
   const tick = useOpenPositions((s) => s.tick);
   const openDetail = useContractDetails((s) => s.open);
+
+  const sellMutation = useSellPosition({
+    mutation: {
+      onSuccess: () => {
+        toast.success("Sell order accepted");
+      },
+      onError: (e: any) => {
+        toast.error("Sell failed", {
+          description: e?.response?.data?.detail || "Could not sell position",
+        });
+      },
+    },
+  });
+
+  const handleSell = (contractId: string) => {
+    sellMutation.mutate({ data: { contract_id: contractId } });
+  };
 
   const openTotal = useMemo(
     () => positions.reduce((acc, p) => acc + p.pnl, 0),
@@ -94,6 +113,7 @@ export function PositionsDrawer({ open, onClose }: PositionsDrawerProps) {
                 <PositionCard
                   key={p.id}
                   position={p}
+                  onSell={handleSell}
                   onOpenDetails={() => openDetail(simPositionToDetail(p))}
                 />
               ))}
