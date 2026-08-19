@@ -12,15 +12,36 @@ interface IndicatorsModalProps {
 
 const TEAL = "#00A79E";
 
-const INDICATOR_LIST: { id: IndicatorType; name: string; category: "Moving averages" | "Oscillators" }[] = [
+type Category = "Active" | "Momentum" | "Trend" | "Volatility" | "Moving averages" | "Others";
+
+const INDICATOR_LIST: { id: string; name: string; category: Category; disabled?: boolean }[] = [
+  // Momentum
+  { id: "awesome_oscillator", name: "Awesome Oscillator", category: "Momentum", disabled: true },
+  { id: "dpo", name: "Detrended Price Oscillator", category: "Momentum", disabled: true },
+  { id: "MACD", name: "MACD", category: "Momentum" },
+  { id: "roc", name: "Price Rate of Change", category: "Momentum", disabled: true },
+  { id: "RSI", name: "Relative Strength Index (RSI)", category: "Momentum" },
+  { id: "stochastic", name: "Stochastic Oscillator", category: "Momentum", disabled: true },
+  { id: "smi", name: "Stochastic Momentum Index", category: "Momentum", disabled: true },
+  { id: "wpr", name: "William's Percent Range", category: "Momentum", disabled: true },
+  // Trend
+  { id: "ichimoku", name: "Ichimoku Cloud", category: "Trend", disabled: true },
+  { id: "parabolic_sar", name: "Parabolic SAR", category: "Trend", disabled: true },
+  { id: "zigzag", name: "ZigZag", category: "Trend", disabled: true },
+  // Volatility
+  { id: "bollinger", name: "Bollinger Bands", category: "Volatility", disabled: true },
+  { id: "donchian", name: "Donchian Channel", category: "Volatility", disabled: true },
+  // Moving averages
   { id: "SMA", name: "SMA (Simple Moving Average)", category: "Moving averages" },
   { id: "EMA", name: "EMA (Exponential Moving Average)", category: "Moving averages" },
-  { id: "MACD", name: "MACD", category: "Oscillators" },
-  { id: "RSI", name: "RSI (Relative Strength Index)", category: "Oscillators" },
+  { id: "wma", name: "WMA (Weighted Moving Average)", category: "Moving averages", disabled: true },
+  // Others
+  { id: "alligator", name: "Alligator", category: "Others", disabled: true },
+  { id: "fractal", name: "Fractal Chaos Bands", category: "Others", disabled: true },
 ];
 
 export function IndicatorsModal({ symbol, onClose }: IndicatorsModalProps) {
-  const [tab, setTab] = useState<"Active" | "Moving averages" | "Oscillators">("Active");
+  const [tab, setTab] = useState<Category>("Active");
 
   const { indicators, addIndicator, removeIndicator, updateIndicator, clearIndicators } = useChartIndicators();
   const activeIndicators = indicators.filter((ind) => ind.symbol === symbol);
@@ -69,19 +90,20 @@ export function IndicatorsModal({ symbol, onClose }: IndicatorsModalProps) {
     );
   };
 
-  const renderCategoryTab = (category: "Moving averages" | "Oscillators") => {
+  const renderCategoryTab = (category: Category) => {
     const list = INDICATOR_LIST.filter((i) => i.category === category);
     
     return (
       <div className="flex flex-col gap-2 p-4">
         {list.map((ind) => {
           return (
-            <div key={ind.id} className="flex items-center justify-between rounded-lg border border-opt-line p-3 hover:bg-opt-bg-sunk transition-colors">
+            <div key={ind.id} className={cn("flex items-center justify-between rounded-lg border border-opt-line p-3 transition-colors", ind.disabled ? "opacity-50 grayscale" : "hover:bg-opt-bg-sunk")}>
               <span className="text-[13px] font-medium text-opt-ink">{ind.name}</span>
               <button
                 type="button"
-                onClick={() => addIndicator(symbol, ind.id)}
-                className="rounded bg-opt-line px-3 py-1 text-[12px] font-semibold text-opt-ink transition-colors hover:bg-opt-line-strong"
+                disabled={ind.disabled}
+                onClick={() => !ind.disabled && addIndicator(symbol, ind.id as IndicatorType)}
+                className={cn("rounded px-3 py-1 text-[12px] font-semibold transition-colors", ind.disabled ? "bg-opt-bg-sunk text-opt-ink-4 cursor-not-allowed" : "bg-opt-line text-opt-ink hover:bg-opt-line-strong")}
               >
                 Add
               </button>
@@ -116,8 +138,11 @@ export function IndicatorsModal({ symbol, onClose }: IndicatorsModalProps) {
               onClick={() => setTab("Active")}
             />
             <div className="my-2 h-px w-full bg-opt-line" />
+            <TabButton label="Momentum" active={tab === "Momentum"} onClick={() => setTab("Momentum")} />
+            <TabButton label="Trend" active={tab === "Trend"} onClick={() => setTab("Trend")} />
+            <TabButton label="Volatility" active={tab === "Volatility"} onClick={() => setTab("Volatility")} />
             <TabButton label="Moving averages" active={tab === "Moving averages"} onClick={() => setTab("Moving averages")} />
-            <TabButton label="Oscillators" active={tab === "Oscillators"} onClick={() => setTab("Oscillators")} />
+            <TabButton label="Others" active={tab === "Others"} onClick={() => setTab("Others")} />
           </div>
         </div>
 
@@ -127,9 +152,7 @@ export function IndicatorsModal({ symbol, onClose }: IndicatorsModalProps) {
             <div className="flex items-center justify-between w-full">
               {/* Header space */}
               <div className="text-[14px] font-semibold text-opt-ink">
-                {tab === "Active" && "Active indicators"}
-                {tab === "Moving averages" && "Moving averages"}
-                {tab === "Oscillators" && "Oscillators"}
+                {tab === "Active" ? "Active indicators" : tab}
               </div>
               <div className="flex items-center gap-3">
                 {tab === "Active" && activeIndicators.length > 0 && (
@@ -154,9 +177,7 @@ export function IndicatorsModal({ symbol, onClose }: IndicatorsModalProps) {
           </div>
 
           <div className="flex-1 overflow-y-auto">
-            {tab === "Active" && renderActiveTab()}
-            {tab === "Moving averages" && renderCategoryTab("Moving averages")}
-            {tab === "Oscillators" && renderCategoryTab("Oscillators")}
+            {tab === "Active" ? renderActiveTab() : renderCategoryTab(tab)}
           </div>
         </div>
       </div>
