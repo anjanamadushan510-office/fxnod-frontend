@@ -43,6 +43,7 @@ import {
 } from "@/stores/useChartDrawings";
 import { CHART_COLORS } from "./chartColors";
 import { TrendPrimitive, VerticalPrimitive } from "./chartPrimitives";
+import type { ChartTypeId, IntervalId } from "./chartSettings";
 import { useChartIndicators, type IndicatorConfig } from "@/stores/useChartIndicators";
 import { 
   calculateSMA, calculateEMA, calculateRSI, calculateMACD,
