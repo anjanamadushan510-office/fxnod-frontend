@@ -11,6 +11,8 @@ import {
 import {
   AreaSeries,
   CandlestickSeries,
+  LineSeries,
+  HistogramSeries,
   ColorType,
   CrosshairMode,
   LineStyle,
@@ -42,6 +44,8 @@ import {
 import { CHART_COLORS } from "./chartColors";
 import { TrendPrimitive, VerticalPrimitive } from "./chartPrimitives";
 import type { ChartTypeId, IntervalId } from "./chartSettings";
+import { useChartIndicators, type IndicatorConfig } from "@/stores/useChartIndicators";
+import { calculateSMA, calculateEMA, calculateRSI, calculateMACD } from "@/lib/indicators";
 
 /** Accent color for user-drawn lines (drawn on canvas — needs literal hex). */
 const DRAWING_COLOR = "#2962FF";
@@ -115,6 +119,13 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
     const priceLineObjsRef = useRef<IPriceLine[]>([]);
     const markersRef = useRef<SeriesMarker<Time>[]>([]);
     const markersApiRef = useRef<ISeriesMarkersPluginApi<Time> | null>(null);
+
+    // Indicators state
+    const indicatorSeriesRef = useRef<Map<string, ISeriesApi<any>>>(new Map());
+    const allIndicators = useChartIndicators((s) => s.indicators);
+    const activeIndicators = useMemo(() => allIndicators.filter((i) => i.symbol === symbol), [allIndicators, symbol]);
+    const activeIndicatorsRef = useRef<IndicatorConfig[]>(activeIndicators);
+    activeIndicatorsRef.current = activeIndicators;
 
     // Drawing tools: armed tool + this symbol's drawings (from the store), plus
     // the live chart objects backing them and the pending first trend-line click.
@@ -240,6 +251,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
       );
       // Re-attach user drawings to the fresh series.
       applyDrawings(seriesRef.current, drawingsRef.current, drawingObjsRef);
+      syncIndicators(chart, indicatorSeriesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current);
       chart.timeScale().fitContent();
     }, [seriesKind]);
 
@@ -310,6 +322,13 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
       }
     }, [drawings]);
 
+    // Re-sync indicators when the active list changes.
+    useEffect(() => {
+      if (chartRef.current) {
+        syncIndicators(chartRef.current, indicatorSeriesRef, activeIndicators, seriesKind, ticksRef.current, candlesRef.current);
+      }
+    }, [activeIndicators, seriesKind]);
+
     // ── Live feed — pushes straight into the series via refs ────────────────
     useDerivChartFeed({
       derivSymbol,
@@ -325,6 +344,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
           );
           chartRef.current?.timeScale().fitContent();
         }
+        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current);
         const last = ticks[ticks.length - 1];
         if (last) onPrice?.(last.value);
       },
@@ -340,6 +360,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
             /* out-of-order tick — ignore */
           }
         }
+        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current);
         onPrice?.(tick.value);
       },
       onSeedCandles: (candles) => {
@@ -350,6 +371,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
         }));
         hydrateSeries(seriesRef.current, seriesKind, ticksRef.current, candles);
         chartRef.current?.timeScale().fitContent();
+        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current);
         const last = candles[candles.length - 1];
         if (last) onPrice?.(last.close);
       },
@@ -369,6 +391,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
         } catch {
           /* out-of-order candle — ignore */
         }
+        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current);
         onPrice?.(candle.close);
       },
     });
@@ -590,3 +613,120 @@ function hexToRgba(hex: string, alpha: number): string {
   const b = n & 255;
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
+
+// ─── indicators ──────────────────────────────────────────────────────────────
+
+/**
+ * Creates, removes, and updates indicator series on the chart.
+ * OHLC data implies candles, otherwise ticks.
+ */
+function syncIndicators(
+  chart: IChartApi,
+  seriesRef: React.MutableRefObject<Map<string, ISeriesApi<any>>>,
+  activeIndicators: IndicatorConfig[],
+  seriesKind: "area" | "candlestick",
+  ticks: FeedTick[],
+  candles: FeedCandle[]
+) {
+  // Remove series that are no longer active
+  const activeIds = new Set(activeIndicators.map(i => i.id));
+  for (const [id, series] of seriesRef.current.entries()) {
+    // If id has a suffix like -macd, -signal, -hist, extract the real id
+    const baseId = id.replace(/-macd|-signal|-hist/, "");
+    if (!activeIds.has(baseId)) {
+      try { chart.removeSeries(series); } catch {}
+      seriesRef.current.delete(id);
+    }
+  }
+
+  // Extract ordered values
+  const timeArray: UTCTimestamp[] = [];
+  const valueArray: number[] = [];
+  if (seriesKind === "candlestick") {
+    const ascendingCandles = ascending(candles);
+    for (const c of ascendingCandles) {
+      timeArray.push(c.time as UTCTimestamp);
+      valueArray.push(c.close);
+    }
+  } else {
+    const ascendingTicks = ascending(ticks);
+    for (const t of ascendingTicks) {
+      timeArray.push(t.time as UTCTimestamp);
+      valueArray.push(t.value);
+    }
+  }
+
+  // Update or create active indicators
+  for (const ind of activeIndicators) {
+    if (ind.type === "SMA" || ind.type === "EMA" || ind.type === "RSI") {
+      let series = seriesRef.current.get(ind.id) as ISeriesApi<"Line">;
+      if (!series) {
+        // RSI goes on a separate sub-pane scale, SMA/EMA go on right axis
+        const isRsi = ind.type === "RSI";
+        series = chart.addSeries(LineSeries, {
+          color: isRsi ? "#9c27b0" : (ind.type === "SMA" ? "#ff9800" : "#2196f3"),
+          lineWidth: 2,
+          priceScaleId: isRsi ? "rsi-scale" : "right",
+        });
+        if (isRsi) {
+          chart.priceScale("rsi-scale").applyOptions({
+            scaleMargins: { top: 0.8, bottom: 0 },
+          });
+        }
+        seriesRef.current.set(ind.id, series);
+      }
+
+      let results: number[] = [];
+      const p = ind.params.period || 14;
+      if (ind.type === "SMA") results = calculateSMA(valueArray, p);
+      if (ind.type === "EMA") results = calculateEMA(valueArray, p);
+      if (ind.type === "RSI") results = calculateRSI(valueArray, p);
+
+      const data = results.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+      if (data.length > 0) {
+        series.setData(data as any);
+      }
+    } else if (ind.type === "MACD") {
+      let hist = seriesRef.current.get(`${ind.id}-hist`) as ISeriesApi<"Histogram">;
+      let macdLine = seriesRef.current.get(`${ind.id}-macd`) as ISeriesApi<"Line">;
+      let signalLine = seriesRef.current.get(`${ind.id}-signal`) as ISeriesApi<"Line">;
+      
+      if (!hist || !macdLine || !signalLine) {
+        hist = chart.addSeries(HistogramSeries, {
+          color: "#26a69a",
+          priceScaleId: "macd-scale",
+        });
+        macdLine = chart.addSeries(LineSeries, {
+          color: "#2962FF",
+          lineWidth: 2,
+          priceScaleId: "macd-scale",
+        });
+        signalLine = chart.addSeries(LineSeries, {
+          color: "#FF6D00",
+          lineWidth: 2,
+          priceScaleId: "macd-scale",
+        });
+        chart.priceScale("macd-scale").applyOptions({
+          scaleMargins: { top: 0.75, bottom: 0 },
+        });
+        seriesRef.current.set(`${ind.id}-hist`, hist);
+        seriesRef.current.set(`${ind.id}-macd`, macdLine);
+        seriesRef.current.set(`${ind.id}-signal`, signalLine);
+      }
+
+      const pFast = ind.params.fastPeriod || 12;
+      const pSlow = ind.params.slowPeriod || 26;
+      const pSignal = ind.params.signalPeriod || 9;
+      const results = calculateMACD(valueArray, pFast, pSlow, pSignal);
+
+      const histData = results.histogram.map((val, i) => ({ time: timeArray[i], value: val, color: val >= 0 ? "#26a69a" : "#ef5350" })).filter(d => !isNaN(d.value));
+      const macdData = results.macd.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+      const signalData = results.signal.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+
+      if (histData.length > 0) hist.setData(histData as any);
+      if (macdData.length > 0) macdLine.setData(macdData as any);
+      if (signalData.length > 0) signalLine.setData(signalData as any);
+    }
+  }
+}
+

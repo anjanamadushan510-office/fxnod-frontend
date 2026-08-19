@@ -167,6 +167,7 @@ export function ChartPanel({
       {/* Chart body: [toolbar] [live canvas] */}
       <div className="relative grid flex-1 min-h-0 min-w-0 grid-cols-[44px_1fr] gap-0 px-3 pt-2">
         <ChartToolbar
+          symbol={marketId}
           chartType={chartType}
           interval={interval}
           tickOnly={tickOnly}

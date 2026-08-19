@@ -18,8 +18,11 @@ import {
 } from "./chartSettings";
 import { ChartTypesModal } from "./ChartTypesModal";
 import { DrawingToolsPanel } from "./DrawingToolsPanel";
+import { IndicatorsModal } from "./IndicatorsModal";
+import { useChartIndicators } from "@/stores/useChartIndicators";
 
 interface ChartToolbarProps {
+  symbol: string;
   chartType: ChartTypeId;
   interval: IntervalId;
   /** Digit trade types restrict the interval grid to "1 tick" (§4.2.2). */
@@ -35,6 +38,7 @@ interface ChartToolbarProps {
  * Templates / Download are UI-only placeholders for now.
  */
 export function ChartToolbar({
+  symbol,
   chartType,
   interval,
   tickOnly,
@@ -43,9 +47,10 @@ export function ChartToolbar({
 }: ChartToolbarProps) {
   const [typesOpen, setTypesOpen] = useState(false);
   const [drawOpen, setDrawOpen] = useState(false);
-  const [activePlaceholder, setActivePlaceholder] = useState<string | null>(
-    null,
-  );
+  const [indicatorsOpen, setIndicatorsOpen] = useState(false);
+  const [activePlaceholder, setActivePlaceholder] = useState<string | null>(null);
+
+  const activeIndicatorsCount = useChartIndicators((s) => s.indicators.filter((i) => i.symbol === symbol).length);
 
   return (
     <div className="flex flex-col items-center gap-1 pl-1 pt-2">
@@ -70,16 +75,21 @@ export function ChartToolbar({
         <AreaChartIcon className="h-4 w-4" />
       </button>
 
-      {/* 2 — Indicators (placeholder) */}
-      <ToolbarButton
-        label="Indicators"
-        active={activePlaceholder === "indicators"}
-        onClick={() =>
-          setActivePlaceholder((c) => (c === "indicators" ? null : "indicators"))
-        }
-      >
-        <IndicatorIcon className="h-4 w-4" />
-      </ToolbarButton>
+      {/* 2 — Indicators */}
+      <div className="relative">
+        <ToolbarButton
+          label="Indicators"
+          active={indicatorsOpen || activeIndicatorsCount > 0}
+          onClick={() => setIndicatorsOpen(true)}
+        >
+          <IndicatorIcon className="h-4 w-4" />
+        </ToolbarButton>
+        {activeIndicatorsCount > 0 && (
+          <div className="absolute -right-0.5 -top-0.5 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white shadow-sm">
+            {activeIndicatorsCount}
+          </div>
+        )}
+      </div>
 
       {/* 3 — Templates (placeholder) */}
       <ToolbarButton
@@ -115,6 +125,9 @@ export function ChartToolbar({
           onSelectInterval={onIntervalChange}
           onClose={() => setTypesOpen(false)}
         />
+      )}
+      {indicatorsOpen && (
+        <IndicatorsModal symbol={symbol} onClose={() => setIndicatorsOpen(false)} />
       )}
       {drawOpen && <DrawingToolsPanel onClose={() => setDrawOpen(false)} />}
     </div>
