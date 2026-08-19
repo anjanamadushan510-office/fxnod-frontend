@@ -82,7 +82,8 @@ export function ContractDetailChart({ detail }: { detail: ContractDetail }) {
     const CIRCLED = ["", "①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩"];
     const circled = (n: number) => CIRCLED[n] ?? String(n);
 
-    const isTickContract = detail.duration.includes("tick");
+    const isMultiplier = detail.tradeTypeLabel.toLowerCase().includes("multiplier") || detail.type === "multipliers" || detail.type === "MULTUP" || detail.type === "MULTDOWN";
+    const isTickContract = detail.duration.includes("tick") && !isMultiplier;
 
     // Numbered tick nodes; exit node coloured by outcome, entry node teal.
     // i=0 is the entry/start tick (Deriv shows it as an open circle, unnumbered).
@@ -107,6 +108,11 @@ export function ContractDetailChart({ detail }: { detail: ContractDetail }) {
 
         if (isAccumulator) {
           // Deriv's accumulator chart only labels the exit tick, intermediate ticks are just plain dots
+          if (isExit) {
+            label = timeLabel;
+          }
+        } else if (isMultiplier) {
+          // Multipliers only show time on the exit tick
           if (isExit) {
             label = timeLabel;
           }
