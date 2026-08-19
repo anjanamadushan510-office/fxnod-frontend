@@ -44,14 +44,17 @@ export function MultipliersPanel({ symbol }: MultipliersPanelProps) {
         })
       : null;
 
-  const { buyPhase, lastTrade, canBuy, errorMsg, handleBuy, handleNewTrade } =
+  const { buyPhase, lastTrade, canBuy, errorMsg, handleBuy, handleNewTrade, proposal } =
     usePanelBuy(request);
 
   if (buyPhase === "confirmed" && lastTrade) {
     return <TradeConfirmed trade={lastTrade} side={side} onNewTrade={handleNewTrade} />;
   }
 
-  const commission = +(stake * 0.00146).toFixed(2);
+  // Use values from the API proposal response, with fallback to 0/calculated
+  // until the first stream frame arrives.
+  const commission = proposal?.commission ? Number(proposal.commission) : +(stake * 0.00146).toFixed(2);
+  const stopOutLevel = proposal?.stop_out_level ? Number(proposal.stop_out_level).toFixed(2) : "-";
 
   return (
     <div className="flex h-full flex-col gap-3 p-4">
@@ -72,6 +75,9 @@ export function MultipliersPanel({ symbol }: MultipliersPanelProps) {
       )}
       <div className="flex flex-col gap-1.5 py-1">
         <SummaryRow label="Stop out" value={`${stake.toFixed(2)} USD`} />
+        {stopOutLevel !== "-" && (
+          <SummaryRow label="Stop out level" value={stopOutLevel} />
+        )}
         <SummaryRow label="Commission" value={`${commission.toFixed(2)} USD`} />
       </div>
       {errorMsg && (

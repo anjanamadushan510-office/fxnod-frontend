@@ -56,4 +56,8 @@ export interface ProposalResponse {
   maximum_ticks?: number;
   /** Vanillas — number of contracts, used as the payout figure. */
   display_number_of_contracts?: string;
+  /** Multipliers — commission fee charged by Deriv. */
+  commission?: DecimalString;
+  /** Multipliers — spot level at which the contract will be forced to close. */
+  stop_out_level?: DecimalString;
 }
