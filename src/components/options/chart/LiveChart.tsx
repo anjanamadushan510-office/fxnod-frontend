@@ -649,7 +649,7 @@ function syncIndicators(
   const highArray: number[] = [];
   const lowArray: number[] = [];
 
-  if (seriesKind === "candlestick") {
+  if (candles && candles.length > 0) {
     const ascendingCandles = ascending(candles);
     for (const c of ascendingCandles) {
       timeArray.push(c.time as UTCTimestamp);
