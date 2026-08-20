@@ -963,5 +963,46 @@ function syncIndicators(
       if (zigzagData.length > 0) zigzag.setData(zigzagData as any);
     }
   }
+  
+  // Layout active oscillators dynamically to create a multi-pane effect without overlapping the main chart
+  const activeScales = new Set<string>();
+  activeIndicators.forEach((ind) => {
+    if (ind.type === "RSI") activeScales.add("rsi-scale");
+    else if (ind.type === "MACD") activeScales.add("macd-scale");
+    else if (ind.type === "awesome_oscillator") activeScales.add("ao-scale");
+    else if (ind.type === "stochastic") activeScales.add("stoch-scale");
+    else if (ind.type === "aroon") activeScales.add("aroon-scale");
+    else if (ind.type === "adx") activeScales.add("adx-scale");
+    else if (ind.type === "roc" || ind.type === "wpr" || ind.type === "cci") activeScales.add(`${ind.type}-scale`);
+  });
+
+  const scaleArray = Array.from(activeScales);
+  const numOscillators = scaleArray.length;
+  
+  if (numOscillators > 0) {
+    const paneHeight = 0.22; // 22% height for each oscillator
+    const totalOscillatorHeight = paneHeight * numOscillators;
+    
+    // Main chart margin (make sure it doesn't overlap with the bottom oscillators)
+    chart.priceScale("right").applyOptions({
+      scaleMargins: { top: 0, bottom: totalOscillatorHeight + 0.02 },
+    });
+
+    // Each oscillator gets a slice of the bottom portion
+    scaleArray.forEach((scaleId, index) => {
+      const top = 1 - totalOscillatorHeight + (index * paneHeight);
+      const bottom = 1 - (top + paneHeight) + 0.02; // Small 2% visual gap between panes
+      try {
+        chart.priceScale(scaleId).applyOptions({
+          scaleMargins: { top, bottom },
+        });
+      } catch (e) {}
+    });
+  } else {
+    // Reset main chart margin
+    chart.priceScale("right").applyOptions({
+      scaleMargins: { top: 0.1, bottom: 0.1 },
+    });
+  }
 }
 
