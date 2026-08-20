@@ -5,6 +5,19 @@ import { X, Settings, Trash2 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useChartIndicators, type IndicatorType, DEFAULT_INDICATOR_PARAMS } from "@/stores/useChartIndicators";
 import type { IntervalId } from "./chartSettings";
+import {
+  IconAwesomeOscillator,
+  IconDPO,
+  IconMACD,
+  IconROC,
+  IconRSI,
+  IconStochastic,
+  IconWPR,
+  IconGenericTrend,
+  IconGenericVolatility,
+  IconGenericMA,
+  IconGenericOther,
+} from "@/components/ui/IndicatorIcons";
 
 interface IndicatorsModalProps {
   symbol: string;
@@ -16,33 +29,33 @@ const TEAL = "#00A79E";
 
 type Category = "Active" | "Momentum" | "Trend" | "Volatility" | "Moving averages" | "Others";
 
-const INDICATOR_LIST: { id: string; name: string; category: Category; disabled?: boolean; requiresOHLC?: boolean }[] = [
+const INDICATOR_LIST: { id: string; name: string; category: Category; disabled?: boolean; requiresOHLC?: boolean; Icon?: React.FC<{ className?: string }> }[] = [
   // Momentum
-  { id: "awesome_oscillator", name: "Awesome Oscillator", category: "Momentum", requiresOHLC: true },
-  { id: "dpo", name: "Detrended Price Oscillator", category: "Momentum", disabled: true },
-  { id: "MACD", name: "MACD", category: "Momentum" },
-  { id: "roc", name: "Price Rate of Change", category: "Momentum" },
-  { id: "RSI", name: "Relative Strength Index (RSI)", category: "Momentum" },
-  { id: "stochastic", name: "Stochastic Oscillator", category: "Momentum", requiresOHLC: true },
-  { id: "smi", name: "Stochastic Momentum Index", category: "Momentum", disabled: true, requiresOHLC: true },
-  { id: "wpr", name: "William's Percent Range", category: "Momentum", requiresOHLC: true },
+  { id: "awesome_oscillator", name: "Awesome Oscillator", category: "Momentum", requiresOHLC: true, Icon: IconAwesomeOscillator },
+  { id: "dpo", name: "Detrended Price Oscillator", category: "Momentum", disabled: true, Icon: IconDPO },
+  { id: "MACD", name: "MACD", category: "Momentum", Icon: IconMACD },
+  { id: "roc", name: "Price Rate of Change", category: "Momentum", Icon: IconROC },
+  { id: "RSI", name: "Relative Strength Index (RSI)", category: "Momentum", Icon: IconRSI },
+  { id: "stochastic", name: "Stochastic Oscillator", category: "Momentum", requiresOHLC: true, Icon: IconStochastic },
+  { id: "smi", name: "Stochastic Momentum Index", category: "Momentum", disabled: true, requiresOHLC: true, Icon: IconStochastic },
+  { id: "wpr", name: "William's Percent Range", category: "Momentum", requiresOHLC: true, Icon: IconWPR },
   // Trend
-  { id: "aroon", name: "Aroon", category: "Trend", disabled: true },
-  { id: "adx", name: "ADX/DMS", category: "Trend", disabled: true },
-  { id: "cci", name: "Commodity Channel Index", category: "Trend", requiresOHLC: true },
-  { id: "ichimoku", name: "Ichimoku Clouds", category: "Trend", disabled: true },
-  { id: "parabolic_sar", name: "Parabolic SAR", category: "Trend", disabled: true },
-  { id: "zigzag", name: "Zig Zag", category: "Trend", disabled: true },
+  { id: "aroon", name: "Aroon", category: "Trend", disabled: true, Icon: IconGenericTrend },
+  { id: "adx", name: "ADX/DMS", category: "Trend", disabled: true, Icon: IconGenericTrend },
+  { id: "cci", name: "Commodity Channel Index", category: "Trend", requiresOHLC: true, Icon: IconGenericTrend },
+  { id: "ichimoku", name: "Ichimoku Clouds", category: "Trend", disabled: true, Icon: IconGenericTrend },
+  { id: "parabolic_sar", name: "Parabolic SAR", category: "Trend", disabled: true, Icon: IconGenericTrend },
+  { id: "zigzag", name: "Zig Zag", category: "Trend", disabled: true, Icon: IconGenericTrend },
   // Volatility
-  { id: "bollinger", name: "Bollinger Bands", category: "Volatility", disabled: true },
-  { id: "donchian", name: "Donchian Channel", category: "Volatility", disabled: true },
+  { id: "bollinger", name: "Bollinger Bands", category: "Volatility", disabled: true, Icon: IconGenericVolatility },
+  { id: "donchian", name: "Donchian Channel", category: "Volatility", disabled: true, Icon: IconGenericVolatility },
   // Moving averages
-  { id: "SMA", name: "SMA (Simple Moving Average)", category: "Moving averages" },
-  { id: "EMA", name: "EMA (Exponential Moving Average)", category: "Moving averages" },
-  { id: "wma", name: "WMA (Weighted Moving Average)", category: "Moving averages", disabled: true },
+  { id: "SMA", name: "SMA (Simple Moving Average)", category: "Moving averages", Icon: IconGenericMA },
+  { id: "EMA", name: "EMA (Exponential Moving Average)", category: "Moving averages", Icon: IconGenericMA },
+  { id: "wma", name: "WMA (Weighted Moving Average)", category: "Moving averages", disabled: true, Icon: IconGenericMA },
   // Others
-  { id: "alligator", name: "Alligator", category: "Others", disabled: true },
-  { id: "fractal", name: "Fractal Chaos Bands", category: "Others", disabled: true },
+  { id: "alligator", name: "Alligator", category: "Others", disabled: true, Icon: IconGenericOther },
+  { id: "fractal", name: "Fractal Chaos Bands", category: "Others", disabled: true, Icon: IconGenericOther },
 ];
 
 export function IndicatorsModal({ symbol, interval, onClose }: IndicatorsModalProps) {
@@ -71,15 +84,20 @@ export function IndicatorsModal({ symbol, interval, onClose }: IndicatorsModalPr
 
     return (
       <div className="flex flex-col gap-2 p-4">
-        {activeIndicators.map((ind) => (
-          <div key={ind.id} className="flex items-center justify-between rounded-lg border border-opt-line p-3">
-            <div className="flex flex-col">
-              <span className="text-[13px] font-semibold text-opt-ink">{ind.type}</span>
-              <span className="text-[11px] text-opt-ink-3">
-                ({Object.values(ind.params).join(",")})
-              </span>
-            </div>
-            <div className="flex gap-2">
+        {activeIndicators.map((ind) => {
+          const meta = INDICATOR_LIST.find((i) => i.id === ind.type);
+          return (
+            <div key={ind.id} className="flex items-center justify-between rounded-lg border border-opt-line p-3">
+              <div className="flex items-center gap-3">
+                {meta?.Icon && <meta.Icon className="h-5 w-5 opacity-90" />}
+                <div className="flex flex-col">
+                  <span className="text-[13px] font-semibold text-opt-ink">{meta?.name || ind.type}</span>
+                  <span className="text-[11px] text-opt-ink-3">
+                    ({Object.values(ind.params).join(",")})
+                  </span>
+                </div>
+              </div>
+              <div className="flex gap-2">
               <button
                 type="button"
                 aria-label="Remove"
@@ -89,8 +107,9 @@ export function IndicatorsModal({ symbol, interval, onClose }: IndicatorsModalPr
                 <Trash2 className="h-4 w-4" />
               </button>
             </div>
-          </div>
-        ))}
+            </div>
+          );
+        })}
       </div>
     );
   };
@@ -105,7 +124,10 @@ export function IndicatorsModal({ symbol, interval, onClose }: IndicatorsModalPr
           const isDisabled = ind.disabled || (isTick && ind.requiresOHLC);
           return (
             <div key={ind.id} className={cn("flex items-center justify-between rounded-lg border border-opt-line p-3 transition-colors", isDisabled ? "opacity-50 grayscale" : "hover:bg-opt-bg-sunk")}>
-              <span className="text-[13px] font-medium text-opt-ink">{ind.name}</span>
+              <div className="flex items-center gap-3">
+                {ind.Icon && <ind.Icon className="h-5 w-5 opacity-90" />}
+                <span className="text-[13px] font-medium text-opt-ink">{ind.name}</span>
+              </div>
               <button
                 type="button"
                 disabled={isDisabled}
