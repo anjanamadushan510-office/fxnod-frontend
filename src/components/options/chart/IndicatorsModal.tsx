@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Settings, Trash2 } from "lucide-react";
+import { X, Settings, Trash2, Zap, Activity, TrendingUp, Waves, LineChart, Shapes } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useChartIndicators, type IndicatorType, DEFAULT_INDICATOR_PARAMS } from "@/stores/useChartIndicators";
 import type { IntervalId } from "./chartSettings";
@@ -164,15 +164,16 @@ export function IndicatorsModal({ symbol, interval, onClose }: IndicatorsModalPr
           <div className="flex flex-col p-2 gap-1 flex-1">
             <TabButton 
               label={`Active ${activeIndicators.length > 0 ? `(${activeIndicators.length})` : ""}`}
+              icon={Zap}
               active={tab === "Active"}
               onClick={() => setTab("Active")}
             />
             <div className="my-2 h-px w-full bg-opt-line" />
-            <TabButton label="Momentum" active={tab === "Momentum"} onClick={() => setTab("Momentum")} />
-            <TabButton label="Trend" active={tab === "Trend"} onClick={() => setTab("Trend")} />
-            <TabButton label="Volatility" active={tab === "Volatility"} onClick={() => setTab("Volatility")} />
-            <TabButton label="Moving averages" active={tab === "Moving averages"} onClick={() => setTab("Moving averages")} />
-            <TabButton label="Others" active={tab === "Others"} onClick={() => setTab("Others")} />
+            <TabButton label="Momentum" icon={Activity} active={tab === "Momentum"} onClick={() => setTab("Momentum")} />
+            <TabButton label="Trend" icon={TrendingUp} active={tab === "Trend"} onClick={() => setTab("Trend")} />
+            <TabButton label="Volatility" icon={Waves} active={tab === "Volatility"} onClick={() => setTab("Volatility")} />
+            <TabButton label="Moving averages" icon={LineChart} active={tab === "Moving averages"} onClick={() => setTab("Moving averages")} />
+            <TabButton label="Others" icon={Shapes} active={tab === "Others"} onClick={() => setTab("Others")} />
           </div>
         </div>
 
@@ -215,17 +216,18 @@ export function IndicatorsModal({ symbol, interval, onClose }: IndicatorsModalPr
   );
 }
 
-function TabButton({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+function TabButton({ label, icon: Icon, active, onClick }: { label: string; icon: React.ElementType; active: boolean; onClick: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
       className={cn(
-        "flex w-full items-center rounded-lg px-3 py-2 text-left text-[13px] font-medium transition-colors",
+        "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-[13px] font-medium transition-colors",
         active ? "bg-opt-bg-sunk text-opt-ink" : "text-opt-ink-3 hover:bg-opt-bg-sunk hover:text-opt-ink"
       )}
       style={active ? { borderLeft: `3px solid ${TEAL}` } : { borderLeft: "3px solid transparent" }}
     >
+      <Icon className={cn("h-4 w-4", active ? "text-opt-ink" : "text-opt-ink-3")} />
       {label}
     </button>
   );
