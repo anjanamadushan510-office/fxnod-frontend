@@ -53,8 +53,8 @@ const INDICATOR_LIST: { id: string; name: string; category: Category; disabled?:
   { id: "parabolic_sar", name: "Parabolic SAR", category: "Trend", Icon: IconParabolicSAR },
   { id: "zigzag", name: "Zig Zag", category: "Trend", Icon: IconZigZag },
   // Volatility
-  { id: "bollinger", name: "Bollinger Bands", category: "Volatility", disabled: true, Icon: IconGenericVolatility },
-  { id: "donchian", name: "Donchian Channel", category: "Volatility", disabled: true, Icon: IconGenericVolatility },
+  { id: "bollinger", name: "Bollinger Bands", category: "Volatility", Icon: IconGenericVolatility },
+  { id: "donchian", name: "Donchian Channel", category: "Volatility", Icon: IconGenericVolatility },
   // Moving averages
   { id: "SMA", name: "SMA (Simple Moving Average)", category: "Moving averages", Icon: IconGenericMA },
   { id: "EMA", name: "EMA (Exponential Moving Average)", category: "Moving averages", Icon: IconGenericMA },

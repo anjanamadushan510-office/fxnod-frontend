@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export type IndicatorType = "SMA" | "EMA" | "MACD" | "RSI" | "awesome_oscillator" | "roc" | "stochastic" | "wpr" | "cci" | "aroon" | "adx" | "ichimoku" | "parabolic_sar" | "zigzag";
+export type IndicatorType = "SMA" | "EMA" | "MACD" | "RSI" | "awesome_oscillator" | "roc" | "stochastic" | "wpr" | "cci" | "aroon" | "adx" | "ichimoku" | "parabolic_sar" | "zigzag" | "bollinger" | "donchian";
 
 export interface IndicatorConfig {
   id: string; // Unique instance ID
@@ -25,6 +25,8 @@ export const DEFAULT_INDICATOR_PARAMS: Record<IndicatorType, Record<string, numb
   ichimoku: { tenkanPeriod: 9, kijunPeriod: 26, senkouBPeriod: 52 },
   parabolic_sar: { step: 0.02, maxStep: 0.2 },
   zigzag: { deviation: 5 },
+  bollinger: { period: 20, stdDev: 2 },
+  donchian: { period: 20 },
 };
 
 interface ChartIndicatorsState {

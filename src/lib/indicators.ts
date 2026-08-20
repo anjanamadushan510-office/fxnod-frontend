@@ -543,3 +543,38 @@ export function calculateZigZag(high: number[], low: number[], close: number[], 
 
   return zigzag;
 }
+export interface BollingerBandsResult { upper: number[]; middle: number[]; lower: number[]; }
+export function calculateBollingerBands(data: number[], period: number = 20, stdDevMultiplier: number = 2): BollingerBandsResult {
+  const result: BollingerBandsResult = { upper: new Array(data.length).fill(NaN), middle: new Array(data.length).fill(NaN), lower: new Array(data.length).fill(NaN) };
+  const sma = calculateSMA(data, period);
+  for (let i = period - 1; i < data.length; i++) {
+    const mean = sma[i];
+    let sumSqrDiffs = 0;
+    for (let j = 0; j < period; j++) {
+      const diff = data[i - j] - mean;
+      sumSqrDiffs += diff * diff;
+    }
+    const stdDev = Math.sqrt(sumSqrDiffs / period);
+    result.middle[i] = mean;
+    result.upper[i] = mean + (stdDevMultiplier * stdDev);
+    result.lower[i] = mean - (stdDevMultiplier * stdDev);
+  }
+  return result;
+}
+
+export interface DonchianChannelResult { upper: number[]; middle: number[]; lower: number[]; }
+export function calculateDonchianChannel(high: number[], low: number[], period: number = 20): DonchianChannelResult {
+  const result: DonchianChannelResult = { upper: new Array(high.length).fill(NaN), middle: new Array(high.length).fill(NaN), lower: new Array(high.length).fill(NaN) };
+  for (let i = period - 1; i < high.length; i++) {
+    let highestHigh = -Infinity;
+    let lowestLow = Infinity;
+    for (let j = 0; j < period; j++) {
+      if (high[i - j] > highestHigh) highestHigh = high[i - j];
+      if (low[i - j] < lowestLow) lowestLow = low[i - j];
+    }
+    result.upper[i] = highestHigh;
+    result.lower[i] = lowestLow;
+    result.middle[i] = (highestHigh + lowestLow) / 2;
+  }
+  return result;
+}
