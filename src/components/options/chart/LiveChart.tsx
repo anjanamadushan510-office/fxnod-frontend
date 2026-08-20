@@ -773,15 +773,15 @@ function syncIndicators(
           color: ind.type === "roc" ? "#2196f3" : (ind.type === "cci" ? "#00A79E" : "#ff9800"),
           lineWidth: 2,
           priceScaleId: `${ind.type}-scale`,
-          priceFormat: { type: 'price', precision: 4, minMove: 0.0001 }
+          priceFormat: { type: 'price', precision: ind.type === "wpr" ? 2 : 4, minMove: ind.type === "wpr" ? 0.01 : 0.0001 }
         });
         chart.priceScale(`${ind.type}-scale`).applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
         
         if (ind.type === "roc" || ind.type === "cci") {
-          series.createPriceLine({ price: 0, color: "#9e9e9e", lineWidth: 1, lineStyle: LineStyle.Solid, axisLabelVisible: true, title: "0" });
+          series.createPriceLine({ price: 0, color: "#9e9e9e", lineWidth: 1, lineStyle: LineStyle.Solid, axisLabelVisible: false, title: "0" });
         } else if (ind.type === "wpr") {
-          series.createPriceLine({ price: -20, color: "#ef5350", lineWidth: 1, lineStyle: LineStyle.Dashed, axisLabelVisible: true, title: "" });
-          series.createPriceLine({ price: -80, color: "#26a69a", lineWidth: 1, lineStyle: LineStyle.Dashed, axisLabelVisible: true, title: "" });
+          series.createPriceLine({ price: -20, color: "#ef5350", lineWidth: 1, lineStyle: LineStyle.Dashed, axisLabelVisible: false, title: "" });
+          series.createPriceLine({ price: -80, color: "#26a69a", lineWidth: 1, lineStyle: LineStyle.Dashed, axisLabelVisible: false, title: "" });
         }
         
         seriesRef.current.set(ind.id, series);
