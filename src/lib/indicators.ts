@@ -189,8 +189,8 @@ export interface StochasticResult {
   d: number[];
 }
 
-export function calculateStochastic(high: number[], low: number[], close: number[], periodK: number, periodD: number): StochasticResult {
-  const kLine: number[] = new Array(close.length).fill(NaN);
+export function calculateStochastic(high: number[], low: number[], close: number[], periodK: number, periodD: number, smoothing: number = 3): StochasticResult {
+  const fastK: number[] = new Array(close.length).fill(NaN);
   for (let i = periodK - 1; i < close.length; i++) {
     let highestHigh = high[i - periodK + 1];
     let lowestLow = low[i - periodK + 1];
@@ -202,32 +202,58 @@ export function calculateStochastic(high: number[], low: number[], close: number
     }
 
     if (highestHigh !== lowestLow) {
-      kLine[i] = ((close[i] - lowestLow) / (highestHigh - lowestLow)) * 100;
+      fastK[i] = ((close[i] - lowestLow) / (highestHigh - lowestLow)) * 100;
     } else {
-      kLine[i] = 50;
+      fastK[i] = 50;
     }
   }
 
-  // extract valid values to pass to SMA
-  const validKValues: number[] = [];
-  const validKIndices: number[] = [];
-  for (let i = 0; i < kLine.length; i++) {
-    if (!isNaN(kLine[i])) {
-      validKValues.push(kLine[i]);
-      validKIndices.push(i);
+  // 1. Extract valid fastK
+  const validFastK: number[] = [];
+  const validFastKIndices: number[] = [];
+  for (let i = 0; i < fastK.length; i++) {
+    if (!isNaN(fastK[i])) {
+      validFastK.push(fastK[i]);
+      validFastKIndices.push(i);
     }
   }
 
-  const dLineEma = calculateSMA(validKValues, periodD);
-  const dLine: number[] = new Array(close.length).fill(NaN);
-  for (let i = 0; i < validKValues.length; i++) {
-    const originalIndex = validKIndices[i];
-    if (!isNaN(dLineEma[i])) {
-      dLine[originalIndex] = dLineEma[i];
+  // 2. Smooth to get slowK
+  let slowKValues = validFastK;
+  if (smoothing > 1) {
+    slowKValues = calculateSMA(validFastK, smoothing);
+  }
+
+  // 3. Extract valid slowK for %D calculation
+  const validSlowK: number[] = [];
+  const validSlowKIndices: number[] = [];
+  for (let i = 0; i < slowKValues.length; i++) {
+    if (!isNaN(slowKValues[i])) {
+      validSlowK.push(slowKValues[i]);
+      validSlowKIndices.push(validFastKIndices[i]); // map back to original indices
     }
   }
 
-  return { k: kLine, d: dLine };
+  // 4. Calculate %D
+  const dValues = calculateSMA(validSlowK, periodD);
+
+  // 5. Map back to original length arrays
+  const finalK: number[] = new Array(close.length).fill(NaN);
+  const finalD: number[] = new Array(close.length).fill(NaN);
+
+  for (let i = 0; i < slowKValues.length; i++) {
+    if (!isNaN(slowKValues[i])) {
+      finalK[validFastKIndices[i]] = slowKValues[i];
+    }
+  }
+
+  for (let i = 0; i < dValues.length; i++) {
+    if (!isNaN(dValues[i])) {
+      finalD[validSlowKIndices[i]] = dValues[i];
+    }
+  }
+
+  return { k: finalK, d: finalD };
 }
 
 // Commodity Channel Index (CCI)

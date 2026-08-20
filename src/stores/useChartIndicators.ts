@@ -17,7 +17,7 @@ export const DEFAULT_INDICATOR_PARAMS: Record<IndicatorType, Record<string, numb
   RSI: { period: 14 },
   awesome_oscillator: {},
   roc: { period: 14 },
-  stochastic: { periodK: 14, periodD: 3 },
+  stochastic: { periodK: 14, periodD: 3, smoothing: 3 },
   wpr: { period: 14 },
   cci: { period: 20 },
   aroon: { period: 14 },

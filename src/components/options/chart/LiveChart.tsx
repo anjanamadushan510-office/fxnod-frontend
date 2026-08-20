@@ -798,15 +798,16 @@ function syncIndicators(
       let kLine = seriesRef.current.get(`${ind.id}-k`) as ISeriesApi<"Line">;
       let dLine = seriesRef.current.get(`${ind.id}-d`) as ISeriesApi<"Line">;
       if (!kLine || !dLine) {
-        kLine = chart.addSeries(LineSeries, { color: "#2196f3", lineWidth: 2, priceScaleId: "stoch-scale", priceFormat: { type: 'price', precision: 4, minMove: 0.0001 } });
-        dLine = chart.addSeries(LineSeries, { color: "#ff9800", lineWidth: 2, priceScaleId: "stoch-scale", priceFormat: { type: 'price', precision: 4, minMove: 0.0001 } });
+        kLine = chart.addSeries(LineSeries, { color: "#2196f3", lineWidth: 2, priceScaleId: "stoch-scale", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+        dLine = chart.addSeries(LineSeries, { color: "#ff9800", lineWidth: 2, priceScaleId: "stoch-scale", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
         chart.priceScale("stoch-scale").applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
         seriesRef.current.set(`${ind.id}-k`, kLine);
         seriesRef.current.set(`${ind.id}-d`, dLine);
       }
       const pK = ind.params.periodK || 14;
       const pD = ind.params.periodD || 3;
-      const results = calculateStochastic(highArray, lowArray, valueArray, pK, pD);
+      const smoothing = ind.params.smoothing || 3;
+      const results = calculateStochastic(highArray, lowArray, valueArray, pK, pD, smoothing);
       const kData = results.k.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
       const dData = results.d.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
       if (kData.length > 0) kLine.setData(kData as any);
