@@ -306,13 +306,23 @@ export interface ADXResult {
 // Wilder's Smoothing (RMA) used in ADX
 function calculateRMA(data: number[], period: number): number[] {
   const result: number[] = new Array(data.length).fill(NaN);
-  if (data.length < period) return result;
+  
+  // Find first non-NaN index
+  let firstValidIdx = -1;
+  for (let i = 0; i < data.length; i++) {
+    if (!isNaN(data[i])) {
+      firstValidIdx = i;
+      break;
+    }
+  }
+  
+  if (firstValidIdx === -1 || data.length - firstValidIdx < period) return result;
 
   let sum = 0;
-  for (let i = 0; i < period; i++) sum += data[i];
-  result[period - 1] = sum / period;
+  for (let i = firstValidIdx; i < firstValidIdx + period; i++) sum += data[i];
+  result[firstValidIdx + period - 1] = sum / period;
 
-  for (let i = period; i < data.length; i++) {
+  for (let i = firstValidIdx + period; i < data.length; i++) {
     result[i] = (result[i - 1] * (period - 1) + data[i]) / period;
   }
   return result;
@@ -342,7 +352,7 @@ export function calculateADX(high: number[], low: number[], close: number[], per
 
   const plusDI: number[] = new Array(high.length).fill(NaN);
   const minusDI: number[] = new Array(high.length).fill(NaN);
-  const dx: number[] = new Array(high.length).fill(0);
+  const dx: number[] = new Array(high.length).fill(NaN);
 
   for (let i = period; i < high.length; i++) {
     if (smoothTR[i] > 0) {
