@@ -16,7 +16,7 @@ export const DEFAULT_INDICATOR_PARAMS: Record<IndicatorType, Record<string, numb
   MACD: { fastPeriod: 12, slowPeriod: 26, signalPeriod: 9 },
   RSI: { period: 14 },
   awesome_oscillator: {},
-  roc: { period: 9 },
+  roc: { period: 14 },
   stochastic: { periodK: 14, periodD: 3 },
   wpr: { period: 14 },
   cci: { period: 20 },
