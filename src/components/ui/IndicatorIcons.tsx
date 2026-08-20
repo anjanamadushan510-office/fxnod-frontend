@@ -82,6 +82,74 @@ export function IconWPR({ className }: IconProps) {
   );
 }
 
+// ==========================================
+// TREND ICONS
+// ==========================================
+
+export function IconAroon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={cn("w-5 h-5", className)}>
+      <path d="M4 20 L12 4 L20 16" stroke={TEAL} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M4 4 L12 20 L20 8" stroke={RED} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function IconADX({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={cn("w-5 h-5", className)}>
+      <path d="M2 12 Q6 8 10 12 T18 12 T22 8" stroke={TEAL} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M2 16 Q6 20 10 16 T18 16 T22 20" stroke={RED} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M2 8 Q6 4 10 8 T18 8 T22 4" stroke={GREY} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function IconCCI({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={cn("w-5 h-5", className)}>
+      <line x1="2" y1="12" x2="22" y2="12" stroke={GREY} strokeWidth="1.5" strokeDasharray="3 3" />
+      <path d="M2 18 L6 10 L10 14 L14 6 L18 16 L22 8" stroke={TEAL} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function IconIchimoku({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={cn("w-5 h-5", className)}>
+      <path d="M3 14 L8 9 L13 14 L19 8" fill={RED} fillOpacity="0.2" />
+      <path d="M3 14 L8 9 L13 14 L19 8" stroke={RED} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M5 16 L10 11 L15 16 L21 10" stroke={TEAL} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function IconParabolicSAR({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={cn("w-5 h-5", className)}>
+      <circle cx="4" cy="4" r="1.5" fill={TEAL} />
+      <circle cx="8" cy="6" r="1.5" fill={TEAL} />
+      <circle cx="12" cy="10" r="1.5" fill={TEAL} />
+      <circle cx="16" cy="15" r="1.5" fill={TEAL} />
+      <circle cx="20" cy="20" r="1.5" fill={TEAL} />
+    </svg>
+  );
+}
+
+export function IconZigZag({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={cn("w-5 h-5", className)}>
+      <path d="M2 18 L8 6" stroke={RED} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M8 6 L16 20" stroke={TEAL} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M16 20 L22 8" stroke={RED} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// ==========================================
+// GENERIC FALLBACKS
+// ==========================================
+
 export function IconGenericTrend({ className }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={cn("w-5 h-5", className)}>
