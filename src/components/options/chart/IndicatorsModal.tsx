@@ -46,12 +46,12 @@ const INDICATOR_LIST: { id: string; name: string; category: Category; disabled?:
   { id: "smi", name: "Stochastic Momentum Index", category: "Momentum", disabled: true, requiresOHLC: true, Icon: IconStochastic },
   { id: "wpr", name: "William's Percent Range", category: "Momentum", requiresOHLC: true, Icon: IconWPR },
   // Trend
-  { id: "aroon", name: "Aroon", category: "Trend", disabled: true, Icon: IconAroon },
-  { id: "adx", name: "ADX/DMS", category: "Trend", disabled: true, Icon: IconADX },
+  { id: "aroon", name: "Aroon", category: "Trend", Icon: IconAroon },
+  { id: "adx", name: "ADX/DMS", category: "Trend", Icon: IconADX },
   { id: "cci", name: "Commodity Channel Index", category: "Trend", requiresOHLC: true, Icon: IconCCI },
-  { id: "ichimoku", name: "Ichimoku Clouds", category: "Trend", disabled: true, Icon: IconIchimoku },
-  { id: "parabolic_sar", name: "Parabolic SAR", category: "Trend", disabled: true, Icon: IconParabolicSAR },
-  { id: "zigzag", name: "Zig Zag", category: "Trend", disabled: true, Icon: IconZigZag },
+  { id: "ichimoku", name: "Ichimoku Clouds", category: "Trend", Icon: IconIchimoku },
+  { id: "parabolic_sar", name: "Parabolic SAR", category: "Trend", Icon: IconParabolicSAR },
+  { id: "zigzag", name: "Zig Zag", category: "Trend", Icon: IconZigZag },
   // Volatility
   { id: "bollinger", name: "Bollinger Bands", category: "Volatility", disabled: true, Icon: IconGenericVolatility },
   { id: "donchian", name: "Donchian Channel", category: "Volatility", disabled: true, Icon: IconGenericVolatility },

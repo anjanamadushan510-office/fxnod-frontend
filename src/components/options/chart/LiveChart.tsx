@@ -48,7 +48,7 @@ import { useChartIndicators, type IndicatorConfig } from "@/stores/useChartIndic
 import { 
   calculateSMA, calculateEMA, calculateRSI, calculateMACD,
   calculateAwesomeOscillator, calculateROC, calculateStochastic, calculateWilliamsR,
-  calculateCCI
+  calculateCCI, calculateAroon, calculateADX, calculateIchimoku, calculateParabolicSAR, calculateZigZag
 } from "@/lib/indicators";
 
 /** Accent color for user-drawn lines (drawn on canvas — needs literal hex). */
@@ -635,8 +635,8 @@ function syncIndicators(
   // Remove series that are no longer active
   const activeIds = new Set(activeIndicators.map(i => i.id));
   for (const [id, series] of seriesRef.current.entries()) {
-    // If id has a suffix like -macd, -signal, -hist, extract the real id
-    const baseId = id.replace(/-macd|-signal|-hist/, "");
+    // If id has a suffix, extract the real id
+    const baseId = id.replace(/-macd|-signal|-hist|-aroonUp|-aroonDown|-adx|-plusDI|-minusDI|-tenkan|-kijun|-senkouA|-senkouB|-chikou|-sar|-zigzag/, "");
     if (!activeIds.has(baseId)) {
       try { chart.removeSeries(series); } catch {}
       seriesRef.current.delete(id);
@@ -790,6 +790,124 @@ function syncIndicators(
       const dData = results.d.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
       if (kData.length > 0) kLine.setData(kData as any);
       if (dData.length > 0) dLine.setData(dData as any);
+    } else if (ind.type === "aroon") {
+      let upLine = seriesRef.current.get(`${ind.id}-aroonUp`) as ISeriesApi<"Line">;
+      let downLine = seriesRef.current.get(`${ind.id}-aroonDown`) as ISeriesApi<"Line">;
+      if (!upLine || !downLine) {
+        upLine = chart.addSeries(LineSeries, { color: "#00A79E", lineWidth: 2, priceScaleId: "aroon-scale" });
+        downLine = chart.addSeries(LineSeries, { color: "#ef5350", lineWidth: 2, priceScaleId: "aroon-scale" });
+        chart.priceScale("aroon-scale").applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
+        seriesRef.current.set(`${ind.id}-aroonUp`, upLine);
+        seriesRef.current.set(`${ind.id}-aroonDown`, downLine);
+      }
+      const period = ind.params.period || 14;
+      const results = calculateAroon(highArray, lowArray, period);
+      const upData = results.up.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+      const downData = results.down.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+      if (upData.length > 0) upLine.setData(upData as any);
+      if (downData.length > 0) downLine.setData(downData as any);
+    } else if (ind.type === "adx") {
+      let adxLine = seriesRef.current.get(`${ind.id}-adx`) as ISeriesApi<"Line">;
+      let plusDI = seriesRef.current.get(`${ind.id}-plusDI`) as ISeriesApi<"Line">;
+      let minusDI = seriesRef.current.get(`${ind.id}-minusDI`) as ISeriesApi<"Line">;
+      if (!adxLine || !plusDI || !minusDI) {
+        adxLine = chart.addSeries(LineSeries, { color: "#999999", lineWidth: 2, priceScaleId: "adx-scale" });
+        plusDI = chart.addSeries(LineSeries, { color: "#00A79E", lineWidth: 2, priceScaleId: "adx-scale" });
+        minusDI = chart.addSeries(LineSeries, { color: "#ef5350", lineWidth: 2, priceScaleId: "adx-scale" });
+        chart.priceScale("adx-scale").applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
+        seriesRef.current.set(`${ind.id}-adx`, adxLine);
+        seriesRef.current.set(`${ind.id}-plusDI`, plusDI);
+        seriesRef.current.set(`${ind.id}-minusDI`, minusDI);
+      }
+      const period = ind.params.period || 14;
+      const results = calculateADX(highArray, lowArray, valueArray, period);
+      const adxData = results.adx.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+      const plusDIData = results.plusDI.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+      const minusDIData = results.minusDI.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+      if (adxData.length > 0) adxLine.setData(adxData as any);
+      if (plusDIData.length > 0) plusDI.setData(plusDIData as any);
+      if (minusDIData.length > 0) minusDI.setData(minusDIData as any);
+    } else if (ind.type === "ichimoku") {
+      let tenkan = seriesRef.current.get(`${ind.id}-tenkan`) as ISeriesApi<"Line">;
+      let kijun = seriesRef.current.get(`${ind.id}-kijun`) as ISeriesApi<"Line">;
+      let senkouA = seriesRef.current.get(`${ind.id}-senkouA`) as ISeriesApi<"Line">;
+      let senkouB = seriesRef.current.get(`${ind.id}-senkouB`) as ISeriesApi<"Line">;
+      let chikou = seriesRef.current.get(`${ind.id}-chikou`) as ISeriesApi<"Line">;
+      if (!tenkan || !kijun || !senkouA || !senkouB || !chikou) {
+        tenkan = chart.addSeries(LineSeries, { color: "#2962FF", lineWidth: 1, priceScaleId: "right" });
+        kijun = chart.addSeries(LineSeries, { color: "#ef5350", lineWidth: 1, priceScaleId: "right" });
+        senkouA = chart.addSeries(LineSeries, { color: "#4caf50", lineWidth: 1, priceScaleId: "right" });
+        senkouB = chart.addSeries(LineSeries, { color: "#ef5350", lineWidth: 1, priceScaleId: "right", lineStyle: LineStyle.Dashed });
+        chikou = chart.addSeries(LineSeries, { color: "#00e676", lineWidth: 1, priceScaleId: "right" });
+        seriesRef.current.set(`${ind.id}-tenkan`, tenkan);
+        seriesRef.current.set(`${ind.id}-kijun`, kijun);
+        seriesRef.current.set(`${ind.id}-senkouA`, senkouA);
+        seriesRef.current.set(`${ind.id}-senkouB`, senkouB);
+        seriesRef.current.set(`${ind.id}-chikou`, chikou);
+      }
+      const tP = ind.params.tenkanPeriod || 9;
+      const kP = ind.params.kijunPeriod || 26;
+      const sBP = ind.params.senkouBPeriod || 52;
+      const shift = kP; // standard is 26
+      
+      const results = calculateIchimoku(highArray, lowArray, valueArray, tP, kP, sBP);
+      const tenkanData = results.tenkan.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+      const kijunData = results.kijun.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+      
+      // Shift Senkou Span forward by shift. To keep it simple in lightweight-charts without future dummy points, 
+      // we only plot what we can on existing time points. In a real app we'd add empty future times.
+      const senkouAData = results.senkouA.map((val, i) => {
+        const targetIdx = i + shift;
+        if (targetIdx < timeArray.length) {
+          return { time: timeArray[targetIdx], value: val };
+        }
+        return null;
+      }).filter((d): d is {time: UTCTimestamp, value: number} => d !== null && !isNaN(d.value));
+      
+      const senkouBData = results.senkouB.map((val, i) => {
+        const targetIdx = i + shift;
+        if (targetIdx < timeArray.length) {
+          return { time: timeArray[targetIdx], value: val };
+        }
+        return null;
+      }).filter((d): d is {time: UTCTimestamp, value: number} => d !== null && !isNaN(d.value));
+      
+      // Shift Chikou backwards
+      const chikouData = results.chikou.map((val, i) => {
+        const targetIdx = i - shift;
+        if (targetIdx >= 0) {
+          return { time: timeArray[targetIdx], value: val };
+        }
+        return null;
+      }).filter((d): d is {time: UTCTimestamp, value: number} => d !== null && !isNaN(d.value));
+      
+      if (tenkanData.length > 0) tenkan.setData(tenkanData as any);
+      if (kijunData.length > 0) kijun.setData(kijunData as any);
+      if (senkouAData.length > 0) senkouA.setData(senkouAData as any);
+      if (senkouBData.length > 0) senkouB.setData(senkouBData as any);
+      if (chikouData.length > 0) chikou.setData(chikouData as any);
+    } else if (ind.type === "parabolic_sar") {
+      let sar = seriesRef.current.get(`${ind.id}-sar`) as ISeriesApi<"Line">;
+      if (!sar) {
+        // LineSeries with transparent line but with points visible (if possible), or just a dotted line
+        sar = chart.addSeries(LineSeries, { color: "#2196f3", lineWidth: 2, lineStyle: LineStyle.Dotted, priceScaleId: "right" });
+        seriesRef.current.set(`${ind.id}-sar`, sar);
+      }
+      const step = ind.params.step || 0.02;
+      const maxStep = ind.params.maxStep || 0.2;
+      const results = calculateParabolicSAR(highArray, lowArray, step, maxStep);
+      const sarData = results.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+      if (sarData.length > 0) sar.setData(sarData as any);
+    } else if (ind.type === "zigzag") {
+      let zigzag = seriesRef.current.get(`${ind.id}-zigzag`) as ISeriesApi<"Line">;
+      if (!zigzag) {
+        zigzag = chart.addSeries(LineSeries, { color: "#FF6D00", lineWidth: 2, priceScaleId: "right" });
+        seriesRef.current.set(`${ind.id}-zigzag`, zigzag);
+      }
+      const deviation = ind.params.deviation || 5;
+      const results = calculateZigZag(highArray, lowArray, deviation);
+      const zigzagData = results.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+      if (zigzagData.length > 0) zigzag.setData(zigzagData as any);
     }
   }
 }
