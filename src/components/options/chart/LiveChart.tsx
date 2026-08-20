@@ -660,10 +660,10 @@ function syncIndicators(
   if (candles && candles.length > 0) {
     const ascendingCandles = ascending(candles);
     for (const c of ascendingCandles) {
-      timeArray.push(c.time as UTCTimestamp);
-      valueArray.push(c.close);
-      highArray.push(seriesKind === "area" ? c.close : c.high);
-      lowArray.push(seriesKind === "area" ? c.close : c.low);
+        timeArray.push(c.time as UTCTimestamp);
+        valueArray.push(c.close);
+        highArray.push(c.high);
+        lowArray.push(c.low);
     }
   } else {
     const ascendingTicks = ascending(ticks);
@@ -807,7 +807,9 @@ function syncIndicators(
       const pK = ind.params.periodK || 14;
       const pD = ind.params.periodD || 3;
       const smoothing = ind.params.smoothing || 3;
-      const results = calculateStochastic(highArray, lowArray, valueArray, pK, pD, smoothing);
+      const stochHigh = seriesKind === "area" ? valueArray : highArray;
+      const stochLow = seriesKind === "area" ? valueArray : lowArray;
+      const results = calculateStochastic(stochHigh, stochLow, valueArray, pK, pD, smoothing);
       const kData = results.k.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
       const dData = results.d.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
       if (kData.length > 0) kLine.setData(kData as any);
