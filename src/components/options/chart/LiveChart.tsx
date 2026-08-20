@@ -854,12 +854,16 @@ function syncIndicators(
       const tenkanData = results.tenkan.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
       const kijunData = results.kijun.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
       
-      // Shift Senkou Span forward by shift. To keep it simple in lightweight-charts without future dummy points, 
-      // we only plot what we can on existing time points. In a real app we'd add empty future times.
+      const timeStep = timeArray.length > 1 ? timeArray[timeArray.length - 1] - timeArray[timeArray.length - 2] : 0;
+      
+      // Shift Senkou Span forward by shift
       const senkouAData = results.senkouA.map((val, i) => {
         const targetIdx = i + shift;
         if (targetIdx < timeArray.length) {
           return { time: timeArray[targetIdx], value: val };
+        } else if (timeStep > 0) {
+          const futureTime = timeArray[timeArray.length - 1] + (targetIdx - timeArray.length + 1) * timeStep;
+          return { time: futureTime as UTCTimestamp, value: val };
         }
         return null;
       }).filter((d): d is {time: UTCTimestamp, value: number} => d !== null && !isNaN(d.value));
@@ -868,6 +872,9 @@ function syncIndicators(
         const targetIdx = i + shift;
         if (targetIdx < timeArray.length) {
           return { time: timeArray[targetIdx], value: val };
+        } else if (timeStep > 0) {
+          const futureTime = timeArray[timeArray.length - 1] + (targetIdx - timeArray.length + 1) * timeStep;
+          return { time: futureTime as UTCTimestamp, value: val };
         }
         return null;
       }).filter((d): d is {time: UTCTimestamp, value: number} => d !== null && !isNaN(d.value));
