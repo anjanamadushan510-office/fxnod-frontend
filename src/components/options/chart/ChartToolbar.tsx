@@ -127,7 +127,7 @@ export function ChartToolbar({
         />
       )}
       {indicatorsOpen && (
-        <IndicatorsModal symbol={symbol} onClose={() => setIndicatorsOpen(false)} />
+        <IndicatorsModal symbol={symbol} interval={interval} onClose={() => setIndicatorsOpen(false)} />
       )}
       {drawOpen && <DrawingToolsPanel onClose={() => setDrawOpen(false)} />}
     </div>

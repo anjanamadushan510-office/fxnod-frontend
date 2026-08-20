@@ -4,9 +4,11 @@ import { useEffect, useState } from "react";
 import { X, Settings, Trash2 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useChartIndicators, type IndicatorType, DEFAULT_INDICATOR_PARAMS } from "@/stores/useChartIndicators";
+import type { IntervalId } from "./chartSettings";
 
 interface IndicatorsModalProps {
   symbol: string;
+  interval?: IntervalId;
   onClose: () => void;
 }
 
@@ -14,20 +16,20 @@ const TEAL = "#00A79E";
 
 type Category = "Active" | "Momentum" | "Trend" | "Volatility" | "Moving averages" | "Others";
 
-const INDICATOR_LIST: { id: string; name: string; category: Category; disabled?: boolean }[] = [
+const INDICATOR_LIST: { id: string; name: string; category: Category; disabled?: boolean; requiresOHLC?: boolean }[] = [
   // Momentum
-  { id: "awesome_oscillator", name: "Awesome Oscillator", category: "Momentum" },
+  { id: "awesome_oscillator", name: "Awesome Oscillator", category: "Momentum", requiresOHLC: true },
   { id: "dpo", name: "Detrended Price Oscillator", category: "Momentum", disabled: true },
   { id: "MACD", name: "MACD", category: "Momentum" },
   { id: "roc", name: "Price Rate of Change", category: "Momentum" },
   { id: "RSI", name: "Relative Strength Index (RSI)", category: "Momentum" },
-  { id: "stochastic", name: "Stochastic Oscillator", category: "Momentum" },
-  { id: "smi", name: "Stochastic Momentum Index", category: "Momentum", disabled: true },
-  { id: "wpr", name: "William's Percent Range", category: "Momentum" },
+  { id: "stochastic", name: "Stochastic Oscillator", category: "Momentum", requiresOHLC: true },
+  { id: "smi", name: "Stochastic Momentum Index", category: "Momentum", disabled: true, requiresOHLC: true },
+  { id: "wpr", name: "William's Percent Range", category: "Momentum", requiresOHLC: true },
   // Trend
   { id: "aroon", name: "Aroon", category: "Trend", disabled: true },
   { id: "adx", name: "ADX/DMS", category: "Trend", disabled: true },
-  { id: "cci", name: "Commodity Channel Index", category: "Trend" },
+  { id: "cci", name: "Commodity Channel Index", category: "Trend", requiresOHLC: true },
   { id: "ichimoku", name: "Ichimoku Clouds", category: "Trend", disabled: true },
   { id: "parabolic_sar", name: "Parabolic SAR", category: "Trend", disabled: true },
   { id: "zigzag", name: "Zig Zag", category: "Trend", disabled: true },
@@ -43,7 +45,7 @@ const INDICATOR_LIST: { id: string; name: string; category: Category; disabled?:
   { id: "fractal", name: "Fractal Chaos Bands", category: "Others", disabled: true },
 ];
 
-export function IndicatorsModal({ symbol, onClose }: IndicatorsModalProps) {
+export function IndicatorsModal({ symbol, interval, onClose }: IndicatorsModalProps) {
   const [tab, setTab] = useState<Category>("Active");
 
   const { indicators, addIndicator, removeIndicator, updateIndicator, clearIndicators } = useChartIndicators();
@@ -95,18 +97,21 @@ export function IndicatorsModal({ symbol, onClose }: IndicatorsModalProps) {
 
   const renderCategoryTab = (category: Category) => {
     const list = INDICATOR_LIST.filter((i) => i.category === category);
+    const isTick = interval === "1t";
     
     return (
       <div className="flex flex-col gap-2 p-4">
         {list.map((ind) => {
+          const isDisabled = ind.disabled || (isTick && ind.requiresOHLC);
           return (
-            <div key={ind.id} className={cn("flex items-center justify-between rounded-lg border border-opt-line p-3 transition-colors", ind.disabled ? "opacity-50 grayscale" : "hover:bg-opt-bg-sunk")}>
+            <div key={ind.id} className={cn("flex items-center justify-between rounded-lg border border-opt-line p-3 transition-colors", isDisabled ? "opacity-50 grayscale" : "hover:bg-opt-bg-sunk")}>
               <span className="text-[13px] font-medium text-opt-ink">{ind.name}</span>
               <button
                 type="button"
-                disabled={ind.disabled}
-                onClick={() => !ind.disabled && addIndicator(symbol, ind.id as IndicatorType)}
-                className={cn("rounded px-3 py-1 text-[12px] font-semibold transition-colors", ind.disabled ? "bg-opt-bg-sunk text-opt-ink-4 cursor-not-allowed" : "bg-opt-line text-opt-ink hover:bg-opt-line-strong")}
+                disabled={isDisabled}
+                title={isTick && ind.requiresOHLC ? "Not available on tick charts" : undefined}
+                onClick={() => !isDisabled && addIndicator(symbol, ind.id as IndicatorType)}
+                className={cn("rounded px-3 py-1 text-[12px] font-semibold transition-colors", isDisabled ? "bg-opt-bg-sunk text-opt-ink-4 cursor-not-allowed" : "bg-opt-line text-opt-ink hover:bg-opt-line-strong")}
               >
                 Add
               </button>
