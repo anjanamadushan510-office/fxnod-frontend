@@ -806,7 +806,7 @@ function syncIndicators(
       }
       const pK = ind.params.periodK || 14;
       const pD = ind.params.periodD || 3;
-      const smoothing = ind.params.smoothing || 3;
+      const smoothing = ind.params.smoothing || 1;
       const results = calculateStochastic(highArray, lowArray, valueArray, pK, pD, smoothing);
       const kData = results.k.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
       const dData = results.d.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
