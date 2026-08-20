@@ -714,16 +714,19 @@ function syncIndicators(
         hist = chart.addSeries(HistogramSeries, {
           color: "#26a69a",
           priceScaleId: "macd-scale",
+          priceFormat: { type: 'price', precision: 4, minMove: 0.0001 }
         });
         macdLine = chart.addSeries(LineSeries, {
           color: "#2962FF",
           lineWidth: 2,
           priceScaleId: "macd-scale",
+          priceFormat: { type: 'price', precision: 4, minMove: 0.0001 }
         });
         signalLine = chart.addSeries(LineSeries, {
           color: "#FF6D00",
           lineWidth: 2,
           priceScaleId: "macd-scale",
+          priceFormat: { type: 'price', precision: 4, minMove: 0.0001 }
         });
         chart.priceScale("macd-scale").applyOptions({
           scaleMargins: { top: 0.75, bottom: 0 },
@@ -751,6 +754,7 @@ function syncIndicators(
         hist = chart.addSeries(HistogramSeries, {
           color: "#26a69a",
           priceScaleId: "ao-scale",
+          priceFormat: { type: 'price', precision: 4, minMove: 0.0001 }
         });
         chart.priceScale("ao-scale").applyOptions({ scaleMargins: { top: 0.75, bottom: 0 } });
         seriesRef.current.set(ind.id, hist);
@@ -769,6 +773,7 @@ function syncIndicators(
           color: ind.type === "roc" ? "#2196f3" : (ind.type === "cci" ? "#00A79E" : "#ff9800"),
           lineWidth: 2,
           priceScaleId: `${ind.type}-scale`,
+          priceFormat: { type: 'price', precision: 4, minMove: 0.0001 }
         });
         chart.priceScale(`${ind.type}-scale`).applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
         
@@ -793,8 +798,8 @@ function syncIndicators(
       let kLine = seriesRef.current.get(`${ind.id}-k`) as ISeriesApi<"Line">;
       let dLine = seriesRef.current.get(`${ind.id}-d`) as ISeriesApi<"Line">;
       if (!kLine || !dLine) {
-        kLine = chart.addSeries(LineSeries, { color: "#2196f3", lineWidth: 2, priceScaleId: "stoch-scale" });
-        dLine = chart.addSeries(LineSeries, { color: "#ff9800", lineWidth: 2, priceScaleId: "stoch-scale" });
+        kLine = chart.addSeries(LineSeries, { color: "#2196f3", lineWidth: 2, priceScaleId: "stoch-scale", priceFormat: { type: 'price', precision: 4, minMove: 0.0001 } });
+        dLine = chart.addSeries(LineSeries, { color: "#ff9800", lineWidth: 2, priceScaleId: "stoch-scale", priceFormat: { type: 'price', precision: 4, minMove: 0.0001 } });
         chart.priceScale("stoch-scale").applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
         seriesRef.current.set(`${ind.id}-k`, kLine);
         seriesRef.current.set(`${ind.id}-d`, dLine);
@@ -810,8 +815,8 @@ function syncIndicators(
       let upLine = seriesRef.current.get(`${ind.id}-aroonUp`) as ISeriesApi<"Line">;
       let downLine = seriesRef.current.get(`${ind.id}-aroonDown`) as ISeriesApi<"Line">;
       if (!upLine || !downLine) {
-        upLine = chart.addSeries(LineSeries, { color: "#00A79E", lineWidth: 2, priceScaleId: "aroon-scale" });
-        downLine = chart.addSeries(LineSeries, { color: "#ef5350", lineWidth: 2, priceScaleId: "aroon-scale" });
+        upLine = chart.addSeries(LineSeries, { color: "#00A79E", lineWidth: 2, priceScaleId: "aroon-scale", priceFormat: { type: 'price', precision: 4, minMove: 0.0001 } });
+        downLine = chart.addSeries(LineSeries, { color: "#ef5350", lineWidth: 2, priceScaleId: "aroon-scale", priceFormat: { type: 'price', precision: 4, minMove: 0.0001 } });
         chart.priceScale("aroon-scale").applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
         seriesRef.current.set(`${ind.id}-aroonUp`, upLine);
         seriesRef.current.set(`${ind.id}-aroonDown`, downLine);
@@ -827,9 +832,9 @@ function syncIndicators(
       let plusDI = seriesRef.current.get(`${ind.id}-plusDI`) as ISeriesApi<"Line">;
       let minusDI = seriesRef.current.get(`${ind.id}-minusDI`) as ISeriesApi<"Line">;
       if (!adxLine || !plusDI || !minusDI) {
-        adxLine = chart.addSeries(LineSeries, { color: "#999999", lineWidth: 2, priceScaleId: "adx-scale" });
-        plusDI = chart.addSeries(LineSeries, { color: "#00A79E", lineWidth: 2, priceScaleId: "adx-scale" });
-        minusDI = chart.addSeries(LineSeries, { color: "#ef5350", lineWidth: 2, priceScaleId: "adx-scale" });
+        adxLine = chart.addSeries(LineSeries, { color: "#999999", lineWidth: 2, priceScaleId: "adx-scale", priceFormat: { type: 'price', precision: 4, minMove: 0.0001 } });
+        plusDI = chart.addSeries(LineSeries, { color: "#00A79E", lineWidth: 2, priceScaleId: "adx-scale", priceFormat: { type: 'price', precision: 4, minMove: 0.0001 } });
+        minusDI = chart.addSeries(LineSeries, { color: "#ef5350", lineWidth: 2, priceScaleId: "adx-scale", priceFormat: { type: 'price', precision: 4, minMove: 0.0001 } });
         chart.priceScale("adx-scale").applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
         seriesRef.current.set(`${ind.id}-adx`, adxLine);
         seriesRef.current.set(`${ind.id}-plusDI`, plusDI);
