@@ -58,7 +58,7 @@ const INDICATOR_LIST: { id: string; name: string; category: Category; disabled?:
   // Moving averages
   { id: "SMA", name: "SMA (Simple Moving Average)", category: "Moving averages", Icon: IconGenericMA },
   { id: "EMA", name: "EMA (Exponential Moving Average)", category: "Moving averages", Icon: IconGenericMA },
-  { id: "wma", name: "WMA (Weighted Moving Average)", category: "Moving averages", disabled: true, Icon: IconGenericMA },
+  { id: "wma", name: "WMA (Weighted Moving Average)", category: "Moving averages", Icon: IconGenericMA },
   // Others
   { id: "alligator", name: "Alligator", category: "Others", disabled: true, Icon: IconGenericOther },
   { id: "fractal", name: "Fractal Chaos Bands", category: "Others", disabled: true, Icon: IconGenericOther },

@@ -48,7 +48,7 @@ import { useChartIndicators, type IndicatorConfig } from "@/stores/useChartIndic
 import { 
   calculateSMA, calculateEMA, calculateRSI, calculateMACD,
   calculateAwesomeOscillator, calculateROC, calculateStochastic, calculateWilliamsR,
-  calculateCCI, calculateAroon, calculateADX, calculateIchimoku, calculateParabolicSAR, calculateZigZag, calculateBollingerBands, calculateDonchianChannel
+  calculateCCI, calculateAroon, calculateADX, calculateIchimoku, calculateParabolicSAR, calculateZigZag, calculateBollingerBands, calculateDonchianChannel, calculateWMA
 } from "@/lib/indicators";
 
 /** Accent color for user-drawn lines (drawn on canvas — needs literal hex). */
@@ -677,13 +677,13 @@ function syncIndicators(
 
   // Update or create active indicators
   for (const ind of activeIndicators) {
-    if (ind.type === "SMA" || ind.type === "EMA" || ind.type === "RSI") {
+    if (ind.type === "SMA" || ind.type === "EMA" || ind.type === "wma" || ind.type === "RSI") {
       let series = seriesRef.current.get(ind.id) as ISeriesApi<"Line">;
       if (!series) {
         // RSI goes on a separate sub-pane scale, SMA/EMA go on right axis
         const isRsi = ind.type === "RSI";
         series = chart.addSeries(LineSeries, {
-          color: isRsi ? "#9c27b0" : (ind.type === "SMA" ? "#ff9800" : "#2196f3"),
+          color: isRsi ? "#9c27b0" : (ind.type === "SMA" ? "#ff9800" : (ind.type === "EMA" ? "#2196f3" : "#00A79E")),
           lineWidth: 2,
           priceScaleId: isRsi ? "rsi-scale" : "right",
         });
@@ -699,6 +699,7 @@ function syncIndicators(
       const p = ind.params.period || 14;
       if (ind.type === "SMA") results = calculateSMA(valueArray, p);
       if (ind.type === "EMA") results = calculateEMA(valueArray, p);
+      if (ind.type === "wma") results = calculateWMA(valueArray, p);
       if (ind.type === "RSI") results = calculateRSI(valueArray, p);
 
       const data = results.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));

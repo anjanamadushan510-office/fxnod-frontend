@@ -578,3 +578,20 @@ export function calculateDonchianChannel(high: number[], low: number[], period: 
   }
   return result;
 }
+
+export function calculateWMA(data: number[], period: number): number[] {
+  const result: number[] = new Array(data.length).fill(NaN);
+  if (data.length < period) return result;
+  
+  const denominator = (period * (period + 1)) / 2;
+  
+  for (let i = period - 1; i < data.length; i++) {
+    let sum = 0;
+    for (let j = 0; j < period; j++) {
+      const weight = period - j;
+      sum += data[i - j] * weight;
+    }
+    result[i] = sum / denominator;
+  }
+  return result;
+}
