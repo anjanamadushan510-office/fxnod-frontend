@@ -469,7 +469,7 @@ export function calculateParabolicSAR(high: number[], low: number[], step = 0.02
   return sar;
 }
 
-export function calculateZigZag(high: number[], low: number[], deviation = 5): number[] {
+export function calculateZigZag(high: number[], low: number[], close: number[], deviation = 5): number[] {
   const len = high.length;
   const zigzag: number[] = new Array(len).fill(NaN);
   if (len === 0) return zigzag;
@@ -508,6 +508,11 @@ export function calculateZigZag(high: number[], low: number[], deviation = 5): n
     zigzag[lastPivotIdx] = lastPeak;
   } else {
     zigzag[lastPivotIdx] = lastTrough;
+  }
+
+  // Add dynamic tentative point to the current candle
+  if (lastPivotIdx !== len - 1 && len > 0) {
+    zigzag[len - 1] = close[len - 1];
   }
 
   return zigzag;

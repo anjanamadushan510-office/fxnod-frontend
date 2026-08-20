@@ -950,7 +950,7 @@ function syncIndicators(
         seriesRef.current.set(`${ind.id}-zigzag`, zigzag);
       }
       const deviation = ind.params.deviation || 5;
-      const results = calculateZigZag(highArray, lowArray, deviation);
+      const results = calculateZigZag(highArray, lowArray, valueArray, deviation);
       const zigzagData = results.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
       if (zigzagData.length > 0) zigzag.setData(zigzagData as any);
     }
