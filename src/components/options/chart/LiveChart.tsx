@@ -662,8 +662,8 @@ function syncIndicators(
     for (const c of ascendingCandles) {
       timeArray.push(c.time as UTCTimestamp);
       valueArray.push(c.close);
-      highArray.push(c.high);
-      lowArray.push(c.low);
+      highArray.push(seriesKind === "area" ? c.close : c.high);
+      lowArray.push(seriesKind === "area" ? c.close : c.low);
     }
   } else {
     const ascendingTicks = ascending(ticks);
@@ -806,7 +806,7 @@ function syncIndicators(
       }
       const pK = ind.params.periodK || 14;
       const pD = ind.params.periodD || 3;
-      const smoothing = ind.params.smoothing || 1;
+      const smoothing = ind.params.smoothing || 3;
       const results = calculateStochastic(highArray, lowArray, valueArray, pK, pD, smoothing);
       const kData = results.k.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
       const dData = results.d.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
