@@ -147,6 +147,8 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
                     <option value="Open">Open</option>
                     <option value="High">High</option>
                     <option value="Low">Low</option>
+                    <option value="Hl/2">Hl/2</option>
+                    <option value="Hlc/3">Hlc/3</option>
                   </select>
                 </div>
               );

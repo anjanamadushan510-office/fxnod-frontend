@@ -658,6 +658,8 @@ function syncIndicators(
   const highArray: number[] = [];
   const lowArray: number[] = [];
   const openArray: number[] = [];
+  const hl2Array: number[] = [];
+  const hlc3Array: number[] = [];
 
   if (candles && candles.length > 0) {
     const ascendingCandles = ascending(candles);
@@ -667,6 +669,8 @@ function syncIndicators(
         highArray.push(c.high);
         lowArray.push(c.low);
         openArray.push(c.open);
+        hl2Array.push((c.high + c.low) / 2);
+        hlc3Array.push((c.high + c.low + c.close) / 3);
     }
   } else {
     const ascendingTicks = ascending(ticks);
@@ -676,6 +680,8 @@ function syncIndicators(
       highArray.push(t.value);
       lowArray.push(t.value);
       openArray.push(t.value);
+      hl2Array.push(t.value);
+      hlc3Array.push(t.value);
     }
   }
 
@@ -861,6 +867,8 @@ function syncIndicators(
             case "High": targetArray = highArray; break;
             case "Low": targetArray = lowArray; break;
             case "Close": targetArray = valueArray; break;
+            case "Hl/2": targetArray = hl2Array; break;
+            case "Hlc/3": targetArray = hlc3Array; break;
           }
           results = calculateROC(targetArray, p);
         }
