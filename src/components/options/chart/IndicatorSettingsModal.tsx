@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Save, ChevronDown } from "lucide-react";
+import { X, Save, ChevronDown, Trash2 } from "lucide-react";
 import { useChartIndicators, DEFAULT_INDICATOR_PARAMS } from "@/stores/useChartIndicators";
 
 const PALETTE_COLORS = [
@@ -48,7 +48,7 @@ function CustomColorPicker({ value, onChange }: { value: string; onChange: (v: s
 }
 
 export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: string; onClose: () => void }) {
-  const { indicators, updateIndicator } = useChartIndicators();
+  const { indicators, updateIndicator, removeIndicator } = useChartIndicators();
   const indicator = indicators.find((ind) => ind.id === indicatorId);
   
   // Use state to hold local edits before saving
@@ -148,13 +148,35 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
             );
           })}
         </div>
-        <div className="flex justify-end border-t border-opt-line p-4">
+        <div className="flex items-center justify-between border-t border-opt-line p-4">
           <button
-            onClick={handleSave}
-            className="flex items-center gap-2 rounded bg-[#00A79E] px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-[#00928a]"
+            onClick={() => {
+              removeIndicator(indicatorId);
+              onClose();
+            }}
+            className="flex items-center justify-center rounded border border-opt-line p-2 text-opt-ink-3 transition-colors hover:bg-opt-bg-sunk hover:text-opt-ink"
+            title="Delete Indicator"
           >
-            <Save className="h-4 w-4" /> Save
+            <Trash2 className="h-4 w-4" />
           </button>
+          
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                const defaultParams = DEFAULT_INDICATOR_PARAMS[indicator.type] || {};
+                setParams({ ...defaultParams });
+              }}
+              className="rounded border border-opt-line px-4 py-2 text-[13px] font-semibold text-opt-ink transition-colors hover:bg-opt-bg-sunk"
+            >
+              Reset
+            </button>
+            <button
+              onClick={handleSave}
+              className="flex items-center gap-2 rounded bg-[#ef5350] px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-[#d32f2f]"
+            >
+              Done
+            </button>
+          </div>
         </div>
       </div>
     </div>
