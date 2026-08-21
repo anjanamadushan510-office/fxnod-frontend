@@ -48,8 +48,8 @@ import { useChartIndicators, type IndicatorConfig } from "@/stores/useChartIndic
 import { 
   calculateSMA, calculateEMA, calculateRSI, calculateMACD,
   calculateAwesomeOscillator, calculateROC, calculateStochastic, calculateWilliamsR,
-  calculateCCI, calculateAroon, calculateADX, calculateIchimoku, calculateParabolicSAR, calculateZigZag, calculateBollingerBands, calculateDonchianChannel, calculateWMA
-} from "@/lib/indicators";
+  calculateCCI, calculateAroon, calculateADX, calculateIchimoku, calculateParabolicSAR, calculateZigZag, calculateBollingerBands, calculateDonchianChannel, calculateWMA, calculateMAEnvelope, calculateRainbowMA
+  } from "@/lib/indicators";
 
 /** Accent color for user-drawn lines (drawn on canvas — needs literal hex). */
 const DRAWING_COLOR = "#2962FF";
@@ -677,13 +677,13 @@ function syncIndicators(
 
   // Update or create active indicators
   for (const ind of activeIndicators) {
-    if (ind.type === "SMA" || ind.type === "EMA" || ind.type === "wma" || ind.type === "RSI") {
+    if (ind.type === "ma" || ind.type === "RSI") {
       let series = seriesRef.current.get(ind.id) as ISeriesApi<"Line">;
       if (!series) {
         // RSI goes on a separate sub-pane scale, SMA/EMA go on right axis
         const isRsi = ind.type === "RSI";
         series = chart.addSeries(LineSeries, {
-          color: isRsi ? "#9c27b0" : (ind.type === "SMA" ? "#ff9800" : (ind.type === "EMA" ? "#2196f3" : "#00A79E")),
+          color: isRsi ? "#9c27b0" : (ind.params.maType === "SMA" ? "#ff9800" : (ind.params.maType === "EMA" ? "#2196f3" : "#00A79E")),
           lineWidth: 2,
           priceScaleId: isRsi ? "rsi-scale" : "right",
         });
@@ -697,14 +697,73 @@ function syncIndicators(
 
       let results: number[] = [];
       const p = ind.params.period || 14;
-      if (ind.type === "SMA") results = calculateSMA(valueArray, p);
-      if (ind.type === "EMA") results = calculateEMA(valueArray, p);
-      if (ind.type === "wma") results = calculateWMA(valueArray, p);
-      if (ind.type === "RSI") results = calculateRSI(valueArray, p);
+      if (ind.type === "RSI") {
+        results = calculateRSI(valueArray, p);
+      } else if (ind.type === "ma") {
+        const maType = ind.params.maType || "SMA";
+        if (maType === "SMA") results = calculateSMA(valueArray, p);
+        else if (maType === "EMA") results = calculateEMA(valueArray, p);
+        else if (maType === "WMA") results = calculateWMA(valueArray, p);
+        else results = calculateSMA(valueArray, p);
+      }
 
       const data = results.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
       if (data.length > 0) {
         series.setData(data as any);
+      }
+    } else if (ind.type === "ma_envelope") {
+      let upper = seriesRef.current.get(`${ind.id}-upper`) as ISeriesApi<"Line">;
+      let middle = seriesRef.current.get(`${ind.id}-middle`) as ISeriesApi<"Line">;
+      let lower = seriesRef.current.get(`${ind.id}-lower`) as ISeriesApi<"Line">;
+      
+      if (!upper || !middle || !lower) {
+        upper = chart.addSeries(LineSeries, { color: '#2196f3', lineWidth: 1, priceScaleId: 'right' });
+        middle = chart.addSeries(LineSeries, { color: '#ff9800', lineWidth: 1, priceScaleId: 'right' });
+        lower = chart.addSeries(LineSeries, { color: '#2196f3', lineWidth: 1, priceScaleId: 'right' });
+        seriesRef.current.set(`${ind.id}-upper`, upper);
+        seriesRef.current.set(`${ind.id}-middle`, middle);
+        seriesRef.current.set(`${ind.id}-lower`, lower);
+      }
+      
+      const p = ind.params.period || 50;
+      const shift = ind.params.shift || 5;
+      const shiftType = ind.params.shiftType || "percent";
+      const maType = ind.params.maType || "SMA";
+      
+      const results = calculateMAEnvelope(valueArray, p, maType, shift, shiftType);
+      
+      const upperData = results.upper.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+      const middleData = results.middle.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+      const lowerData = results.lower.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+      
+      if (upperData.length > 0) upper.setData(upperData as any);
+      if (middleData.length > 0) middle.setData(middleData as any);
+      if (lowerData.length > 0) lower.setData(lowerData as any);
+    } else if (ind.type === "rainbow_ma") {
+      const numLines = 10;
+      let linesArr: ISeriesApi<"Line">[] = [];
+      
+      const colors = [
+        '#ff0000', '#ff4000', '#ff8000', '#ffbf00', '#ffff00', 
+        '#bfff00', '#80ff00', '#40ff00', '#00ff00', '#00ff40'
+      ];
+      
+      for (let k = 0; k < numLines; k++) {
+        let line = seriesRef.current.get(`${ind.id}-rainbow-${k}`) as ISeriesApi<"Line">;
+        if (!line) {
+          line = chart.addSeries(LineSeries, { color: colors[k], lineWidth: 1, priceScaleId: 'right' });
+          seriesRef.current.set(`${ind.id}-rainbow-${k}`, line);
+        }
+        linesArr.push(line);
+      }
+      
+      const p = ind.params.period || 2;
+      const maType = ind.params.maType || "SMA";
+      const results = calculateRainbowMA(valueArray, p, maType);
+      
+      for (let k = 0; k < numLines; k++) {
+        const data = results[k].map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+        if (data.length > 0) linesArr[k].setData(data as any);
       }
     } else if (ind.type === "MACD") {
       let hist = seriesRef.current.get(`${ind.id}-hist`) as ISeriesApi<"Histogram">;

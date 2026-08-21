@@ -595,3 +595,52 @@ export function calculateWMA(data: number[], period: number): number[] {
   }
   return result;
 }
+
+export interface MAEnvelopeResult {
+  middle: number[];
+  upper: number[];
+  lower: number[];
+}
+
+export function calculateMAEnvelope(data: number[], period: number, maType: string, shift: number, shiftType: string): MAEnvelopeResult {
+  let middle: number[] = [];
+  if (maType === "SMA") middle = calculateSMA(data, period);
+  else if (maType === "EMA") middle = calculateEMA(data, period);
+  else if (maType === "WMA") middle = calculateWMA(data, period);
+  else middle = calculateSMA(data, period);
+
+  const upper: number[] = new Array(data.length).fill(NaN);
+  const lower: number[] = new Array(data.length).fill(NaN);
+
+  for (let i = 0; i < data.length; i++) {
+    if (!isNaN(middle[i])) {
+      if (shiftType === "percent") {
+        upper[i] = middle[i] * (1 + shift / 100);
+        lower[i] = middle[i] * (1 - shift / 100);
+      } else {
+        upper[i] = middle[i] + shift;
+        lower[i] = middle[i] - shift;
+      }
+    }
+  }
+
+  return { middle, upper, lower };
+}
+
+export function calculateRainbowMA(data: number[], period: number, maType: string): number[][] {
+  const lines: number[][] = [];
+  const numLines = 10;
+  
+  for (let k = 0; k < numLines; k++) {
+    const currentPeriod = period + k;
+    let nextLine: number[];
+    if (maType === "SMA") nextLine = calculateSMA(data, currentPeriod);
+    else if (maType === "EMA") nextLine = calculateEMA(data, currentPeriod);
+    else if (maType === "WMA") nextLine = calculateWMA(data, currentPeriod);
+    else nextLine = calculateSMA(data, currentPeriod);
+    
+    lines.push(nextLine);
+  }
+  
+  return lines;
+}
