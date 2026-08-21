@@ -1090,9 +1090,41 @@ function syncIndicators(
         const lipsS = ind.params.lipsShift || 3;
         
         const results = calculateAlligator(highArray, lowArray, jawP, jawS, teethP, teethS, lipsP, lipsS);
-        const jawData = results.jaw.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
-        const teethData = results.teeth.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
-        const lipsData = results.lips.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+        
+        const timeStep = timeArray.length > 1 ? timeArray[timeArray.length - 1] - timeArray[timeArray.length - 2] : 0;
+        
+        const jawData = results.jaw.map((val, i) => {
+          const targetIdx = i + jawS;
+          if (targetIdx < timeArray.length) {
+            return { time: timeArray[targetIdx], value: val };
+          } else if (timeStep > 0) {
+            const futureTime = timeArray[timeArray.length - 1] + (targetIdx - timeArray.length + 1) * timeStep;
+            return { time: futureTime as UTCTimestamp, value: val };
+          }
+          return null;
+        }).filter((d): d is {time: UTCTimestamp, value: number} => d !== null && !isNaN(d.value));
+        
+        const teethData = results.teeth.map((val, i) => {
+          const targetIdx = i + teethS;
+          if (targetIdx < timeArray.length) {
+            return { time: timeArray[targetIdx], value: val };
+          } else if (timeStep > 0) {
+            const futureTime = timeArray[timeArray.length - 1] + (targetIdx - timeArray.length + 1) * timeStep;
+            return { time: futureTime as UTCTimestamp, value: val };
+          }
+          return null;
+        }).filter((d): d is {time: UTCTimestamp, value: number} => d !== null && !isNaN(d.value));
+        
+        const lipsData = results.lips.map((val, i) => {
+          const targetIdx = i + lipsS;
+          if (targetIdx < timeArray.length) {
+            return { time: timeArray[targetIdx], value: val };
+          } else if (timeStep > 0) {
+            const futureTime = timeArray[timeArray.length - 1] + (targetIdx - timeArray.length + 1) * timeStep;
+            return { time: futureTime as UTCTimestamp, value: val };
+          }
+          return null;
+        }).filter((d): d is {time: UTCTimestamp, value: number} => d !== null && !isNaN(d.value));
         
         if (jawData.length > 0) jaw.setData(jawData as any);
         if (teethData.length > 0) teeth.setData(teethData as any);

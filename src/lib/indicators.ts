@@ -701,15 +701,8 @@ export function calculateAlligator(
   const teethSMMA = calculateSMMA(median, teethP);
   const lipsSMMA = calculateSMMA(median, lipsP);
   
-  const jaw = new Array(median.length).fill(NaN);
-  const teeth = new Array(median.length).fill(NaN);
-  const lips = new Array(median.length).fill(NaN);
-  
-  for (let i = 0; i < jawSMMA.length - jawS; i++) jaw[i + jawS] = jawSMMA[i];
-  for (let i = 0; i < teethSMMA.length - teethS; i++) teeth[i + teethS] = teethSMMA[i];
-  for (let i = 0; i < lipsSMMA.length - lipsS; i++) lips[i + lipsS] = lipsSMMA[i];
-  
-  return { jaw, teeth, lips };
+  // Return the unshifted lines. Shifting is handled in the renderer to project into the future.
+  return { jaw: jawSMMA, teeth: teethSMMA, lips: lipsSMMA };
 }
 
 // Fractal Chaos Bands
