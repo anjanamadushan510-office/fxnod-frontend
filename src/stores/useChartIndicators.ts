@@ -15,7 +15,7 @@ export const DEFAULT_INDICATOR_PARAMS: Record<IndicatorType, Record<string, any>
   ma_envelope: { period: 50, maType: "SMA", shift: 5, shiftType: "percent" },
   rainbow_ma: { period: 2, maType: "SMA" },
   MACD: { macdColor: "#000000", signalColor: "#f44336", increasingBarColor: "#4caf50", decreasingBarColor: "#f44336", fastPeriod: 12, slowPeriod: 26, signalPeriod: 9 },
-  RSI: { period: 14 },
+  RSI: { rsiColor: "#000000", period: 14, field: "Close", overBoughtValue: 80, overBoughtColor: "#000000", overSoldValue: 20, overSoldColor: "#000000", showZones: true },
   awesome_oscillator: { increasingBarColor: "#26a69a", decreasingBarColor: "#ef5350" },
   roc: { rocColor: "#000000", period: 14, field: "Close" },
   stochastic: { periodK: 14, periodD: 3, smoothing: 3 },

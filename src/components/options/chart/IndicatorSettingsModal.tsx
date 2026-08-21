@@ -88,6 +88,111 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
       .replace(/^./, (str) => str.toUpperCase());
   };
 
+  const renderParam = (key: string, value: any) => {
+    if (typeof value === "boolean") {
+      return (
+        <div key={key} className="flex items-center justify-between rounded-lg border border-opt-line p-3">
+          <label className="text-[13px] font-medium text-opt-ink-2">{formatLabel(key)}</label>
+          <button
+            onClick={() => handleParamChange(key, !value)}
+            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${value ? 'bg-[#26a69a]' : 'bg-opt-line'}`}
+          >
+            <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${value ? 'translate-x-5' : 'translate-x-1'}`} />
+          </button>
+        </div>
+      );
+    }
+    if (key === "maType") {
+      return (
+        <div key={key} className="flex items-center justify-between">
+          <label className="text-[13px] font-medium text-opt-ink-2">{formatLabel(key)}</label>
+          <select
+            value={value}
+            onChange={(e) => handleParamChange(key, e.target.value)}
+            className="rounded border border-opt-line bg-opt-bg-sunk px-2 py-1 text-[13px] text-opt-ink outline-none focus:border-opt-ink"
+          >
+            <option value="SMA">Simple</option>
+            <option value="EMA">Exponential</option>
+            <option value="WMA">Weighted</option>
+          </select>
+        </div>
+      );
+    }
+    if (key === "shiftType") {
+      return (
+        <div key={key} className="flex items-center justify-between">
+          <label className="text-[13px] font-medium text-opt-ink-2">{formatLabel(key)}</label>
+          <select
+            value={value}
+            onChange={(e) => handleParamChange(key, e.target.value)}
+            className="rounded border border-opt-line bg-opt-bg-sunk px-2 py-1 text-[13px] text-opt-ink outline-none focus:border-opt-ink"
+          >
+            <option value="percent">Percentage</option>
+            <option value="points">Points</option>
+          </select>
+        </div>
+      );
+    }
+    if (key === "field") {
+      return (
+        <div key={key} className="flex flex-col gap-2 rounded-lg border border-opt-line p-3">
+          <label className="text-[11px] font-medium text-opt-ink-3">{formatLabel(key)}</label>
+          <select
+            value={value}
+            onChange={(e) => handleParamChange(key, e.target.value)}
+            className="w-full rounded bg-transparent px-2 py-1 text-[13px] text-opt-ink outline-none"
+          >
+            <option value="Close">Close</option>
+            <option value="Open">Open</option>
+            <option value="High">High</option>
+            <option value="Low">Low</option>
+            <option value="Hl/2">Hl/2</option>
+            <option value="Hlc/3">Hlc/3</option>
+          </select>
+        </div>
+      );
+    }
+    if (key.toLowerCase().includes("color")) {
+      return (
+        <div key={key} className="flex h-full flex-col justify-center gap-1.5 rounded-lg border border-opt-line p-3">
+          <label className="text-[11px] font-medium text-opt-ink-3">
+            {formatLabel(key).replace(" Color", "")}
+          </label>
+          <CustomColorPicker value={value} onChange={(v) => handleParamChange(key, v)} />
+        </div>
+      );
+    }
+    return (
+      <div key={key} className="flex h-full flex-col justify-center gap-2 rounded-lg border border-opt-line p-3">
+        <div className="flex items-center justify-between">
+          <label className="text-[11px] font-medium text-opt-ink-3">
+            {key.includes("Value") ? "Size" : formatLabel(key)}
+          </label>
+          <input
+            type={typeof value === 'number' ? 'number' : 'text'}
+            value={value}
+            onChange={(e) => {
+              const val = typeof value === 'number' ? parseFloat(e.target.value) || 0 : e.target.value;
+              handleParamChange(key, val);
+            }}
+            className={`rounded bg-transparent p-0 text-[13px] font-semibold text-opt-ink outline-none ${typeof value === 'number' ? 'w-16 text-right' : 'w-full border border-opt-line px-2 py-1'}`}
+          />
+        </div>
+        {typeof value === 'number' && (
+          <input
+            type="range"
+            min={key === 'stdDev' ? '0.1' : '1'}
+            max={key === 'stdDev' ? '10' : key.toLowerCase().includes('shift') ? '50' : '200'}
+            step={key === 'stdDev' ? '0.1' : '1'}
+            value={value}
+            onChange={(e) => handleParamChange(key, parseFloat(e.target.value) || 0)}
+            className="h-1 w-full cursor-pointer appearance-none rounded-full bg-opt-line accent-[#ef5350]"
+          />
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
@@ -99,100 +204,50 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
           </button>
         </div>
         <div className="custom-scrollbar flex flex-col gap-4 overflow-y-auto p-4">
-          <div>
-            <h3 className="mb-3 text-[12px] font-bold text-opt-ink">Result</h3>
+          {indicator.type === "RSI" ? (
             <div className="flex flex-col gap-4">
-              {Object.entries(params).map(([key, value]) => {
-                if (key === "maType") {
-              return (
-                <div key={key} className="flex items-center justify-between">
-                  <label className="text-[13px] font-medium text-opt-ink-2">{formatLabel(key)}</label>
-                  <select
-                    value={value}
-                    onChange={(e) => handleParamChange(key, e.target.value)}
-                    className="rounded border border-opt-line bg-opt-bg-sunk px-2 py-1 text-[13px] text-opt-ink outline-none focus:border-opt-ink"
-                  >
-                    <option value="SMA">Simple</option>
-                    <option value="EMA">Exponential</option>
-                    <option value="WMA">Weighted</option>
-                  </select>
+              <div>
+                <h3 className="mb-3 text-[12px] font-bold text-opt-ink">Result</h3>
+                <div className="flex flex-col gap-4">
+                  {params.rsiColor !== undefined && renderParam("rsiColor", params.rsiColor)}
+                  {params.period !== undefined && renderParam("period", params.period)}
+                  {params.field !== undefined && renderParam("field", params.field)}
                 </div>
-              );
-            }
-            if (key === "shiftType") {
-              return (
-                <div key={key} className="flex items-center justify-between">
-                  <label className="text-[13px] font-medium text-opt-ink-2">{formatLabel(key)}</label>
-                  <select
-                    value={value}
-                    onChange={(e) => handleParamChange(key, e.target.value)}
-                    className="rounded border border-opt-line bg-opt-bg-sunk px-2 py-1 text-[13px] text-opt-ink outline-none focus:border-opt-ink"
-                  >
-                    <option value="percent">Percentage</option>
-                    <option value="points">Points</option>
-                  </select>
-                </div>
-              );
-            }
-            if (key === "field") {
-              return (
-                <div key={key} className="flex flex-col gap-2 rounded-lg border border-opt-line p-3">
-                  <label className="text-[11px] font-medium text-opt-ink-3">{formatLabel(key)}</label>
-                  <select
-                    value={value}
-                    onChange={(e) => handleParamChange(key, e.target.value)}
-                    className="w-full rounded bg-transparent px-2 py-1 text-[13px] text-opt-ink outline-none"
-                  >
-                    <option value="Close">Close</option>
-                    <option value="Open">Open</option>
-                    <option value="High">High</option>
-                    <option value="Low">Low</option>
-                    <option value="Hl/2">Hl/2</option>
-                    <option value="Hlc/3">Hlc/3</option>
-                  </select>
-                </div>
-              );
-            }
-            if (key.toLowerCase().includes("color")) {
-              return (
-                <div key={key} className="flex flex-col gap-1.5 rounded-lg border border-opt-line p-3">
-                  <label className="text-[11px] font-medium text-opt-ink-3">
-                    {formatLabel(key).replace(" Color", "")}
-                  </label>
-                  <CustomColorPicker value={value} onChange={(v) => handleParamChange(key, v)} />
-                </div>
-              );
-            }
-            return (
-              <div key={key} className="flex flex-col gap-2 rounded-lg border border-opt-line p-3">
-                <div className="flex items-center justify-between">
-                  <label className="text-[11px] font-medium text-opt-ink-3">{formatLabel(key)}</label>
-                  <input
-                    type={typeof value === 'number' ? 'number' : 'text'}
-                    value={value}
-                    onChange={(e) => {
-                      const val = typeof value === 'number' ? parseFloat(e.target.value) || 0 : e.target.value;
-                      handleParamChange(key, val);
-                    }}
-                    className={`rounded bg-transparent p-0 text-[13px] font-semibold text-opt-ink outline-none ${typeof value === 'number' ? 'w-16 text-right' : 'w-full border border-opt-line px-2 py-1'}`}
-                  />
-                </div>
-                {typeof value === 'number' && (
-                  <input
-                    type="range"
-                    min={key === 'stdDev' ? '0.1' : '1'}
-                    max={key === 'stdDev' ? '10' : key.toLowerCase().includes('shift') ? '50' : '200'}
-                    step={key === 'stdDev' ? '0.1' : '1'}
-                    value={value}
-                    onChange={(e) => handleParamChange(key, parseFloat(e.target.value) || 0)}
-                    className="h-1 w-full cursor-pointer appearance-none rounded-full bg-opt-line accent-[#ef5350]"
-                  />
-                )}
               </div>
-            );
-          })}
+              <div>
+                <h3 className="mb-3 text-[12px] font-bold text-opt-ink">Over Bought</h3>
+                <div className="flex items-stretch gap-2">
+                  <div className="flex-1">
+                    {params.overBoughtValue !== undefined && renderParam("overBoughtValue", params.overBoughtValue)}
+                  </div>
+                  <div className="w-[120px] shrink-0">
+                    {params.overBoughtColor !== undefined && renderParam("overBoughtColor", params.overBoughtColor)}
+                  </div>
+                </div>
+              </div>
+              <div>
+                <h3 className="mb-3 text-[12px] font-bold text-opt-ink">OverSold</h3>
+                <div className="flex items-stretch gap-2">
+                  <div className="flex-1">
+                    {params.overSoldValue !== undefined && renderParam("overSoldValue", params.overSoldValue)}
+                  </div>
+                  <div className="w-[120px] shrink-0">
+                    {params.overSoldColor !== undefined && renderParam("overSoldColor", params.overSoldColor)}
+                  </div>
+                </div>
+              </div>
+              <div>
+                {params.showZones !== undefined && renderParam("showZones", params.showZones)}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div>
+              <h3 className="mb-3 text-[12px] font-bold text-opt-ink">Result</h3>
+              <div className="flex flex-col gap-4">
+                {Object.entries(params).map(([key, value]) => renderParam(key, value))}
+              </div>
+            </div>
+          )}
         </div>
         <div className="flex shrink-0 items-center justify-between border-t border-opt-line p-4">
           <button
