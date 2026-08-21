@@ -1137,7 +1137,7 @@ function syncIndicators(
           upper = chart.addSeries(LineSeries, { 
             color: '#999999', 
             lineWidth: 1, 
-            lineType: LineType.Step, 
+            lineType: LineType.WithSteps,  
             priceScaleId: 'right',
             lastValueVisible: false,
             priceLineVisible: false 
@@ -1145,7 +1145,7 @@ function syncIndicators(
           lower = chart.addSeries(LineSeries, { 
             color: '#999999', 
             lineWidth: 1, 
-            lineType: LineType.Step, 
+            lineType: LineType.WithSteps, 
             priceScaleId: 'right',
             lastValueVisible: false,
             priceLineVisible: false 
