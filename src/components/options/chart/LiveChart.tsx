@@ -744,8 +744,8 @@ function syncIndicators(
       let linesArr: ISeriesApi<"Line">[] = [];
       
       const colors = [
-        '#ff0000', '#ff4000', '#ff8000', '#ffbf00', '#ffff00', 
-        '#bfff00', '#80ff00', '#40ff00', '#00ff00', '#00ff40'
+        '#ff3b3b', '#ff9800', '#ffeb3b', '#8bc34a', '#4caf50', 
+        '#00bcd4', '#2196f3', '#3f51b5', '#9c27b0', '#e91e63'
       ];
       
       for (let k = 0; k < numLines; k++) {

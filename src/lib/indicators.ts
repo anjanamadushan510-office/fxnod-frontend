@@ -631,15 +631,35 @@ export function calculateRainbowMA(data: number[], period: number, maType: strin
   const lines: number[][] = [];
   const numLines = 10;
   
+  let currentData = [...data];
+  
   for (let k = 0; k < numLines; k++) {
-    const currentPeriod = period + k;
-    let nextLine: number[];
-    if (maType === "SMA") nextLine = calculateSMA(data, currentPeriod);
-    else if (maType === "EMA") nextLine = calculateEMA(data, currentPeriod);
-    else if (maType === "WMA") nextLine = calculateWMA(data, currentPeriod);
-    else nextLine = calculateSMA(data, currentPeriod);
+    // Find first valid index (skip leading NaNs)
+    let firstValid = 0;
+    while (firstValid < currentData.length && isNaN(currentData[firstValid])) {
+      firstValid++;
+    }
+    
+    if (firstValid >= currentData.length) {
+      lines.push([...currentData]);
+      continue;
+    }
+    
+    const validData = currentData.slice(firstValid);
+    let result: number[];
+    
+    if (maType === "SMA") result = calculateSMA(validData, period);
+    else if (maType === "EMA") result = calculateEMA(validData, period);
+    else if (maType === "WMA") result = calculateWMA(validData, period);
+    else result = calculateSMA(validData, period);
+    
+    // Re-pad with NaNs at the beginning
+    const nextLine = new Array(firstValid).fill(NaN).concat(result);
     
     lines.push(nextLine);
+    
+    // The next line uses the current smoothed line as its input
+    currentData = nextLine;
   }
   
   return lines;
