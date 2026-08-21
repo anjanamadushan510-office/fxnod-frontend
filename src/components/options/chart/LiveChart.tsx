@@ -150,6 +150,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
     const pendingTrendRef = useRef<{ time: Time; price: number } | null>(null);
 
     const [status, setStatus] = useState<FeedStatus>("idle");
+  const [paneHeight, setPaneHeight] = useState(0.22);
 
     const derivSymbol = toDerivSymbol(symbol);
     const plan = feedPlan(chartType, interval);
@@ -258,7 +259,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
       );
       // Re-attach user drawings to the fresh series.
       applyDrawings(seriesRef.current, drawingsRef.current, drawingObjsRef);
-      syncIndicators(chart, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current);
+      syncIndicators(chart, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeight);
       chart.timeScale().fitContent();
     }, [seriesKind]);
 
@@ -332,7 +333,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
     // Re-sync indicators when the active list changes.
     useEffect(() => {
       if (chartRef.current) {
-        syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicators, seriesKind, ticksRef.current, candlesRef.current);
+        syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicators, seriesKind, ticksRef.current, candlesRef.current, paneHeight);
       }
     }, [activeIndicators, seriesKind]);
 
@@ -351,7 +352,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
           );
           chartRef.current?.timeScale().fitContent();
         }
-        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current);
+        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeight);
         const last = ticks[ticks.length - 1];
         if (last) onPrice?.(last.value);
       },
@@ -367,7 +368,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
             /* out-of-order tick — ignore */
           }
         }
-        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current);
+        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeight);
         onPrice?.(tick.value);
       },
       onSeedCandles: (candles) => {
@@ -378,7 +379,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
         }));
         hydrateSeries(seriesRef.current, seriesKind, ticksRef.current, candles);
         chartRef.current?.timeScale().fitContent();
-        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current);
+        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeight);
         const last = candles[candles.length - 1];
         if (last) onPrice?.(last.close);
       },
@@ -398,7 +399,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
         } catch {
           /* out-of-order candle — ignore */
         }
-        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current);
+        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeight);
         onPrice?.(candle.close);
       },
     });
@@ -635,7 +636,8 @@ function syncIndicators(
   activeIndicators: IndicatorConfig[],
   seriesKind: "area" | "candlestick",
   ticks: FeedTick[],
-  candles: FeedCandle[]
+  candles: FeedCandle[],
+  paneHeight: number
 ) {
   // Remove series that are no longer active
   const activeIds = new Set(activeIndicators.map(i => i.id));
@@ -1245,7 +1247,6 @@ function syncIndicators(
   const numOscillators = scaleArray.length;
   
   if (numOscillators > 0) {
-    const paneHeight = 0.22; // 22% height for each oscillator
     const totalOscillatorHeight = paneHeight * numOscillators;
     
     // Main chart margin (make sure it doesn't overlap with the bottom oscillators)
