@@ -820,11 +820,14 @@ function syncIndicators(
         chart.priceScale("ao-scale").applyOptions({ scaleMargins: { top: 0.75, bottom: 0 } });
         seriesRef.current.set(ind.id, hist);
       }
+      const incColor = ind.params.increasingBarColor || "#26a69a";
+      const decColor = ind.params.decreasingBarColor || "#ef5350";
+      
       const results = calculateAwesomeOscillator(highArray, lowArray);
       const data = results.map((val, i) => ({ 
         time: timeArray[i], 
         value: val, 
-        color: val > (results[i - 1] || 0) ? "#26a69a" : "#ef5350" 
+        color: val > (results[i - 1] || 0) ? incColor : decColor 
       })).filter(d => !isNaN(d.value));
       if (data.length > 0) hist.setData(data as any);
     } else if (ind.type === "roc" || ind.type === "wpr" || ind.type === "cci") {
@@ -1131,11 +1134,14 @@ function syncIndicators(
         if (teethData.length > 0) teeth.setData(teethData as any);
         if (lipsData.length > 0) lips.setData(lipsData as any);
       } else if (ind.type === 'fractal') {
+        const upperColor = ind.params.upperBandColor || '#999999';
+        const lowerColor = ind.params.lowerBandColor || '#999999';
+        
         let upper = seriesRef.current.get(`${ind.id}-upper`) as ISeriesApi<'Line'>;
         let lower = seriesRef.current.get(`${ind.id}-lower`) as ISeriesApi<'Line'>;
         if (!upper || !lower) {
           upper = chart.addSeries(LineSeries, { 
-            color: '#999999', 
+            color: upperColor, 
             lineWidth: 1, 
             lineType: LineType.WithSteps,  
             priceScaleId: 'right',
@@ -1143,7 +1149,7 @@ function syncIndicators(
             priceLineVisible: false 
           });
           lower = chart.addSeries(LineSeries, { 
-            color: '#999999', 
+            color: lowerColor, 
             lineWidth: 1, 
             lineType: LineType.WithSteps, 
             priceScaleId: 'right',
@@ -1152,6 +1158,9 @@ function syncIndicators(
           });
           seriesRef.current.set(`${ind.id}-upper`, upper);
           seriesRef.current.set(`${ind.id}-lower`, lower);
+        } else {
+          upper.applyOptions({ color: upperColor });
+          lower.applyOptions({ color: lowerColor });
         }
         const results = calculateFractalChaosBands(highArray, lowArray, 5);
         

@@ -26,6 +26,12 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
     setParams((prev) => ({ ...prev, [key]: value }));
   };
 
+  const formatLabel = (key: string) => {
+    return key
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/^./, (str) => str.toUpperCase());
+  };
+
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
@@ -41,7 +47,7 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
             if (key === "maType") {
               return (
                 <div key={key} className="flex items-center justify-between">
-                  <label className="text-[13px] font-medium text-opt-ink-2 capitalize">{key}</label>
+                  <label className="text-[13px] font-medium text-opt-ink-2">{formatLabel(key)}</label>
                   <select
                     value={value}
                     onChange={(e) => handleParamChange(key, e.target.value)}
@@ -57,7 +63,7 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
             if (key === "shiftType") {
               return (
                 <div key={key} className="flex items-center justify-between">
-                  <label className="text-[13px] font-medium text-opt-ink-2 capitalize">Shift Type</label>
+                  <label className="text-[13px] font-medium text-opt-ink-2">{formatLabel(key)}</label>
                   <select
                     value={value}
                     onChange={(e) => handleParamChange(key, e.target.value)}
@@ -69,9 +75,22 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
                 </div>
               );
             }
+            if (key.toLowerCase().includes("color")) {
+              return (
+                <div key={key} className="flex items-center justify-between">
+                  <label className="text-[13px] font-medium text-opt-ink-2">{formatLabel(key)}</label>
+                  <input
+                    type="color"
+                    value={value}
+                    onChange={(e) => handleParamChange(key, e.target.value)}
+                    className="h-8 w-16 cursor-pointer rounded border border-opt-line bg-transparent p-0 outline-none"
+                  />
+                </div>
+              );
+            }
             return (
               <div key={key} className="flex items-center justify-between">
-                <label className="text-[13px] font-medium text-opt-ink-2 capitalize">{key}</label>
+                <label className="text-[13px] font-medium text-opt-ink-2">{formatLabel(key)}</label>
                 <input
                   type={typeof value === 'number' ? 'number' : 'text'}
                   value={value}

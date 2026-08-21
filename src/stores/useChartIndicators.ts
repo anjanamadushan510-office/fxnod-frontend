@@ -16,7 +16,7 @@ export const DEFAULT_INDICATOR_PARAMS: Record<IndicatorType, Record<string, any>
   rainbow_ma: { period: 2, maType: "SMA" },
   MACD: { fastPeriod: 12, slowPeriod: 26, signalPeriod: 9 },
   RSI: { period: 14 },
-  awesome_oscillator: {},
+  awesome_oscillator: { increasingBarColor: "#26a69a", decreasingBarColor: "#ef5350" },
   roc: { period: 14 },
   stochastic: { periodK: 14, periodD: 3, smoothing: 3 },
   wpr: { period: 14 },
@@ -29,7 +29,7 @@ export const DEFAULT_INDICATOR_PARAMS: Record<IndicatorType, Record<string, any>
   bollinger: { period: 20, stdDev: 2 },
   donchian: { period: 20 },
   alligator: { jawPeriod: 13, jawShift: 8, teethPeriod: 8, teethShift: 5, lipsPeriod: 5, lipsShift: 3 },
-  fractal: {},
+  fractal: { upperBandColor: "#999999", lowerBandColor: "#999999" },
 };
 
 interface ChartIndicatorsState {
