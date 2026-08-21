@@ -488,10 +488,14 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
                window.addEventListener('pointerup', handleUp);
             }}
           >
-            <div className="w-10 h-1.5 rounded-full flex items-center justify-center border shadow-sm relative z-10" style={{ backgroundColor: 'var(--opt-bg-sunk)', borderColor: 'var(--opt-border)' }}>
-              <div className="w-4 h-[2px] bg-opt-ink-3 rounded-full opacity-50"></div>
+            {/* The horizontal separator line */}
+            <div className="absolute left-0 right-0 h-[1px] bg-opt-border opacity-70 pointer-events-none" style={{ top: '50%' }}></div>
+            
+            {/* The drag pill */}
+            <div className="w-[36px] h-[14px] rounded-full flex flex-col items-center justify-center border border-opt-border shadow-sm relative z-10 gap-[2px] transition-colors hover:bg-opt-bg-sunk" style={{ backgroundColor: 'var(--opt-bg)' }}>
+              <div className="w-[12px] h-[1.5px] bg-opt-ink-3 opacity-60 rounded-full"></div>
+              <div className="w-[12px] h-[1.5px] bg-opt-ink-3 opacity-60 rounded-full"></div>
             </div>
-            <div className="absolute left-0 right-0 h-[1px] bg-opt-border -z-10 opacity-50" style={{ top: '50%' }}></div>
           </div>
         )}
         <FeedStatusBadge status={status} unsupported={!derivSymbol} />
