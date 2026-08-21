@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { X, Settings, Trash2, Zap, Activity, TrendingUp, Waves, LineChart, Shapes } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { IndicatorSettingsModal } from "./IndicatorSettingsModal";
+
 import { useChartIndicators, type IndicatorType, DEFAULT_INDICATOR_PARAMS } from "@/stores/useChartIndicators";
 import type { IntervalId } from "./chartSettings";
 import {

@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export type IndicatorType = "ma" | "ma_envelope" | "rainbow_ma" | "MACD" | "RSI" | "awesome_oscillator" | "roc" | "stochastic" | "wpr" | "cci" | "aroon" | "adx" | "ichimoku" | "parabolic_sar" | "zigzag" | "bollinger" | "donchian";
+export type IndicatorType = "SMA" | "EMA" | "wma" | "MACD" | "RSI" | "awesome_oscillator" | "roc" | "stochastic" | "wpr" | "cci" | "aroon" | "adx" | "ichimoku" | "parabolic_sar" | "zigzag" | "bollinger" | "donchian";
 
 export interface IndicatorConfig {
   id: string; // Unique instance ID
@@ -11,9 +11,9 @@ export interface IndicatorConfig {
 }
 
 export const DEFAULT_INDICATOR_PARAMS: Record<IndicatorType, Record<string, any>> = {
-  ma: { period: 50, maType: "SMA" },
-  ma_envelope: { period: 50, maType: "SMA", shift: 5, shiftType: "percent" },
-  rainbow_ma: { period: 50, maType: "SMA" },
+  SMA: { period: 50 },
+  EMA: { period: 50 },
+  wma: { period: 50 },
   MACD: { fastPeriod: 12, slowPeriod: 26, signalPeriod: 9 },
   RSI: { period: 14 },
   awesome_oscillator: {},

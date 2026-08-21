@@ -677,13 +677,13 @@ function syncIndicators(
 
   // Update or create active indicators
   for (const ind of activeIndicators) {
-    if (ind.type === "ma" || ind.type === "RSI") {
+    if (ind.type === "SMA" || ind.type === "EMA" || ind.type === "wma" || ind.type === "RSI") {
       let series = seriesRef.current.get(ind.id) as ISeriesApi<"Line">;
       if (!series) {
         // RSI goes on a separate sub-pane scale, SMA/EMA go on right axis
         const isRsi = ind.type === "RSI";
         series = chart.addSeries(LineSeries, {
-          color: isRsi ? "#9c27b0" : (ind.params.maType === "SMA" ? "#ff9800" : (ind.params.maType === "EMA" ? "#2196f3" : "#00A79E")),
+          color: isRsi ? "#9c27b0" : (ind.type === "SMA" ? "#ff9800" : (ind.type === "EMA" ? "#2196f3" : "#00A79E")),
           lineWidth: 2,
           priceScaleId: isRsi ? "rsi-scale" : "right",
         });
