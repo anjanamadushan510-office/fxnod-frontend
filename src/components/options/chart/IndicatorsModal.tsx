@@ -227,7 +227,6 @@ export function IndicatorsModal({ symbol, interval, onClose }: IndicatorsModalPr
           <div className="flex-1 overflow-y-auto">
             {tab === "Active" ? renderActiveTab() : renderCategoryTab(tab)}
           </div>
-                  </div>
         </div>
       </div>
       {settingsIndicatorId && (
