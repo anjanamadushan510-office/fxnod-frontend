@@ -4,12 +4,11 @@ import { useChartIndicators, DEFAULT_INDICATOR_PARAMS } from "@/stores/useChartI
 import { INDICATOR_LIST } from "./IndicatorsModal";
 
 const PALETTE_COLORS = [
-  "#ffffff", "#f5f5f5", "#eeeeee", "#e0e0e0", "#bdbdbd", "#9e9e9e", "#757575", "#616161", "#424242", "#000000",
-  "#ffcdd2", "#f8bbd0", "#e1bee7", "#d1c4e9", "#c5cae9", "#bbdefb", "#b2ebf2", "#b2dfdb", "#c8e6c9", "#dcedc8",
-  "#ef9a9a", "#f48fb1", "#ce93d8", "#b39ddb", "#9fa8da", "#90caf9", "#80deea", "#80cbc4", "#a5d6a7", "#c5e1a5",
-  "#e57373", "#f06292", "#ba68c8", "#9575cd", "#7986cb", "#64b5f6", "#4dd0e1", "#4db6ac", "#81c784", "#aed581",
-  "#ef5350", "#ec407a", "#ab47bc", "#7e57c2", "#5c6bc0", "#42a5f5", "#26c6da", "#26a69a", "#66bb6a", "#9ccc65",
-  "#f44336", "#e91e63", "#9c27b0", "#673ab7", "#3f51b5", "#2196f3", "#00bcd4", "#009688", "#4caf50", "#8bc34a"
+  "#ffcdd2", "#f8bbd0", "#e1bee7", "#d1c4e9", "#c5cae9", "#bbdefb", "#b2ebf2", "#b2dfdb", "#c8e6c9", "#dcedc8", "#fff9c4", "#ffecb3", "#ffe0b2", "#ffffff",
+  "#ef9a9a", "#f48fb1", "#ce93d8", "#b39ddb", "#9fa8da", "#90caf9", "#80deea", "#80cbc4", "#a5d6a7", "#c5e1a5", "#fff59d", "#ffe082", "#ffcc80", "#eeeeee",
+  "#e57373", "#f06292", "#ba68c8", "#9575cd", "#7986cb", "#64b5f6", "#4dd0e1", "#4db6ac", "#81c784", "#aed581", "#fff176", "#ffd54f", "#ffb74d", "#e0e0e0",
+  "#f44336", "#e91e63", "#9c27b0", "#673ab7", "#3f51b5", "#2196f3", "#00bcd4", "#009688", "#4caf50", "#8bc34a", "#ffeb3b", "#ffc107", "#ff9800", "#9e9e9e",
+  "#c62828", "#ad1457", "#6a1b9a", "#4527a0", "#283593", "#1565c0", "#00838f", "#00695c", "#2e7d32", "#558b2f", "#f9a825", "#ff8f00", "#ef6c00", "#000000"
 ];
 
 function CustomColorPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
@@ -19,24 +18,24 @@ function CustomColorPicker({ value, onChange }: { value: string; onChange: (v: s
     <div className="relative w-full">
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-between rounded border border-opt-line bg-opt-bg-sunk px-2 py-2 focus:border-opt-ink"
+        className="flex w-full items-center justify-between rounded border border-opt-line bg-transparent px-2 py-1.5 focus:border-opt-ink"
       >
-        <div className="h-6 w-full max-w-[220px] rounded" style={{ backgroundColor: value }} />
-        <ChevronDown className="h-4 w-4 text-opt-ink-3" />
+        <div className="h-5 w-full max-w-[220px] rounded" style={{ backgroundColor: value }} />
+        <ChevronDown className={`h-4 w-4 text-opt-ink-3 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
       {isOpen && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
-          <div className="absolute left-0 top-full z-20 mt-1 w-max rounded-xl border border-opt-line bg-opt-bg-elev p-3 shadow-2xl">
-            <div className="grid grid-cols-10 gap-1.5">
-              {PALETTE_COLORS.map(c => (
+          <div className="absolute right-0 top-full z-20 mt-1 w-max rounded-xl border border-opt-line bg-opt-bg-elev p-3 shadow-2xl">
+            <div className="grid gap-1.5" style={{ gridTemplateColumns: 'repeat(14, minmax(0, 1fr))' }}>
+              {PALETTE_COLORS.map((c, i) => (
                 <button
-                  key={c}
+                  key={`${c}-${i}`}
                   onClick={() => {
                     onChange(c);
                     setIsOpen(false);
                   }}
-                  className={`h-5 w-5 rounded-sm transition-transform hover:scale-110 ${value === c ? 'ring-2 ring-white ring-offset-1 ring-offset-black' : ''}`}
+                  className={`h-5 w-5 rounded-sm transition-transform hover:scale-110 ${value === c ? 'ring-2 ring-opt-ink ring-offset-1 ring-offset-opt-bg-elev' : ''}`}
                   style={{ backgroundColor: c }}
                 />
               ))}
