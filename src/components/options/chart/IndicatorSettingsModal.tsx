@@ -90,14 +90,14 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-sm rounded-xl border border-opt-line bg-opt-bg-elev shadow-2xl">
-        <div className="flex items-center justify-between border-b border-opt-line px-4 py-3">
+      <div className="relative z-10 flex max-h-[85vh] w-full max-w-sm flex-col rounded-xl border border-opt-line bg-opt-bg-elev shadow-2xl">
+        <div className="flex shrink-0 items-center justify-between border-b border-opt-line px-4 py-3">
           <h2 className="text-[14px] font-semibold text-opt-ink">Settings: {indicator.type.toUpperCase()}</h2>
-          <button onClick={onClose} className="text-opt-ink-3 hover:text-opt-ink transition-colors">
+          <button onClick={onClose} className="text-opt-ink-3 transition-colors hover:text-opt-ink">
             <X className="h-4 w-4" />
           </button>
         </div>
-        <div className="p-4 flex flex-col gap-4">
+        <div className="custom-scrollbar flex flex-col gap-4 overflow-y-auto p-4">
           {Object.entries(params).map(([key, value]) => {
             if (key === "maType") {
               return (
@@ -169,7 +169,7 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
             );
           })}
         </div>
-        <div className="flex items-center justify-between border-t border-opt-line p-4">
+        <div className="flex shrink-0 items-center justify-between border-t border-opt-line p-4">
           <button
             onClick={() => {
               removeIndicator(indicatorId);
