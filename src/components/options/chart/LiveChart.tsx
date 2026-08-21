@@ -16,6 +16,7 @@ import {
   ColorType,
   CrosshairMode,
   LineStyle,
+  LineType,
   createChart,
   createSeriesMarkers,
   type AreaData,
@@ -1133,8 +1134,22 @@ function syncIndicators(
         let upper = seriesRef.current.get(`${ind.id}-upper`) as ISeriesApi<'Line'>;
         let lower = seriesRef.current.get(`${ind.id}-lower`) as ISeriesApi<'Line'>;
         if (!upper || !lower) {
-          upper = chart.addSeries(LineSeries, { color: '#00A79E', lineWidth: 2, lineStyle: 0, priceScaleId: 'right' });
-          lower = chart.addSeries(LineSeries, { color: '#FF0000', lineWidth: 2, lineStyle: 0, priceScaleId: 'right' });
+          upper = chart.addSeries(LineSeries, { 
+            color: '#999999', 
+            lineWidth: 1, 
+            lineType: LineType.Step, 
+            priceScaleId: 'right',
+            lastValueVisible: false,
+            priceLineVisible: false 
+          });
+          lower = chart.addSeries(LineSeries, { 
+            color: '#999999', 
+            lineWidth: 1, 
+            lineType: LineType.Step, 
+            priceScaleId: 'right',
+            lastValueVisible: false,
+            priceLineVisible: false 
+          });
           seriesRef.current.set(`${ind.id}-upper`, upper);
           seriesRef.current.set(`${ind.id}-lower`, lower);
         }
