@@ -105,7 +105,7 @@ export function IndicatorsModal({ symbol, interval, onClose }: IndicatorsModalPr
                   </span>
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-row-reverse">
               <button
                 type="button"
                 aria-label="Remove"
@@ -113,6 +113,14 @@ export function IndicatorsModal({ symbol, interval, onClose }: IndicatorsModalPr
                 className="grid h-8 w-8 place-items-center rounded bg-opt-bg-sunk text-opt-ink-3 hover:text-red-500 transition-colors"
               >
                 <Trash2 className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                aria-label="Settings"
+                onClick={() => setSettingsIndicatorId(ind.id)}
+                className="grid h-8 w-8 place-items-center rounded bg-opt-bg-sunk text-opt-ink-3 hover:text-opt-ink transition-colors"
+              >
+                <Settings className="h-4 w-4" />
               </button>
             </div>
             </div>
