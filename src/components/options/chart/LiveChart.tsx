@@ -710,7 +710,42 @@ function syncIndicators(
       let results: number[] = [];
       const p = ind.params.period || 14;
       if (ind.type === "RSI") {
-        results = calculateRSI(valueArray, p);
+        let targetArray = valueArray;
+        switch (ind.params.field) {
+          case "Open": targetArray = openArray; break;
+          case "High": targetArray = highArray; break;
+          case "Low": targetArray = lowArray; break;
+          case "Close": targetArray = valueArray; break;
+          case "Hl/2": targetArray = hl2Array; break;
+          case "Hlc/3": targetArray = hlc3Array; break;
+        }
+        results = calculateRSI(targetArray, p);
+        
+        series.applyOptions({ color: ind.params.rsiColor || "#9c27b0" });
+        
+        if (ind.params.showZones) {
+            const obVal = ind.params.overBoughtValue ?? 80;
+            const osVal = ind.params.overSoldValue ?? 20;
+            const obCol = ind.params.overBoughtColor || "#ffffff";
+            const osCol = ind.params.overSoldColor || "#ffffff";
+            
+            let lines = priceLinesRef.current.get(ind.id);
+            if (!lines) {
+                const overBought = series.createPriceLine({ price: obVal, color: obCol, lineWidth: 1, lineStyle: LineStyle.Solid, axisLabelVisible: false, title: "" });
+                const overSold = series.createPriceLine({ price: osVal, color: osCol, lineWidth: 1, lineStyle: LineStyle.Solid, axisLabelVisible: false, title: "" });
+                priceLinesRef.current.set(ind.id, { overBought, overSold });
+            } else {
+                if (lines.overBought) lines.overBought.applyOptions({ price: obVal, color: obCol });
+                if (lines.overSold) lines.overSold.applyOptions({ price: osVal, color: osCol });
+            }
+        } else {
+            let lines = priceLinesRef.current.get(ind.id);
+            if (lines) {
+                try { if (lines.overBought) series.removePriceLine(lines.overBought); } catch {}
+                try { if (lines.overSold) series.removePriceLine(lines.overSold); } catch {}
+                priceLinesRef.current.delete(ind.id);
+            }
+        }
       } else if (ind.type === "ma") {
         const maType = ind.params.maType || "SMA";
         if (maType === "SMA") results = calculateSMA(valueArray, p);
