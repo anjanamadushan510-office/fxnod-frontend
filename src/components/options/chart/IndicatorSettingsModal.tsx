@@ -1,6 +1,51 @@
 import { useState, useEffect } from "react";
-import { X, Save } from "lucide-react";
+import { X, Save, ChevronDown } from "lucide-react";
 import { useChartIndicators, DEFAULT_INDICATOR_PARAMS } from "@/stores/useChartIndicators";
+
+const PALETTE_COLORS = [
+  "#ffffff", "#f5f5f5", "#eeeeee", "#e0e0e0", "#bdbdbd", "#9e9e9e", "#757575", "#616161", "#424242", "#000000",
+  "#ffcdd2", "#f8bbd0", "#e1bee7", "#d1c4e9", "#c5cae9", "#bbdefb", "#b2ebf2", "#b2dfdb", "#c8e6c9", "#dcedc8",
+  "#ef9a9a", "#f48fb1", "#ce93d8", "#b39ddb", "#9fa8da", "#90caf9", "#80deea", "#80cbc4", "#a5d6a7", "#c5e1a5",
+  "#e57373", "#f06292", "#ba68c8", "#9575cd", "#7986cb", "#64b5f6", "#4dd0e1", "#4db6ac", "#81c784", "#aed581",
+  "#ef5350", "#ec407a", "#ab47bc", "#7e57c2", "#5c6bc0", "#42a5f5", "#26c6da", "#26a69a", "#66bb6a", "#9ccc65",
+  "#f44336", "#e91e63", "#9c27b0", "#673ab7", "#3f51b5", "#2196f3", "#00bcd4", "#009688", "#4caf50", "#8bc34a"
+];
+
+function CustomColorPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="relative w-full">
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex w-full items-center justify-between rounded border border-opt-line bg-opt-bg-sunk px-2 py-2 focus:border-opt-ink"
+      >
+        <div className="h-6 w-full max-w-[220px] rounded" style={{ backgroundColor: value }} />
+        <ChevronDown className="h-4 w-4 text-opt-ink-3" />
+      </button>
+      {isOpen && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
+          <div className="absolute left-0 top-full z-20 mt-1 w-max rounded-xl border border-opt-line bg-opt-bg-elev p-3 shadow-2xl">
+            <div className="grid grid-cols-10 gap-1.5">
+              {PALETTE_COLORS.map(c => (
+                <button
+                  key={c}
+                  onClick={() => {
+                    onChange(c);
+                    setIsOpen(false);
+                  }}
+                  className={`h-5 w-5 rounded-sm transition-transform hover:scale-110 ${value === c ? 'ring-2 ring-white ring-offset-1 ring-offset-black' : ''}`}
+                  style={{ backgroundColor: c }}
+                />
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: string; onClose: () => void }) {
   const { indicators, updateIndicator } = useChartIndicators();
@@ -79,14 +124,11 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
             }
             if (key.toLowerCase().includes("color")) {
               return (
-                <div key={key} className="flex items-center justify-between">
-                  <label className="text-[13px] font-medium text-opt-ink-2">{formatLabel(key)}</label>
-                  <input
-                    type="color"
-                    value={value}
-                    onChange={(e) => handleParamChange(key, e.target.value)}
-                    className="h-8 w-16 cursor-pointer rounded border border-opt-line bg-transparent p-0 outline-none"
-                  />
+                <div key={key} className="flex flex-col gap-1.5 rounded-lg border border-opt-line p-3">
+                  <label className="text-[11px] font-medium text-opt-ink-3">
+                    {formatLabel(key).replace(" Color", "")}
+                  </label>
+                  <CustomColorPicker value={value} onChange={(v) => handleParamChange(key, v)} />
                 </div>
               );
             }
