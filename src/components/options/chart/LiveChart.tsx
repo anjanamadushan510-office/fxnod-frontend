@@ -697,9 +697,12 @@ function syncIndicators(
 
       let results: number[] = [];
       const p = ind.params.period || 14;
-      if (ind.type === "SMA") results = calculateSMA(valueArray, p);
-      if (ind.type === "EMA") results = calculateEMA(valueArray, p);
-      if (ind.type === "wma") results = calculateWMA(valueArray, p);
+      if (ind.type === "ma") {
+        if (ind.params.maType === "SMA") results = calculateSMA(valueArray, p);
+        else if (ind.params.maType === "EMA") results = calculateEMA(valueArray, p);
+        else if (ind.params.maType === "WMA") results = calculateWMA(valueArray, p);
+        else results = calculateSMA(valueArray, p);
+      }
       if (ind.type === "RSI") results = calculateRSI(valueArray, p);
 
       const data = results.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
