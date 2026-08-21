@@ -100,9 +100,9 @@ export function IndicatorsModal({ symbol, interval, onClose }: IndicatorsModalPr
               <div className="flex items-center gap-3">
                 {meta?.Icon && <meta.Icon className="h-5 w-5 opacity-90" />}
                 <div className="flex flex-col">
-                  <span className="text-[13px] font-semibold text-opt-ink">{meta?.name || ind.type}</span>
+                  <span className="text-[13px] font-semibold text-opt-ink">{meta?.id === "RSI" ? "RSI" : (meta?.name || ind.type)}</span>
                   <span className="text-[11px] text-opt-ink-3">
-                    ({Object.values(ind.params).filter(v => typeof v !== 'string' || !v.startsWith('#')).join(", ")})
+                    ({ind.type === "RSI" ? `${ind.params.period},${String(ind.params.field || "Close").charAt(0)},${ind.params.showZones ? "Y" : "N"}` : Object.values(ind.params).filter(v => typeof v !== 'string' || !v.startsWith('#')).join(", ")})
                   </span>
                 </div>
               </div>
