@@ -37,7 +37,7 @@ const TEAL = "#00A79E";
 
 type Category = "Active" | "Momentum" | "Trend" | "Volatility" | "Moving averages" | "Others";
 
-const INDICATOR_LIST: { id: string; name: string; category: Category; disabled?: boolean; requiresOHLC?: boolean; Icon?: React.FC<{ className?: string }> }[] = [
+export const INDICATOR_LIST: { id: string; name: string; category: Category; disabled?: boolean; requiresOHLC?: boolean; Icon?: React.FC<{ className?: string }> }[] = [
   // Momentum
   { id: "awesome_oscillator", name: "Awesome Oscillator", category: "Momentum", requiresOHLC: true, Icon: IconAwesomeOscillator },
   { id: "dpo", name: "Detrended Price Oscillator", category: "Momentum", disabled: true, Icon: IconDPO },

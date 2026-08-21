@@ -17,7 +17,7 @@ export const DEFAULT_INDICATOR_PARAMS: Record<IndicatorType, Record<string, any>
   MACD: { macdColor: "#000000", signalColor: "#f44336", increasingBarColor: "#4caf50", decreasingBarColor: "#f44336", fastPeriod: 12, slowPeriod: 26, signalPeriod: 9 },
   RSI: { period: 14 },
   awesome_oscillator: { increasingBarColor: "#26a69a", decreasingBarColor: "#ef5350" },
-  roc: { period: 14 },
+  roc: { rocColor: "#000000", period: 14, field: "Close" },
   stochastic: { periodK: 14, periodD: 3, smoothing: 3 },
   wpr: { period: 14 },
   cci: { period: 20 },

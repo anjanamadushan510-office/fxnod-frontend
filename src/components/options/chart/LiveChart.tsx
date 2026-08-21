@@ -657,6 +657,7 @@ function syncIndicators(
   const valueArray: number[] = [];
   const highArray: number[] = [];
   const lowArray: number[] = [];
+  const openArray: number[] = [];
 
   if (candles && candles.length > 0) {
     const ascendingCandles = ascending(candles);
@@ -665,6 +666,7 @@ function syncIndicators(
         valueArray.push(c.close);
         highArray.push(c.high);
         lowArray.push(c.low);
+        openArray.push(c.open);
     }
   } else {
     const ascendingTicks = ascending(ticks);
@@ -673,6 +675,7 @@ function syncIndicators(
       valueArray.push(t.value);
       highArray.push(t.value);
       lowArray.push(t.value);
+      openArray.push(t.value);
     }
   }
 
@@ -831,7 +834,7 @@ function syncIndicators(
       let series = seriesRef.current.get(ind.id) as ISeriesApi<"Line">;
       if (!series) {
         series = chart.addSeries(LineSeries, {
-          color: ind.type === "roc" ? "#2196f3" : (ind.type === "cci" ? "#00A79E" : "#ff9800"),
+          color: ind.type === "roc" ? "#000000" : (ind.type === "cci" ? "#00A79E" : "#ff9800"),
           lineWidth: 2,
           priceScaleId: `${ind.type}-scale`,
           priceFormat: { type: 'price', precision: ind.type === "wpr" ? 2 : 4, minMove: ind.type === "wpr" ? 0.01 : 0.0001 }
@@ -847,11 +850,22 @@ function syncIndicators(
         
         seriesRef.current.set(ind.id, series);
       }
-      let results: number[] = [];
-      const p = ind.params.period || 14;
-      if (ind.type === "roc") results = calculateROC(valueArray, p);
-      if (ind.type === "wpr") results = calculateWilliamsR(highArray, lowArray, valueArray, p);
-      if (ind.type === "cci") results = calculateCCI(highArray, lowArray, valueArray, ind.params.period || 20);
+        let results: number[] = [];
+        const p = ind.params.period || 14;
+        
+        if (ind.type === "roc") {
+          series.applyOptions({ color: ind.params.rocColor || "#000000" });
+          let targetArray = valueArray;
+          switch (ind.params.field) {
+            case "Open": targetArray = openArray; break;
+            case "High": targetArray = highArray; break;
+            case "Low": targetArray = lowArray; break;
+            case "Close": targetArray = valueArray; break;
+          }
+          results = calculateROC(targetArray, p);
+        }
+        if (ind.type === "wpr") results = calculateWilliamsR(highArray, lowArray, valueArray, p);
+        if (ind.type === "cci") results = calculateCCI(highArray, lowArray, valueArray, ind.params.period || 20);
 
       const data = results.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
       if (data.length > 0) series.setData(data as any);

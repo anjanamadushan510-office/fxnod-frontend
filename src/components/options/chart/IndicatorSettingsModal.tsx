@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { X, Save, ChevronDown, Trash2 } from "lucide-react";
 import { useChartIndicators, DEFAULT_INDICATOR_PARAMS } from "@/stores/useChartIndicators";
+import { INDICATOR_LIST } from "./IndicatorsModal";
 
 const PALETTE_COLORS = [
   "#ffffff", "#f5f5f5", "#eeeeee", "#e0e0e0", "#bdbdbd", "#9e9e9e", "#757575", "#616161", "#424242", "#000000",
@@ -74,7 +75,7 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
   };
 
   const formatLabel = (key: string) => {
-    if (key === "macdColor") return "Color";
+    if (key === "macdColor" || key === "rocColor") return "Color";
     if (key === "signalColor") return "Signal";
     if (key === "increasingBarColor") return "Increasing Bar";
     if (key === "decreasingBarColor") return "Decreasing Bar";
@@ -92,14 +93,17 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <div className="relative z-10 flex max-h-[85vh] w-full max-w-sm flex-col rounded-xl border border-opt-line bg-opt-bg-elev shadow-2xl">
         <div className="flex shrink-0 items-center justify-between border-b border-opt-line px-4 py-3">
-          <h2 className="text-[14px] font-semibold text-opt-ink">Settings: {indicator.type.toUpperCase()}</h2>
+          <h2 className="text-[14px] font-semibold text-opt-ink">{INDICATOR_LIST.find(i => i.id === indicator.type)?.name || indicator.type.toUpperCase()}</h2>
           <button onClick={onClose} className="text-opt-ink-3 transition-colors hover:text-opt-ink">
             <X className="h-4 w-4" />
           </button>
         </div>
         <div className="custom-scrollbar flex flex-col gap-4 overflow-y-auto p-4">
-          {Object.entries(params).map(([key, value]) => {
-            if (key === "maType") {
+          <div>
+            <h3 className="mb-3 text-[12px] font-bold text-opt-ink">Result</h3>
+            <div className="flex flex-col gap-4">
+              {Object.entries(params).map(([key, value]) => {
+                if (key === "maType") {
               return (
                 <div key={key} className="flex items-center justify-between">
                   <label className="text-[13px] font-medium text-opt-ink-2">{formatLabel(key)}</label>
@@ -126,6 +130,23 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
                   >
                     <option value="percent">Percentage</option>
                     <option value="points">Points</option>
+                  </select>
+                </div>
+              );
+            }
+            if (key === "field") {
+              return (
+                <div key={key} className="flex flex-col gap-2 rounded-lg border border-opt-line p-3">
+                  <label className="text-[11px] font-medium text-opt-ink-3">{formatLabel(key)}</label>
+                  <select
+                    value={value}
+                    onChange={(e) => handleParamChange(key, e.target.value)}
+                    className="w-full rounded bg-transparent px-2 py-1 text-[13px] text-opt-ink outline-none"
+                  >
+                    <option value="Close">Close</option>
+                    <option value="Open">Open</option>
+                    <option value="High">High</option>
+                    <option value="Low">Low</option>
                   </select>
                 </div>
               );
@@ -168,6 +189,8 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
               </div>
             );
           })}
+            </div>
+          </div>
         </div>
         <div className="flex shrink-0 items-center justify-between border-t border-opt-line p-4">
           <button
