@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export type IndicatorType = "ma" | "ma_envelope" | "rainbow_ma" | "MACD" | "RSI" | "awesome_oscillator" | "roc" | "stochastic" | "wpr" | "cci" | "aroon" | "adx" | "ichimoku" | "parabolic_sar" | "zigzag" | "bollinger" | "donchian";
+export type IndicatorType = "ma" | "ma_envelope" | "rainbow_ma" | "MACD" | "RSI" | "awesome_oscillator" | "roc" | "stochastic" | "wpr" | "cci" | "aroon" | "adx" | "ichimoku" | "parabolic_sar" | "zigzag" | "bollinger" | "donchian" | "alligator" | "fractal";
 
 export interface IndicatorConfig {
   id: string; // Unique instance ID
@@ -28,6 +28,8 @@ export const DEFAULT_INDICATOR_PARAMS: Record<IndicatorType, Record<string, any>
   zigzag: { deviation: 5 },
   bollinger: { period: 20, stdDev: 2 },
   donchian: { period: 20 },
+  alligator: { jawPeriod: 13, jawShift: 8, teethPeriod: 8, teethShift: 5, lipsPeriod: 5, lipsShift: 3 },
+  fractal: {},
 };
 
 interface ChartIndicatorsState {

@@ -48,7 +48,7 @@ import { useChartIndicators, type IndicatorConfig } from "@/stores/useChartIndic
 import { 
   calculateSMA, calculateEMA, calculateRSI, calculateMACD,
   calculateAwesomeOscillator, calculateROC, calculateStochastic, calculateWilliamsR,
-  calculateCCI, calculateAroon, calculateADX, calculateIchimoku, calculateParabolicSAR, calculateZigZag, calculateBollingerBands, calculateDonchianChannel, calculateWMA, calculateMAEnvelope, calculateRainbowMA
+  calculateCCI, calculateAroon, calculateADX, calculateIchimoku, calculateParabolicSAR, calculateZigZag, calculateBollingerBands, calculateDonchianChannel, calculateWMA, calculateMAEnvelope, calculateRainbowMA, calculateAlligator, calculateFractalChaosBands
   } from "@/lib/indicators";
 
 /** Accent color for user-drawn lines (drawn on canvas — needs literal hex). */
@@ -1069,6 +1069,49 @@ function syncIndicators(
         const lowerData = results.lower.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
         if (upperData.length > 0) upper.setData(upperData as any);
         if (middleData.length > 0) middle.setData(middleData as any);
+        if (lowerData.length > 0) lower.setData(lowerData as any);
+      } else if (ind.type === 'alligator') {
+        let jaw = seriesRef.current.get(`${ind.id}-jaw`) as ISeriesApi<'Line'>;
+        let teeth = seriesRef.current.get(`${ind.id}-teeth`) as ISeriesApi<'Line'>;
+        let lips = seriesRef.current.get(`${ind.id}-lips`) as ISeriesApi<'Line'>;
+        if (!jaw || !teeth || !lips) {
+          jaw = chart.addSeries(LineSeries, { color: '#2962FF', lineWidth: 1, priceScaleId: 'right' }); // Blue
+          teeth = chart.addSeries(LineSeries, { color: '#FF0000', lineWidth: 1, priceScaleId: 'right' }); // Red
+          lips = chart.addSeries(LineSeries, { color: '#00FF00', lineWidth: 1, priceScaleId: 'right' }); // Green
+          seriesRef.current.set(`${ind.id}-jaw`, jaw);
+          seriesRef.current.set(`${ind.id}-teeth`, teeth);
+          seriesRef.current.set(`${ind.id}-lips`, lips);
+        }
+        const jawP = ind.params.jawPeriod || 13;
+        const jawS = ind.params.jawShift || 8;
+        const teethP = ind.params.teethPeriod || 8;
+        const teethS = ind.params.teethShift || 5;
+        const lipsP = ind.params.lipsPeriod || 5;
+        const lipsS = ind.params.lipsShift || 3;
+        
+        const results = calculateAlligator(highArray, lowArray, jawP, jawS, teethP, teethS, lipsP, lipsS);
+        const jawData = results.jaw.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+        const teethData = results.teeth.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+        const lipsData = results.lips.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+        
+        if (jawData.length > 0) jaw.setData(jawData as any);
+        if (teethData.length > 0) teeth.setData(teethData as any);
+        if (lipsData.length > 0) lips.setData(lipsData as any);
+      } else if (ind.type === 'fractal') {
+        let upper = seriesRef.current.get(`${ind.id}-upper`) as ISeriesApi<'Line'>;
+        let lower = seriesRef.current.get(`${ind.id}-lower`) as ISeriesApi<'Line'>;
+        if (!upper || !lower) {
+          upper = chart.addSeries(LineSeries, { color: '#00A79E', lineWidth: 2, lineStyle: 0, priceScaleId: 'right' });
+          lower = chart.addSeries(LineSeries, { color: '#FF0000', lineWidth: 2, lineStyle: 0, priceScaleId: 'right' });
+          seriesRef.current.set(`${ind.id}-upper`, upper);
+          seriesRef.current.set(`${ind.id}-lower`, lower);
+        }
+        const results = calculateFractalChaosBands(highArray, lowArray, 5);
+        
+        const upperData = results.upper.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+        const lowerData = results.lower.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+        
+        if (upperData.length > 0) upper.setData(upperData as any);
         if (lowerData.length > 0) lower.setData(lowerData as any);
 
     }

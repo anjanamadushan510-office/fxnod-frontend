@@ -664,3 +664,82 @@ export function calculateRainbowMA(data: number[], period: number, maType: strin
   
   return lines;
 }
+
+// Smoothed Moving Average (SMMA)
+export function calculateSMMA(data: number[], period: number): number[] {
+  const result: number[] = new Array(data.length).fill(NaN);
+  let firstValid = 0;
+  while(firstValid < data.length && isNaN(data[firstValid])) firstValid++;
+  if (data.length - firstValid < period) return result;
+
+  let sum = 0;
+  for (let i = firstValid; i < firstValid + period; i++) {
+    sum += data[i];
+  }
+  result[firstValid + period - 1] = sum / period;
+
+  for (let i = firstValid + period; i < data.length; i++) {
+    result[i] = (result[i - 1] * (period - 1) + data[i]) / period;
+  }
+  return result;
+}
+
+// Alligator Indicator
+export function calculateAlligator(
+  high: number[], 
+  low: number[], 
+  jawP: number = 13, 
+  jawS: number = 8, 
+  teethP: number = 8, 
+  teethS: number = 5, 
+  lipsP: number = 5, 
+  lipsS: number = 3
+): { jaw: number[], teeth: number[], lips: number[] } {
+  const median = high.map((h, i) => (h + low[i]) / 2);
+  
+  const jawSMMA = calculateSMMA(median, jawP);
+  const teethSMMA = calculateSMMA(median, teethP);
+  const lipsSMMA = calculateSMMA(median, lipsP);
+  
+  const jaw = new Array(median.length).fill(NaN);
+  const teeth = new Array(median.length).fill(NaN);
+  const lips = new Array(median.length).fill(NaN);
+  
+  for (let i = 0; i < jawSMMA.length - jawS; i++) jaw[i + jawS] = jawSMMA[i];
+  for (let i = 0; i < teethSMMA.length - teethS; i++) teeth[i + teethS] = teethSMMA[i];
+  for (let i = 0; i < lipsSMMA.length - lipsS; i++) lips[i + lipsS] = lipsSMMA[i];
+  
+  return { jaw, teeth, lips };
+}
+
+// Fractal Chaos Bands
+export function calculateFractalChaosBands(high: number[], low: number[], lookback: number = 5): { upper: number[], lower: number[] } {
+  const upper = new Array(high.length).fill(NaN);
+  const lower = new Array(low.length).fill(NaN);
+  
+  let currentUpper = NaN;
+  let currentLower = NaN;
+  const n = Math.floor(lookback / 2);
+  
+  for (let i = lookback - 1; i < high.length; i++) {
+    const centerIdx = i - n;
+    let isUpFractal = true;
+    let isDownFractal = true;
+    
+    for (let j = 0; j < lookback; j++) {
+      const idx = i - lookback + 1 + j;
+      if (idx !== centerIdx) {
+        if (high[idx] >= high[centerIdx]) isUpFractal = false;
+        if (low[idx] <= low[centerIdx]) isDownFractal = false;
+      }
+    }
+    
+    if (isUpFractal) currentUpper = high[centerIdx];
+    if (isDownFractal) currentLower = low[centerIdx];
+    
+    upper[i] = currentUpper;
+    lower[i] = currentLower;
+  }
+  
+  return { upper, lower };
+}

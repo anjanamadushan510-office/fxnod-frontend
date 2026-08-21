@@ -62,8 +62,8 @@ const INDICATOR_LIST: { id: string; name: string; category: Category; disabled?:
   { id: "ma_envelope", name: "Moving Average Envelope", category: "Moving averages", Icon: IconGenericMA },
   { id: "rainbow_ma", name: "Rainbow Moving Average", category: "Moving averages", Icon: IconGenericMA },
   // Others
-  { id: "alligator", name: "Alligator", category: "Others", disabled: true, Icon: IconGenericOther },
-  { id: "fractal", name: "Fractal Chaos Bands", category: "Others", disabled: true, Icon: IconGenericOther },
+  { id: "alligator", name: "Alligator", category: "Others", Icon: IconGenericOther },
+  { id: "fractal", name: "Fractal Chaos Bands", category: "Others", Icon: IconGenericOther },
 ];
 
 export function IndicatorsModal({ symbol, interval, onClose }: IndicatorsModalProps) {
