@@ -1,19 +1,19 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export type IndicatorType = "SMA" | "EMA" | "MACD" | "RSI" | "awesome_oscillator" | "roc" | "stochastic" | "wpr" | "cci" | "aroon" | "adx" | "ichimoku" | "parabolic_sar" | "zigzag" | "bollinger" | "donchian" | "wma";
+export type IndicatorType = "ma" | "ma_envelope" | "rainbow_ma" | "MACD" | "RSI" | "awesome_oscillator" | "roc" | "stochastic" | "wpr" | "cci" | "aroon" | "adx" | "ichimoku" | "parabolic_sar" | "zigzag" | "bollinger" | "donchian";
 
 export interface IndicatorConfig {
   id: string; // Unique instance ID
   type: IndicatorType;
   symbol: string; // The market symbol this indicator is attached to
-  params: Record<string, number>; // e.g. { period: 14 }
+  params: Record<string, any>; // e.g. { period: 14 }
 }
 
-export const DEFAULT_INDICATOR_PARAMS: Record<IndicatorType, Record<string, number>> = {
-  SMA: { period: 50 },
-  EMA: { period: 50 },
-  wma: { period: 50 },
+export const DEFAULT_INDICATOR_PARAMS: Record<IndicatorType, Record<string, any>> = {
+  ma: { period: 50, maType: "SMA" },
+  ma_envelope: { period: 50, maType: "SMA", shift: 5, shiftType: "percent" },
+  rainbow_ma: { period: 50, maType: "SMA" },
   MACD: { fastPeriod: 12, slowPeriod: 26, signalPeriod: 9 },
   RSI: { period: 14 },
   awesome_oscillator: {},
@@ -32,9 +32,9 @@ export const DEFAULT_INDICATOR_PARAMS: Record<IndicatorType, Record<string, numb
 
 interface ChartIndicatorsState {
   indicators: IndicatorConfig[];
-  addIndicator: (symbol: string, type: IndicatorType, params?: Record<string, number>) => void;
+  addIndicator: (symbol: string, type: IndicatorType, params?: Record<string, any>) => void;
   removeIndicator: (id: string) => void;
-  updateIndicator: (id: string, params: Record<string, number>) => void;
+  updateIndicator: (id: string, params: Record<string, any>) => void;
   clearIndicators: (symbol: string) => void;
 }
 

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { X, Settings, Trash2, Zap, Activity, TrendingUp, Waves, LineChart, Shapes } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { IndicatorSettingsModal } from "./IndicatorSettingsModal";
 import { useChartIndicators, type IndicatorType, DEFAULT_INDICATOR_PARAMS } from "@/stores/useChartIndicators";
 import type { IntervalId } from "./chartSettings";
 import {
@@ -66,6 +67,7 @@ const INDICATOR_LIST: { id: string; name: string; category: Category; disabled?:
 
 export function IndicatorsModal({ symbol, interval, onClose }: IndicatorsModalProps) {
   const [tab, setTab] = useState<Category>("Active");
+  const [settingsIndicatorId, setSettingsIndicatorId] = useState<string | null>(null);
 
   const { indicators, addIndicator, removeIndicator, updateIndicator, clearIndicators } = useChartIndicators();
   const activeIndicators = indicators.filter((ind) => ind.symbol === symbol);
