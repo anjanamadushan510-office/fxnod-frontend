@@ -14,7 +14,7 @@ export const DEFAULT_INDICATOR_PARAMS: Record<IndicatorType, Record<string, any>
   ma: { period: 50, maType: "SMA" },
   ma_envelope: { period: 50, maType: "SMA", shift: 5, shiftType: "percent" },
   rainbow_ma: { period: 2, maType: "SMA" },
-  MACD: { fastPeriod: 12, slowPeriod: 26, signalPeriod: 9 },
+  MACD: { macdColor: "#000000", signalColor: "#f44336", increasingBarColor: "#4caf50", decreasingBarColor: "#f44336", fastPeriod: 12, slowPeriod: 26, signalPeriod: 9 },
   RSI: { period: 14 },
   awesome_oscillator: { increasingBarColor: "#26a69a", decreasingBarColor: "#ef5350" },
   roc: { period: 14 },

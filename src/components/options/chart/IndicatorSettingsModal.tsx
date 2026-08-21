@@ -74,6 +74,14 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
   };
 
   const formatLabel = (key: string) => {
+    if (key === "macdColor") return "Color";
+    if (key === "signalColor") return "Signal";
+    if (key === "increasingBarColor") return "Increasing Bar";
+    if (key === "decreasingBarColor") return "Decreasing Bar";
+    if (key === "fastPeriod") return "Fast MA Period";
+    if (key === "slowPeriod") return "Slow MA Period";
+    if (key === "signalPeriod") return "Signal Period";
+
     return key
       .replace(/([A-Z])/g, ' $1')
       .replace(/^./, (str) => str.toUpperCase());
@@ -133,17 +141,30 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
               );
             }
             return (
-              <div key={key} className="flex items-center justify-between">
-                <label className="text-[13px] font-medium text-opt-ink-2">{formatLabel(key)}</label>
-                <input
-                  type={typeof value === 'number' ? 'number' : 'text'}
-                  value={value}
-                  onChange={(e) => {
-                    const val = typeof value === 'number' ? parseFloat(e.target.value) : e.target.value;
-                    handleParamChange(key, val);
-                  }}
-                  className="w-24 rounded border border-opt-line bg-opt-bg-sunk px-2 py-1 text-[13px] text-opt-ink outline-none focus:border-opt-ink"
-                />
+              <div key={key} className="flex flex-col gap-2 rounded-lg border border-opt-line p-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-[11px] font-medium text-opt-ink-3">{formatLabel(key)}</label>
+                  <input
+                    type={typeof value === 'number' ? 'number' : 'text'}
+                    value={value}
+                    onChange={(e) => {
+                      const val = typeof value === 'number' ? parseFloat(e.target.value) || 0 : e.target.value;
+                      handleParamChange(key, val);
+                    }}
+                    className={`rounded bg-transparent p-0 text-[13px] font-semibold text-opt-ink outline-none ${typeof value === 'number' ? 'w-16 text-right' : 'w-full border border-opt-line px-2 py-1'}`}
+                  />
+                </div>
+                {typeof value === 'number' && (
+                  <input
+                    type="range"
+                    min={key === 'stdDev' ? '0.1' : '1'}
+                    max={key === 'stdDev' ? '10' : key.toLowerCase().includes('shift') ? '50' : '200'}
+                    step={key === 'stdDev' ? '0.1' : '1'}
+                    value={value}
+                    onChange={(e) => handleParamChange(key, parseFloat(e.target.value) || 0)}
+                    className="h-1 w-full cursor-pointer appearance-none rounded-full bg-opt-line accent-[#ef5350]"
+                  />
+                )}
               </div>
             );
           })}

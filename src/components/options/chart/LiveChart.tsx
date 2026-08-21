@@ -773,18 +773,15 @@ function syncIndicators(
       
       if (!hist || !macdLine || !signalLine) {
         hist = chart.addSeries(HistogramSeries, {
-          color: "#26a69a",
           priceScaleId: "macd-scale",
           priceFormat: { type: 'price', precision: 4, minMove: 0.0001 }
         });
         macdLine = chart.addSeries(LineSeries, {
-          color: "#2962FF",
           lineWidth: 2,
           priceScaleId: "macd-scale",
           priceFormat: { type: 'price', precision: 4, minMove: 0.0001 }
         });
         signalLine = chart.addSeries(LineSeries, {
-          color: "#FF6D00",
           lineWidth: 2,
           priceScaleId: "macd-scale",
           priceFormat: { type: 'price', precision: 4, minMove: 0.0001 }
