@@ -58,9 +58,9 @@ const INDICATOR_LIST: { id: string; name: string; category: Category; disabled?:
   { id: "bollinger", name: "Bollinger Bands", category: "Volatility", Icon: IconGenericVolatility },
   { id: "donchian", name: "Donchian Channel", category: "Volatility", Icon: IconGenericVolatility },
   // Moving averages
-  { id: "SMA", name: "SMA (Simple Moving Average)", category: "Moving averages", Icon: IconGenericMA },
-  { id: "EMA", name: "EMA (Exponential Moving Average)", category: "Moving averages", Icon: IconGenericMA },
-  { id: "wma", name: "WMA (Weighted Moving Average)", category: "Moving averages", Icon: IconGenericMA },
+  { id: "ma", name: "Moving Average (MA)", category: "Moving averages", Icon: IconGenericMA },
+  { id: "ma_envelope", name: "Moving Average Envelope", category: "Moving averages", Icon: IconGenericMA },
+  { id: "rainbow_ma", name: "Rainbow Moving Average", category: "Moving averages", Icon: IconGenericMA },
   // Others
   { id: "alligator", name: "Alligator", category: "Others", disabled: true, Icon: IconGenericOther },
   { id: "fractal", name: "Fractal Chaos Bands", category: "Others", disabled: true, Icon: IconGenericOther },
@@ -114,6 +114,14 @@ export function IndicatorsModal({ symbol, interval, onClose }: IndicatorsModalPr
                 className="grid h-8 w-8 place-items-center rounded bg-opt-bg-sunk text-opt-ink-3 hover:text-red-500 transition-colors"
               >
                 <Trash2 className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                aria-label="Settings"
+                onClick={() => setSettingsIndicatorId(ind.id)}
+                className="grid h-8 w-8 place-items-center rounded bg-opt-bg-sunk text-opt-ink-3 hover:text-opt-ink transition-colors"
+              >
+                <Settings className="h-4 w-4" />
               </button>
             </div>
             </div>
@@ -219,8 +227,15 @@ export function IndicatorsModal({ symbol, interval, onClose }: IndicatorsModalPr
           <div className="flex-1 overflow-y-auto">
             {tab === "Active" ? renderActiveTab() : renderCategoryTab(tab)}
           </div>
+                  </div>
         </div>
       </div>
+      {settingsIndicatorId && (
+        <IndicatorSettingsModal 
+          indicatorId={settingsIndicatorId} 
+          onClose={() => setSettingsIndicatorId(null)} 
+        />
+      )}
     </div>
   );
 }
