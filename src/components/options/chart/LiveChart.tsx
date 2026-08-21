@@ -449,11 +449,11 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
           <div 
             style={{ 
               position: 'absolute', 
-              top: `${(1 - (paneHeight * numOscillators)) * 100}%`,
+              top: `calc((100% - 26px) * ${1 - (paneHeight * numOscillators) - 0.01})`,
               left: 0, 
               right: 0, 
-              height: '10px', 
-              marginTop: '-5px', 
+              height: '14px', 
+              marginTop: '-7px', 
               cursor: 'ns-resize',
               zIndex: 20,
               display: 'flex',
