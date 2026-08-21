@@ -152,7 +152,19 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
     const [status, setStatus] = useState<FeedStatus>("idle");
   const [paneHeight, setPaneHeight] = useState(0.22);
 
-    const derivSymbol = toDerivSymbol(symbol);
+    const activeScales = new Set<string>();
+      activeIndicators.forEach((ind) => {
+        if (ind.type === "RSI") activeScales.add("rsi-scale");
+        else if (ind.type === "MACD") activeScales.add("macd-scale");
+        else if (ind.type === "awesome_oscillator") activeScales.add("ao-scale");
+        else if (ind.type === "stochastic") activeScales.add("stoch-scale");
+        else if (ind.type === "aroon") activeScales.add("aroon-scale");
+        else if (ind.type === "adx") activeScales.add("adx-scale");
+        else if (ind.type === "roc" || ind.type === "wpr" || ind.type === "cci") activeScales.add(`${ind.type}-scale`);
+      });
+      const numOscillators = activeScales.size;
+
+      const derivSymbol = toDerivSymbol(symbol);
     const plan = feedPlan(chartType, interval);
     const seriesKind = plan.seriesKind;
 
@@ -433,6 +445,55 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
     return (
       <div className="relative h-full w-full min-h-0">
         <div ref={containerRef} className="absolute inset-0" />
+        {numOscillators > 0 && (
+          <div 
+            style={{ 
+              position: 'absolute', 
+              top: `${(1 - (paneHeight * numOscillators)) * 100}%`,
+              left: 0, 
+              right: 0, 
+              height: '10px', 
+              marginTop: '-5px', 
+              cursor: 'ns-resize',
+              zIndex: 20,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+            onPointerDown={(e) => {
+               e.preventDefault();
+               const startY = e.clientY;
+               const startHeight = paneHeight;
+               const container = containerRef.current;
+               if (!container) return;
+               const containerHeight = container.clientHeight;
+               
+               const handleMove = (moveEvent: PointerEvent) => {
+                  const deltaY = moveEvent.clientY - startY;
+                  const deltaPercent = deltaY / containerHeight;
+                  let newPaneHeight = startHeight - (deltaPercent / numOscillators);
+                  
+                  if (newPaneHeight < 0.1) newPaneHeight = 0.1;
+                  if (newPaneHeight * numOscillators > 0.8) newPaneHeight = 0.8 / numOscillators;
+                  
+                  setPaneHeight(newPaneHeight);
+               };
+               
+               const handleUp = () => {
+                  window.removeEventListener('pointermove', handleMove);
+                  window.removeEventListener('pointerup', handleUp);
+               };
+               
+               window.addEventListener('pointermove', handleMove);
+               window.addEventListener('pointerup', handleUp);
+            }}
+          >
+            <div className="w-10 h-1.5 rounded-full flex items-center justify-center border shadow-sm relative z-10" style={{ backgroundColor: 'var(--opt-bg-sunk)', borderColor: 'var(--opt-border)' }}>
+              <div className="w-4 h-[2px] bg-opt-ink-3 rounded-full opacity-50"></div>
+            </div>
+            <div className="absolute left-0 right-0 h-[1px] bg-opt-border -z-10 opacity-50" style={{ top: '50%' }}></div>
+          </div>
+        )}
         <FeedStatusBadge status={status} unsupported={!derivSymbol} />
       </div>
     );
