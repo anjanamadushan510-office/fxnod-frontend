@@ -162,23 +162,50 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
         </div>
       );
     }
-    return (
-      <div key={key} className="flex h-full flex-col justify-center gap-2 rounded-lg border border-opt-line p-3">
-        <div className="flex items-center justify-between">
-          <label className="text-[11px] font-medium text-opt-ink-3">
-            {key.includes("Value") ? "Size" : formatLabel(key)}
-          </label>
-          <input
-            type={typeof value === 'number' ? 'number' : 'text'}
-            value={value}
-            onChange={(e) => {
-              const val = typeof value === 'number' ? parseFloat(e.target.value) || 0 : e.target.value;
-              handleParamChange(key, val);
-            }}
-            className={`rounded bg-transparent p-0 text-[13px] font-semibold text-opt-ink outline-none ${typeof value === 'number' ? 'w-16 text-right' : 'w-full border border-opt-line px-2 py-1'}`}
-          />
-        </div>
-        {typeof value === 'number' && (
+    if (typeof value === 'number') {
+      if (key.includes("Value")) {
+        return (
+          <div key={key} className="flex h-full overflow-hidden rounded-lg border border-opt-line">
+            <div className="flex flex-1 flex-col justify-center px-3 py-1.5">
+              <label className="text-[10px] font-medium text-opt-ink-3">Size</label>
+              <input
+                type="number"
+                value={value}
+                onChange={(e) => handleParamChange(key, parseFloat(e.target.value) || 0)}
+                className="w-full bg-transparent p-0 text-[13px] font-semibold text-opt-ink outline-none"
+              />
+            </div>
+            <div className="flex w-7 flex-col border-l border-opt-line bg-opt-bg-elev">
+              <button
+                onClick={() => handleParamChange(key, value + 1)}
+                className="flex flex-1 items-center justify-center border-b border-opt-line text-[12px] text-opt-ink-3 hover:bg-opt-bg-sunk hover:text-opt-ink"
+              >
+                +
+              </button>
+              <button
+                onClick={() => handleParamChange(key, value - 1)}
+                className="flex flex-1 items-center justify-center text-[12px] text-opt-ink-3 hover:bg-opt-bg-sunk hover:text-opt-ink"
+              >
+                -
+              </button>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div key={key} className="flex h-full flex-col justify-center gap-2 rounded-lg border border-opt-line p-3">
+          <div className="flex items-center justify-between">
+            <label className="text-[11px] font-medium text-opt-ink-3">
+              {formatLabel(key)}
+            </label>
+            <input
+              type="number"
+              value={value}
+              onChange={(e) => handleParamChange(key, parseFloat(e.target.value) || 0)}
+              className="w-16 rounded bg-transparent p-0 text-right text-[13px] font-semibold text-opt-ink outline-none"
+            />
+          </div>
           <input
             type="range"
             min={key === 'stdDev' ? '0.1' : '1'}
@@ -188,7 +215,23 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
             onChange={(e) => handleParamChange(key, parseFloat(e.target.value) || 0)}
             className="h-1 w-full cursor-pointer appearance-none rounded-full bg-opt-line accent-[#ef5350]"
           />
-        )}
+        </div>
+      );
+    }
+    
+    return (
+      <div key={key} className="flex h-full flex-col justify-center gap-2 rounded-lg border border-opt-line p-3">
+        <div className="flex items-center justify-between">
+          <label className="text-[11px] font-medium text-opt-ink-3">
+            {formatLabel(key)}
+          </label>
+          <input
+            type="text"
+            value={value}
+            onChange={(e) => handleParamChange(key, e.target.value)}
+            className="w-full rounded border border-opt-line bg-transparent px-2 py-1 text-[13px] font-semibold text-opt-ink outline-none"
+          />
+        </div>
       </div>
     );
   };
