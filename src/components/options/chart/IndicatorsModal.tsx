@@ -102,7 +102,7 @@ export function IndicatorsModal({ symbol, interval, onClose }: IndicatorsModalPr
                 <div className="flex flex-col">
                   <span className="text-[13px] font-semibold text-opt-ink">{meta?.name || ind.type}</span>
                   <span className="text-[11px] text-opt-ink-3">
-                    ({Object.values(ind.params).join(",")})
+                    ({Object.values(ind.params).filter(v => typeof v !== 'string' || !v.startsWith('#')).join(", ")})
                   </span>
                 </div>
               </div>
@@ -170,7 +170,7 @@ export function IndicatorsModal({ symbol, interval, onClose }: IndicatorsModalPr
     >
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="relative z-10 flex h-[480px] w-[min(560px,calc(100vw-32px))] overflow-hidden rounded-2xl border border-opt-line bg-opt-bg-elev shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
+      <div className="relative z-10 flex h-[480px] w-[min(720px,calc(100vw-32px))] overflow-hidden rounded-2xl border border-opt-line bg-opt-bg-elev shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
         
         {/* Left Sidebar Tabs */}
         <div className="w-[180px] flex-shrink-0 border-r border-opt-line bg-opt-bg flex flex-col">
