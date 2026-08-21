@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { X, Save } from "lucide-react";
-import { useChartIndicators } from "@/stores/useChartIndicators";
+import { useChartIndicators, DEFAULT_INDICATOR_PARAMS } from "@/stores/useChartIndicators";
 
 export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: string; onClose: () => void }) {
   const { indicators, updateIndicator } = useChartIndicators();
@@ -11,7 +11,9 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
 
   useEffect(() => {
     if (indicator) {
-      setParams({ ...indicator.params });
+      // Merge with defaults in case the indicator was saved before new parameters were added
+      const defaultParams = DEFAULT_INDICATOR_PARAMS[indicator.type] || {};
+      setParams({ ...defaultParams, ...indicator.params });
     }
   }, [indicator]);
 
