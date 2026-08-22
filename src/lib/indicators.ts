@@ -549,6 +549,9 @@ export function calculateBollingerBands(data: number[], period: number = 20, std
   let ma: number[];
   if (maType === "Exponential") ma = calculateEMA(data, period);
   else if (maType === "Weighted") ma = calculateWMA(data, period);
+  else if (maType === "Hull") ma = calculateHMA(data, period);
+  else if (maType === "Zero Lag") ma = calculateZLEMA(data, period);
+  else if (maType === "Time Series") ma = calculateTimeSeries(data, period);
   else ma = calculateSMA(data, period);
 
   for (let i = period - 1; i < data.length; i++) {
@@ -600,6 +603,65 @@ export function calculateWMA(data: number[], period: number): number[] {
   return result;
 }
 
+export function calculateHMA(data: number[], period: number): number[] {
+  const halfLength = Math.floor(period / 2);
+  const sqrtLength = Math.round(Math.sqrt(period));
+  
+  const wmaHalf = calculateWMA(data, halfLength);
+  const wmaFull = calculateWMA(data, period);
+  
+  const rawHma = new Array(data.length).fill(NaN);
+  for (let i = 0; i < data.length; i++) {
+    if (!isNaN(wmaHalf[i]) && !isNaN(wmaFull[i])) {
+      rawHma[i] = (2 * wmaHalf[i]) - wmaFull[i];
+    }
+  }
+  
+  return calculateWMA(rawHma, sqrtLength);
+}
+
+export function calculateZLEMA(data: number[], period: number): number[] {
+  const result: number[] = new Array(data.length).fill(NaN);
+  if (data.length < period) return result;
+  
+  const lag = Math.round((period - 1) / 2);
+  const zData = new Array(data.length).fill(NaN);
+  
+  for (let i = lag; i < data.length; i++) {
+    zData[i] = data[i] + (data[i] - data[i - lag]);
+  }
+  
+  const ema = calculateEMA(zData.slice(lag), period);
+  for (let i = lag; i < data.length; i++) {
+    result[i] = ema[i - lag];
+  }
+  
+  return result;
+}
+
+export function calculateTimeSeries(data: number[], period: number): number[] {
+  const result: number[] = new Array(data.length).fill(NaN);
+  if (data.length < period) return result;
+  
+  for (let i = period - 1; i < data.length; i++) {
+    let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+    for (let j = 0; j < period; j++) {
+      const x = j;
+      const y = data[i - (period - 1 - j)];
+      sumX += x;
+      sumY += y;
+      sumXY += x * y;
+      sumX2 += x * x;
+    }
+    const m = (period * sumXY - sumX * sumY) / (period * sumX2 - sumX * sumX);
+    const b = (sumY - m * sumX) / period;
+    // Forecast next point, which is at index `period`
+    result[i] = m * period + b;
+  }
+  
+  return result;
+}
+
 export interface MAEnvelopeResult {
   middle: number[];
   upper: number[];
@@ -608,9 +670,12 @@ export interface MAEnvelopeResult {
 
 export function calculateMAEnvelope(data: number[], period: number, maType: string, shift: number, shiftType: string): MAEnvelopeResult {
   let middle: number[] = [];
-  if (maType === "SMA") middle = calculateSMA(data, period);
-  else if (maType === "EMA") middle = calculateEMA(data, period);
-  else if (maType === "WMA") middle = calculateWMA(data, period);
+  if (maType === "SMA" || maType === "Simple") middle = calculateSMA(data, period);
+  else if (maType === "EMA" || maType === "Exponential") middle = calculateEMA(data, period);
+  else if (maType === "WMA" || maType === "Weighted") middle = calculateWMA(data, period);
+  else if (maType === "Hull") middle = calculateHMA(data, period);
+  else if (maType === "Zero Lag") middle = calculateZLEMA(data, period);
+  else if (maType === "Time Series") middle = calculateTimeSeries(data, period);
   else middle = calculateSMA(data, period);
 
   const upper: number[] = new Array(data.length).fill(NaN);
@@ -652,9 +717,12 @@ export function calculateRainbowMA(data: number[], period: number, maType: strin
     const validData = currentData.slice(firstValid);
     let result: number[];
     
-    if (maType === "SMA") result = calculateSMA(validData, period);
-    else if (maType === "EMA") result = calculateEMA(validData, period);
-    else if (maType === "WMA") result = calculateWMA(validData, period);
+    if (maType === "SMA" || maType === "Simple") result = calculateSMA(validData, period);
+    else if (maType === "EMA" || maType === "Exponential") result = calculateEMA(validData, period);
+    else if (maType === "WMA" || maType === "Weighted") result = calculateWMA(validData, period);
+    else if (maType === "Hull") result = calculateHMA(validData, period);
+    else if (maType === "Zero Lag") result = calculateZLEMA(validData, period);
+    else if (maType === "Time Series") result = calculateTimeSeries(validData, period);
     else result = calculateSMA(validData, period);
     
     // Re-pad with NaNs at the beginning
