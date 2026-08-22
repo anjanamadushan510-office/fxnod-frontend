@@ -800,22 +800,27 @@ function syncIndicators(
             const obCol = ind.params.overBoughtColor || "#ffffff";
             const osCol = ind.params.overSoldColor || "#ffffff";
             
-            let lines = priceLinesRef.current.get(ind.id);
-            if (!lines) {
-                const overBought = series.createPriceLine({ price: obVal, color: obCol, lineWidth: 1, lineStyle: LineStyle.Solid, axisLabelVisible: false, title: "" });
-                const overSold = series.createPriceLine({ price: osVal, color: osCol, lineWidth: 1, lineStyle: LineStyle.Solid, axisLabelVisible: false, title: "" });
-                priceLinesRef.current.set(ind.id, { overBought, overSold });
+            let obLine = seriesRef.current.get(`${ind.id}-ob`) as ISeriesApi<"Line">;
+            let osLine = seriesRef.current.get(`${ind.id}-os`) as ISeriesApi<"Line">;
+            if (!obLine || !osLine) {
+                obLine = chart.addSeries(LineSeries, { color: obCol, lineWidth: 1, lineStyle: LineStyle.Solid, priceScaleId: "rsi-scale", lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
+                osLine = chart.addSeries(LineSeries, { color: osCol, lineWidth: 1, lineStyle: LineStyle.Solid, priceScaleId: "rsi-scale", lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
+                seriesRef.current.set(`${ind.id}-ob`, obLine);
+                seriesRef.current.set(`${ind.id}-os`, osLine);
             } else {
-                if (lines.overBought) lines.overBought.applyOptions({ price: obVal, color: obCol });
-                if (lines.overSold) lines.overSold.applyOptions({ price: osVal, color: osCol });
+                obLine.applyOptions({ color: obCol });
+                osLine.applyOptions({ color: osCol });
             }
+            
+            const obData = timeArray.map((t) => ({ time: t, value: obVal }));
+            const osData = timeArray.map((t) => ({ time: t, value: osVal }));
+            obLine.setData(obData as any);
+            osLine.setData(osData as any);
         } else {
-            let lines = priceLinesRef.current.get(ind.id);
-            if (lines) {
-                try { if (lines.overBought) series.removePriceLine(lines.overBought); } catch {}
-                try { if (lines.overSold) series.removePriceLine(lines.overSold); } catch {}
-                priceLinesRef.current.delete(ind.id);
-            }
+            let obLine = seriesRef.current.get(`${ind.id}-ob`) as ISeriesApi<"Line"> | undefined;
+            let osLine = seriesRef.current.get(`${ind.id}-os`) as ISeriesApi<"Line"> | undefined;
+            if (obLine) { chart.removeSeries(obLine); seriesRef.current.delete(`${ind.id}-ob`); }
+            if (osLine) { chart.removeSeries(osLine); seriesRef.current.delete(`${ind.id}-os`); }
         }
       } else if (ind.type === "ma") {
         const maType = ind.params.maType || "SMA";
@@ -1005,22 +1010,27 @@ function syncIndicators(
           const obCol = ind.params.overBoughtColor || "#000000";
           const osCol = ind.params.overSoldColor || "#000000";
           
-          let lines = priceLinesRef.current.get(ind.id);
-          if (!lines) {
-              const overBought = kLine.createPriceLine({ price: obVal, color: obCol, lineWidth: 1, lineStyle: LineStyle.Solid, axisLabelVisible: false, title: "" });
-              const overSold = kLine.createPriceLine({ price: osVal, color: osCol, lineWidth: 1, lineStyle: LineStyle.Solid, axisLabelVisible: false, title: "" });
-              priceLinesRef.current.set(ind.id, { overBought, overSold });
+          let obLine = seriesRef.current.get(`${ind.id}-ob`) as ISeriesApi<"Line">;
+          let osLine = seriesRef.current.get(`${ind.id}-os`) as ISeriesApi<"Line">;
+          if (!obLine || !osLine) {
+              obLine = chart.addSeries(LineSeries, { color: obCol, lineWidth: 1, lineStyle: LineStyle.Solid, priceScaleId: "stoch-scale", lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
+              osLine = chart.addSeries(LineSeries, { color: osCol, lineWidth: 1, lineStyle: LineStyle.Solid, priceScaleId: "stoch-scale", lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
+              seriesRef.current.set(`${ind.id}-ob`, obLine);
+              seriesRef.current.set(`${ind.id}-os`, osLine);
           } else {
-              if (lines.overBought) lines.overBought.applyOptions({ price: obVal, color: obCol });
-              if (lines.overSold) lines.overSold.applyOptions({ price: osVal, color: osCol });
+              obLine.applyOptions({ color: obCol });
+              osLine.applyOptions({ color: osCol });
           }
+          
+          const obData = timeArray.map((t) => ({ time: t, value: obVal }));
+          const osData = timeArray.map((t) => ({ time: t, value: osVal }));
+          obLine.setData(obData as any);
+          osLine.setData(osData as any);
         } else {
-          let lines = priceLinesRef.current.get(ind.id);
-          if (lines) {
-              if (lines.overBought) kLine.removePriceLine(lines.overBought);
-              if (lines.overSold) kLine.removePriceLine(lines.overSold);
-              priceLinesRef.current.delete(ind.id);
-          }
+          let obLine = seriesRef.current.get(`${ind.id}-ob`) as ISeriesApi<"Line"> | undefined;
+          let osLine = seriesRef.current.get(`${ind.id}-os`) as ISeriesApi<"Line"> | undefined;
+          if (obLine) { chart.removeSeries(obLine); seriesRef.current.delete(`${ind.id}-ob`); }
+          if (osLine) { chart.removeSeries(osLine); seriesRef.current.delete(`${ind.id}-os`); }
         }
 
         const pK = ind.params.period || 14;
