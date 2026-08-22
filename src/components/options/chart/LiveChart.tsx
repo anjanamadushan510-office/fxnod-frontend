@@ -1314,9 +1314,9 @@ function syncIndicators(
   if (numOscillators > 0) {
     const totalOscillatorHeight = paneHeight * numOscillators;
     
-    // Main chart margin (make sure it doesn't overlap with the bottom oscillators)
+    // Main chart margin (make sure it doesn't overlap with the bottom oscillators, and leave a visual gap)
     chart.priceScale("right").applyOptions({
-      scaleMargins: { top: 0, bottom: totalOscillatorHeight + 0.02 },
+      scaleMargins: { top: 0.1, bottom: totalOscillatorHeight + 0.12 },
     });
 
     // Each oscillator gets a slice of the bottom portion
