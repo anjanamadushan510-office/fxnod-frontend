@@ -1035,8 +1035,8 @@ function syncIndicators(
 
         const pK = ind.params.period || 14;
         const pD = 3;
-        // Deriv uses Slow Stochastic (Y,Y) = 3-period smoothing on K, 3-period on D
-        const smoothing = 3;
+        // Deriv uses standard H/L Stochastic with NO K-smoothing (Fast Stochastic K, SMA-3 for D)
+        const smoothing = 1;
         
         let targetArray = valueArray;
         switch (ind.params.field) {
@@ -1048,9 +1048,9 @@ function syncIndicators(
           case "Hlc/3": targetArray = hlc3Array; break;
         }
 
-        // Deriv uses "C" (Close/Close) method: Close price is used as both High and Low
-        const stochHigh = targetArray;
-        const stochLow = targetArray;
+        // Deriv uses standard H/L method ("C" = Close price source, but H/L for range)
+        const stochHigh = highArray;
+        const stochLow = lowArray;
         const results = calculateStochastic(stochHigh, stochLow, targetArray, pK, pD, smoothing);
         const kData = results.k.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
         const dData = results.d.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
