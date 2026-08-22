@@ -625,6 +625,28 @@ export function calculateWMA(data: number[], period: number): number[] {
   return result;
 }
 
+export function calculateMA(data: number[], period: number, maType: string, offset: number = 0): number[] {
+  let ma: number[];
+  if (maType === "SMA" || maType === "Simple") ma = calculateSMA(data, period);
+  else if (maType === "EMA" || maType === "Exponential") ma = calculateEMA(data, period);
+  else if (maType === "WMA" || maType === "Weighted") ma = calculateWMA(data, period);
+  else if (maType === "Hull") ma = calculateHMA(data, period);
+  else if (maType === "Zero Lag") ma = calculateZLEMA(data, period);
+  else if (maType === "Time Series") ma = calculateTimeSeries(data, period);
+  else ma = calculateSMA(data, period);
+
+  if (offset === 0) return ma;
+
+  const result = new Array(data.length).fill(NaN);
+  for (let i = 0; i < data.length; i++) {
+    const targetIdx = i + offset;
+    if (targetIdx >= 0 && targetIdx < data.length) {
+      result[targetIdx] = ma[i];
+    }
+  }
+  return result;
+}
+
 export function calculateHMA(data: number[], period: number): number[] {
   const halfLength = Math.floor(period / 2);
   const sqrtLength = Math.round(Math.sqrt(period));

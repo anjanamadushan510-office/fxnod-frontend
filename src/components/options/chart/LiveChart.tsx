@@ -47,7 +47,7 @@ import { TrendPrimitive, VerticalPrimitive } from "./chartPrimitives";
 import type { ChartTypeId, IntervalId } from "./chartSettings";
 import { useChartIndicators, type IndicatorConfig } from "@/stores/useChartIndicators";
 import { 
-  calculateSMA, calculateEMA, calculateRSI, calculateMACD,
+  calculateSMA, calculateEMA, calculateMA, calculateRSI, calculateMACD,
   calculateAwesomeOscillator, calculateROC, calculateStochastic, calculateWilliamsR,
   calculateCCI, calculateAroon, calculateADX, calculateIchimoku, calculateParabolicSAR, calculateZigZag, calculateBollingerBands, calculateDonchianChannel, calculateWMA, calculateMAEnvelope, calculateRainbowMA, calculateAlligator, calculateFractalChaosBands
   } from "@/lib/indicators";
@@ -823,11 +823,26 @@ function syncIndicators(
             if (osLine) { chart.removeSeries(osLine); seriesRef.current.delete(`${ind.id}-os`); }
         }
       } else if (ind.type === "ma") {
-        const maType = ind.params.maType || "SMA";
-        if (maType === "SMA") results = calculateSMA(valueArray, p);
-        else if (maType === "EMA") results = calculateEMA(valueArray, p);
-        else if (maType === "WMA") results = calculateWMA(valueArray, p);
-        else results = calculateSMA(valueArray, p);
+        const p = ind.params.period || 50;
+        const maType = ind.params.movingAverageType || ind.params.maType || "Simple";
+        const offset = ind.params.offset || 0;
+        
+        let targetArray = valueArray;
+        switch (ind.params.field) {
+          case "Open": targetArray = openArray; break;
+          case "High": targetArray = highArray; break;
+          case "Low": targetArray = lowArray; break;
+          case "Close": targetArray = valueArray; break;
+          case "Hl/2": targetArray = hl2Array; break;
+          case "Hlc/3": targetArray = hlc3Array; break;
+        }
+
+        results = calculateMA(targetArray, p, maType as string, offset as number);
+        
+        if (ind.params.maColor) {
+          series.applyOptions({ color: ind.params.maColor });
+        }
+        series.applyOptions({ priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
       }
 
       const data = results.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
@@ -851,7 +866,7 @@ function syncIndicators(
       const p = ind.params.period || 50;
       const shift = ind.params.shift || 5;
       const shiftType = ind.params.shiftType || "percent";
-      const maType = ind.params.maType || "SMA";
+      const maType = ind.params.movingAverageType || ind.params.maType || "SMA";
       
       const results = calculateMAEnvelope(valueArray, p, maType, shift, shiftType);
       
@@ -881,7 +896,7 @@ function syncIndicators(
       }
       
       const p = ind.params.period || 2;
-      const maType = ind.params.maType || "SMA";
+      const maType = ind.params.movingAverageType || ind.params.maType || "SMA";
       const results = calculateRainbowMA(valueArray, p, maType);
       
       for (let k = 0; k < numLines; k++) {

@@ -74,7 +74,7 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
   };
 
   const formatLabel = (key: string) => {
-    if (key === "macdColor" || key === "rocColor") return "Color";
+    if (key === "macdColor" || key === "rocColor" || key === "maColor") return "Color";
     if (key === "adxColor") return "Color";
     if (key === "cciColor") return "Color";
     if (key === "plusDiColor") return "+DI";
@@ -110,7 +110,7 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
     if (key === "lowerColor") return indicator.type === 'donchian' ? "Donchian Low" : "Bollinger Bands Bottom";
     if (key === "fillColor") return "Fill Color";
     if (key === "standardDeviations") return "Standard Deviations";
-    if (key === "movingAverageType") return "Moving Average Type";
+    if (key === "movingAverageType") return (indicator.type === 'ma' || indicator.type === 'ma_envelope' || indicator.type === 'rainbow_ma') ? "Type" : "Moving Average Type";
     if (key === "channelFill") return "Channel Fill";
     if (key === "highPeriod") return "High Period";
     if (key === "lowPeriod") return "Low Period";
