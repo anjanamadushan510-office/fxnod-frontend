@@ -710,8 +710,8 @@ function syncIndicators(
   // Remove series that are no longer active
   const activeIds = new Set(activeIndicators.map(i => i.id));
   for (const [id, series] of seriesRef.current.entries()) {
-    // If id has a suffix, extract the real id
-    const baseId = id.replace(/-macd|-signal|-hist|-aroonUp|-aroonDown|-adx|-plusDI|-minusDI|-tenkan|-kijun|-senkouA|-senkouB|-chikou|-sar|-zigzag/, "");
+    // Extract the base ID by taking the first 3 segments (type-timestamp-random)
+    const baseId = id.split('-').slice(0, 3).join('-');
     if (!activeIds.has(baseId)) {
       try { chart.removeSeries(series); } catch {}
       seriesRef.current.delete(id);
