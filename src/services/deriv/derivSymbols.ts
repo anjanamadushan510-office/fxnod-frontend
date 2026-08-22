@@ -122,10 +122,14 @@ export function feedPlan(chartType: ChartTypeId, interval: IntervalId): FeedPlan
   const wantsCandles = chartType !== "area";
   const seriesKind = wantsCandles ? "candlestick" : "area";
 
+  if (chartType === "area") {
+    // Deriv's Area chart ALWAYS uses 1-tick data, regardless of the selected interval.
+    return { style: "ticks", seriesKind: "area" };
+  }
+
   if (interval === "1t") {
-    return wantsCandles
-      ? { style: "candles", granularity: 60, seriesKind }
-      : { style: "ticks", seriesKind };
+    // If not Area (e.g. Candles) but interval is 1t, Deriv doesn't have 1t candles, so fallback to 1-min
+    return { style: "candles", granularity: 60, seriesKind };
   }
 
   return {
