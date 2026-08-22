@@ -794,7 +794,7 @@ function syncIndicators(
         
         series.applyOptions({ color: ind.params.rsiColor || "#9c27b0" });
         
-        if (ind.params.showZones) {
+        if (ind.params.showZones !== false) {
             const obVal = ind.params.overBoughtValue ?? 80;
             const osVal = ind.params.overSoldValue ?? 20;
             const obCol = ind.params.overBoughtColor || "#ffffff";
@@ -999,7 +999,7 @@ function syncIndicators(
           dLine.applyOptions({ color: ind.params.slowColor || "#ff0000" });
         }
         
-        if (ind.params.showZones) {
+        if (ind.params.showZones !== false) {
           const obVal = ind.params.overBoughtValue ?? 80;
           const osVal = ind.params.overSoldValue ?? 20;
           const obCol = ind.params.overBoughtColor || "#000000";
