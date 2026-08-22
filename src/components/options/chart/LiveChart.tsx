@@ -1336,16 +1336,32 @@ function syncIndicators(
         let middle = seriesRef.current.get(`${ind.id}-middle`) as ISeriesApi<'Line'>;
         let lower = seriesRef.current.get(`${ind.id}-lower`) as ISeriesApi<'Line'>;
         if (!upper || !middle || !lower) {
-          upper = chart.addSeries(LineSeries, { color: '#2962FF', lineWidth: 1, priceScaleId: 'right' });
-          middle = chart.addSeries(LineSeries, { color: '#FF6D00', lineWidth: 1, priceScaleId: 'right' });
-          lower = chart.addSeries(LineSeries, { color: '#2962FF', lineWidth: 1, priceScaleId: 'right' });
+          upper = chart.addSeries(LineSeries, { color: ind.params.upperColor || '#000000', lineWidth: 1, priceScaleId: 'right', priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+          middle = chart.addSeries(LineSeries, { color: ind.params.middleColor || '#000000', lineWidth: 1, priceScaleId: 'right', priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+          lower = chart.addSeries(LineSeries, { color: ind.params.lowerColor || '#000000', lineWidth: 1, priceScaleId: 'right', priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
           seriesRef.current.set(`${ind.id}-upper`, upper);
           seriesRef.current.set(`${ind.id}-middle`, middle);
           seriesRef.current.set(`${ind.id}-lower`, lower);
+        } else {
+          upper.applyOptions({ color: ind.params.upperColor || '#000000' });
+          middle.applyOptions({ color: ind.params.middleColor || '#000000' });
+          lower.applyOptions({ color: ind.params.lowerColor || '#000000' });
         }
         const p = ind.params.period || 20;
-        const dev = ind.params.stdDev || 2;
-        const results = calculateBollingerBands(valueArray, p, dev);
+        const dev = ind.params.standardDeviations || 2;
+        const maType = ind.params.movingAverageType || "Simple";
+        
+        let targetArray = valueArray;
+        switch (ind.params.field) {
+          case "Open": targetArray = openArray; break;
+          case "High": targetArray = highArray; break;
+          case "Low": targetArray = lowArray; break;
+          case "Close": targetArray = valueArray; break;
+          case "Hl/2": targetArray = hl2Array; break;
+          case "Hlc/3": targetArray = hlc3Array; break;
+        }
+
+        const results = calculateBollingerBands(targetArray, p, dev, maType as string);
         const upperData = results.upper.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
         const middleData = results.middle.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
         const lowerData = results.lower.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));

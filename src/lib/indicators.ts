@@ -544,11 +544,15 @@ export function calculateZigZag(high: number[], low: number[], close: number[], 
   return zigzag;
 }
 export interface BollingerBandsResult { upper: number[]; middle: number[]; lower: number[]; }
-export function calculateBollingerBands(data: number[], period: number = 20, stdDevMultiplier: number = 2): BollingerBandsResult {
+export function calculateBollingerBands(data: number[], period: number = 20, stdDevMultiplier: number = 2, maType: string = "Simple"): BollingerBandsResult {
   const result: BollingerBandsResult = { upper: new Array(data.length).fill(NaN), middle: new Array(data.length).fill(NaN), lower: new Array(data.length).fill(NaN) };
-  const sma = calculateSMA(data, period);
+  let ma: number[];
+  if (maType === "Exponential") ma = calculateEMA(data, period);
+  else if (maType === "Weighted") ma = calculateWMA(data, period);
+  else ma = calculateSMA(data, period);
+
   for (let i = period - 1; i < data.length; i++) {
-    const mean = sma[i];
+    const mean = ma[i];
     let sumSqrDiffs = 0;
     for (let j = 0; j < period; j++) {
       const diff = data[i - j] - mean;
