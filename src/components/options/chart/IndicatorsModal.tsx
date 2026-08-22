@@ -134,11 +134,13 @@ export function IndicatorsModal({ symbol, interval, onClose }: IndicatorsModalPr
   const renderCategoryTab = (category: Category) => {
     const list = INDICATOR_LIST.filter((i) => i.category === category);
     const isTick = interval === "1t";
+    const isAtLimit = activeIndicators.length >= 5;
     
     return (
       <div className="flex flex-col gap-2 p-4">
         {list.map((ind) => {
-          const isDisabled = ind.disabled || (isTick && ind.requiresOHLC);
+          const isDisabled = ind.disabled || (isTick && ind.requiresOHLC) || isAtLimit;
+          const title = isTick && ind.requiresOHLC ? "Not available on tick charts" : (isAtLimit ? "Up to 5 active indicators allowed" : undefined);
           return (
             <div key={ind.id} className={cn("flex items-center justify-between rounded-lg border border-opt-line p-3 transition-colors", isDisabled ? "opacity-50 grayscale" : "hover:bg-opt-bg-sunk")}>
               <div className="flex items-center gap-3">
@@ -148,7 +150,7 @@ export function IndicatorsModal({ symbol, interval, onClose }: IndicatorsModalPr
               <button
                 type="button"
                 disabled={isDisabled}
-                title={isTick && ind.requiresOHLC ? "Not available on tick charts" : undefined}
+                title={title}
                 onClick={() => !isDisabled && addIndicator(symbol, ind.id as IndicatorType)}
                 className={cn("rounded px-3 py-1 text-[12px] font-semibold transition-colors", isDisabled ? "bg-opt-bg-sunk text-opt-ink-4 cursor-not-allowed" : "bg-opt-line text-opt-ink hover:bg-opt-line-strong")}
               >
@@ -199,15 +201,20 @@ export function IndicatorsModal({ symbol, interval, onClose }: IndicatorsModalPr
           <div className="flex items-center justify-between border-b border-opt-line px-4 py-3 min-h-[57px]">
             <div className="flex items-center justify-between w-full">
               {/* Header space */}
-              <div className="text-[14px] font-semibold text-opt-ink">
-                {tab === "Active" ? "Active indicators" : tab}
+              <div className="text-[14px] font-semibold text-opt-ink flex items-center">
+                <span>{tab === "Active" ? "Active indicators" : tab}</span>
+                {tab === "Active" && (
+                  <span className="text-[11px] font-normal text-opt-ink-3 ml-4">
+                    Up to 5 active indicators allowed.
+                  </span>
+                )}
               </div>
               <div className="flex items-center gap-3">
                 {tab === "Active" && activeIndicators.length > 0 && (
                   <button
                     type="button"
                     onClick={() => clearIndicators(symbol)}
-                    className="text-[12px] font-semibold text-opt-ink-3 hover:text-opt-ink"
+                    className="text-[12px] font-semibold text-opt-ink-3 hover:text-opt-ink whitespace-nowrap"
                   >
                     Clear all
                   </button>

@@ -47,6 +47,9 @@ export const useChartIndicators = create<ChartIndicatorsState>()(
 
       addIndicator: (symbol, type, params) =>
         set((state) => {
+          const activeCount = state.indicators.filter(i => i.symbol === symbol).length;
+          if (activeCount >= 5) return state;
+
           const newIndicator: IndicatorConfig = {
             id: `${type}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
             type,
