@@ -768,6 +768,7 @@ function syncIndicators(
           color: isRsi ? "#9c27b0" : (ind.params.maType === "SMA" ? "#ff9800" : (ind.params.maType === "EMA" ? "#2196f3" : "#00A79E")),
           lineWidth: 2,
           priceScaleId: isRsi ? "rsi-scale" : "right",
+          ...(isRsi ? { autoscaleInfoProvider: () => ({ priceRange: { minValue: 0, maxValue: 100 } }) } : {})
         });
         if (isRsi) {
           chart.priceScale("rsi-scale").applyOptions({
@@ -988,8 +989,8 @@ function syncIndicators(
         let kLine = seriesRef.current.get(`${ind.id}-k`) as ISeriesApi<"Line">;
         let dLine = seriesRef.current.get(`${ind.id}-d`) as ISeriesApi<"Line">;
         if (!kLine || !dLine) {
-          kLine = chart.addSeries(LineSeries, { color: ind.params.fastColor || "#000000", lineWidth: 2, priceScaleId: "stoch-scale", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
-          dLine = chart.addSeries(LineSeries, { color: ind.params.slowColor || "#ff0000", lineWidth: 2, priceScaleId: "stoch-scale", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+          kLine = chart.addSeries(LineSeries, { color: ind.params.fastColor || "#000000", lineWidth: 2, priceScaleId: "stoch-scale", priceFormat: { type: 'price', precision: 2, minMove: 0.01 }, autoscaleInfoProvider: () => ({ priceRange: { minValue: 0, maxValue: 100 } }) });
+          dLine = chart.addSeries(LineSeries, { color: ind.params.slowColor || "#ff0000", lineWidth: 2, priceScaleId: "stoch-scale", priceFormat: { type: 'price', precision: 2, minMove: 0.01 }, autoscaleInfoProvider: () => ({ priceRange: { minValue: 0, maxValue: 100 } }) });
           chart.priceScale("stoch-scale").applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
           seriesRef.current.set(`${ind.id}-k`, kLine);
           seriesRef.current.set(`${ind.id}-d`, dLine);
