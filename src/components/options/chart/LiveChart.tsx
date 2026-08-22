@@ -1111,17 +1111,19 @@ function syncIndicators(
       let adxLine = seriesRef.current.get(`${ind.id}-adx`) as ISeriesApi<"Line">;
       let plusDI = seriesRef.current.get(`${ind.id}-plusDI`) as ISeriesApi<"Line">;
       let minusDI = seriesRef.current.get(`${ind.id}-minusDI`) as ISeriesApi<"Line">;
+      
       if (!adxLine || !plusDI || !minusDI) {
-        adxLine = chart.addSeries(LineSeries, { color: "#999999", lineWidth: 2, priceScaleId: "adx-scale", priceFormat: { type: 'price', precision: 4, minMove: 0.0001 } });
-        plusDI = chart.addSeries(LineSeries, { color: "#00A79E", lineWidth: 2, priceScaleId: "adx-scale", priceFormat: { type: 'price', precision: 4, minMove: 0.0001 } });
-        minusDI = chart.addSeries(LineSeries, { color: "#ef5350", lineWidth: 2, priceScaleId: "adx-scale", priceFormat: { type: 'price', precision: 4, minMove: 0.0001 } });
+        adxLine = chart.addSeries(LineSeries, { color: ind.params.adxColor || "#000000", lineWidth: 2, priceScaleId: "adx-scale", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+        plusDI = chart.addSeries(LineSeries, { color: ind.params.plusDiColor || "#00ff00", lineWidth: 2, priceScaleId: "adx-scale", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+        minusDI = chart.addSeries(LineSeries, { color: ind.params.minusDiColor || "#ff0000", lineWidth: 2, priceScaleId: "adx-scale", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
         chart.priceScale("adx-scale").applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
         seriesRef.current.set(`${ind.id}-adx`, adxLine);
         seriesRef.current.set(`${ind.id}-plusDI`, plusDI);
         seriesRef.current.set(`${ind.id}-minusDI`, minusDI);
       }
       const period = ind.params.period || 14;
-      const results = calculateADX(highArray, lowArray, valueArray, period);
+      const smoothingPeriod = ind.params.smoothingPeriod || period;
+      const results = calculateADX(highArray, lowArray, valueArray, period, smoothingPeriod);
       const adxData = results.adx.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
       const plusDIData = results.plusDI.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
       const minusDIData = results.minusDI.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));

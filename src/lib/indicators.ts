@@ -354,7 +354,7 @@ function calculateRMA(data: number[], period: number): number[] {
   return result;
 }
 
-export function calculateADX(high: number[], low: number[], close: number[], period: number): ADXResult {
+export function calculateADX(high: number[], low: number[], close: number[], period: number, smoothingPeriod?: number): ADXResult {
   const tr: number[] = new Array(high.length).fill(0);
   const plusDM: number[] = new Array(high.length).fill(0);
   const minusDM: number[] = new Array(high.length).fill(0);
@@ -392,7 +392,7 @@ export function calculateADX(high: number[], low: number[], close: number[], per
     dx[i] = sumDI === 0 ? 0 : (Math.abs(plusDI[i] - minusDI[i]) / sumDI) * 100;
   }
 
-  const adx = calculateRMA(dx, period);
+  const adx = calculateRMA(dx, smoothingPeriod ?? period);
 
   return { adx, plusDI, minusDI };
 }

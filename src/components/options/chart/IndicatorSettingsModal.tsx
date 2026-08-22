@@ -75,12 +75,16 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
 
   const formatLabel = (key: string) => {
     if (key === "macdColor" || key === "rocColor") return "Color";
+    if (key === "adxColor") return "Color";
+    if (key === "plusDiColor") return "+DI";
+    if (key === "minusDiColor") return "-DI";
     if (key === "signalColor") return "Signal";
     if (key === "increasingBarColor") return "Increasing Bar";
     if (key === "decreasingBarColor") return "Decreasing Bar";
     if (key === "fastPeriod") return "Fast MA Period";
     if (key === "slowPeriod") return "Slow MA Period";
     if (key === "signalPeriod") return "Signal Period";
+    if (key === "smoothingPeriod") return "Smoothing Period";
 
     return key
       .replace(/([A-Z])/g, ' $1')
