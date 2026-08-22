@@ -76,6 +76,7 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
   const formatLabel = (key: string) => {
     if (key === "macdColor" || key === "rocColor") return "Color";
     if (key === "adxColor") return "Color";
+    if (key === "cciColor") return "Color";
     if (key === "plusDiColor") return "+DI";
     if (key === "minusDiColor") return "-DI";
     if (key === "positiveBarColor") return "Positive Bar";

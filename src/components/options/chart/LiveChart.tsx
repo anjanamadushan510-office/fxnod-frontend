@@ -949,18 +949,18 @@ function syncIndicators(
         color: val > (results[i - 1] || 0) ? incColor : decColor 
       })).filter(d => !isNaN(d.value));
       if (data.length > 0) hist.setData(data as any);
-    } else if (ind.type === "roc" || ind.type === "wpr" || ind.type === "cci") {
+    } else if (ind.type === "roc" || ind.type === "wpr") {
       let series = seriesRef.current.get(ind.id) as ISeriesApi<"Line">;
       if (!series) {
         series = chart.addSeries(LineSeries, {
-          color: ind.type === "roc" ? "#000000" : (ind.type === "cci" ? "#00A79E" : (ind.params.wprColor || "#000000")),
+          color: ind.type === "roc" ? "#000000" : (ind.params.wprColor || "#000000"),
           lineWidth: 2,
           priceScaleId: `${ind.type}-scale`,
           priceFormat: { type: 'price', precision: ind.type === "wpr" ? 2 : 4, minMove: ind.type === "wpr" ? 0.01 : 0.0001 }
         });
         chart.priceScale(`${ind.type}-scale`).applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
         
-        if (ind.type === "roc" || ind.type === "cci") {
+        if (ind.type === "roc") {
           series.createPriceLine({ price: 0, color: "#9e9e9e", lineWidth: 1, lineStyle: LineStyle.Solid, axisLabelVisible: false, title: "0" });
         }
         
@@ -1001,25 +1001,73 @@ function syncIndicators(
           if (osLine) { chart.removeSeries(osLine); seriesRef.current.delete(`${ind.id}-os`); }
         }
       }
-        let results: number[] = [];
-        const p = ind.params.period || 14;
-        
-        if (ind.type === "roc") {
-          series.applyOptions({ color: ind.params.rocColor || "#000000" });
-          let targetArray = valueArray;
-          switch (ind.params.field) {
-            case "Open": targetArray = openArray; break;
-            case "High": targetArray = highArray; break;
-            case "Low": targetArray = lowArray; break;
-            case "Close": targetArray = valueArray; break;
-            case "Hl/2": targetArray = hl2Array; break;
-            case "Hlc/3": targetArray = hlc3Array; break;
-          }
-          results = calculateROC(targetArray, p);
+      
+      let results: number[] = [];
+      const p = ind.params.period || 14;
+      
+      if (ind.type === "roc") {
+        series.applyOptions({ color: ind.params.rocColor || "#000000" });
+        let targetArray = valueArray;
+        switch (ind.params.field) {
+          case "Open": targetArray = openArray; break;
+          case "High": targetArray = highArray; break;
+          case "Low": targetArray = lowArray; break;
+          case "Close": targetArray = valueArray; break;
+          case "Hl/2": targetArray = hl2Array; break;
+          case "Hlc/3": targetArray = hlc3Array; break;
         }
-        if (ind.type === "wpr") results = calculateWilliamsR(highArray, lowArray, valueArray, p);
-        if (ind.type === "cci") results = calculateCCI(highArray, lowArray, valueArray, ind.params.period || 20);
+        results = calculateROC(targetArray, p);
+      }
+      if (ind.type === "wpr") results = calculateWilliamsR(highArray, lowArray, valueArray, p);
 
+      const data = results.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+      if (data.length > 0) series.setData(data as any);
+    } else if (ind.type === "cci") {
+      let series = seriesRef.current.get(ind.id) as ISeriesApi<"Line">;
+      if (!series) {
+        series = chart.addSeries(LineSeries, {
+          color: ind.params.cciColor || "#000000",
+          lineWidth: 2,
+          priceScaleId: "cci-scale",
+          priceFormat: { type: 'price', precision: 2, minMove: 0.01 }
+        });
+        chart.priceScale("cci-scale").applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
+        seriesRef.current.set(ind.id, series);
+      } else {
+        series.applyOptions({ color: ind.params.cciColor || "#000000" });
+      }
+
+      if (ind.params.showZones !== false) {
+        const obVal = ind.params.overBoughtValue ?? 100;
+        const osVal = ind.params.overSoldValue ?? -100;
+        const obCol = ind.params.overBoughtColor || "#000000";
+        const osCol = ind.params.overSoldColor || "#000000";
+        
+        let obLine = seriesRef.current.get(`${ind.id}-ob`) as ISeriesApi<"Line">;
+        let osLine = seriesRef.current.get(`${ind.id}-os`) as ISeriesApi<"Line">;
+        if (!obLine || !osLine) {
+            obLine = chart.addSeries(LineSeries, { color: obCol, lineWidth: 1, lineStyle: LineStyle.Solid, priceScaleId: "cci-scale", lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
+            osLine = chart.addSeries(LineSeries, { color: osCol, lineWidth: 1, lineStyle: LineStyle.Solid, priceScaleId: "cci-scale", lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
+            seriesRef.current.set(`${ind.id}-ob`, obLine);
+            seriesRef.current.set(`${ind.id}-os`, osLine);
+        } else {
+            obLine.applyOptions({ color: obCol });
+            osLine.applyOptions({ color: osCol });
+        }
+        
+        const obData = timeArray.map((t) => ({ time: t, value: obVal }));
+        const osData = timeArray.map((t) => ({ time: t, value: osVal }));
+        obLine.setData(obData as any);
+        osLine.setData(osData as any);
+      } else {
+        let obLine = seriesRef.current.get(`${ind.id}-ob`) as ISeriesApi<"Line"> | undefined;
+        let osLine = seriesRef.current.get(`${ind.id}-os`) as ISeriesApi<"Line"> | undefined;
+        if (obLine) { chart.removeSeries(obLine); seriesRef.current.delete(`${ind.id}-ob`); }
+        if (osLine) { chart.removeSeries(osLine); seriesRef.current.delete(`${ind.id}-os`); }
+      }
+
+      const p = ind.params.period || 20;
+      const results = calculateCCI(highArray, lowArray, valueArray, p);
       const data = results.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
       if (data.length > 0) series.setData(data as any);
       } else if (ind.type === "stochastic") {

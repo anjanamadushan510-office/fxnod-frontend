@@ -20,7 +20,7 @@ export const DEFAULT_INDICATOR_PARAMS: Record<IndicatorType, Record<string, any>
   roc: { rocColor: "#000000", period: 14, field: "Close" },
   stochastic: { fastColor: "#000000", slowColor: "#ff0000", period: 14, field: "Close", smooth: true, overBoughtValue: 80, overBoughtColor: "#000000", overSoldValue: 20, overSoldColor: "#000000", showZones: true },
   wpr: { wprColor: "#000000", period: 14, overBoughtValue: -20, overBoughtColor: "#000000", overSoldValue: -80, overSoldColor: "#000000", showZones: true },
-  cci: { period: 20 },
+  cci: { cciColor: "#000000", period: 20, overBoughtValue: 100, overBoughtColor: "#000000", overSoldValue: -100, overSoldColor: "#000000", showZones: true },
   aroon: { aroonUpColor: "#00ff00", aroonDownColor: "#ff0000", period: 14 },
   adx: { plusDiColor: "#00ff00", minusDiColor: "#ff0000", adxColor: "#000000", positiveBarColor: "#00ff00", negativeBarColor: "#ff0000", period: 14, smoothingPeriod: 14, showSeries: true, showShading: false, showHistogram: false },
   ichimoku: { tenkanPeriod: 9, kijunPeriod: 26, senkouBPeriod: 52 },
