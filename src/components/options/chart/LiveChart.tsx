@@ -1051,17 +1051,9 @@ function syncIndicators(
         // Deriv uses standard H/L method ("C" = Close price source, but H/L for range)
         const stochHigh = highArray;
         const stochLow = lowArray;
-        // We pass smoothing=1 to get FastK as the 'k' result, and pD=3 to get SlowK as the 'd' result
-        // Wait, calculateStochastic returns k = SMA(FastK, smoothing) and d = SMA(k, pD).
-        // If we want k = FastK and d = SlowD = SMA(SMA(FastK, 3), 3):
-        // We need to modify calculateStochastic to return FastK and SlowD directly, or just do it here.
-        const resultsRaw = calculateStochastic(stochHigh, stochLow, targetArray, pK, 3, 3);
-        // resultsRaw.k is SlowK. resultsRaw.d is SlowD.
-        // But we need FastK for the black line! We must run it again with smoothing=1 to get FastK.
-        const resultsFast = calculateStochastic(stochHigh, stochLow, targetArray, pK, 3, 1);
-        
-        const kData = resultsFast.k.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
-        const dData = resultsRaw.d.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+        const results = calculateStochastic(stochHigh, stochLow, targetArray, pK, pD, smoothing);
+        const kData = results.k.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+        const dData = results.d.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
         if (kData.length > 0) kLine.setData(kData as any);
         if (dData.length > 0) dLine.setData(dData as any);
     } else if (ind.type === "aroon") {
