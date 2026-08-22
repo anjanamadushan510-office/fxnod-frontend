@@ -1047,8 +1047,8 @@ function syncIndicators(
           case "Hlc/3": targetArray = hlc3Array; break;
         }
 
-        const stochHigh = seriesKind === "area" ? valueArray : highArray;
-        const stochLow = seriesKind === "area" ? valueArray : lowArray;
+        const stochHigh = highArray;
+        const stochLow = lowArray;
         const results = calculateStochastic(stochHigh, stochLow, targetArray, pK, pD, smoothing);
         const kData = results.k.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
         const dData = results.d.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
