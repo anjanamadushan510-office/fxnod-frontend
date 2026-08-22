@@ -1048,8 +1048,9 @@ function syncIndicators(
           case "Hlc/3": targetArray = hlc3Array; break;
         }
 
-        const stochHigh = highArray;
-        const stochLow = lowArray;
+        // Deriv uses "C" (Close/Close) method: Close price is used as both High and Low
+        const stochHigh = targetArray;
+        const stochLow = targetArray;
         const results = calculateStochastic(stochHigh, stochLow, targetArray, pK, pD, smoothing);
         const kData = results.k.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
         const dData = results.d.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
