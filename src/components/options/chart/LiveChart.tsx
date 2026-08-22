@@ -1296,8 +1296,8 @@ function syncIndicators(
         seriesRef.current.set(`${ind.id}-sar`, sar);
         pluginsRef.current.set(`${ind.id}-sar`, sarPlugin);
       }
-      const step = ind.params.step || 0.02;
-      const maxStep = ind.params.maxStep || 0.2;
+      const step = ind.params.minimumAF || 0.02;
+      const maxStep = ind.params.maximumAF || 0.2;
       const results = calculateParabolicSAR(highArray, lowArray, step, maxStep);
       
       // We need to pass dummy data to the invisible line series so it has a valid timescale
@@ -1308,13 +1308,11 @@ function syncIndicators(
       if (sarPlugin) {
         const markers = results.map((val, i) => {
           if (isNaN(val)) return null;
-          // Determine color based on whether SAR is above or below price
-          const isAbove = val > highArray[i];
           return {
             time: timeArray[i] as Time,
             position: 'inBar' as const,
             shape: 'circle' as const,
-            color: isAbove ? '#ef5350' : '#00A79E',
+            color: ind.params.sarColor || '#000000',
             size: 0.5,
           };
         }).filter((m): m is any => m !== null);
