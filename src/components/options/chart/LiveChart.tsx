@@ -759,6 +759,7 @@ function syncIndicators(
 
   // Update or create active indicators
   for (const ind of activeIndicators) {
+    try {
     if (ind.type === "ma" || ind.type === "RSI") {
       let series = seriesRef.current.get(ind.id) as ISeriesApi<"Line">;
       if (!series) {
@@ -1505,6 +1506,7 @@ function syncIndicators(
         if (lowerData.length > 0) lower.setData(lowerData as any);
 
     }
+    } catch (e) { console.error('Error syncing indicator', ind.type, e); }
   }
   
   // Layout active oscillators dynamically to create a multi-pane effect without overlapping the main chart
@@ -1523,25 +1525,34 @@ function syncIndicators(
   const numOscillators = scaleArray.length;
   
   if (numOscillators > 0) {
-    const totalOscillatorHeight = paneHeight * numOscillators;
+    const totalOscillatorHeight = Math.min(0.8, paneHeight * numOscillators);
     
     // Main chart margin (make sure it doesn't overlap with the bottom oscillators, and leave a visual gap)
+    const mainBottom = Math.min(0.85, totalOscillatorHeight + 0.12);
     chart.priceScale("right").applyOptions({
-      scaleMargins: { top: 0.1, bottom: totalOscillatorHeight + 0.12 },
+      scaleMargins: { top: 0.1, bottom: mainBottom },
     });
 
     // Each oscillator gets a slice of the bottom portion
     scaleArray.forEach((scaleId, index) => {
-      const baseTop = 1 - totalOscillatorHeight + (index * paneHeight);
-      const top = baseTop + 0.05; // 5% visual gap at the top of the pane
-      const bottom = 1 - (baseTop + paneHeight) + 0.05; // 5% visual gap at the bottom
+      const actualPaneHeight = totalOscillatorHeight / numOscillators;
+      const baseTop = 1 - totalOscillatorHeight + (index * actualPaneHeight);
+      let top = Math.max(0, Math.min(0.95, baseTop + 0.05));
+      let bottom = Math.max(0, Math.min(0.95, 1 - (baseTop + actualPaneHeight) + 0.05));
+      
+      if (top + bottom >= 1) {
+        if (bottom > top) bottom = 0.95 - top;
+        else top = 0.95 - bottom;
+      }
+      
       try {
         chart.priceScale(scaleId).applyOptions({
           scaleMargins: { top, bottom },
         });
-      } catch (e) {}
-    });
-  } else {
+      } catch (e) {
+        console.error('Error applying scale options for', scaleId, e);
+      }
+    }); } else {
     // Reset main chart margin
     chart.priceScale("right").applyOptions({
       scaleMargins: { top: 0.1, bottom: 0.1 },
