@@ -21,7 +21,7 @@ export const DEFAULT_INDICATOR_PARAMS: Record<IndicatorType, Record<string, any>
   stochastic: { fastColor: "#000000", slowColor: "#ff0000", period: 14, field: "Close", smooth: true, overBoughtValue: 80, overBoughtColor: "#000000", overSoldValue: 20, overSoldColor: "#000000", showZones: true },
   wpr: { wprColor: "#000000", period: 14, overBoughtValue: -20, overBoughtColor: "#000000", overSoldValue: -80, overSoldColor: "#000000", showZones: true },
   cci: { period: 20 },
-  aroon: { period: 14 },
+  aroon: { aroonUpColor: "#00ff00", aroonDownColor: "#ff0000", period: 14 },
   adx: { period: 14 },
   ichimoku: { tenkanPeriod: 9, kijunPeriod: 26, senkouBPeriod: 52 },
   parabolic_sar: { step: 0.02, maxStep: 0.2 },
