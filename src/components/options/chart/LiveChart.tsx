@@ -492,7 +492,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
             }}
           >
             {/* The horizontal separator line */}
-            <div className={`absolute left-0 right-0 h-[1px] pointer-events-none transition-colors ${isResizing ? 'bg-blue-500' : 'bg-opt-line-strong opacity-40'}`} style={{ top: '50%' }}></div>
+            <div className={`absolute left-0 right-0 h-[1px] pointer-events-none transition-colors ${isResizing ? 'bg-blue-500' : 'bg-opt-ink-3 opacity-40'}`} style={{ top: '50%' }}></div>
             
             {/* The drag pill */}
             <div className={`w-[36px] h-[14px] rounded-full flex flex-col items-center justify-center border shadow-sm relative z-10 gap-[2px] transition-colors ${isResizing ? 'border-blue-500 bg-opt-bg-elev' : 'border-opt-line-strong bg-opt-bg-elev hover:bg-opt-bg-sunk'}`}>
