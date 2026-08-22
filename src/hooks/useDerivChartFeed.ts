@@ -49,7 +49,7 @@ interface FeedParams extends FeedCallbacks {
   enabled?: boolean;
 }
 
-const SEED_COUNT = 1000;
+const SEED_COUNT = 5000;
 
 /**
  * Market-data subscription layer on top of {@link useDerivWebSocket}.
