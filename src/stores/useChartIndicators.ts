@@ -25,7 +25,7 @@ export const DEFAULT_INDICATOR_PARAMS: Record<IndicatorType, Record<string, any>
   adx: { plusDiColor: "#00ff00", minusDiColor: "#ff0000", adxColor: "#000000", positiveBarColor: "#00ff00", negativeBarColor: "#ff0000", period: 14, smoothingPeriod: 14, showSeries: true, showShading: false, showHistogram: false },
   ichimoku: { conversionLineColor: "#2962FF", baseLineColor: "#ef5350", leadingSpanAColor: "#4caf50", leadingSpanBColor: "#ef5350", laggingSpanColor: "#00e676", conversionLinePeriod: 9, baseLinePeriod: 26, leadingSpanBPeriod: 52, laggingSpanPeriod: -26 },
   parabolic_sar: { sarColor: "#000000", minimumAF: 0.02, maximumAF: 0.2 },
-  zigzag: { deviation: 5 },
+  zigzag: { zigZagColor: "#000000", distance: 10 },
   bollinger: { period: 20, stdDev: 2 },
   donchian: { period: 20 },
   alligator: { jawPeriod: 13, jawShift: 8, teethPeriod: 8, teethShift: 5, lipsPeriod: 5, lipsShift: 3 },

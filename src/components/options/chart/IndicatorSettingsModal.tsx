@@ -101,8 +101,10 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
     if (key === "leadingSpanBPeriod") return "Leading Span B Period";
     if (key === "laggingSpanPeriod") return "Lagging Span Period";
     if (key === "sarColor") return "Color";
+    if (key === "zigZagColor") return "Color";
     if (key === "minimumAF") return "Minimum AF";
     if (key === "maximumAF") return "Maximum AF";
+    if (key === "distance") return "Distance(%)";
 
     return key
       .replace(/([A-Z])/g, ' $1')

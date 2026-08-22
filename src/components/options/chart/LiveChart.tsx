@@ -1322,11 +1322,13 @@ function syncIndicators(
     } else if (ind.type === "zigzag") {
       let zigzag = seriesRef.current.get(`${ind.id}-zigzag`) as ISeriesApi<"Line">;
       if (!zigzag) {
-        zigzag = chart.addSeries(LineSeries, { color: "#FF6D00", lineWidth: 2, priceScaleId: "right" });
+        zigzag = chart.addSeries(LineSeries, { color: ind.params.zigZagColor || "#000000", lineWidth: 2, priceScaleId: "right", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
         seriesRef.current.set(`${ind.id}-zigzag`, zigzag);
+      } else {
+        zigzag.applyOptions({ color: ind.params.zigZagColor || "#000000" });
       }
-      const deviation = ind.params.deviation || 5;
-      const results = calculateZigZag(highArray, lowArray, valueArray, deviation);
+      const distance = ind.params.distance || 10;
+      const results = calculateZigZag(highArray, lowArray, valueArray, distance);
       const zigzagData = results.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
       if (zigzagData.length > 0) zigzag.setData(zigzagData as any);
       } else if (ind.type === 'bollinger') {
