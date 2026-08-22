@@ -118,6 +118,10 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
     // Data buffers — replaced on seed, mutated tail-only on update.
     const ticksRef = useRef<FeedTick[]>([]);
     const candlesRef = useRef<FeedCandle[]>([]);
+    // For tick-mode charts, a parallel 1m candle feed is used for indicator
+    // calculations (RSI, Stochastic, etc.) to match Deriv's behavior.
+    const indicatorCandlesRef = useRef<FeedCandle[]>([]);
+
 
     // Overlay state (specs persist across series recreation).
     const priceLineSpecsRef = useRef<PriceLineSpec[]>([]);
@@ -346,7 +350,8 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
     // Re-sync indicators when the active list changes.
     useEffect(() => {
       if (chartRef.current) {
-        syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicators, seriesKind, ticksRef.current, candlesRef.current, paneHeight);
+        const iCandles = plan.style === "ticks" ? indicatorCandlesRef.current : candlesRef.current;
+        syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicators, seriesKind, ticksRef.current, iCandles, paneHeight);
       }
     }, [activeIndicators, seriesKind]);
 
@@ -365,7 +370,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
           );
           chartRef.current?.timeScale().fitContent();
         }
-        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeight);
+        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, indicatorCandlesRef.current, paneHeight);
         const last = ticks[ticks.length - 1];
         if (last) onPrice?.(last.value);
       },
@@ -381,7 +386,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
             /* out-of-order tick — ignore */
           }
         }
-        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeight);
+        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, indicatorCandlesRef.current, paneHeight);
         onPrice?.(tick.value);
       },
       onSeedCandles: (candles) => {
@@ -412,10 +417,30 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
         } catch {
           /* out-of-order candle — ignore */
         }
-        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeight);
+        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, indicatorCandlesRef.current, paneHeight);
         onPrice?.(candle.close);
       },
     });
+
+    // ── Parallel 1-minute candle feed for indicator calculations ─────────────
+    // When displaying a tick chart (1t interval), indicators like RSI and
+    // Stochastic should use candle data (1m) rather than individual ticks.
+    // Deriv's platform behaves this way internally.
+    useDerivChartFeed({
+      derivSymbol,
+      style: "candles",
+      granularity: 60, // 1 minute
+      enabled: Boolean(derivSymbol) && plan.style === "ticks",
+      onSeedCandles: (candles) => {
+        indicatorCandlesRef.current = candles;
+        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, indicatorCandlesRef.current, paneHeight);
+      },
+      onCandle: (candle) => {
+        upsertCandle(indicatorCandlesRef.current, candle);
+        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, indicatorCandlesRef.current, paneHeight);
+      },
+    });
+
 
     // ── Imperative overlay API for the future Options layer ─────────────────
     useImperativeHandle(
