@@ -1035,7 +1035,8 @@ function syncIndicators(
 
         const pK = ind.params.period || 14;
         const pD = 3;
-        const smoothing = ind.params.smooth ? 3 : 1;
+        // Temporary test: force smoothing to 1 to see if Deriv plots Fast Stochastic
+        const smoothing = 1;
         
         let targetArray = valueArray;
         switch (ind.params.field) {
@@ -1047,8 +1048,8 @@ function syncIndicators(
           case "Hlc/3": targetArray = hlc3Array; break;
         }
 
-        const stochHigh = highArray;
-        const stochLow = lowArray;
+        const stochHigh = targetArray;
+        const stochLow = targetArray;
         const results = calculateStochastic(stochHigh, stochLow, targetArray, pK, pD, smoothing);
         const kData = results.k.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
         const dData = results.d.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
