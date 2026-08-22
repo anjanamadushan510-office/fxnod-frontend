@@ -1,5 +1,9 @@
 "use client";
 
+
+import { Settings, Trash2 } from "lucide-react";
+import { INDICATOR_LIST } from "./IndicatorsModal";
+import { IndicatorSettingsModal } from "./IndicatorSettingsModal";
 import {
   forwardRef,
   useEffect,
@@ -129,7 +133,11 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
     const indicatorSeriesRef = useRef<Map<string, ISeriesApi<any>>>(new Map());
     const indicatorPluginsRef = useRef<Map<string, ISeriesMarkersPluginApi<Time>>>(new Map());
       const indicatorPriceLinesRef = useRef<Map<string, { overBought?: IPriceLine, overSold?: IPriceLine }>>(new Map());
+    
     const allIndicators = useChartIndicators((s) => s.indicators);
+    const removeIndicator = useChartIndicators((s) => s.removeIndicator);
+    const [settingsIndicatorId, setSettingsIndicatorId] = useState<string | null>(null);
+
     const activeIndicators = useMemo(() => allIndicators.filter((i) => i.symbol === symbol), [allIndicators, symbol]);
     const activeIndicatorsRef = useRef<IndicatorConfig[]>(activeIndicators);
     activeIndicatorsRef.current = activeIndicators;
@@ -445,6 +453,46 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
 
     return (
       <div className="relative h-full w-full min-h-0">
+        
+        {/* Indicator Legends */}
+        <div className="absolute top-2 left-2 z-10 flex flex-col gap-1 pointer-events-none">
+          {activeIndicators.filter(ind => ["ma", "ma_envelope", "rainbow_ma", "bollinger", "donchian", "alligator", "fractal", "ichimoku", "parabolic_sar", "zigzag"].includes(ind.type)).map(ind => {
+            const meta = INDICATOR_LIST.find(i => i.id === ind.type);
+            const name = meta ? meta.name : ind.type;
+            return (
+              <div key={ind.id} className="flex items-center gap-2 pointer-events-auto group">
+                <span className="text-[11px] font-medium text-opt-ink-2 bg-opt-bg-main/50 px-1 rounded">{name}</span>
+                <button onClick={() => setSettingsIndicatorId(ind.id)} className="opacity-0 group-hover:opacity-100 p-1 hover:bg-opt-bg-hover rounded text-opt-ink-3 hover:text-opt-ink-1 transition-all"><Settings className="w-3 h-3" /></button>
+                <button onClick={() => removeIndicator(ind.id)} className="opacity-0 group-hover:opacity-100 p-1 hover:bg-opt-bg-hover rounded text-opt-ink-3 hover:text-red-400 transition-all"><Trash2 className="w-3 h-3" /></button>
+              </div>
+            );
+          })}
+        </div>
+
+        {activeIndicators.filter(ind => !["ma", "ma_envelope", "rainbow_ma", "bollinger", "donchian", "alligator", "fractal", "ichimoku", "parabolic_sar", "zigzag"].includes(ind.type)).map((ind, index, arr) => {
+          const meta = INDICATOR_LIST.find(i => i.id === ind.type);
+          const name = meta ? meta.name.toUpperCase() : ind.type.toUpperCase();
+          const totalOscillatorHeight = Math.min(0.8, paneHeight * arr.length);
+          const actualPaneHeight = totalOscillatorHeight / arr.length;
+          const baseTop = 1 - totalOscillatorHeight + (index * actualPaneHeight);
+          
+          return (
+            <div key={ind.id} className="absolute left-2 z-10 flex items-center gap-2 pointer-events-auto group" style={{ top: `calc(${baseTop * 100}% + 6px)` }}>
+               <span className="text-[10px] font-bold text-opt-ink-2 px-1 rounded">{name}</span>
+               <button onClick={() => setSettingsIndicatorId(ind.id)} className="opacity-0 group-hover:opacity-100 p-1 hover:bg-opt-bg-hover rounded text-opt-ink-3 hover:text-opt-ink-1 transition-all"><Settings className="w-3 h-3" /></button>
+               <button onClick={() => removeIndicator(ind.id)} className="opacity-0 group-hover:opacity-100 p-1 hover:bg-opt-bg-hover rounded text-opt-ink-3 hover:text-red-400 transition-all"><Trash2 className="w-3 h-3" /></button>
+            </div>
+          );
+        })}
+
+        {settingsIndicatorId && (
+          <IndicatorSettingsModal 
+             indicatorId={settingsIndicatorId} 
+              
+             onClose={() => setSettingsIndicatorId(null)} 
+          />
+        )}
+
         <div ref={containerRef} className="absolute inset-0" />
         {numOscillators > 0 && (
           <div 
@@ -768,11 +816,11 @@ function syncIndicators(
         series = chart.addSeries(LineSeries, {
           color: isRsi ? "#9c27b0" : (ind.params.maType === "SMA" ? "#ff9800" : (ind.params.maType === "EMA" ? "#2196f3" : "#00A79E")),
           lineWidth: 2,
-          priceScaleId: isRsi ? "rsi-scale" : "right",
+          priceScaleId: isRsi ? `${ind.id}-scale` : "right",
           ...(isRsi ? { autoscaleInfoProvider: () => ({ priceRange: { minValue: 0, maxValue: 100 } }) } : {})
         });
         if (isRsi) {
-          chart.priceScale("rsi-scale").applyOptions({
+          chart.priceScale(`${ind.id}-scale`).applyOptions({
             scaleMargins: { top: 0.8, bottom: 0 },
           });
         }
@@ -804,8 +852,8 @@ function syncIndicators(
             let obLine = seriesRef.current.get(`${ind.id}-ob`) as ISeriesApi<"Line">;
             let osLine = seriesRef.current.get(`${ind.id}-os`) as ISeriesApi<"Line">;
             if (!obLine || !osLine) {
-                obLine = chart.addSeries(LineSeries, { color: obCol, lineWidth: 1, lineStyle: LineStyle.Solid, priceScaleId: "rsi-scale", lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
-                osLine = chart.addSeries(LineSeries, { color: osCol, lineWidth: 1, lineStyle: LineStyle.Solid, priceScaleId: "rsi-scale", lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
+                obLine = chart.addSeries(LineSeries, { color: obCol, lineWidth: 1, lineStyle: LineStyle.Solid, priceScaleId: `${ind.id}-scale`, lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
+                osLine = chart.addSeries(LineSeries, { color: osCol, lineWidth: 1, lineStyle: LineStyle.Solid, priceScaleId: `${ind.id}-scale`, lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
                 seriesRef.current.set(`${ind.id}-ob`, obLine);
                 seriesRef.current.set(`${ind.id}-os`, osLine);
             } else {
@@ -911,20 +959,20 @@ function syncIndicators(
       
       if (!hist || !macdLine || !signalLine) {
         hist = chart.addSeries(HistogramSeries, {
-          priceScaleId: "macd-scale",
+          priceScaleId: `${ind.id}-scale`,
           priceFormat: { type: 'price', precision: 4, minMove: 0.0001 }
         });
         macdLine = chart.addSeries(LineSeries, {
           lineWidth: 2,
-          priceScaleId: "macd-scale",
+          priceScaleId: `${ind.id}-scale`,
           priceFormat: { type: 'price', precision: 4, minMove: 0.0001 }
         });
         signalLine = chart.addSeries(LineSeries, {
           lineWidth: 2,
-          priceScaleId: "macd-scale",
+          priceScaleId: `${ind.id}-scale`,
           priceFormat: { type: 'price', precision: 4, minMove: 0.0001 }
         });
-        chart.priceScale("macd-scale").applyOptions({
+        chart.priceScale(`${ind.id}-scale`).applyOptions({
           scaleMargins: { top: 0.75, bottom: 0 },
         });
         seriesRef.current.set(`${ind.id}-hist`, hist);
@@ -949,10 +997,10 @@ function syncIndicators(
       if (!hist) {
         hist = chart.addSeries(HistogramSeries, {
           color: "#26a69a",
-          priceScaleId: "ao-scale",
+          priceScaleId: `${ind.id}-scale`,
           priceFormat: { type: 'price', precision: 4, minMove: 0.0001 }
         });
-        chart.priceScale("ao-scale").applyOptions({ scaleMargins: { top: 0.75, bottom: 0 } });
+        chart.priceScale(`${ind.id}-scale`).applyOptions({ scaleMargins: { top: 0.75, bottom: 0 } });
         seriesRef.current.set(ind.id, hist);
       }
       const incColor = ind.params.increasingBarColor || "#26a69a";
@@ -971,10 +1019,10 @@ function syncIndicators(
         series = chart.addSeries(LineSeries, {
           color: ind.type === "roc" ? "#000000" : (ind.params.wprColor || "#000000"),
           lineWidth: 2,
-          priceScaleId: `${ind.type}-scale`,
+          priceScaleId: `${ind.id}-scale`,
           priceFormat: { type: 'price', precision: ind.type === "wpr" ? 2 : 4, minMove: ind.type === "wpr" ? 0.01 : 0.0001 }
         });
-        chart.priceScale(`${ind.type}-scale`).applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
+        chart.priceScale(`${ind.id}-scale`).applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
         
         if (ind.type === "roc") {
           series.createPriceLine({ price: 0, color: "#9e9e9e", lineWidth: 1, lineStyle: LineStyle.Solid, axisLabelVisible: false, title: "0" });
@@ -997,8 +1045,8 @@ function syncIndicators(
           let obLine = seriesRef.current.get(`${ind.id}-ob`) as ISeriesApi<"Line">;
           let osLine = seriesRef.current.get(`${ind.id}-os`) as ISeriesApi<"Line">;
           if (!obLine || !osLine) {
-              obLine = chart.addSeries(LineSeries, { color: obCol, lineWidth: 1, lineStyle: LineStyle.Solid, priceScaleId: "wpr-scale", lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
-              osLine = chart.addSeries(LineSeries, { color: osCol, lineWidth: 1, lineStyle: LineStyle.Solid, priceScaleId: "wpr-scale", lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
+              obLine = chart.addSeries(LineSeries, { color: obCol, lineWidth: 1, lineStyle: LineStyle.Solid, priceScaleId: `${ind.id}-scale`, lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
+              osLine = chart.addSeries(LineSeries, { color: osCol, lineWidth: 1, lineStyle: LineStyle.Solid, priceScaleId: `${ind.id}-scale`, lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
               seriesRef.current.set(`${ind.id}-ob`, obLine);
               seriesRef.current.set(`${ind.id}-os`, osLine);
           } else {
@@ -1044,10 +1092,10 @@ function syncIndicators(
         series = chart.addSeries(LineSeries, {
           color: ind.params.cciColor || "#000000",
           lineWidth: 2,
-          priceScaleId: "cci-scale",
+          priceScaleId: `${ind.id}-scale`,
           priceFormat: { type: 'price', precision: 2, minMove: 0.01 }
         });
-        chart.priceScale("cci-scale").applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
+        chart.priceScale(`${ind.id}-scale`).applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
         seriesRef.current.set(ind.id, series);
       } else {
         series.applyOptions({ color: ind.params.cciColor || "#000000" });
@@ -1062,8 +1110,8 @@ function syncIndicators(
         let obLine = seriesRef.current.get(`${ind.id}-ob`) as ISeriesApi<"Line">;
         let osLine = seriesRef.current.get(`${ind.id}-os`) as ISeriesApi<"Line">;
         if (!obLine || !osLine) {
-            obLine = chart.addSeries(LineSeries, { color: obCol, lineWidth: 1, lineStyle: LineStyle.Solid, priceScaleId: "cci-scale", lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
-            osLine = chart.addSeries(LineSeries, { color: osCol, lineWidth: 1, lineStyle: LineStyle.Solid, priceScaleId: "cci-scale", lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
+            obLine = chart.addSeries(LineSeries, { color: obCol, lineWidth: 1, lineStyle: LineStyle.Solid, priceScaleId: `${ind.id}-scale`, lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
+            osLine = chart.addSeries(LineSeries, { color: osCol, lineWidth: 1, lineStyle: LineStyle.Solid, priceScaleId: `${ind.id}-scale`, lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
             seriesRef.current.set(`${ind.id}-ob`, obLine);
             seriesRef.current.set(`${ind.id}-os`, osLine);
         } else {
@@ -1090,9 +1138,9 @@ function syncIndicators(
         let kLine = seriesRef.current.get(`${ind.id}-k`) as ISeriesApi<"Line">;
         let dLine = seriesRef.current.get(`${ind.id}-d`) as ISeriesApi<"Line">;
         if (!kLine || !dLine) {
-          kLine = chart.addSeries(LineSeries, { color: ind.params.fastColor || "#000000", lineWidth: 2, priceScaleId: "stoch-scale", priceFormat: { type: 'price', precision: 2, minMove: 0.01 }, autoscaleInfoProvider: () => ({ priceRange: { minValue: 0, maxValue: 100 } }) });
-          dLine = chart.addSeries(LineSeries, { color: ind.params.slowColor || "#ff0000", lineWidth: 2, priceScaleId: "stoch-scale", priceFormat: { type: 'price', precision: 2, minMove: 0.01 }, autoscaleInfoProvider: () => ({ priceRange: { minValue: 0, maxValue: 100 } }) });
-          chart.priceScale("stoch-scale").applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
+          kLine = chart.addSeries(LineSeries, { color: ind.params.fastColor || "#000000", lineWidth: 2, priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'price', precision: 2, minMove: 0.01 }, autoscaleInfoProvider: () => ({ priceRange: { minValue: 0, maxValue: 100 } }) });
+          dLine = chart.addSeries(LineSeries, { color: ind.params.slowColor || "#ff0000", lineWidth: 2, priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'price', precision: 2, minMove: 0.01 }, autoscaleInfoProvider: () => ({ priceRange: { minValue: 0, maxValue: 100 } }) });
+          chart.priceScale(`${ind.id}-scale`).applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
           seriesRef.current.set(`${ind.id}-k`, kLine);
           seriesRef.current.set(`${ind.id}-d`, dLine);
         } else {
@@ -1109,8 +1157,8 @@ function syncIndicators(
           let obLine = seriesRef.current.get(`${ind.id}-ob`) as ISeriesApi<"Line">;
           let osLine = seriesRef.current.get(`${ind.id}-os`) as ISeriesApi<"Line">;
           if (!obLine || !osLine) {
-              obLine = chart.addSeries(LineSeries, { color: obCol, lineWidth: 1, lineStyle: LineStyle.Solid, priceScaleId: "stoch-scale", lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
-              osLine = chart.addSeries(LineSeries, { color: osCol, lineWidth: 1, lineStyle: LineStyle.Solid, priceScaleId: "stoch-scale", lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
+              obLine = chart.addSeries(LineSeries, { color: obCol, lineWidth: 1, lineStyle: LineStyle.Solid, priceScaleId: `${ind.id}-scale`, lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
+              osLine = chart.addSeries(LineSeries, { color: osCol, lineWidth: 1, lineStyle: LineStyle.Solid, priceScaleId: `${ind.id}-scale`, lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
               seriesRef.current.set(`${ind.id}-ob`, obLine);
               seriesRef.current.set(`${ind.id}-os`, osLine);
           } else {
@@ -1156,9 +1204,9 @@ function syncIndicators(
       let upLine = seriesRef.current.get(`${ind.id}-aroonUp`) as ISeriesApi<"Line">;
       let downLine = seriesRef.current.get(`${ind.id}-aroonDown`) as ISeriesApi<"Line">;
       if (!upLine || !downLine) {
-        upLine = chart.addSeries(LineSeries, { color: ind.params.aroonUpColor || "#00ff00", lineWidth: 2, priceScaleId: "aroon-scale", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
-        downLine = chart.addSeries(LineSeries, { color: ind.params.aroonDownColor || "#ff0000", lineWidth: 2, priceScaleId: "aroon-scale", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
-        chart.priceScale("aroon-scale").applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
+        upLine = chart.addSeries(LineSeries, { color: ind.params.aroonUpColor || "#00ff00", lineWidth: 2, priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+        downLine = chart.addSeries(LineSeries, { color: ind.params.aroonDownColor || "#ff0000", lineWidth: 2, priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+        chart.priceScale(`${ind.id}-scale`).applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
         seriesRef.current.set(`${ind.id}-aroonUp`, upLine);
         seriesRef.current.set(`${ind.id}-aroonDown`, downLine);
       } else {
@@ -1183,11 +1231,11 @@ function syncIndicators(
         if (minusDI) chart.removeSeries(minusDI);
         if (hist) chart.removeSeries(hist);
         
-        hist = chart.addSeries(HistogramSeries, { priceScaleId: "adx-scale", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
-        adxLine = chart.addSeries(LineSeries, { color: ind.params.adxColor || "#000000", lineWidth: 2, priceScaleId: "adx-scale", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
-        plusDI = chart.addSeries(LineSeries, { color: ind.params.plusDiColor || "#00ff00", lineWidth: 2, priceScaleId: "adx-scale", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
-        minusDI = chart.addSeries(LineSeries, { color: ind.params.minusDiColor || "#ff0000", lineWidth: 2, priceScaleId: "adx-scale", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
-        chart.priceScale("adx-scale").applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
+        hist = chart.addSeries(HistogramSeries, { priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+        adxLine = chart.addSeries(LineSeries, { color: ind.params.adxColor || "#000000", lineWidth: 2, priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+        plusDI = chart.addSeries(LineSeries, { color: ind.params.plusDiColor || "#00ff00", lineWidth: 2, priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+        minusDI = chart.addSeries(LineSeries, { color: ind.params.minusDiColor || "#ff0000", lineWidth: 2, priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+        chart.priceScale(`${ind.id}-scale`).applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
         
         seriesRef.current.set(`${ind.id}-hist`, hist);
         seriesRef.current.set(`${ind.id}-adx`, adxLine);
@@ -1511,14 +1559,11 @@ function syncIndicators(
   
   // Layout active oscillators dynamically to create a multi-pane effect without overlapping the main chart
   const activeScales = new Set<string>();
+  const isOverlay = (type: string) => ["ma", "ma_envelope", "rainbow_ma", "bollinger", "donchian", "alligator", "fractal", "ichimoku", "parabolic_sar", "zigzag"].includes(type);
   activeIndicators.forEach((ind) => {
-    if (ind.type === "RSI") activeScales.add("rsi-scale");
-    else if (ind.type === "MACD") activeScales.add("macd-scale");
-    else if (ind.type === "awesome_oscillator") activeScales.add("ao-scale");
-    else if (ind.type === "stochastic") activeScales.add("stoch-scale");
-    else if (ind.type === "aroon") activeScales.add("aroon-scale");
-    else if (ind.type === "adx") activeScales.add("adx-scale");
-    else if (ind.type === "roc" || ind.type === "wpr" || ind.type === "cci") activeScales.add(`${ind.type}-scale`);
+    if (!isOverlay(ind.type)) {
+      activeScales.add(`${ind.id}-scale`);
+    }
   });
 
   const scaleArray = Array.from(activeScales);
