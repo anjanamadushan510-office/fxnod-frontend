@@ -1321,8 +1321,9 @@ function syncIndicators(
 
     // Each oscillator gets a slice of the bottom portion
     scaleArray.forEach((scaleId, index) => {
-      const top = 1 - totalOscillatorHeight + (index * paneHeight);
-      const bottom = 1 - (top + paneHeight) + 0.02; // Small 2% visual gap between panes
+      const baseTop = 1 - totalOscillatorHeight + (index * paneHeight);
+      const top = baseTop + 0.05; // 5% visual gap at the top of the pane
+      const bottom = 1 - (baseTop + paneHeight) + 0.05; // 5% visual gap at the bottom
       try {
         chart.priceScale(scaleId).applyOptions({
           scaleMargins: { top, bottom },
