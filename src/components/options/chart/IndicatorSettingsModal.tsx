@@ -182,6 +182,25 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
         </div>
       );
     }
+    if (key === "movingAverageType") {
+      return (
+        <div key={key} className="flex flex-col gap-2 rounded-lg border border-opt-line p-3">
+          <label className="text-[11px] font-medium text-opt-ink-3">{formatLabel(key)}</label>
+          <select
+            value={value}
+            onChange={(e) => handleParamChange(key, e.target.value)}
+            className="w-full rounded bg-transparent px-2 py-1 text-[13px] text-opt-ink outline-none"
+          >
+            <option value="Simple">Simple</option>
+            <option value="Exponential">Exponential</option>
+            <option value="Weighted">Weighted</option>
+            <option value="Hull">Hull</option>
+            <option value="Zero Lag">Zero Lag</option>
+            <option value="Time Series">Time Series</option>
+          </select>
+        </div>
+      );
+    }
     if (key.toLowerCase().includes("color")) {
       return (
         <div key={key} className="flex h-full flex-col justify-center gap-1.5 rounded-lg border border-opt-line p-3">
