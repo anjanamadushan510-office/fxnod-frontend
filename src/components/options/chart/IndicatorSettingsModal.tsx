@@ -286,7 +286,7 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
             <div>
               <h3 className="mb-3 text-[12px] font-bold text-opt-ink">Result</h3>
               <div className="flex flex-col gap-4">
-                {Object.entries(params).map(([key, value]) => renderParam(key, value))}
+                {Object.keys(DEFAULT_INDICATOR_PARAMS[indicator.type] || {}).map((key) => renderParam(key, params[key]))}
               </div>
             </div>
           )}
