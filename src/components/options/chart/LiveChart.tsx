@@ -455,15 +455,15 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
       <div className="relative h-full w-full min-h-0">
         
         {/* Indicator Legends */}
-        <div className="absolute top-2 left-2 z-10 flex flex-col gap-1 pointer-events-none">
+        <div className="absolute top-2 left-14 z-10 flex flex-col gap-1 pointer-events-none">
           {activeIndicators.filter(ind => ["ma", "ma_envelope", "rainbow_ma", "bollinger", "donchian", "alligator", "fractal", "ichimoku", "parabolic_sar", "zigzag"].includes(ind.type)).map(ind => {
             const meta = INDICATOR_LIST.find(i => i.id === ind.type);
             const name = meta ? meta.name : ind.type;
             return (
               <div key={ind.id} className="flex items-center gap-2 pointer-events-auto group">
                 <span className="text-[11px] font-medium text-opt-ink-2 bg-opt-bg-main/50 px-1 rounded">{name}</span>
-                <button onClick={() => setSettingsIndicatorId(ind.id)} className="opacity-0 group-hover:opacity-100 p-1 hover:bg-opt-bg-hover rounded text-opt-ink-3 hover:text-opt-ink-1 transition-all"><Settings className="w-3 h-3" /></button>
-                <button onClick={() => removeIndicator(ind.id)} className="opacity-0 group-hover:opacity-100 p-1 hover:bg-opt-bg-hover rounded text-opt-ink-3 hover:text-red-400 transition-all"><Trash2 className="w-3 h-3" /></button>
+                <button onClick={() => setSettingsIndicatorId(ind.id)} className="opacity-100 p-1 hover:bg-opt-bg-hover rounded text-opt-ink-3 hover:text-opt-ink-1 transition-all"><Settings className="w-3 h-3" /></button>
+                <button onClick={() => removeIndicator(ind.id)} className="opacity-100 p-1 hover:bg-opt-bg-hover rounded text-opt-ink-3 hover:text-red-400 transition-all"><Trash2 className="w-3 h-3" /></button>
               </div>
             );
           })}
@@ -477,10 +477,10 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
           const baseTop = 1 - totalOscillatorHeight + (index * actualPaneHeight);
           
           return (
-            <div key={ind.id} className="absolute left-2 z-10 flex items-center gap-2 pointer-events-auto group" style={{ top: `calc(${baseTop * 100}% + 6px)` }}>
+            <div key={ind.id} className="absolute left-14 z-10 flex items-center gap-2 pointer-events-auto group" style={{ top: `calc((100% - 26px) * ${baseTop} + 6px)` }}>
                <span className="text-[10px] font-bold text-opt-ink-2 px-1 rounded">{name}</span>
-               <button onClick={() => setSettingsIndicatorId(ind.id)} className="opacity-0 group-hover:opacity-100 p-1 hover:bg-opt-bg-hover rounded text-opt-ink-3 hover:text-opt-ink-1 transition-all"><Settings className="w-3 h-3" /></button>
-               <button onClick={() => removeIndicator(ind.id)} className="opacity-0 group-hover:opacity-100 p-1 hover:bg-opt-bg-hover rounded text-opt-ink-3 hover:text-red-400 transition-all"><Trash2 className="w-3 h-3" /></button>
+               <button onClick={() => setSettingsIndicatorId(ind.id)} className="opacity-100 p-1 hover:bg-opt-bg-hover rounded text-opt-ink-3 hover:text-opt-ink-1 transition-all"><Settings className="w-3 h-3" /></button>
+               <button onClick={() => removeIndicator(ind.id)} className="opacity-100 p-1 hover:bg-opt-bg-hover rounded text-opt-ink-3 hover:text-red-400 transition-all"><Trash2 className="w-3 h-3" /></button>
             </div>
           );
         })}
