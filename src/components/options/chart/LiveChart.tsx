@@ -794,236 +794,35 @@ function syncIndicators(
         
         series.applyOptions({ color: ind.params.rsiColor || "#9c27b0" });
         
-        if (ind.params.showZones !== false) {
+        let obLine = seriesRef.current.get(`${ind.id}-ob`) as ISeriesApi<"Line">;
+          let osLine = seriesRef.current.get(`${ind.id}-os`) as ISeriesApi<"Line">;
+          
+          if (ind.params.showZones !== false) {
             const obVal = ind.params.overBoughtValue ?? 80;
             const osVal = ind.params.overSoldValue ?? 20;
-            const obCol = ind.params.overBoughtColor || "#ffffff";
-            const osCol = ind.params.overSoldColor || "#ffffff";
+            const obCol = ind.params.overBoughtColor || "#000000";
+            const osCol = ind.params.overSoldColor || "#000000";
             
-            let lines = priceLinesRef.current.get(ind.id);
-            if (!lines) {
-                const overBought = series.createPriceLine({ price: obVal, color: obCol, lineWidth: 1, lineStyle: LineStyle.Solid, axisLabelVisible: false, title: "" });
-                const overSold = series.createPriceLine({ price: osVal, color: osCol, lineWidth: 1, lineStyle: LineStyle.Solid, axisLabelVisible: false, title: "" });
-                priceLinesRef.current.set(ind.id, { overBought, overSold });
+            if (!obLine || !osLine) {
+              obLine = chart.addSeries(LineSeries, { color: obCol, lineWidth: 1, lineStyle: LineStyle.Solid, priceScaleId: "stoch-scale", lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
+              osLine = chart.addSeries(LineSeries, { color: osCol, lineWidth: 1, lineStyle: LineStyle.Solid, priceScaleId: "stoch-scale", lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
+              seriesRef.current.set(`${ind.id}-ob`, obLine);
+              seriesRef.current.set(`${ind.id}-os`, osLine);
             } else {
-                if (lines.overBought) lines.overBought.applyOptions({ price: obVal, color: obCol });
-                if (lines.overSold) lines.overSold.applyOptions({ price: osVal, color: osCol });
+              obLine.applyOptions({ color: obCol });
+              osLine.applyOptions({ color: osCol });
             }
-        } else {
-            let lines = priceLinesRef.current.get(ind.id);
-            if (lines) {
-                try { if (lines.overBought) series.removePriceLine(lines.overBought); } catch {}
-                try { if (lines.overSold) series.removePriceLine(lines.overSold); } catch {}
-                priceLinesRef.current.delete(ind.id);
-            }
-        }
-      } else if (ind.type === "ma") {
-        const maType = ind.params.maType || "SMA";
-        if (maType === "SMA") results = calculateSMA(valueArray, p);
-        else if (maType === "EMA") results = calculateEMA(valueArray, p);
-        else if (maType === "WMA") results = calculateWMA(valueArray, p);
-        else results = calculateSMA(valueArray, p);
-      }
-
-      const data = results.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
-      if (data.length > 0) {
-        series.setData(data as any);
-      }
-    } else if (ind.type === "ma_envelope") {
-      let upper = seriesRef.current.get(`${ind.id}-upper`) as ISeriesApi<"Line">;
-      let middle = seriesRef.current.get(`${ind.id}-middle`) as ISeriesApi<"Line">;
-      let lower = seriesRef.current.get(`${ind.id}-lower`) as ISeriesApi<"Line">;
-      
-      if (!upper || !middle || !lower) {
-        upper = chart.addSeries(LineSeries, { color: '#2196f3', lineWidth: 1, priceScaleId: 'right' });
-        middle = chart.addSeries(LineSeries, { color: '#ff9800', lineWidth: 1, priceScaleId: 'right' });
-        lower = chart.addSeries(LineSeries, { color: '#2196f3', lineWidth: 1, priceScaleId: 'right' });
-        seriesRef.current.set(`${ind.id}-upper`, upper);
-        seriesRef.current.set(`${ind.id}-middle`, middle);
-        seriesRef.current.set(`${ind.id}-lower`, lower);
-      }
-      
-      const p = ind.params.period || 50;
-      const shift = ind.params.shift || 5;
-      const shiftType = ind.params.shiftType || "percent";
-      const maType = ind.params.maType || "SMA";
-      
-      const results = calculateMAEnvelope(valueArray, p, maType, shift, shiftType);
-      
-      const upperData = results.upper.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
-      const middleData = results.middle.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
-      const lowerData = results.lower.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
-      
-      if (upperData.length > 0) upper.setData(upperData as any);
-      if (middleData.length > 0) middle.setData(middleData as any);
-      if (lowerData.length > 0) lower.setData(lowerData as any);
-    } else if (ind.type === "rainbow_ma") {
-      const numLines = 10;
-      let linesArr: ISeriesApi<"Line">[] = [];
-      
-      const colors = [
-        '#ff3b3b', '#ff9800', '#ffeb3b', '#8bc34a', '#4caf50', 
-        '#00bcd4', '#2196f3', '#3f51b5', '#9c27b0', '#e91e63'
-      ];
-      
-      for (let k = 0; k < numLines; k++) {
-        let line = seriesRef.current.get(`${ind.id}-rainbow-${k}`) as ISeriesApi<"Line">;
-        if (!line) {
-          line = chart.addSeries(LineSeries, { color: colors[k], lineWidth: 1, priceScaleId: 'right' });
-          seriesRef.current.set(`${ind.id}-rainbow-${k}`, line);
-        }
-        linesArr.push(line);
-      }
-      
-      const p = ind.params.period || 2;
-      const maType = ind.params.maType || "SMA";
-      const results = calculateRainbowMA(valueArray, p, maType);
-      
-      for (let k = 0; k < numLines; k++) {
-        const data = results[k].map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
-        if (data.length > 0) linesArr[k].setData(data as any);
-      }
-    } else if (ind.type === "MACD") {
-      let hist = seriesRef.current.get(`${ind.id}-hist`) as ISeriesApi<"Histogram">;
-      let macdLine = seriesRef.current.get(`${ind.id}-macd`) as ISeriesApi<"Line">;
-      let signalLine = seriesRef.current.get(`${ind.id}-signal`) as ISeriesApi<"Line">;
-      
-      if (!hist || !macdLine || !signalLine) {
-        hist = chart.addSeries(HistogramSeries, {
-          priceScaleId: "macd-scale",
-          priceFormat: { type: 'price', precision: 4, minMove: 0.0001 }
-        });
-        macdLine = chart.addSeries(LineSeries, {
-          lineWidth: 2,
-          priceScaleId: "macd-scale",
-          priceFormat: { type: 'price', precision: 4, minMove: 0.0001 }
-        });
-        signalLine = chart.addSeries(LineSeries, {
-          lineWidth: 2,
-          priceScaleId: "macd-scale",
-          priceFormat: { type: 'price', precision: 4, minMove: 0.0001 }
-        });
-        chart.priceScale("macd-scale").applyOptions({
-          scaleMargins: { top: 0.75, bottom: 0 },
-        });
-        seriesRef.current.set(`${ind.id}-hist`, hist);
-        seriesRef.current.set(`${ind.id}-macd`, macdLine);
-        seriesRef.current.set(`${ind.id}-signal`, signalLine);
-      }
-
-      const pFast = ind.params.fastPeriod || 12;
-      const pSlow = ind.params.slowPeriod || 26;
-      const pSignal = ind.params.signalPeriod || 9;
-      const results = calculateMACD(valueArray, pFast, pSlow, pSignal);
-
-      const histData = results.histogram.map((val, i) => ({ time: timeArray[i], value: val, color: val >= 0 ? "#26a69a" : "#ef5350" })).filter(d => !isNaN(d.value));
-      const macdData = results.macd.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
-      const signalData = results.signal.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
-
-      if (histData.length > 0) hist.setData(histData as any);
-      if (macdData.length > 0) macdLine.setData(macdData as any);
-      if (signalData.length > 0) signalLine.setData(signalData as any);
-    } else if (ind.type === "awesome_oscillator") {
-      let hist = seriesRef.current.get(ind.id) as ISeriesApi<"Histogram">;
-      if (!hist) {
-        hist = chart.addSeries(HistogramSeries, {
-          color: "#26a69a",
-          priceScaleId: "ao-scale",
-          priceFormat: { type: 'price', precision: 4, minMove: 0.0001 }
-        });
-        chart.priceScale("ao-scale").applyOptions({ scaleMargins: { top: 0.75, bottom: 0 } });
-        seriesRef.current.set(ind.id, hist);
-      }
-      const incColor = ind.params.increasingBarColor || "#26a69a";
-      const decColor = ind.params.decreasingBarColor || "#ef5350";
-      
-      const results = calculateAwesomeOscillator(highArray, lowArray);
-      const data = results.map((val, i) => ({ 
-        time: timeArray[i], 
-        value: val, 
-        color: val > (results[i - 1] || 0) ? incColor : decColor 
-      })).filter(d => !isNaN(d.value));
-      if (data.length > 0) hist.setData(data as any);
-    } else if (ind.type === "roc" || ind.type === "wpr" || ind.type === "cci") {
-      let series = seriesRef.current.get(ind.id) as ISeriesApi<"Line">;
-      if (!series) {
-        series = chart.addSeries(LineSeries, {
-          color: ind.type === "roc" ? "#000000" : (ind.type === "cci" ? "#00A79E" : "#ff9800"),
-          lineWidth: 2,
-          priceScaleId: `${ind.type}-scale`,
-          priceFormat: { type: 'price', precision: ind.type === "wpr" ? 2 : 4, minMove: ind.type === "wpr" ? 0.01 : 0.0001 }
-        });
-        chart.priceScale(`${ind.type}-scale`).applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
-        
-        if (ind.type === "roc" || ind.type === "cci") {
-          series.createPriceLine({ price: 0, color: "#9e9e9e", lineWidth: 1, lineStyle: LineStyle.Solid, axisLabelVisible: false, title: "0" });
-        } else if (ind.type === "wpr") {
-          series.createPriceLine({ price: -20, color: "#ef5350", lineWidth: 1, lineStyle: LineStyle.Dashed, axisLabelVisible: false, title: "" });
-          series.createPriceLine({ price: -80, color: "#26a69a", lineWidth: 1, lineStyle: LineStyle.Dashed, axisLabelVisible: false, title: "" });
-        }
-        
-        seriesRef.current.set(ind.id, series);
-      }
-        let results: number[] = [];
-        const p = ind.params.period || 14;
-        
-        if (ind.type === "roc") {
-          series.applyOptions({ color: ind.params.rocColor || "#000000" });
-          let targetArray = valueArray;
-          switch (ind.params.field) {
-            case "Open": targetArray = openArray; break;
-            case "High": targetArray = highArray; break;
-            case "Low": targetArray = lowArray; break;
-            case "Close": targetArray = valueArray; break;
-            case "Hl/2": targetArray = hl2Array; break;
-            case "Hlc/3": targetArray = hlc3Array; break;
-          }
-          results = calculateROC(targetArray, p);
-        }
-        if (ind.type === "wpr") results = calculateWilliamsR(highArray, lowArray, valueArray, p);
-        if (ind.type === "cci") results = calculateCCI(highArray, lowArray, valueArray, ind.params.period || 20);
-
-      const data = results.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
-      if (data.length > 0) series.setData(data as any);
-      } else if (ind.type === "stochastic") {
-        let kLine = seriesRef.current.get(`${ind.id}-k`) as ISeriesApi<"Line">;
-        let dLine = seriesRef.current.get(`${ind.id}-d`) as ISeriesApi<"Line">;
-        if (!kLine || !dLine) {
-          kLine = chart.addSeries(LineSeries, { color: ind.params.fastColor || "#000000", lineWidth: 2, priceScaleId: "stoch-scale", priceFormat: { type: 'price', precision: 2, minMove: 0.01 }, autoscaleInfoProvider: () => ({ priceRange: { minValue: 0, maxValue: 100 } }) });
-          dLine = chart.addSeries(LineSeries, { color: ind.params.slowColor || "#ff0000", lineWidth: 2, priceScaleId: "stoch-scale", priceFormat: { type: 'price', precision: 2, minMove: 0.01 }, autoscaleInfoProvider: () => ({ priceRange: { minValue: 0, maxValue: 100 } }) });
-          chart.priceScale("stoch-scale").applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
-          seriesRef.current.set(`${ind.id}-k`, kLine);
-          seriesRef.current.set(`${ind.id}-d`, dLine);
-        } else {
-          kLine.applyOptions({ color: ind.params.fastColor || "#000000" });
-          dLine.applyOptions({ color: ind.params.slowColor || "#ff0000" });
-        }
-        
-        if (ind.params.showZones !== false) {
-          const obVal = ind.params.overBoughtValue ?? 80;
-          const osVal = ind.params.overSoldValue ?? 20;
-          const obCol = ind.params.overBoughtColor || "#000000";
-          const osCol = ind.params.overSoldColor || "#000000";
-          
-          let lines = priceLinesRef.current.get(ind.id);
-          if (!lines) {
-              const overBought = kLine.createPriceLine({ price: obVal, color: obCol, lineWidth: 1, lineStyle: LineStyle.Solid, axisLabelVisible: false, title: "" });
-              const overSold = kLine.createPriceLine({ price: osVal, color: osCol, lineWidth: 1, lineStyle: LineStyle.Solid, axisLabelVisible: false, title: "" });
-              priceLinesRef.current.set(ind.id, { overBought, overSold });
+            
+            const obData = timeArray.map((t) => ({ time: t, value: obVal }));
+            const osData = timeArray.map((t) => ({ time: t, value: osVal }));
+            obLine.setData(obData as any);
+            osLine.setData(osData as any);
           } else {
-              if (lines.overBought) lines.overBought.applyOptions({ price: obVal, color: obCol });
-              if (lines.overSold) lines.overSold.applyOptions({ price: osVal, color: osCol });
+            if (obLine) { chart.removeSeries(obLine); seriesRef.current.delete(`${ind.id}-ob`); }
+            if (osLine) { chart.removeSeries(osLine); seriesRef.current.delete(`${ind.id}-os`); }
           }
-        } else {
-          let lines = priceLinesRef.current.get(ind.id);
-          if (lines) {
-              if (lines.overBought) kLine.removePriceLine(lines.overBought);
-              if (lines.overSold) kLine.removePriceLine(lines.overSold);
-              priceLinesRef.current.delete(ind.id);
-          }
-        }
-
-        const pK = ind.params.period || 14;
+          
+          const pK = ind.params.period || 14;
         const pD = 3;
         const smoothing = ind.params.smooth ? 3 : 1;
         
