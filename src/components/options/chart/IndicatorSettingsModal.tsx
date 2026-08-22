@@ -246,14 +246,14 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
           </button>
         </div>
         <div className="custom-scrollbar flex flex-col gap-4 overflow-y-auto p-4">
-          {indicator.type === "RSI" ? (
+          {params.overBoughtValue !== undefined ? (
             <div className="flex flex-col gap-4">
               <div>
                 <h3 className="mb-3 text-[12px] font-bold text-opt-ink">Result</h3>
                 <div className="flex flex-col gap-4">
-                  {params.rsiColor !== undefined && renderParam("rsiColor", params.rsiColor)}
-                  {params.period !== undefined && renderParam("period", params.period)}
-                  {params.field !== undefined && renderParam("field", params.field)}
+                  {Object.keys(DEFAULT_INDICATOR_PARAMS[indicator.type] || {})
+                    .filter(key => !['overBoughtValue', 'overBoughtColor', 'overSoldValue', 'overSoldColor', 'showZones'].includes(key))
+                    .map((key) => renderParam(key, params[key]))}
                 </div>
               </div>
               <div>

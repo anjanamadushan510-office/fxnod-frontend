@@ -953,7 +953,7 @@ function syncIndicators(
       let series = seriesRef.current.get(ind.id) as ISeriesApi<"Line">;
       if (!series) {
         series = chart.addSeries(LineSeries, {
-          color: ind.type === "roc" ? "#000000" : (ind.type === "cci" ? "#00A79E" : "#ff9800"),
+          color: ind.type === "roc" ? "#000000" : (ind.type === "cci" ? "#00A79E" : (ind.params.wprColor || "#000000")),
           lineWidth: 2,
           priceScaleId: `${ind.type}-scale`,
           priceFormat: { type: 'price', precision: ind.type === "wpr" ? 2 : 4, minMove: ind.type === "wpr" ? 0.01 : 0.0001 }
@@ -962,12 +962,44 @@ function syncIndicators(
         
         if (ind.type === "roc" || ind.type === "cci") {
           series.createPriceLine({ price: 0, color: "#9e9e9e", lineWidth: 1, lineStyle: LineStyle.Solid, axisLabelVisible: false, title: "0" });
-        } else if (ind.type === "wpr") {
-          series.createPriceLine({ price: -20, color: "#ef5350", lineWidth: 1, lineStyle: LineStyle.Dashed, axisLabelVisible: false, title: "" });
-          series.createPriceLine({ price: -80, color: "#26a69a", lineWidth: 1, lineStyle: LineStyle.Dashed, axisLabelVisible: false, title: "" });
         }
         
         seriesRef.current.set(ind.id, series);
+      } else {
+        if (ind.type === "wpr") {
+          series.applyOptions({ color: ind.params.wprColor || "#000000" });
+        }
+      }
+
+      if (ind.type === "wpr") {
+        if (ind.params.showZones !== false) {
+          const obVal = ind.params.overBoughtValue ?? -20;
+          const osVal = ind.params.overSoldValue ?? -80;
+          const obCol = ind.params.overBoughtColor || "#000000";
+          const osCol = ind.params.overSoldColor || "#000000";
+          
+          let obLine = seriesRef.current.get(`${ind.id}-ob`) as ISeriesApi<"Line">;
+          let osLine = seriesRef.current.get(`${ind.id}-os`) as ISeriesApi<"Line">;
+          if (!obLine || !osLine) {
+              obLine = chart.addSeries(LineSeries, { color: obCol, lineWidth: 1, lineStyle: LineStyle.Solid, priceScaleId: "wpr-scale", lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
+              osLine = chart.addSeries(LineSeries, { color: osCol, lineWidth: 1, lineStyle: LineStyle.Solid, priceScaleId: "wpr-scale", lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
+              seriesRef.current.set(`${ind.id}-ob`, obLine);
+              seriesRef.current.set(`${ind.id}-os`, osLine);
+          } else {
+              obLine.applyOptions({ color: obCol });
+              osLine.applyOptions({ color: osCol });
+          }
+          
+          const obData = timeArray.map((t) => ({ time: t, value: obVal }));
+          const osData = timeArray.map((t) => ({ time: t, value: osVal }));
+          obLine.setData(obData as any);
+          osLine.setData(osData as any);
+        } else {
+          let obLine = seriesRef.current.get(`${ind.id}-ob`) as ISeriesApi<"Line"> | undefined;
+          let osLine = seriesRef.current.get(`${ind.id}-os`) as ISeriesApi<"Line"> | undefined;
+          if (obLine) { chart.removeSeries(obLine); seriesRef.current.delete(`${ind.id}-ob`); }
+          if (osLine) { chart.removeSeries(osLine); seriesRef.current.delete(`${ind.id}-os`); }
+        }
       }
         let results: number[] = [];
         const p = ind.params.period || 14;

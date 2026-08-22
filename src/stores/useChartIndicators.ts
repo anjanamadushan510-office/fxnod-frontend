@@ -19,7 +19,7 @@ export const DEFAULT_INDICATOR_PARAMS: Record<IndicatorType, Record<string, any>
   awesome_oscillator: { increasingBarColor: "#26a69a", decreasingBarColor: "#ef5350" },
   roc: { rocColor: "#000000", period: 14, field: "Close" },
   stochastic: { fastColor: "#000000", slowColor: "#ff0000", period: 14, field: "Close", smooth: true, overBoughtValue: 80, overBoughtColor: "#000000", overSoldValue: 20, overSoldColor: "#000000", showZones: true },
-  wpr: { period: 14 },
+  wpr: { wprColor: "#000000", period: 14, overBoughtValue: -20, overBoughtColor: "#000000", overSoldValue: -80, overSoldColor: "#000000", showZones: true },
   cci: { period: 20 },
   aroon: { period: 14 },
   adx: { period: 14 },
