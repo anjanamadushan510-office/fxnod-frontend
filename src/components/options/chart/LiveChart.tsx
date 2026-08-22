@@ -489,10 +489,10 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
             }}
           >
             {/* The horizontal separator line */}
-            <div className="absolute left-0 right-0 h-[1px] bg-opt-border opacity-70 pointer-events-none" style={{ top: '50%' }}></div>
+            <div className="absolute left-0 right-0 h-[1px] bg-opt-line pointer-events-none" style={{ top: '50%' }}></div>
             
             {/* The drag pill */}
-            <div className="w-[36px] h-[14px] rounded-full flex flex-col items-center justify-center border border-opt-border shadow-sm relative z-10 gap-[2px] transition-colors hover:bg-opt-bg-sunk" style={{ backgroundColor: 'var(--opt-bg)' }}>
+            <div className="w-[36px] h-[14px] rounded-full flex flex-col items-center justify-center border border-opt-line-strong shadow-sm relative z-10 gap-[2px] transition-colors hover:bg-opt-bg-sunk" style={{ backgroundColor: 'var(--opt-bg-elev)' }}>
               <div className="w-[12px] h-[1.5px] bg-opt-ink-3 opacity-60 rounded-full"></div>
               <div className="w-[12px] h-[1.5px] bg-opt-ink-3 opacity-60 rounded-full"></div>
             </div>
