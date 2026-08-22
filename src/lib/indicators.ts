@@ -555,16 +555,25 @@ export function calculateBollingerBands(data: number[], period: number = 20, std
   else ma = calculateSMA(data, period);
 
   for (let i = period - 1; i < data.length; i++) {
-    const mean = ma[i];
+    const middleValue = ma[i];
+    
+    // Standard deviation is always calculated using the simple mean (SMA) of the window
+    let sum = 0;
+    for (let j = 0; j < period; j++) {
+      sum += data[i - j];
+    }
+    const simpleMean = sum / period;
+    
     let sumSqrDiffs = 0;
     for (let j = 0; j < period; j++) {
-      const diff = data[i - j] - mean;
+      const diff = data[i - j] - simpleMean;
       sumSqrDiffs += diff * diff;
     }
     const stdDev = Math.sqrt(sumSqrDiffs / period);
-    result.middle[i] = mean;
-    result.upper[i] = mean + (stdDevMultiplier * stdDev);
-    result.lower[i] = mean - (stdDevMultiplier * stdDev);
+    
+    result.middle[i] = middleValue;
+    result.upper[i] = middleValue + (stdDevMultiplier * stdDev);
+    result.lower[i] = middleValue - (stdDevMultiplier * stdDev);
   }
   return result;
 }
