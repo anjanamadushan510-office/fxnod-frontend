@@ -150,7 +150,8 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
     const pendingTrendRef = useRef<{ time: Time; price: number } | null>(null);
 
     const [status, setStatus] = useState<FeedStatus>("idle");
-  const [paneHeight, setPaneHeight] = useState(0.22);
+    const [paneHeight, setPaneHeight] = useState(0.22);
+    const [isResizing, setIsResizing] = useState(false);
 
     const activeScales = new Set<string>();
       activeIndicators.forEach((ind) => {
@@ -462,6 +463,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
             }}
             onPointerDown={(e) => {
                e.preventDefault();
+               setIsResizing(true);
                const startY = e.clientY;
                const startHeight = paneHeight;
                const container = containerRef.current;
@@ -480,6 +482,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
                };
                
                const handleUp = () => {
+                  setIsResizing(false);
                   window.removeEventListener('pointermove', handleMove);
                   window.removeEventListener('pointerup', handleUp);
                };
@@ -489,12 +492,12 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
             }}
           >
             {/* The horizontal separator line */}
-            <div className="absolute left-0 right-0 h-[1px] bg-opt-line pointer-events-none" style={{ top: '50%' }}></div>
+            <div className={`absolute left-0 right-0 h-[1px] pointer-events-none transition-colors ${isResizing ? 'bg-blue-500' : 'bg-opt-line-strong opacity-40'}`} style={{ top: '50%' }}></div>
             
             {/* The drag pill */}
-            <div className="w-[36px] h-[14px] rounded-full flex flex-col items-center justify-center border border-opt-line-strong shadow-sm relative z-10 gap-[2px] transition-colors hover:bg-opt-bg-sunk" style={{ backgroundColor: 'var(--opt-bg-elev)' }}>
-              <div className="w-[12px] h-[1.5px] bg-opt-ink-3 opacity-60 rounded-full"></div>
-              <div className="w-[12px] h-[1.5px] bg-opt-ink-3 opacity-60 rounded-full"></div>
+            <div className={`w-[36px] h-[14px] rounded-full flex flex-col items-center justify-center border shadow-sm relative z-10 gap-[2px] transition-colors ${isResizing ? 'border-blue-500 bg-opt-bg-elev' : 'border-opt-line-strong bg-opt-bg-elev hover:bg-opt-bg-sunk'}`}>
+              <div className={`w-[12px] h-[1.5px] rounded-full transition-colors ${isResizing ? 'bg-blue-500' : 'bg-opt-ink-3 opacity-60'}`}></div>
+              <div className={`w-[12px] h-[1.5px] rounded-full transition-colors ${isResizing ? 'bg-blue-500' : 'bg-opt-ink-3 opacity-60'}`}></div>
             </div>
           </div>
         )}
