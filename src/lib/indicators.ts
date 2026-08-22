@@ -579,18 +579,31 @@ export function calculateBollingerBands(data: number[], period: number = 20, std
 }
 
 export interface DonchianChannelResult { upper: number[]; middle: number[]; lower: number[]; }
-export function calculateDonchianChannel(high: number[], low: number[], period: number = 20): DonchianChannelResult {
+export function calculateDonchianChannel(high: number[], low: number[], highPeriod: number = 20, lowPeriod: number = 20): DonchianChannelResult {
   const result: DonchianChannelResult = { upper: new Array(high.length).fill(NaN), middle: new Array(high.length).fill(NaN), lower: new Array(high.length).fill(NaN) };
-  for (let i = period - 1; i < high.length; i++) {
-    let highestHigh = -Infinity;
-    let lowestLow = Infinity;
-    for (let j = 0; j < period; j++) {
-      if (high[i - j] > highestHigh) highestHigh = high[i - j];
-      if (low[i - j] < lowestLow) lowestLow = low[i - j];
+  
+  for (let i = 0; i < high.length; i++) {
+    let highestHigh = NaN;
+    if (i >= highPeriod - 1) {
+      highestHigh = -Infinity;
+      for (let j = 0; j < highPeriod; j++) {
+        if (high[i - j] > highestHigh) highestHigh = high[i - j];
+      }
     }
+    
+    let lowestLow = NaN;
+    if (i >= lowPeriod - 1) {
+      lowestLow = Infinity;
+      for (let j = 0; j < lowPeriod; j++) {
+        if (low[i - j] < lowestLow) lowestLow = low[i - j];
+      }
+    }
+    
     result.upper[i] = highestHigh;
     result.lower[i] = lowestLow;
-    result.middle[i] = (highestHigh + lowestLow) / 2;
+    if (!isNaN(highestHigh) && !isNaN(lowestLow)) {
+      result.middle[i] = (highestHigh + lowestLow) / 2;
+    }
   }
   return result;
 }

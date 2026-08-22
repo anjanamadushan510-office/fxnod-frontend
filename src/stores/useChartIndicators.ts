@@ -27,7 +27,7 @@ export const DEFAULT_INDICATOR_PARAMS: Record<IndicatorType, Record<string, any>
   parabolic_sar: { sarColor: "#000000", minimumAF: 0.02, maximumAF: 0.2 },
   zigzag: { zigZagColor: "#000000", distance: 10 },
   bollinger: { upperColor: "#000000", middleColor: "#000000", lowerColor: "#000000", fillColor: "rgba(0, 0, 0, 0.1)", period: 20, field: "Close", standardDeviations: 2, movingAverageType: "Simple", channelFill: true },
-  donchian: { period: 20 },
+  donchian: { upperColor: "#000000", middleColor: "#000000", lowerColor: "#000000", fillColor: "rgba(0, 0, 0, 0.1)", highPeriod: 20, lowPeriod: 20, channelFill: true },
   alligator: { jawPeriod: 13, jawShift: 8, teethPeriod: 8, teethShift: 5, lipsPeriod: 5, lipsShift: 3 },
   fractal: { upperBandColor: "#999999", lowerBandColor: "#999999" },
 };

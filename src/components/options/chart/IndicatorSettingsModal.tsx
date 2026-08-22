@@ -105,13 +105,16 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
     if (key === "minimumAF") return "Minimum AF";
     if (key === "maximumAF") return "Maximum AF";
     if (key === "distance") return "Distance(%)";
-    if (key === "upperColor") return "Bollinger Bands Top";
-    if (key === "middleColor") return "Bollinger Bands Median";
-    if (key === "lowerColor") return "Bollinger Bands Bottom";
+    if (key === "upperColor") return indicator.type === 'donchian' ? "Donchian High" : "Bollinger Bands Top";
+    if (key === "middleColor") return indicator.type === 'donchian' ? "Donchian Median" : "Bollinger Bands Median";
+    if (key === "lowerColor") return indicator.type === 'donchian' ? "Donchian Low" : "Bollinger Bands Bottom";
     if (key === "fillColor") return "Fill Color";
     if (key === "standardDeviations") return "Standard Deviations";
     if (key === "movingAverageType") return "Moving Average Type";
     if (key === "channelFill") return "Channel Fill";
+    if (key === "highPeriod") return "High Period";
+    if (key === "lowPeriod") return "Low Period";
+
 
     return key
       .replace(/([A-Z])/g, ' $1')
