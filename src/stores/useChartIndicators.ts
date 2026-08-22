@@ -18,7 +18,7 @@ export const DEFAULT_INDICATOR_PARAMS: Record<IndicatorType, Record<string, any>
   RSI: { rsiColor: "#000000", period: 14, field: "Close", overBoughtValue: 80, overBoughtColor: "#000000", overSoldValue: 20, overSoldColor: "#000000", showZones: true },
   awesome_oscillator: { increasingBarColor: "#26a69a", decreasingBarColor: "#ef5350" },
   roc: { rocColor: "#000000", period: 14, field: "Close" },
-  stochastic: { periodK: 14, periodD: 3, smoothing: 3 },
+  stochastic: { fastColor: "#000000", slowColor: "#ff0000", period: 14, field: "Close", smooth: true, overBoughtValue: 80, overBoughtColor: "#000000", overSoldValue: 20, overSoldColor: "#000000", showZones: true },
   wpr: { period: 14 },
   cci: { period: 20 },
   aroon: { period: 14 },

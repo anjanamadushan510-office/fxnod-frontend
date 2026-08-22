@@ -984,26 +984,65 @@ function syncIndicators(
 
       const data = results.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
       if (data.length > 0) series.setData(data as any);
-    } else if (ind.type === "stochastic") {
-      let kLine = seriesRef.current.get(`${ind.id}-k`) as ISeriesApi<"Line">;
-      let dLine = seriesRef.current.get(`${ind.id}-d`) as ISeriesApi<"Line">;
-      if (!kLine || !dLine) {
-        kLine = chart.addSeries(LineSeries, { color: "#2196f3", lineWidth: 2, priceScaleId: "stoch-scale", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
-        dLine = chart.addSeries(LineSeries, { color: "#ff9800", lineWidth: 2, priceScaleId: "stoch-scale", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
-        chart.priceScale("stoch-scale").applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
-        seriesRef.current.set(`${ind.id}-k`, kLine);
-        seriesRef.current.set(`${ind.id}-d`, dLine);
-      }
-      const pK = ind.params.periodK || 14;
-      const pD = ind.params.periodD || 3;
-      const smoothing = ind.params.smoothing || 3;
-      const stochHigh = seriesKind === "area" ? valueArray : highArray;
-      const stochLow = seriesKind === "area" ? valueArray : lowArray;
-      const results = calculateStochastic(stochHigh, stochLow, valueArray, pK, pD, smoothing);
-      const kData = results.k.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
-      const dData = results.d.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
-      if (kData.length > 0) kLine.setData(kData as any);
-      if (dData.length > 0) dLine.setData(dData as any);
+      } else if (ind.type === "stochastic") {
+        let kLine = seriesRef.current.get(`${ind.id}-k`) as ISeriesApi<"Line">;
+        let dLine = seriesRef.current.get(`${ind.id}-d`) as ISeriesApi<"Line">;
+        if (!kLine || !dLine) {
+          kLine = chart.addSeries(LineSeries, { color: ind.params.fastColor || "#000000", lineWidth: 2, priceScaleId: "stoch-scale", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+          dLine = chart.addSeries(LineSeries, { color: ind.params.slowColor || "#ff0000", lineWidth: 2, priceScaleId: "stoch-scale", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+          chart.priceScale("stoch-scale").applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
+          seriesRef.current.set(`${ind.id}-k`, kLine);
+          seriesRef.current.set(`${ind.id}-d`, dLine);
+        } else {
+          kLine.applyOptions({ color: ind.params.fastColor || "#000000" });
+          dLine.applyOptions({ color: ind.params.slowColor || "#ff0000" });
+        }
+        
+        if (ind.params.showZones) {
+          const obVal = ind.params.overBoughtValue ?? 80;
+          const osVal = ind.params.overSoldValue ?? 20;
+          const obCol = ind.params.overBoughtColor || "#000000";
+          const osCol = ind.params.overSoldColor || "#000000";
+          
+          let lines = priceLinesRef.current.get(ind.id);
+          if (!lines) {
+              const overBought = kLine.createPriceLine({ price: obVal, color: obCol, lineWidth: 1, lineStyle: LineStyle.Solid, axisLabelVisible: false, title: "" });
+              const overSold = kLine.createPriceLine({ price: osVal, color: osCol, lineWidth: 1, lineStyle: LineStyle.Solid, axisLabelVisible: false, title: "" });
+              priceLinesRef.current.set(ind.id, { overBought, overSold });
+          } else {
+              if (lines.overBought) lines.overBought.applyOptions({ price: obVal, color: obCol });
+              if (lines.overSold) lines.overSold.applyOptions({ price: osVal, color: osCol });
+          }
+        } else {
+          let lines = priceLinesRef.current.get(ind.id);
+          if (lines) {
+              if (lines.overBought) kLine.removePriceLine(lines.overBought);
+              if (lines.overSold) kLine.removePriceLine(lines.overSold);
+              priceLinesRef.current.delete(ind.id);
+          }
+        }
+
+        const pK = ind.params.period || 14;
+        const pD = 3;
+        const smoothing = ind.params.smooth ? 3 : 1;
+        
+        let targetArray = valueArray;
+        switch (ind.params.field) {
+          case "Open": targetArray = openArray; break;
+          case "High": targetArray = highArray; break;
+          case "Low": targetArray = lowArray; break;
+          case "Close": targetArray = valueArray; break;
+          case "Hl/2": targetArray = hl2Array; break;
+          case "Hlc/3": targetArray = hlc3Array; break;
+        }
+
+        const stochHigh = seriesKind === "area" ? valueArray : highArray;
+        const stochLow = seriesKind === "area" ? valueArray : lowArray;
+        const results = calculateStochastic(stochHigh, stochLow, targetArray, pK, pD, smoothing);
+        const kData = results.k.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+        const dData = results.d.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+        if (kData.length > 0) kLine.setData(kData as any);
+        if (dData.length > 0) dLine.setData(dData as any);
     } else if (ind.type === "aroon") {
       let upLine = seriesRef.current.get(`${ind.id}-aroonUp`) as ISeriesApi<"Line">;
       let downLine = seriesRef.current.get(`${ind.id}-aroonDown`) as ISeriesApi<"Line">;
