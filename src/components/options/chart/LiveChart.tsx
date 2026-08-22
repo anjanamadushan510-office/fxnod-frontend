@@ -1111,25 +1111,53 @@ function syncIndicators(
       let adxLine = seriesRef.current.get(`${ind.id}-adx`) as ISeriesApi<"Line">;
       let plusDI = seriesRef.current.get(`${ind.id}-plusDI`) as ISeriesApi<"Line">;
       let minusDI = seriesRef.current.get(`${ind.id}-minusDI`) as ISeriesApi<"Line">;
+      let hist = seriesRef.current.get(`${ind.id}-hist`) as ISeriesApi<"Histogram">;
       
-      if (!adxLine || !plusDI || !minusDI) {
+      if (!adxLine || !plusDI || !minusDI || !hist) {
+        if (adxLine) chart.removeSeries(adxLine);
+        if (plusDI) chart.removeSeries(plusDI);
+        if (minusDI) chart.removeSeries(minusDI);
+        if (hist) chart.removeSeries(hist);
+        
+        hist = chart.addSeries(HistogramSeries, { priceScaleId: "adx-scale", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
         adxLine = chart.addSeries(LineSeries, { color: ind.params.adxColor || "#000000", lineWidth: 2, priceScaleId: "adx-scale", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
         plusDI = chart.addSeries(LineSeries, { color: ind.params.plusDiColor || "#00ff00", lineWidth: 2, priceScaleId: "adx-scale", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
         minusDI = chart.addSeries(LineSeries, { color: ind.params.minusDiColor || "#ff0000", lineWidth: 2, priceScaleId: "adx-scale", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
         chart.priceScale("adx-scale").applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
+        
+        seriesRef.current.set(`${ind.id}-hist`, hist);
         seriesRef.current.set(`${ind.id}-adx`, adxLine);
         seriesRef.current.set(`${ind.id}-plusDI`, plusDI);
         seriesRef.current.set(`${ind.id}-minusDI`, minusDI);
+      } else {
+        adxLine.applyOptions({ color: ind.params.adxColor || "#000000" });
+        plusDI.applyOptions({ color: ind.params.plusDiColor || "#00ff00" });
+        minusDI.applyOptions({ color: ind.params.minusDiColor || "#ff0000" });
       }
+
+      adxLine.applyOptions({ visible: ind.params.showSeries !== false });
+      plusDI.applyOptions({ visible: ind.params.showSeries !== false });
+      minusDI.applyOptions({ visible: ind.params.showSeries !== false });
+      hist.applyOptions({ visible: ind.params.showHistogram === true });
+
       const period = ind.params.period || 14;
       const smoothingPeriod = ind.params.smoothingPeriod || period;
       const results = calculateADX(highArray, lowArray, valueArray, period, smoothingPeriod);
+      
       const adxData = results.adx.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
       const plusDIData = results.plusDI.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
       const minusDIData = results.minusDI.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+      
+      const histData = results.plusDI.map((val, i) => {
+        const diff = val - results.minusDI[i];
+        const color = diff >= 0 ? (ind.params.positiveBarColor || "#00ff00") : (ind.params.negativeBarColor || "#ff0000");
+        return { time: timeArray[i], value: diff, color: color };
+      }).filter(d => !isNaN(d.value));
+
       if (adxData.length > 0) adxLine.setData(adxData as any);
       if (plusDIData.length > 0) plusDI.setData(plusDIData as any);
       if (minusDIData.length > 0) minusDI.setData(minusDIData as any);
+      if (histData.length > 0) hist.setData(histData as any);
     } else if (ind.type === "ichimoku") {
       let tenkan = seriesRef.current.get(`${ind.id}-tenkan`) as ISeriesApi<"Line">;
       let kijun = seriesRef.current.get(`${ind.id}-kijun`) as ISeriesApi<"Line">;

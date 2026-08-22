@@ -78,6 +78,11 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
     if (key === "adxColor") return "Color";
     if (key === "plusDiColor") return "+DI";
     if (key === "minusDiColor") return "-DI";
+    if (key === "positiveBarColor") return "Positive Bar";
+    if (key === "negativeBarColor") return "Negative Bar";
+    if (key === "showSeries") return "Series";
+    if (key === "showShading") return "Shading";
+    if (key === "showHistogram") return "Histogram";
     if (key === "signalColor") return "Signal";
     if (key === "increasingBarColor") return "Increasing Bar";
     if (key === "decreasingBarColor") return "Decreasing Bar";

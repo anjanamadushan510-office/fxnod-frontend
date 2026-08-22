@@ -22,7 +22,7 @@ export const DEFAULT_INDICATOR_PARAMS: Record<IndicatorType, Record<string, any>
   wpr: { wprColor: "#000000", period: 14, overBoughtValue: -20, overBoughtColor: "#000000", overSoldValue: -80, overSoldColor: "#000000", showZones: true },
   cci: { period: 20 },
   aroon: { aroonUpColor: "#00ff00", aroonDownColor: "#ff0000", period: 14 },
-  adx: { plusDiColor: "#00ff00", minusDiColor: "#ff0000", adxColor: "#000000", period: 14, smoothingPeriod: 14 },
+  adx: { plusDiColor: "#00ff00", minusDiColor: "#ff0000", adxColor: "#000000", positiveBarColor: "#00ff00", negativeBarColor: "#ff0000", period: 14, smoothingPeriod: 14, showSeries: true, showShading: false, showHistogram: false },
   ichimoku: { tenkanPeriod: 9, kijunPeriod: 26, senkouBPeriod: 52 },
   parabolic_sar: { step: 0.02, maxStep: 0.2 },
   zigzag: { deviation: 5 },
