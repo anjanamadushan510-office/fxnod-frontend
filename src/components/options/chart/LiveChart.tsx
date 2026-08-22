@@ -1213,21 +1213,28 @@ function syncIndicators(
       let senkouB = seriesRef.current.get(`${ind.id}-senkouB`) as ISeriesApi<"Line">;
       let chikou = seriesRef.current.get(`${ind.id}-chikou`) as ISeriesApi<"Line">;
       if (!tenkan || !kijun || !senkouA || !senkouB || !chikou) {
-        tenkan = chart.addSeries(LineSeries, { color: "#2962FF", lineWidth: 1, priceScaleId: "right" });
-        kijun = chart.addSeries(LineSeries, { color: "#ef5350", lineWidth: 1, priceScaleId: "right" });
-        senkouA = chart.addSeries(LineSeries, { color: "#4caf50", lineWidth: 1, priceScaleId: "right" });
-        senkouB = chart.addSeries(LineSeries, { color: "#ef5350", lineWidth: 1, priceScaleId: "right", lineStyle: LineStyle.Dashed });
-        chikou = chart.addSeries(LineSeries, { color: "#00e676", lineWidth: 1, priceScaleId: "right" });
+        tenkan = chart.addSeries(LineSeries, { color: ind.params.conversionLineColor || "#2962FF", lineWidth: 1, priceScaleId: "right", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+        kijun = chart.addSeries(LineSeries, { color: ind.params.baseLineColor || "#ef5350", lineWidth: 1, priceScaleId: "right", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+        senkouA = chart.addSeries(LineSeries, { color: ind.params.leadingSpanAColor || "#4caf50", lineWidth: 1, priceScaleId: "right", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+        senkouB = chart.addSeries(LineSeries, { color: ind.params.leadingSpanBColor || "#ef5350", lineWidth: 1, priceScaleId: "right", lineStyle: LineStyle.Dashed, priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+        chikou = chart.addSeries(LineSeries, { color: ind.params.laggingSpanColor || "#00e676", lineWidth: 1, priceScaleId: "right", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
         seriesRef.current.set(`${ind.id}-tenkan`, tenkan);
         seriesRef.current.set(`${ind.id}-kijun`, kijun);
         seriesRef.current.set(`${ind.id}-senkouA`, senkouA);
         seriesRef.current.set(`${ind.id}-senkouB`, senkouB);
         seriesRef.current.set(`${ind.id}-chikou`, chikou);
+      } else {
+        tenkan.applyOptions({ color: ind.params.conversionLineColor || "#2962FF" });
+        kijun.applyOptions({ color: ind.params.baseLineColor || "#ef5350" });
+        senkouA.applyOptions({ color: ind.params.leadingSpanAColor || "#4caf50" });
+        senkouB.applyOptions({ color: ind.params.leadingSpanBColor || "#ef5350" });
+        chikou.applyOptions({ color: ind.params.laggingSpanColor || "#00e676" });
       }
-      const tP = ind.params.tenkanPeriod || 9;
-      const kP = ind.params.kijunPeriod || 26;
-      const sBP = ind.params.senkouBPeriod || 52;
-      const shift = kP; // standard is 26
+      const tP = ind.params.conversionLinePeriod || 9;
+      const kP = ind.params.baseLinePeriod || 26;
+      const sBP = ind.params.leadingSpanBPeriod || 52;
+      const shift = kP; // standard is 26 for senkou span forward shift
+      const chikouShift = ind.params.laggingSpanPeriod ? Math.abs(ind.params.laggingSpanPeriod as number) : 26;
       
       const results = calculateIchimoku(highArray, lowArray, valueArray, tP, kP, sBP);
       const tenkanData = results.tenkan.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
@@ -1260,7 +1267,7 @@ function syncIndicators(
       
       // Shift Chikou backwards
       const chikouData = results.chikou.map((val, i) => {
-        const targetIdx = i - shift;
+        const targetIdx = i - chikouShift;
         if (targetIdx >= 0) {
           return { time: timeArray[targetIdx], value: val };
         }

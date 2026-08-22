@@ -91,6 +91,15 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
     if (key === "slowPeriod") return "Slow MA Period";
     if (key === "signalPeriod") return "Signal Period";
     if (key === "smoothingPeriod") return "Smoothing Period";
+    if (key === "conversionLineColor") return "Conversion Line";
+    if (key === "baseLineColor") return "Base Line";
+    if (key === "leadingSpanAColor") return "Leading Span A";
+    if (key === "leadingSpanBColor") return "Leading Span B";
+    if (key === "laggingSpanColor") return "Lagging Span";
+    if (key === "conversionLinePeriod") return "Conversion Line Period";
+    if (key === "baseLinePeriod") return "Base Line Period";
+    if (key === "leadingSpanBPeriod") return "Leading Span B Period";
+    if (key === "laggingSpanPeriod") return "Lagging Span Period";
 
     return key
       .replace(/([A-Z])/g, ' $1')
