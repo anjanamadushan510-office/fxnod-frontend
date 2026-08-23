@@ -456,13 +456,17 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
       <div className="relative h-full w-full min-h-0">
         
         {/* Indicator Legends */}
-        <div className="absolute top-2 left-14 z-10 flex flex-col gap-1 pointer-events-none">
+        <div className="absolute top-14 left-14 z-10 flex flex-col gap-1 pointer-events-none">
           {activeIndicators.filter(ind => ["ma", "ma_envelope", "rainbow_ma", "bollinger", "donchian", "alligator", "fractal", "ichimoku", "parabolic_sar", "zigzag"].includes(ind.type)).map(ind => {
             const meta = INDICATOR_LIST.find(i => i.id === ind.type);
             const name = meta ? meta.name : ind.type;
+            const isMin = minimizedIndicators.has(ind.id);
             return (
               <div key={ind.id} className="flex items-center gap-2 pointer-events-auto group">
                 <span className="text-[11px] font-medium text-opt-ink-2 bg-opt-bg-main/50 px-1 rounded">{name}</span>
+                <button onClick={() => setMinimizedIndicators(prev => { const n = new Set(prev); if (n.has(ind.id)) n.delete(ind.id); else n.add(ind.id); return n; })} className="opacity-100 p-1 hover:bg-opt-bg-hover rounded text-opt-ink-3 hover:text-opt-ink-1 transition-all">
+                  {isMin ? <EyeOff className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                </button>
                 <button onClick={() => setSettingsIndicatorId(ind.id)} className="opacity-100 p-1 hover:bg-opt-bg-hover rounded text-opt-ink-3 hover:text-opt-ink-1 transition-all"><Settings className="w-3 h-3" /></button>
                 <button onClick={() => removeIndicator(ind.id)} className="opacity-100 p-1 hover:bg-opt-bg-hover rounded text-opt-ink-3 hover:text-red-400 transition-all"><Trash2 className="w-3 h-3" /></button>
               </div>
@@ -473,13 +477,24 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
         {activeIndicators.filter(ind => !["ma", "ma_envelope", "rainbow_ma", "bollinger", "donchian", "alligator", "fractal", "ichimoku", "parabolic_sar", "zigzag"].includes(ind.type)).map((ind, index, arr) => {
           const meta = INDICATOR_LIST.find(i => i.id === ind.type);
           const name = meta ? meta.name.toUpperCase() : ind.type.toUpperCase();
-          const totalOscillatorHeight = Math.min(0.8, paneHeight * arr.length);
-          const actualPaneHeight = totalOscillatorHeight / arr.length;
-          const baseTop = 1 - totalOscillatorHeight + (index * actualPaneHeight);
+          const isMin = minimizedIndicators.has(ind.id);
+          
+          let totalOscillatorHeight = 0;
+          arr.forEach(i => { totalOscillatorHeight += minimizedIndicators.has(i.id) ? 0.03 : paneHeight; });
+          totalOscillatorHeight = Math.min(0.8, totalOscillatorHeight);
+          
+          let currentTopOffset = 1 - totalOscillatorHeight;
+          let baseTop = currentTopOffset;
+          for (let i = 0; i < index; i++) {
+              baseTop += minimizedIndicators.has(arr[i].id) ? 0.03 : paneHeight;
+          }
           
           return (
             <div key={ind.id} className="absolute left-14 z-10 flex items-center gap-2 pointer-events-auto group" style={{ top: `calc((100% - 26px) * ${baseTop} + 6px)` }}>
-               <span className="text-[10px] font-bold text-opt-ink-2 px-1 rounded">{name}</span>
+               <span className="text-[10px] font-bold text-opt-ink-2 px-1 rounded bg-opt-bg-main/50">{name}</span>
+               <button onClick={() => setMinimizedIndicators(prev => { const n = new Set(prev); if (n.has(ind.id)) n.delete(ind.id); else n.add(ind.id); return n; })} className="opacity-100 p-1 hover:bg-opt-bg-hover rounded text-opt-ink-3 hover:text-opt-ink-1 transition-all">
+                  {isMin ? <Maximize className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+               </button>
                <button onClick={() => setSettingsIndicatorId(ind.id)} className="opacity-100 p-1 hover:bg-opt-bg-hover rounded text-opt-ink-3 hover:text-opt-ink-1 transition-all"><Settings className="w-3 h-3" /></button>
                <button onClick={() => removeIndicator(ind.id)} className="opacity-100 p-1 hover:bg-opt-bg-hover rounded text-opt-ink-3 hover:text-red-400 transition-all"><Trash2 className="w-3 h-3" /></button>
             </div>
