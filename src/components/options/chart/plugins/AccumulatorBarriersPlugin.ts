@@ -34,9 +34,9 @@ export class AccumulatorBarriersPlugin implements ISeriesPrimitive {
         }
     }
 
-    attached({ requestUpdate, chart, series }: SeriesAttachedParameter) {
-        this._series = { requestUpdate, chart, series };
-        this._requestUpdate = requestUpdate;
+    attached(param: SeriesAttachedParameter) {
+        this._series = param;
+        this._requestUpdate = param.requestUpdate;
         this._requestUpdate();
     }
 

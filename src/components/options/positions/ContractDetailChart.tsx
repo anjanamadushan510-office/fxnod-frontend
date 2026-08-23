@@ -13,7 +13,7 @@ import {
 } from "lightweight-charts";
 import { CHART_COLORS } from "../chart/chartColors";
 import type { ContractDetail } from "./contractDetail";
-import { AccumulatorBarriersPlugin } from "./plugins/AccumulatorBarriersPlugin";
+import { AccumulatorBarriersPlugin } from "../chart/plugins/AccumulatorBarriersPlugin";
 
 /**
  * Right-panel chart of the Contract Details modal (Deriv §10): a second
