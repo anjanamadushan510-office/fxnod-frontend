@@ -314,9 +314,13 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
 		// Prefer the authoritative values persisted from the proposal:
 		//   duration_unit "t" -> ticks, any other unit -> seconds/mins etc.
 		let durationLabel: string;
+		const isAccumulator = h.frontend_contract_type === "accumulators" || h.frontend_contract_type === "ACCU" || (h as any).contract_type === "ACCU";
+		
 		if (backendDurUnit === "t" && backendDurSecs > 0) {
 			// Tick-based trade: use requested duration
-			durationLabel = `${backendDurSecs} ticks`;
+			let count = backendDurSecs;
+			if (isAccumulator && !won && count > 0) count -= 1;
+			durationLabel = `${count} ticks`;
 		} else if (backendDurSecs > 0) {
 			// Time-based trade (secs, mins, hours): show the stored value directly.
 			durationLabel = backendDurUnit === "m"
@@ -326,7 +330,9 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
 					: `${backendDurSecs} secs`;
 		} else if (ticks.length > 1) {
 			// Fallback: infer from tick_stream if duration_unit not yet stored
-			durationLabel = `${ticks.length - 1} ticks`;
+			let count = ticks.length - 1;
+			if (isAccumulator && !won && count > 0) count -= 1;
+			durationLabel = `${count} ticks`;
 		} else {
 			// Last resort: epoch diff
 			durationLabel = `${seconds} secs`;
