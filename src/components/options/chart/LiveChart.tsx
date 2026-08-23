@@ -1545,7 +1545,7 @@ function syncIndicators(
         });
 
         // Add 0 line
-        smiLine.createPriceLine({ price: 0, color: 'rgba(0,0,0,0.2)', lineWidth: 1, lineStyle: 2 });
+        smiLine.createPriceLine({ price: 0, color: 'rgba(0,0,0,0.2)', lineWidth: 1, lineStyle: 2, axisLabelVisible: false });
         // Price lines will be added dynamically in the update block
         
         seriesRef.current.set(`${ind.id}-smi`, smiLine);
@@ -1566,13 +1566,15 @@ function syncIndicators(
           price: ind.params.overBoughtValue ?? 40, 
           color: ind.params.overBoughtColor || '#808080', 
           lineWidth: 1, 
-          lineStyle: 2 
+          lineStyle: 2,
+          axisLabelVisible: false
         });
         const os = smiLine.createPriceLine({ 
           price: ind.params.overSoldValue ?? -40, 
           color: ind.params.overSoldColor || '#808080', 
           lineWidth: 1, 
-          lineStyle: 2 
+          lineStyle: 2,
+          axisLabelVisible: false
         });
         (smiLine as any).__customPriceLines.push(ob, os);
       }
