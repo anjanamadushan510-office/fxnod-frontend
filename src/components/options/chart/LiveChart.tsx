@@ -47,6 +47,7 @@ import {
   type DrawingTool,
 } from "@/stores/useChartDrawings";
 import { CHART_COLORS } from "./chartColors";
+import { EndPriceLinePlugin } from "./plugins/EndPriceLinePlugin";
 import { TrendPrimitive, VerticalPrimitive } from "./chartPrimitives";
 import type { ChartTypeId, IntervalId } from "./chartSettings";
 import { useChartIndicators, type IndicatorConfig } from "@/stores/useChartIndicators";
@@ -128,6 +129,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
     const priceLineObjsRef = useRef<IPriceLine[]>([]);
     const markersRef = useRef<SeriesMarker<Time>[]>([]);
     const markersApiRef = useRef<ISeriesMarkersPluginApi<Time> | null>(null);
+    const endPriceLineRef = useRef<EndPriceLinePlugin | null>(null);
 
     // Indicators state
     const indicatorSeriesRef = useRef<Map<string, ISeriesApi<any>>>(new Map());
@@ -278,6 +280,12 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
         ticksRef.current,
         candlesRef.current,
       );
+      
+      if (!endPriceLineRef.current) {
+          endPriceLineRef.current = new EndPriceLinePlugin(ink);
+      }
+      seriesRef.current.attachPrimitive(endPriceLineRef.current);
+
       // Re-attach overlays to the fresh series.
       applyPriceLines(seriesRef.current, priceLineSpecsRef.current, priceLineObjsRef);
       markersApiRef.current = createSeriesMarkers(
@@ -381,7 +389,10 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
         }
         if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeight, minimizedIndicators);
         const last = ticks[ticks.length - 1];
-        if (last) onPrice?.(last.value);
+        if (last) {
+            onPrice?.(last.value);
+            endPriceLineRef.current?.updatePosition(last.time, last.value);
+          }
       },
       onTick: (tick) => {
         pushTick(ticksRef.current, tick);
@@ -397,6 +408,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
         }
         if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeight, minimizedIndicators);
         onPrice?.(tick.value);
+          endPriceLineRef.current?.updatePosition(tick.time as UTCTimestamp, tick.value);
       },
       onSeedCandles: (candles) => {
         candlesRef.current = candles;
@@ -408,7 +420,10 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
         // chartRef.current?.timeScale().fitContent();
         if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeight, minimizedIndicators);
         const last = candles[candles.length - 1];
-        if (last) onPrice?.(last.close);
+        if (last) {
+            onPrice?.(last.close);
+            endPriceLineRef.current?.updatePosition(last.time, last.close);
+          }
       },
       onCandle: (candle) => {
         upsertCandle(candlesRef.current, candle);
@@ -428,6 +443,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
         }
         if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeight, minimizedIndicators);
         onPrice?.(candle.close);
+          endPriceLineRef.current?.updatePosition(candle.time as UTCTimestamp, candle.close);
       },
     });
 
