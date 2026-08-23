@@ -1470,6 +1470,10 @@ function syncIndicators(
           seriesRef.current.set(`${ind.id}-jaw`, jaw);
           seriesRef.current.set(`${ind.id}-teeth`, teeth);
           seriesRef.current.set(`${ind.id}-lips`, lips);
+        } else {
+          jaw.applyOptions({ color: ind.params.jawColor || '#2962FF', visible: ind.params.showLines !== false });
+          teeth.applyOptions({ color: ind.params.teethColor || '#FF0000', visible: ind.params.showLines !== false });
+          lips.applyOptions({ color: ind.params.lipsColor || '#00FF00', visible: ind.params.showLines !== false });
         }
         const jawP = ind.params.jawPeriod || 13;
         const jawS = ind.params.jawShift || 8;
