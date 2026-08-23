@@ -284,7 +284,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
       // Re-attach user drawings to the fresh series.
       applyDrawings(seriesRef.current, drawingsRef.current, drawingObjsRef);
       syncIndicators(chart, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeight, minimizedIndicators);
-      chart.timeScale().fitContent();
+      // chart.timeScale().fitContent();
     }, [seriesKind]);
 
     // ── Drawing tools: cursor, click capture, and render sync ───────────────
@@ -374,7 +374,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
           (seriesRef.current as ISeriesApi<"Area"> | null)?.setData(
             toAreaData(ticks),
           );
-          chartRef.current?.timeScale().fitContent();
+          // chartRef.current?.timeScale().fitContent();
         }
         if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeight, minimizedIndicators);
         const last = ticks[ticks.length - 1];
@@ -402,7 +402,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
           value: c.close,
         }));
         hydrateSeries(seriesRef.current, seriesKind, ticksRef.current, candles);
-        chartRef.current?.timeScale().fitContent();
+        // chartRef.current?.timeScale().fitContent();
         if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeight, minimizedIndicators);
         const last = candles[candles.length - 1];
         if (last) onPrice?.(last.close);
