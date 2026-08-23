@@ -391,7 +391,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
         const last = ticks[ticks.length - 1];
         if (last) {
             onPrice?.(last.value);
-            endPriceLineRef.current?.updatePosition(last.time, last.value);
+            endPriceLineRef.current?.updatePosition(last.time as UTCTimestamp, last.value);
           }
       },
       onTick: (tick) => {
@@ -422,7 +422,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
         const last = candles[candles.length - 1];
         if (last) {
             onPrice?.(last.close);
-            endPriceLineRef.current?.updatePosition(last.time, last.close);
+            endPriceLineRef.current?.updatePosition(last.time as UTCTimestamp, last.close);
           }
       },
       onCandle: (candle) => {
