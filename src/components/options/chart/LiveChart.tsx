@@ -15,6 +15,7 @@ import {
 import {
   AreaSeries,
   CandlestickSeries,
+  BarSeries,
   LineSeries,
   HistogramSeries,
   ColorType,
@@ -98,6 +99,7 @@ export interface LiveChartHandle {
   getSeries: () =>
     | ISeriesApi<"Area">
     | ISeriesApi<"Candlestick">
+    | ISeriesApi<"Bar">
     | null;
 }
 
@@ -117,7 +119,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
     const containerRef = useRef<HTMLDivElement>(null);
     const chartRef = useRef<IChartApi | null>(null);
     const seriesRef = useRef<
-      ISeriesApi<"Area"> | ISeriesApi<"Candlestick"> | null
+      ISeriesApi<"Area"> | ISeriesApi<"Candlestick"> | ISeriesApi<"Bar"> | null
     >(null);
 
     // Data buffers — replaced on seed, mutated tail-only on update.
@@ -255,14 +257,30 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
       }
 
       if (seriesKind === "candlestick") {
-        seriesRef.current = chart.addSeries(CandlestickSeries, {
-          upColor: rise,
-          downColor: fall,
-          borderUpColor: rise,
-          borderDownColor: fall,
-          wickUpColor: rise,
-          wickDownColor: fall,
-        });
+        if (chartType === "ohlc") {
+          seriesRef.current = chart.addSeries(BarSeries, {
+            upColor: rise,
+            downColor: fall,
+          });
+        } else if (chartType === "hollow") {
+          seriesRef.current = chart.addSeries(CandlestickSeries, {
+            upColor: "transparent",
+            downColor: fall,
+            borderUpColor: rise,
+            borderDownColor: fall,
+            wickUpColor: rise,
+            wickDownColor: fall,
+          });
+        } else {
+          seriesRef.current = chart.addSeries(CandlestickSeries, {
+            upColor: rise,
+            downColor: fall,
+            borderUpColor: rise,
+            borderDownColor: fall,
+            wickUpColor: rise,
+            wickDownColor: fall,
+          });
+        }
       } else {
         seriesRef.current = chart.addSeries(AreaSeries, {
           lineColor: ink,
@@ -429,7 +447,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
         upsertCandle(candlesRef.current, candle);
         try {
           if (seriesKind === "candlestick") {
-            (seriesRef.current as ISeriesApi<"Candlestick"> | null)?.update(
+            (seriesRef.current as ISeriesApi<"Candlestick"> | ISeriesApi<"Bar"> | null)?.update(
               toCandleDatum(candle),
             );
           } else {
@@ -611,7 +629,7 @@ function FeedStatusBadge({
 
 /** Remove any existing price lines on `series`, then draw `specs` afresh. */
 function applyPriceLines(
-  series: ISeriesApi<"Area"> | ISeriesApi<"Candlestick">,
+  series: ISeriesApi<"Area"> | ISeriesApi<"Candlestick"> | ISeriesApi<"Bar">,
   specs: PriceLineSpec[],
   objsRef: React.MutableRefObject<IPriceLine[]>,
 ) {
@@ -637,7 +655,7 @@ function applyPriceLines(
 /** Tear down every tracked drawing on `series`, then (re)create from `drawings`.
  *  Horizontal → built-in price line; trend/vertical → v5 series primitives. */
 function applyDrawings(
-  series: ISeriesApi<"Area"> | ISeriesApi<"Candlestick">,
+  series: ISeriesApi<"Area"> | ISeriesApi<"Candlestick"> | ISeriesApi<"Bar">,
   drawings: Drawing[],
   objsRef: React.MutableRefObject<Map<string, DrawingObj>>,
 ) {
@@ -720,14 +738,14 @@ function toCandleDatum(c: FeedCandle): CandlestickData {
 }
 
 function hydrateSeries(
-  series: ISeriesApi<"Area"> | ISeriesApi<"Candlestick"> | null,
+  series: ISeriesApi<"Area"> | ISeriesApi<"Candlestick"> | ISeriesApi<"Bar"> | null,
   kind: "area" | "candlestick",
   ticks: FeedTick[],
   candles: FeedCandle[],
 ) {
   if (!series) return;
   if (kind === "candlestick") {
-    (series as ISeriesApi<"Candlestick">).setData(toCandleData(candles));
+    (series as ISeriesApi<"Candlestick"> | ISeriesApi<"Bar">).setData(toCandleData(candles));
   } else {
     (series as ISeriesApi<"Area">).setData(toAreaData(ticks));
   }
