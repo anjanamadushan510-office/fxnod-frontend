@@ -267,6 +267,8 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
           topColor: hexToRgba(ink, 0.18),
           bottomColor: hexToRgba(ink, 0),
           lineWidth: 2,
+          lastPriceAnimation: 1,
+          priceLineVisible: false,
         });
       }
 
