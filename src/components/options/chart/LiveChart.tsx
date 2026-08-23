@@ -171,7 +171,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
         else if (ind.type === "aroon") activeScales.add("aroon-scale");
         else if (ind.type === "adx") activeScales.add("adx-scale");
         else if (ind.type === "roc" || ind.type === "wpr" || ind.type === "cci") activeScales.add(`${ind.type}-scale`);
-        else if (ind.type === "dpo") activeScales.add("dpo-scale");
+        else if (ind.type === "dpo") activeScales.add(`${ind.id}-scale`);
       });
       const numOscillators = activeScales.size;
 
@@ -1530,9 +1530,18 @@ function syncIndicators(
         series = chart.addSeries(LineSeries, { 
           color: ind.params.color || '#000000', 
           lineWidth: 1, 
-          priceScaleId: 'dpo-scale',
+          priceScaleId: `${ind.id}-scale`,
           priceFormat: { type: 'price', precision: 4, minMove: 0.0001 }
         });
+        
+        // Add a zero line for DPO
+        series.createPriceLine({
+            price: 0,
+            color: 'rgba(0, 0, 0, 0.3)',
+            lineWidth: 1,
+            lineStyle: 2, // Dashed line
+        });
+
         seriesRef.current.set(ind.id, series);
       } else {
         series.applyOptions({ color: ind.params.color || '#000000' });
