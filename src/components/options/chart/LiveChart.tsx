@@ -1464,16 +1464,16 @@ function syncIndicators(
         let teeth = seriesRef.current.get(`${ind.id}-teeth`) as ISeriesApi<'Line'>;
         let lips = seriesRef.current.get(`${ind.id}-lips`) as ISeriesApi<'Line'>;
         if (!jaw || !teeth || !lips) {
-          jaw = chart.addSeries(LineSeries, { color: ind.params.jawColor || '#2962FF', lineWidth: 1, priceScaleId: 'right', visible: ind.params.showLines !== false });
-          teeth = chart.addSeries(LineSeries, { color: ind.params.teethColor || '#FF0000', lineWidth: 1, priceScaleId: 'right', visible: ind.params.showLines !== false });
-          lips = chart.addSeries(LineSeries, { color: ind.params.lipsColor || '#00FF00', lineWidth: 1, priceScaleId: 'right', visible: ind.params.showLines !== false });
+          jaw = chart.addSeries(LineSeries, { color: ind.params.showLines === false ? 'transparent' : (ind.params.jawColor || '#2962FF'), lineWidth: 1, priceScaleId: 'right', visible: ind.params.showLines !== false });
+          teeth = chart.addSeries(LineSeries, { color: ind.params.showLines === false ? 'transparent' : (ind.params.teethColor || '#FF0000'), lineWidth: 1, priceScaleId: 'right', visible: ind.params.showLines !== false });
+          lips = chart.addSeries(LineSeries, { color: ind.params.showLines === false ? 'transparent' : (ind.params.lipsColor || '#00FF00'), lineWidth: 1, priceScaleId: 'right', visible: ind.params.showLines !== false });
           seriesRef.current.set(`${ind.id}-jaw`, jaw);
           seriesRef.current.set(`${ind.id}-teeth`, teeth);
           seriesRef.current.set(`${ind.id}-lips`, lips);
         } else {
-          jaw.applyOptions({ color: ind.params.jawColor || '#2962FF', visible: ind.params.showLines !== false });
-          teeth.applyOptions({ color: ind.params.teethColor || '#FF0000', visible: ind.params.showLines !== false });
-          lips.applyOptions({ color: ind.params.lipsColor || '#00FF00', visible: ind.params.showLines !== false });
+          jaw.applyOptions({ color: ind.params.showLines === false ? 'transparent' : (ind.params.jawColor || '#2962FF'), visible: ind.params.showLines !== false });
+          teeth.applyOptions({ color: ind.params.showLines === false ? 'transparent' : (ind.params.teethColor || '#FF0000'), visible: ind.params.showLines !== false });
+          lips.applyOptions({ color: ind.params.showLines === false ? 'transparent' : (ind.params.lipsColor || '#00FF00'), visible: ind.params.showLines !== false });
         }
         const jawP = ind.params.jawPeriod || 13;
         const jawS = ind.params.jawShift || 8;
