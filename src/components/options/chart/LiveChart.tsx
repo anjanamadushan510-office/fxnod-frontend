@@ -208,6 +208,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
           borderColor: line,
           timeVisible: true,
           secondsVisible: false,
+          rightOffset: 25,
         },
       });
       chartRef.current = chart;
