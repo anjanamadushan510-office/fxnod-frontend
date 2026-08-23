@@ -14,6 +14,7 @@ import {
 import { CHART_COLORS } from "../chart/chartColors";
 import type { ContractDetail } from "./contractDetail";
 import { AccumulatorBarriersPlugin } from "../chart/plugins/AccumulatorBarriersPlugin";
+import { ExitSpotPlugin } from "../chart/plugins/ExitSpotPlugin";
 
 /**
  * Right-panel chart of the Contract Details modal (Deriv §10): a second
@@ -157,13 +158,27 @@ export function ContractDetailChart({ detail }: { detail: ContractDetail }) {
           label = isEntry || (!isTickContract && isExit) ? timeLabel : `${circled(i)} ${timeLabel}`;
         }
 
-        markers.push({
-          time: t.time as UTCTimestamp,
-          position: "aboveBar",
-          color: t.kind === "exit" ? exitColor : inkFaint,
-          shape: "circle",
-          ...(label ? { text: label } : {}),
-        });
+        if (isExit) {
+          // Use our custom plugin for the exact Deriv exit spot look
+          const exitPlugin = new ExitSpotPlugin(
+            t.time as UTCTimestamp,
+            t.value,
+            timeLabel,
+            t.value.toFixed(2), // We could format depending on symbol pip size, but .2f is ok
+            detail.outcome === "won",
+            isTickContract
+          );
+          series.attachPrimitive(exitPlugin);
+        } else {
+          // Standard marker for entry or intermediate ticks
+          markers.push({
+            time: t.time as UTCTimestamp,
+            position: "aboveBar",
+            color: inkFaint,
+            shape: "circle",
+            ...(label ? { text: label } : {}),
+          });
+        }
       }
     });
     
