@@ -1546,15 +1546,35 @@ function syncIndicators(
 
         // Add 0 line
         smiLine.createPriceLine({ price: 0, color: 'rgba(0,0,0,0.2)', lineWidth: 1, lineStyle: 2 });
-        // Add Overbought / Oversold zones (default 40, -40 for SMI)
-        smiLine.createPriceLine({ price: 40, color: 'rgba(0,0,0,0.2)', lineWidth: 1, lineStyle: 2 });
-        smiLine.createPriceLine({ price: -40, color: 'rgba(0,0,0,0.2)', lineWidth: 1, lineStyle: 2 });
+        // Price lines will be added dynamically in the update block
         
         seriesRef.current.set(`${ind.id}-smi`, smiLine);
         seriesRef.current.set(`${ind.id}-signal`, signalLine);
       } else {
         smiLine.applyOptions({ color: ind.params.color || '#000000' });
         signalLine.applyOptions({ color: ind.params.signalColor || '#ff0000' });
+      }
+      
+      // Update Price Lines (Overbought / Oversold)
+      const existingLines = (smiLine as any).priceLines || [];
+      existingLines.forEach((line: any) => smiLine.removePriceLine(line));
+      (smiLine as any).priceLines = [];
+      
+      const showZones = ind.params.showZones !== false;
+      if (showZones) {
+        const ob = smiLine.createPriceLine({ 
+          price: ind.params.overBoughtValue ?? 40, 
+          color: ind.params.overBoughtColor || '#808080', 
+          lineWidth: 1, 
+          lineStyle: 2 
+        });
+        const os = smiLine.createPriceLine({ 
+          price: ind.params.overSoldValue ?? -40, 
+          color: ind.params.overSoldColor || '#808080', 
+          lineWidth: 1, 
+          lineStyle: 2 
+        });
+        (smiLine as any).priceLines.push(ob, os);
       }
 
       const q = ind.params.period || 10;

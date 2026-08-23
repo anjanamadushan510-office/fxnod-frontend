@@ -113,7 +113,9 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
     if (key === "lowerColor") return indicator.type === 'donchian' ? "Donchian Low" : "Bollinger Bands Bottom";
     if (key === "fillColor") return "Fill Color";
     if (key === "standardDeviations") return "Standard Deviations";
-    if (key === "movingAverageType") return (indicator.type === 'ma' || indicator.type === 'ma_envelope' || indicator.type === 'rainbow_ma') ? "Type" : "Moving Average Type";
+        if (key === "smoothingPeriod1") return "Smoothing Period";
+    if (key === "smoothingPeriod2") return "Double Smoothing Period";
+    if (key === "movingAverageType") return indicator.type === 'smi' ? 'Field' : (indicator.type === 'ma' || indicator.type === 'ma_envelope' || indicator.type === 'rainbow_ma') ? "Type" : "Moving Average Type";
     if (key === "channelFill") return "Channel Fill";
     if (key === "highPeriod") return "High Period";
     if (key === "lowPeriod") return "Low Period";
@@ -302,7 +304,52 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
           </button>
         </div>
         <div className="custom-scrollbar flex flex-col gap-4 overflow-y-auto p-4">
-          {params.overBoughtValue !== undefined ? (
+                    {indicator.type === 'smi' ? (
+            <div className="flex flex-col gap-4">
+              <div>
+                <h3 className="mb-3 text-[12px] font-bold text-opt-ink">%K</h3>
+                <div className="flex flex-col gap-4">
+                  {renderParam("color", params.color)}
+                  {renderParam("period", params.period)}
+                  {renderParam("smoothingPeriod1", params.smoothingPeriod1)}
+                  {renderParam("smoothingPeriod2", params.smoothingPeriod2)}
+                </div>
+              </div>
+              <div>
+                <h3 className="mb-3 text-[12px] font-bold text-opt-ink">%D</h3>
+                <div className="flex flex-col gap-4">
+                  {renderParam("signalColor", params.signalColor)}
+                  {renderParam("signalPeriod", params.signalPeriod)}
+                  {renderParam("movingAverageType", params.movingAverageType)}
+                </div>
+              </div>
+              <div>
+                <h3 className="mb-3 text-[12px] font-bold text-opt-ink">Over Bought</h3>
+                <div className="flex items-stretch gap-2">
+                  <div className="flex-1">
+                    {renderParam("overBoughtValue", params.overBoughtValue)}
+                  </div>
+                  <div className="w-[120px] shrink-0">
+                    {renderParam("overBoughtColor", params.overBoughtColor)}
+                  </div>
+                </div>
+              </div>
+              <div>
+                <h3 className="mb-3 text-[12px] font-bold text-opt-ink">OverSold</h3>
+                <div className="flex items-stretch gap-2">
+                  <div className="flex-1">
+                    {renderParam("overSoldValue", params.overSoldValue)}
+                  </div>
+                  <div className="w-[120px] shrink-0">
+                    {renderParam("overSoldColor", params.overSoldColor)}
+                  </div>
+                </div>
+              </div>
+              <div>
+                {renderParam("showZones", params.showZones)}
+              </div>
+            </div>
+          ) : params.overBoughtValue !== undefined ? (
             <div className="flex flex-col gap-4">
               <div>
                 <h3 className="mb-3 text-[12px] font-bold text-opt-ink">Result</h3>
