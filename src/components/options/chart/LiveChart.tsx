@@ -53,7 +53,7 @@ import { useChartIndicators, type IndicatorConfig } from "@/stores/useChartIndic
 import { 
   calculateSMA, calculateEMA, calculateMA, calculateRSI, calculateMACD,
   calculateAwesomeOscillator, calculateROC, calculateStochastic, calculateWilliamsR,
-  calculateCCI, calculateAroon, calculateADX, calculateIchimoku, calculateParabolicSAR, calculateZigZag, calculateBollingerBands, calculateDonchianChannel, calculateWMA, calculateMAEnvelope, calculateRainbowMA, calculateAlligator, calculateFractalChaosBands
+  calculateCCI, calculateAroon, calculateADX, calculateIchimoku, calculateParabolicSAR, calculateZigZag, calculateBollingerBands, calculateDonchianChannel, calculateWMA, calculateMAEnvelope, calculateRainbowMA, calculateAlligator, calculateFractalChaosBands, calculateDPO
   } from "@/lib/indicators";
 
 /** Accent color for user-drawn lines (drawn on canvas — needs literal hex). */
@@ -171,6 +171,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
         else if (ind.type === "aroon") activeScales.add("aroon-scale");
         else if (ind.type === "adx") activeScales.add("adx-scale");
         else if (ind.type === "roc" || ind.type === "wpr" || ind.type === "cci") activeScales.add(`${ind.type}-scale`);
+        else if (ind.type === "dpo") activeScales.add("dpo-scale");
       });
       const numOscillators = activeScales.size;
 
@@ -1522,6 +1523,38 @@ function syncIndicators(
         if (jawData.length > 0) jaw.setData(jawData as any);
         if (teethData.length > 0) teeth.setData(teethData as any);
         if (lipsData.length > 0) lips.setData(lipsData as any);
+      
+    } else if (ind.type === 'dpo') {
+      let series = seriesRef.current.get(ind.id) as ISeriesApi<'Line'>;
+      if (!series) {
+        series = chart.addSeries(LineSeries, { 
+          color: ind.params.color || '#000000', 
+          lineWidth: 1, 
+          priceScaleId: 'dpo-scale',
+          priceFormat: { type: 'price', precision: 4, minMove: 0.0001 }
+        });
+        seriesRef.current.set(ind.id, series);
+      } else {
+        series.applyOptions({ color: ind.params.color || '#000000' });
+      }
+      
+      const p = ind.params.period || 14;
+      const field = ind.params.field || 'Close';
+      const maType = ind.params.movingAverageType || 'Simple';
+      
+      let targetArray = valueArray;
+      if (field === 'High') targetArray = highArray;
+      else if (field === 'Low') targetArray = lowArray;
+      else if (field === 'Open') targetArray = openArray;
+      else if (field === '(H+L)/2') targetArray = hl2Array;
+      else if (field === '(H+L+C)/3') targetArray = hlc3Array;
+      else if (field === '(H+L+C+C)/4') targetArray = highArray.map((h, i) => (h + lowArray[i] + valueArray[i] * 2) / 4);
+      else if (field === '(O+H+L+C)/4') targetArray = openArray.map((o, i) => (o + highArray[i] + lowArray[i] + valueArray[i]) / 4);
+
+      const results = calculateDPO(targetArray, p, maType);
+      const data = results.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+      if (data.length > 0) series.setData(data as any);
+
       } else if (ind.type === 'fractal') {
         const upperColor = ind.params.fractalHighColor || '#000000';
         const lowerColor = ind.params.fractalLowColor || '#000000';

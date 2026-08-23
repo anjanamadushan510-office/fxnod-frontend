@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export type IndicatorType = "ma" | "ma_envelope" | "rainbow_ma" | "MACD" | "RSI" | "awesome_oscillator" | "roc" | "stochastic" | "wpr" | "cci" | "aroon" | "adx" | "ichimoku" | "parabolic_sar" | "zigzag" | "bollinger" | "donchian" | "alligator" | "fractal";
+export type IndicatorType = "ma" | "ma_envelope" | "rainbow_ma" | "MACD" | "RSI" | "awesome_oscillator" | "roc" | "stochastic" | "wpr" | "cci" | "aroon" | "adx" | "ichimoku" | "parabolic_sar" | "zigzag" | "bollinger" | "donchian" | "alligator" | "fractal" | "dpo";
 
 export interface IndicatorConfig {
   id: string; // Unique instance ID
@@ -30,6 +30,7 @@ export const DEFAULT_INDICATOR_PARAMS: Record<IndicatorType, Record<string, any>
   donchian: { upperColor: "#000000", middleColor: "#000000", lowerColor: "#000000", fillColor: "rgba(0, 0, 0, 0.1)", highPeriod: 20, lowPeriod: 20, channelFill: true },
   alligator: { jawColor: '#2962FF', teethColor: '#FF0000', lipsColor: '#00FF00', showLines: true, jawPeriod: 13, jawShift: 8, teethPeriod: 8, teethShift: 5, lipsPeriod: 5, lipsShift: 3, showFractals: false },
   fractal: { fractalHighColor: "#000000", fractalLowColor: "#000000", fractalChannelColor: "#000000", channelFill: true },
+  dpo: { color: "#000000", period: 14, field: "Close", movingAverageType: "Simple" },
 };
 
 interface ChartIndicatorsState {

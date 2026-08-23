@@ -40,7 +40,7 @@ type Category = "Active" | "Momentum" | "Trend" | "Volatility" | "Moving average
 export const INDICATOR_LIST: { id: string; name: string; category: Category; disabled?: boolean; requiresOHLC?: boolean; Icon?: React.FC<{ className?: string }> }[] = [
   // Momentum
   { id: "awesome_oscillator", name: "Awesome Oscillator", category: "Momentum", requiresOHLC: true, Icon: IconAwesomeOscillator },
-  { id: "dpo", name: "Detrended Price Oscillator", category: "Momentum", disabled: true, Icon: IconDPO },
+  { id: "dpo", name: "Detrended Price Oscillator", category: "Momentum", Icon: IconDPO },
   { id: "MACD", name: "MACD", category: "Momentum", Icon: IconMACD },
   { id: "roc", name: "Price Rate of Change", category: "Momentum", Icon: IconROC },
   { id: "RSI", name: "Relative Strength Index (RSI)", category: "Momentum", Icon: IconRSI },
