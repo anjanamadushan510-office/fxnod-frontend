@@ -2,6 +2,7 @@ import {
     ISeriesPrimitive,
     IPrimitivePaneView,
     IPrimitivePaneRenderer,
+    ISeriesPrimitiveAxisView,
     SeriesAttachedParameter,
     UTCTimestamp
 } from "lightweight-charts";
@@ -13,8 +14,10 @@ export class AccumulatorBarriersPlugin implements ISeriesPrimitive {
     private _prevTime: UTCTimestamp | null = null;
     private _highBarrier: number | null = null;
     private _lowBarrier: number | null = null;
-    private _color: string;
+    private _fillColor: string;
     private _lineColor: string;
+    private _labelBg: string;
+    private _labelText: string;
 
     constructor(
         prevTime: UTCTimestamp,
@@ -26,11 +29,15 @@ export class AccumulatorBarriersPlugin implements ISeriesPrimitive {
         this._highBarrier = highBarrier;
         this._lowBarrier = lowBarrier;
         if (isWon) {
-            this._color = "rgba(0, 167, 158, 0.15)";
-            this._lineColor = "rgba(0, 167, 158, 0.8)";
+            this._fillColor = "rgba(0, 167, 158, 0.12)";
+            this._lineColor = "rgba(0, 167, 158, 0.9)";
+            this._labelBg = "#00a79e";
+            this._labelText = "#ffffff";
         } else {
-            this._color = "rgba(233, 30, 99, 0.15)";
-            this._lineColor = "rgba(233, 30, 99, 0.8)";
+            this._fillColor = "rgba(233, 30, 99, 0.12)";
+            this._lineColor = "rgba(233, 30, 99, 0.9)";
+            this._labelBg = "#e91e63";
+            this._labelText = "#ffffff";
         }
     }
 
@@ -51,13 +58,51 @@ export class AccumulatorBarriersPlugin implements ISeriesPrimitive {
             this._prevTime,
             this._highBarrier,
             this._lowBarrier,
-            this._color,
+            this._fillColor,
             this._lineColor
         )];
     }
-    
+
+    priceAxisViews(): readonly ISeriesPrimitiveAxisView[] {
+        if (!this._series || !this._highBarrier || !this._lowBarrier) return [];
+        return [
+            new BarrierAxisView(this._series, this._highBarrier, this._labelBg, this._labelText),
+            new BarrierAxisView(this._series, this._lowBarrier, this._labelBg, this._labelText),
+        ];
+    }
+
     update() {
         this._requestUpdate();
+    }
+}
+
+class BarrierAxisView implements ISeriesPrimitiveAxisView {
+    private _series: SeriesAttachedParameter;
+    private _price: number;
+    private _bg: string;
+    private _text: string;
+
+    constructor(series: SeriesAttachedParameter, price: number, bg: string, text: string) {
+        this._series = series;
+        this._price = price;
+        this._bg = bg;
+        this._text = text;
+    }
+
+    coordinate(): number {
+        return this._series.series.priceToCoordinate(this._price) ?? -1000;
+    }
+
+    text(): string {
+        return this._price.toFixed(3);
+    }
+
+    textColor(): string {
+        return this._text;
+    }
+
+    backColor(): string {
+        return this._bg;
     }
 }
 
@@ -66,7 +111,7 @@ class AccumulatorBarriersPaneView implements IPrimitivePaneView {
     private _prevTime: UTCTimestamp | null;
     private _highBarrier: number | null;
     private _lowBarrier: number | null;
-    private _color: string;
+    private _fillColor: string;
     private _lineColor: string;
 
     constructor(
@@ -74,14 +119,14 @@ class AccumulatorBarriersPaneView implements IPrimitivePaneView {
         prevTime: UTCTimestamp | null,
         highBarrier: number | null,
         lowBarrier: number | null,
-        color: string,
+        fillColor: string,
         lineColor: string
     ) {
         this._series = series;
         this._prevTime = prevTime;
         this._highBarrier = highBarrier;
         this._lowBarrier = lowBarrier;
-        this._color = color;
+        this._fillColor = fillColor;
         this._lineColor = lineColor;
     }
 
@@ -100,7 +145,7 @@ class AccumulatorBarriersPaneView implements IPrimitivePaneView {
         const yLow = this._series.series.priceToCoordinate(this._lowBarrier);
         if (yHigh === null || yLow === null) return null;
 
-        return new AccumulatorBarriersRenderer(startX, yHigh, yLow, this._color, this._lineColor);
+        return new AccumulatorBarriersRenderer(startX, yHigh, yLow, this._fillColor, this._lineColor);
     }
 }
 
@@ -108,14 +153,14 @@ class AccumulatorBarriersRenderer implements IPrimitivePaneRenderer {
     private _startX: number;
     private _yHigh: number;
     private _yLow: number;
-    private _color: string;
+    private _fillColor: string;
     private _lineColor: string;
 
-    constructor(startX: number, yHigh: number, yLow: number, color: string, lineColor: string) {
+    constructor(startX: number, yHigh: number, yLow: number, fillColor: string, lineColor: string) {
         this._startX = startX;
         this._yHigh = yHigh;
         this._yLow = yLow;
-        this._color = color;
+        this._fillColor = fillColor;
         this._lineColor = lineColor;
     }
 
@@ -123,19 +168,18 @@ class AccumulatorBarriersRenderer implements IPrimitivePaneRenderer {
         target.useBitmapCoordinateSpace((scope: any) => {
             const ctx = scope.context;
             const width = scope.bitmapSize.width;
-            
-            // Adjust coordinates for device pixel ratio
+
             const x = Math.round(this._startX * scope.horizontalPixelRatio);
             const y1 = Math.round(this._yHigh * scope.verticalPixelRatio);
             const y2 = Math.round(this._yLow * scope.verticalPixelRatio);
             const w = width - x;
-            
+
             const topY = Math.min(y1, y2);
             const bottomY = Math.max(y1, y2);
             const h = bottomY - topY;
 
             // Draw shaded region
-            ctx.fillStyle = this._color;
+            ctx.fillStyle = this._fillColor;
             ctx.fillRect(x, topY, w, h);
 
             // Draw dashed lines
@@ -143,13 +187,13 @@ class AccumulatorBarriersRenderer implements IPrimitivePaneRenderer {
             ctx.strokeStyle = this._lineColor;
             ctx.lineWidth = 1 * scope.verticalPixelRatio;
             ctx.setLineDash([4 * scope.horizontalPixelRatio, 4 * scope.horizontalPixelRatio]);
-            
+
             ctx.moveTo(x, y1);
             ctx.lineTo(width, y1);
-            
+
             ctx.moveTo(x, y2);
             ctx.lineTo(width, y2);
-            
+
             ctx.stroke();
             ctx.setLineDash([]);
         });
