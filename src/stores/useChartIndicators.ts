@@ -29,7 +29,7 @@ export const DEFAULT_INDICATOR_PARAMS: Record<IndicatorType, Record<string, any>
   bollinger: { upperColor: "#000000", middleColor: "#000000", lowerColor: "#000000", fillColor: "rgba(0, 0, 0, 0.1)", period: 20, field: "Close", standardDeviations: 2, movingAverageType: "Simple", channelFill: true },
   donchian: { upperColor: "#000000", middleColor: "#000000", lowerColor: "#000000", fillColor: "rgba(0, 0, 0, 0.1)", highPeriod: 20, lowPeriod: 20, channelFill: true },
   alligator: { jawColor: '#2962FF', teethColor: '#FF0000', lipsColor: '#00FF00', showLines: true, jawPeriod: 13, jawShift: 8, teethPeriod: 8, teethShift: 5, lipsPeriod: 5, lipsShift: 3, showFractals: false },
-  fractal: { upperBandColor: "#999999", lowerBandColor: "#999999" },
+  fractal: { fractalHighColor: "#000000", fractalLowColor: "#000000", fractalChannelColor: "#000000", channelFill: true },
 };
 
 interface ChartIndicatorsState {

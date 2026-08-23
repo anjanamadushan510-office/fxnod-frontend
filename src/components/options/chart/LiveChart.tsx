@@ -1523,8 +1523,8 @@ function syncIndicators(
         if (teethData.length > 0) teeth.setData(teethData as any);
         if (lipsData.length > 0) lips.setData(lipsData as any);
       } else if (ind.type === 'fractal') {
-        const upperColor = ind.params.upperBandColor || '#999999';
-        const lowerColor = ind.params.lowerBandColor || '#999999';
+        const upperColor = ind.params.fractalHighColor || '#000000';
+        const lowerColor = ind.params.fractalLowColor || '#000000';
         
         let upper = seriesRef.current.get(`${ind.id}-upper`) as ISeriesApi<'Line'>;
         let lower = seriesRef.current.get(`${ind.id}-lower`) as ISeriesApi<'Line'>;
