@@ -870,3 +870,92 @@ export function calculateDPO(data: number[], period: number = 14, maType: string
   
   return result;
 }
+
+
+export interface SMIResult {
+  smi: number[];
+  signal: number[];
+}
+
+export function calculateSMI(
+  high: number[], 
+  low: number[], 
+  close: number[], 
+  period: number = 10, 
+  smoothing1: number = 3, 
+  smoothing2: number = 3, 
+  signalPeriod: number = 10, 
+  maType: string = "Exponential"
+): SMIResult {
+  const dataLen = close.length;
+  const smiLine = new Array(dataLen).fill(NaN);
+  const signalLine = new Array(dataLen).fill(NaN);
+  
+  if (dataLen < period) return { smi: smiLine, signal: signalLine };
+  
+  const mArr = new Array(dataLen).fill(NaN);
+  const hlArr = new Array(dataLen).fill(NaN);
+  
+  for (let i = period - 1; i < dataLen; i++) {
+    let hh = -Infinity;
+    let ll = Infinity;
+    for (let j = 0; j < period; j++) {
+      if (high[i - j] > hh) hh = high[i - j];
+      if (low[i - j] < ll) ll = low[i - j];
+    }
+    const center = (hh + ll) / 2;
+    mArr[i] = close[i] - center;
+    hlArr[i] = hh - ll;
+  }
+  
+  // Extract valid arrays to avoid NaN poisoning the MA calculation if necessary.
+  // Actually, calculateMA skips NaNs at the beginning, but if we pass an array with initial NaNs, 
+  // it might assume the period starts from index 0. 
+  // Let's strip the initial NaNs and pad the result.
+  const stripNaNs = (arr: number[]) => {
+    let firstValid = 0;
+    while (firstValid < arr.length && isNaN(arr[firstValid])) {
+      firstValid++;
+    }
+    return { validData: arr.slice(firstValid), offset: firstValid };
+  };
+
+  const padResult = (validData: number[], offset: number, totalLen: number) => {
+    return new Array(offset).fill(NaN).concat(validData).concat(new Array(totalLen - offset - validData.length).fill(NaN));
+  };
+
+  const mData = stripNaNs(mArr);
+  const hlData = stripNaNs(hlArr);
+
+  // Smooth M
+  const mEMA1 = calculateMA(mData.validData, smoothing1, maType);
+  const mEMA1Strip = stripNaNs(mEMA1);
+  const mEMA2 = calculateMA(mEMA1Strip.validData, smoothing2, maType);
+  
+  // Smooth HL
+  const hlEMA1 = calculateMA(hlData.validData, smoothing1, maType);
+  const hlEMA1Strip = stripNaNs(hlEMA1);
+  const hlEMA2 = calculateMA(hlEMA1Strip.validData, smoothing2, maType);
+
+  // Combine and calculate SMI
+  const mSmoothed = padResult(mEMA2, mData.offset + mEMA1Strip.offset, dataLen);
+  const hlSmoothed = padResult(hlEMA2, hlData.offset + hlEMA1Strip.offset, dataLen);
+
+  for (let i = 0; i < dataLen; i++) {
+    if (!isNaN(mSmoothed[i]) && !isNaN(hlSmoothed[i]) && hlSmoothed[i] !== 0) {
+      smiLine[i] = 100 * (mSmoothed[i] / (0.5 * hlSmoothed[i]));
+    }
+  }
+
+  // Calculate Signal
+  const smiData = stripNaNs(smiLine);
+  if (smiData.validData.length > 0) {
+    const signalMA = calculateMA(smiData.validData, signalPeriod, maType);
+    const paddedSignal = padResult(signalMA, smiData.offset, dataLen);
+    for (let i = 0; i < dataLen; i++) {
+      signalLine[i] = paddedSignal[i];
+    }
+  }
+
+  return { smi: smiLine, signal: signalLine };
+}

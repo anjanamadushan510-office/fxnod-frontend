@@ -53,7 +53,7 @@ import { useChartIndicators, type IndicatorConfig } from "@/stores/useChartIndic
 import { 
   calculateSMA, calculateEMA, calculateMA, calculateRSI, calculateMACD,
   calculateAwesomeOscillator, calculateROC, calculateStochastic, calculateWilliamsR,
-  calculateCCI, calculateAroon, calculateADX, calculateIchimoku, calculateParabolicSAR, calculateZigZag, calculateBollingerBands, calculateDonchianChannel, calculateWMA, calculateMAEnvelope, calculateRainbowMA, calculateAlligator, calculateFractalChaosBands, calculateDPO
+  calculateCCI, calculateAroon, calculateADX, calculateIchimoku, calculateParabolicSAR, calculateZigZag, calculateBollingerBands, calculateDonchianChannel, calculateWMA, calculateMAEnvelope, calculateRainbowMA, calculateAlligator, calculateFractalChaosBands, calculateDPO, calculateSMI
   } from "@/lib/indicators";
 
 /** Accent color for user-drawn lines (drawn on canvas — needs literal hex). */
@@ -172,6 +172,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
         else if (ind.type === "adx") activeScales.add("adx-scale");
         else if (ind.type === "roc" || ind.type === "wpr" || ind.type === "cci") activeScales.add(`${ind.type}-scale`);
         else if (ind.type === "dpo") activeScales.add(`${ind.id}-scale`);
+        else if (ind.type === "smi") activeScales.add(`${ind.id}-scale`);
       });
       const numOscillators = activeScales.size;
 
@@ -1524,6 +1525,52 @@ function syncIndicators(
         if (teethData.length > 0) teeth.setData(teethData as any);
         if (lipsData.length > 0) lips.setData(lipsData as any);
       
+    } else if (ind.type === 'smi') {
+      let smiLine = seriesRef.current.get(`${ind.id}-smi`) as ISeriesApi<'Line'>;
+      let signalLine = seriesRef.current.get(`${ind.id}-signal`) as ISeriesApi<'Line'>;
+      
+      if (!smiLine) {
+        smiLine = chart.addSeries(LineSeries, { 
+          color: ind.params.color || '#000000', 
+          lineWidth: 1, 
+          priceScaleId: `${ind.id}-scale`,
+          priceFormat: { type: 'price', precision: 2, minMove: 0.01 }
+        });
+        
+        signalLine = chart.addSeries(LineSeries, { 
+          color: ind.params.signalColor || '#ff0000', 
+          lineWidth: 1, 
+          priceScaleId: `${ind.id}-scale`,
+          priceFormat: { type: 'price', precision: 2, minMove: 0.01 }
+        });
+
+        // Add 0 line
+        smiLine.createPriceLine({ price: 0, color: 'rgba(0,0,0,0.2)', lineWidth: 1, lineStyle: 2 });
+        // Add Overbought / Oversold zones (default 40, -40 for SMI)
+        smiLine.createPriceLine({ price: 40, color: 'rgba(0,0,0,0.2)', lineWidth: 1, lineStyle: 2 });
+        smiLine.createPriceLine({ price: -40, color: 'rgba(0,0,0,0.2)', lineWidth: 1, lineStyle: 2 });
+        
+        seriesRef.current.set(`${ind.id}-smi`, smiLine);
+        seriesRef.current.set(`${ind.id}-signal`, signalLine);
+      } else {
+        smiLine.applyOptions({ color: ind.params.color || '#000000' });
+        signalLine.applyOptions({ color: ind.params.signalColor || '#ff0000' });
+      }
+
+      const q = ind.params.period || 10;
+      const r = ind.params.smoothingPeriod1 || 3;
+      const s = ind.params.smoothingPeriod2 || 3;
+      const sig = ind.params.signalPeriod || 10;
+      const maType = ind.params.movingAverageType || 'Exponential';
+
+      const results = calculateSMI(highArray, lowArray, valueArray, q, r, s, sig, maType);
+      
+      const smiData = results.smi.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+      const sigData = results.signal.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+      
+      if (smiData.length > 0) smiLine.setData(smiData as any);
+      if (sigData.length > 0) signalLine.setData(sigData as any);
+
     } else if (ind.type === 'dpo') {
       let series = seriesRef.current.get(ind.id) as ISeriesApi<'Line'>;
       if (!series) {
