@@ -1531,7 +1531,7 @@ function syncIndicators(
           color: ind.params.color || '#000000', 
           lineWidth: 1, 
           priceScaleId: `${ind.id}-scale`,
-          priceFormat: { type: 'price', precision: 4, minMove: 0.0001 }
+          priceFormat: { type: 'price', precision: 2, minMove: 0.01 }
         });
         
         // Add a zero line for DPO
