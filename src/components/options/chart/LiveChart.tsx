@@ -1585,8 +1585,9 @@ function syncIndicators(
 
       const results = calculateSMI(highArray, lowArray, valueArray, q, r, s, sig, maType);
       
-      const smiData = results.smi.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
-      const sigData = results.signal.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+      const smiData = results.smi.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value) && isFinite(d.value));
+      console.log('SMI debug:', { dataLen: valueArray.length, smiDataLen: smiData.length, firstValid: smiData[0] });
+      const sigData = results.signal.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value) && isFinite(d.value));
       
       if (smiData.length > 0) smiLine.setData(smiData as any);
       if (sigData.length > 0) signalLine.setData(sigData as any);
