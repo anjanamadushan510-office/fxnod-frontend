@@ -308,7 +308,12 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
                 <h3 className="mb-3 text-[12px] font-bold text-opt-ink">Result</h3>
                 <div className="flex flex-col gap-4">
                   {Object.keys(DEFAULT_INDICATOR_PARAMS[indicator.type] || {})
-                    .filter(key => !['overBoughtValue', 'overBoughtColor', 'overSoldValue', 'overSoldColor', 'showZones'].includes(key))
+                    .filter(key => {
+                      if (indicator.type === 'alligator' && params.showLines === false) {
+                        if (['jawColor', 'teethColor', 'lipsColor'].includes(key)) return false;
+                      }
+                      return !['overBoughtValue', 'overBoughtColor', 'overSoldValue', 'overSoldColor', 'showZones'].includes(key);
+                    })
                     .map((key) => renderParam(key, params[key]))}
                 </div>
               </div>
@@ -342,7 +347,14 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
             <div>
               <h3 className="mb-3 text-[12px] font-bold text-opt-ink">Result</h3>
               <div className="flex flex-col gap-4">
-                {Object.keys(DEFAULT_INDICATOR_PARAMS[indicator.type] || {}).map((key) => renderParam(key, params[key]))}
+                {Object.keys(DEFAULT_INDICATOR_PARAMS[indicator.type] || {})
+                  .filter(key => {
+                    if (indicator.type === 'alligator' && params.showLines === false) {
+                      if (['jawColor', 'teethColor', 'lipsColor'].includes(key)) return false;
+                    }
+                    return true;
+                  })
+                  .map((key) => renderParam(key, params[key]))}
               </div>
             </div>
           )}
