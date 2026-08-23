@@ -74,6 +74,9 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
   };
 
   const formatLabel = (key: string) => {
+    if (key.includes('Shift')) key = key.replace('Shift', 'Offset');
+    if (key === 'showLines') return 'Show Lines';
+    if (key === 'showFractals') return 'Show Fractals';
     if (key === "macdColor" || key === "rocColor" || key === "maColor") return "Color";
     if (key === "adxColor") return "Color";
     if (key === "cciColor") return "Color";
