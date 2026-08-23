@@ -97,7 +97,7 @@ export function ChartTypesModal({
                   className={cn(
                     "flex flex-col items-center gap-2 rounded-xl border px-2 py-3 transition-colors",
                     !active &&
-                      "border-opt-line text-opt-ink-4 hover:border-opt-line-strong hover:text-opt-ink-2",
+                      "border-opt-line text-opt-ink hover:border-opt-line-strong",
                   )}
                 >
                   <ChartTypeGlyph id={type.id} />
@@ -107,31 +107,34 @@ export function ChartTypesModal({
             })}
           </div>
 
-          {/* Section 2 — Time interval */}
-          <div className="grid grid-cols-4 gap-2">
-            {INTERVALS.map((opt) => {
-              const active = interval === opt.id;
-              const disabled = tickOnly && opt.id !== "1t";
-              return (
-                <button
-                  key={opt.id}
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => !disabled && onSelectInterval(opt.id)}
-                  aria-pressed={active}
-                  className={cn(
-                    "rounded-lg border px-1.5 py-2 text-[12px] font-medium transition-colors",
-                    disabled
-                      ? "cursor-not-allowed border-opt-line bg-opt-bg-sunk text-opt-ink-4 opacity-50"
-                      : active
-                        ? "border-opt-ink text-opt-ink"
-                        : "border-opt-line text-opt-ink-2 hover:border-opt-line-strong hover:text-opt-ink",
-                  )}
-                >
-                  {opt.label}
-                </button>
-              );
-            })}
+          <div className="pt-2">
+            <h2 className="mb-4 text-[14px] font-bold text-opt-ink">Time interval</h2>
+            {/* Section 2 - Time interval */}
+            <div className="grid grid-cols-4 gap-2">
+              {INTERVALS.map((opt) => {
+                const active = interval === opt.id;
+                const disabled = tickOnly && opt.id !== "1t";
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    disabled={disabled}
+                    onClick={() => !disabled && onSelectInterval(opt.id)}
+                    aria-pressed={active}
+                    className={cn(
+                      "rounded-lg border px-1.5 py-2 text-[12px] font-medium transition-colors",
+                      disabled
+                        ? "cursor-not-allowed border-opt-line bg-opt-bg-sunk text-opt-ink-4 opacity-50"
+                        : active
+                          ? "border-opt-ink text-opt-ink"
+                          : "border-opt-line text-opt-ink-2 hover:border-opt-line-strong hover:text-opt-ink",
+                    )}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Section 3 — Smooth chart movement toggle */}
@@ -195,15 +198,19 @@ function HollowGlyph() {
     <svg
       viewBox="0 0 24 24"
       fill="none"
-      stroke="currentColor"
       strokeWidth={1.6}
       strokeLinecap="round"
       strokeLinejoin="round"
       className="h-5 w-5"
     >
-      <path d="M7 4v3M7 17v3M17 4v5M17 19v1" />
-      <rect x="5" y="7" width="4" height="10" rx="0.5" />
-      <rect x="15" y="9" width="4" height="10" rx="0.5" />
+      <g stroke="#00a79e">
+        <path d="M7 4v3M7 17v3" />
+        <rect x="5" y="7" width="4" height="10" rx="0.5" />
+      </g>
+      <g stroke="#e91e63">
+        <path d="M17 4v5M17 19v1" />
+        <rect x="15" y="9" width="4" height="10" rx="0.5" />
+      </g>
     </svg>
   );
 }
@@ -213,14 +220,13 @@ function OhlcGlyph() {
     <svg
       viewBox="0 0 24 24"
       fill="none"
-      stroke="currentColor"
       strokeWidth={1.6}
       strokeLinecap="round"
       strokeLinejoin="round"
       className="h-5 w-5"
     >
-      <path d="M8 5v14M4 9h4M8 13h-4" />
-      <path d="M16 7v12M16 10h4M12 16h4" />
+      <path stroke="#00a79e" d="M8 5v14M4 9h4M8 13h-4" />
+      <path stroke="#e91e63" d="M16 7v12M16 10h4M12 16h4" />
     </svg>
   );
 }

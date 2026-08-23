@@ -281,9 +281,14 @@ export const AreaChartIcon = (p: IconProps) => (
 
 export const CandleChartIcon = (p: IconProps) => (
   <svg viewBox="0 0 24 24" strokeWidth={1.6} {...base} {...p}>
-    <path d="M7 4v3M7 17v3M17 4v5M17 19v1" />
-    <rect x="5" y="7" width="4" height="10" rx="0.5" />
-    <rect x="15" y="9" width="4" height="10" rx="0.5" />
+    <g fill="#00a79e" stroke="#00a79e">
+      <path d="M7 4v3M7 17v3" />
+      <rect x="5" y="7" width="4" height="10" rx="0.5" />
+    </g>
+    <g fill="#e91e63" stroke="#e91e63">
+      <path d="M17 4v5M17 19v1" />
+      <rect x="15" y="9" width="4" height="10" rx="0.5" />
+    </g>
   </svg>
 );
 
