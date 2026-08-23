@@ -1,7 +1,7 @@
 import {
     ISeriesPrimitive,
-    ISeriesPrimitivePaneView,
-    ISeriesPrimitivePaneRenderer,
+    IPrimitivePaneView,
+    IPrimitivePaneRenderer,
     SeriesAttachedParameter,
     Time,
     IChartApi,
@@ -9,7 +9,7 @@ import {
     SeriesType
 } from 'lightweight-charts';
 
-class EndPriceLineRenderer implements ISeriesPrimitivePaneRenderer {
+class EndPriceLineRenderer implements IPrimitivePaneRenderer {
     private _chart: IChartApi | null = null;
     private _series: ISeriesApi<SeriesType> | null = null;
     private _time: Time | null = null;
@@ -55,7 +55,7 @@ class EndPriceLineRenderer implements ISeriesPrimitivePaneRenderer {
     }
 }
 
-class EndPriceLinePaneView implements ISeriesPrimitivePaneView {
+class EndPriceLinePaneView implements IPrimitivePaneView {
     private _renderer: EndPriceLineRenderer;
 
     constructor(color: string) {
