@@ -13,6 +13,7 @@ import {
 } from "lightweight-charts";
 import { CHART_COLORS } from "../chart/chartColors";
 import type { ContractDetail } from "./contractDetail";
+import { AccumulatorBarriersPlugin } from "./plugins/AccumulatorBarriersPlugin";
 
 /**
  * Right-panel chart of the Contract Details modal (Deriv §10): a second
@@ -79,6 +80,41 @@ export function ContractDetailChart({ detail }: { detail: ContractDetail }) {
     }
 
     // Circled unicode digits ①–⑩ so the number appears inside a circle like Deriv.
+    // Add Accumulator specific barriers (red/green shaded box for the final tick)
+    if (detail.type === "accumulators" || detail.type === "ACCU") {
+      if (detail.ticks.length >= 2) {
+        const exitTick = detail.ticks[detail.ticks.length - 1];
+        const prevTick = detail.ticks[detail.ticks.length - 2];
+        const isWon = detail.outcome === "won";
+        
+        let highBarrier = detail.highBarrier;
+        let lowBarrier = detail.lowBarrier;
+        
+        if (!highBarrier || !lowBarrier) {
+            // Estimate barrier visually if not provided by backend
+            if (!isWon) {
+                // If lost, the exit spot breached the barrier.
+                const diff = Math.abs(exitTick.value - prevTick.value) * 0.95;
+                highBarrier = prevTick.value + diff;
+                lowBarrier = prevTick.value - diff;
+            } else {
+                // If won, just show a visually pleasing width
+                const diff = prevTick.value * 0.00035; // typical for R_100 5%
+                highBarrier = prevTick.value + diff;
+                lowBarrier = prevTick.value - diff;
+            }
+        }
+        
+        const barriersPlugin = new AccumulatorBarriersPlugin(
+            prevTick.time as UTCTimestamp,
+            highBarrier,
+            lowBarrier,
+            isWon
+        );
+        series.attachPrimitive(barriersPlugin);
+      }
+    }
+
     const CIRCLED = ["", "①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩"];
     const circled = (n: number) => CIRCLED[n] ?? String(n);
 

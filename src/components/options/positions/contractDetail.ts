@@ -23,7 +23,7 @@ export interface ContractDetail {
   marketId: string;
   marketName: string;
   type: string;
-  /** "Rise" / "Fall" / "Up" â€¦ */
+  /** "Rise" / "Fall" / "Up" … */
   tradeTypeLabel: string;
   side: "rise" | "fall";
   growthRate?: number;
@@ -39,6 +39,8 @@ export interface ContractDetail {
   sellTransactionId: number;
   duration: string;
   barrier: number;
+  highBarrier?: number;
+  lowBarrier?: number;
   startTime: number;
   entrySpot: number;
   entryTime: number;
@@ -361,6 +363,8 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
       sellTransactionId: Number((h as any).sell_transaction_id) || 0,
       duration: durationLabel,
       barrier: parseBarrier(h.barrier, entrySpot),
+      highBarrier: (h as any).high_barrier ? Number((h as any).high_barrier) : undefined,
+      lowBarrier: (h as any).low_barrier ? Number((h as any).low_barrier) : undefined,
       startTime,
       entrySpot,
       entryTime: startTime + 1,
