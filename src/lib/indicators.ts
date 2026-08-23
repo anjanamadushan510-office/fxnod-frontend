@@ -928,14 +928,14 @@ export function calculateSMI(
   const hlData = stripNaNs(hlArr);
 
   // Smooth M
-  const mEMA1 = calculateMA(mData.validData, smoothing1, maType);
+  const mEMA1 = calculateMA(mData.validData, smoothing1, 'Exponential');
   const mEMA1Strip = stripNaNs(mEMA1);
-  const mEMA2 = calculateMA(mEMA1Strip.validData, smoothing2, maType);
+  const mEMA2 = calculateMA(mEMA1Strip.validData, smoothing2, 'Exponential');
   
   // Smooth HL
-  const hlEMA1 = calculateMA(hlData.validData, smoothing1, maType);
+  const hlEMA1 = calculateMA(hlData.validData, smoothing1, 'Exponential');
   const hlEMA1Strip = stripNaNs(hlEMA1);
-  const hlEMA2 = calculateMA(hlEMA1Strip.validData, smoothing2, maType);
+  const hlEMA2 = calculateMA(hlEMA1Strip.validData, smoothing2, 'Exponential');
 
   // Combine and calculate SMI
   const mSmoothed = padResult(mEMA2, mData.offset + mEMA1Strip.offset, dataLen);
