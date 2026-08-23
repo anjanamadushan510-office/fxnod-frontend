@@ -314,7 +314,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
       applyDrawings(seriesRef.current, drawingsRef.current, drawingObjsRef);
       syncIndicators(chart, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeight, minimizedIndicators);
       // chart.timeScale().fitContent();
-    }, [seriesKind]);
+    }, [seriesKind, chartType]);
 
     // ── Drawing tools: cursor, click capture, and render sync ───────────────
     // Crosshair cursor while a tool is armed; clear a half-finished trend line
