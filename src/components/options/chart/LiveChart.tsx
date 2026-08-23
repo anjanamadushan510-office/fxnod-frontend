@@ -1,7 +1,7 @@
 "use client";
 
 
-import { Settings, Trash2 } from "lucide-react";
+import { Settings, Trash2, ChevronDown, Maximize, EyeOff } from "lucide-react";
 import { INDICATOR_LIST } from "./IndicatorsModal";
 import { IndicatorSettingsModal } from "./IndicatorSettingsModal";
 import {
@@ -137,6 +137,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
     const allIndicators = useChartIndicators((s) => s.indicators);
     const removeIndicator = useChartIndicators((s) => s.removeIndicator);
     const [settingsIndicatorId, setSettingsIndicatorId] = useState<string | null>(null);
+    const [minimizedIndicators, setMinimizedIndicators] = useState<Set<string>>(new Set());
 
     const activeIndicators = useMemo(() => allIndicators.filter((i) => i.symbol === symbol), [allIndicators, symbol]);
     const activeIndicatorsRef = useRef<IndicatorConfig[]>(activeIndicators);
@@ -280,7 +281,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
       );
       // Re-attach user drawings to the fresh series.
       applyDrawings(seriesRef.current, drawingsRef.current, drawingObjsRef);
-      syncIndicators(chart, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeight);
+      syncIndicators(chart, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeight, minimizedIndicators);
       chart.timeScale().fitContent();
     }, [seriesKind]);
 
@@ -354,7 +355,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
     // Re-sync indicators when the active list changes.
     useEffect(() => {
       if (chartRef.current) {
-        syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicators, seriesKind, ticksRef.current, candlesRef.current, paneHeight);
+        syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicators, seriesKind, ticksRef.current, candlesRef.current, paneHeight, minimizedIndicators);
       }
     }, [activeIndicators, seriesKind]);
 
@@ -373,7 +374,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
           );
           chartRef.current?.timeScale().fitContent();
         }
-        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeight);
+        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeight, minimizedIndicators);
         const last = ticks[ticks.length - 1];
         if (last) onPrice?.(last.value);
       },
@@ -389,7 +390,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
             /* out-of-order tick — ignore */
           }
         }
-        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeight);
+        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeight, minimizedIndicators);
         onPrice?.(tick.value);
       },
       onSeedCandles: (candles) => {
@@ -400,7 +401,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
         }));
         hydrateSeries(seriesRef.current, seriesKind, ticksRef.current, candles);
         chartRef.current?.timeScale().fitContent();
-        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeight);
+        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeight, minimizedIndicators);
         const last = candles[candles.length - 1];
         if (last) onPrice?.(last.close);
       },
@@ -420,7 +421,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
         } catch {
           /* out-of-order candle — ignore */
         }
-        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeight);
+        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeight, minimizedIndicators);
         onPrice?.(candle.close);
       },
     });
@@ -753,7 +754,8 @@ function syncIndicators(
   seriesKind: "area" | "candlestick",
   ticks: FeedTick[],
   candles: FeedCandle[],
-  paneHeight: number
+  paneHeight: number,
+  minimizedIndicators: Set<string> = new Set()
 ) {
   // Remove series that are no longer active
   const activeIds = new Set(activeIndicators.map(i => i.id));
@@ -1558,50 +1560,56 @@ function syncIndicators(
   }
   
   // Layout active oscillators dynamically to create a multi-pane effect without overlapping the main chart
-  const activeScales = new Set<string>();
   const isOverlay = (type: string) => ["ma", "ma_envelope", "rainbow_ma", "bollinger", "donchian", "alligator", "fractal", "ichimoku", "parabolic_sar", "zigzag"].includes(type);
-  activeIndicators.forEach((ind) => {
-    if (!isOverlay(ind.type)) {
-      activeScales.add(`${ind.id}-scale`);
+  const oscillators = activeIndicators.filter(ind => !isOverlay(ind.type));
+  const numOscillators = oscillators.length;
+
+  let totalOscillatorHeight = 0;
+  oscillators.forEach(ind => {
+      totalOscillatorHeight += minimizedIndicators.has(ind.id) ? 0.03 : paneHeight;
+  });
+  totalOscillatorHeight = Math.min(0.8, totalOscillatorHeight);
+
+  const mainBottom = numOscillators > 0 ? (totalOscillatorHeight + 0.05) : 0.1;
+  chart.priceScale("right").applyOptions({
+    scaleMargins: { top: 0.1, bottom: mainBottom },
+  });
+
+  let currentTopOffset = 1 - totalOscillatorHeight;
+
+  oscillators.forEach((ind) => {
+    const scaleId = `${ind.id}-scale`;
+    const actualPaneHeight = minimizedIndicators.has(ind.id) ? 0.03 : paneHeight;
+    const baseTop = currentTopOffset;
+    currentTopOffset += actualPaneHeight;
+
+    let top = Math.max(0, Math.min(0.95, baseTop + 0.05));
+    let bottom = Math.max(0, Math.min(0.95, 1 - (baseTop + actualPaneHeight) + 0.05));
+      
+    if (top + bottom >= 1) {
+      if (bottom > top) bottom = 0.95 - top;
+      else top = 0.95 - bottom;
+    }
+      
+    try {
+      chart.priceScale(scaleId).applyOptions({
+        scaleMargins: { top, bottom },
+      });
+    } catch (e) {
+      console.error('Error applying scale options for', scaleId, e);
     }
   });
 
-  const scaleArray = Array.from(activeScales);
-  const numOscillators = scaleArray.length;
-  
-  if (numOscillators > 0) {
-    const totalOscillatorHeight = Math.min(0.8, paneHeight * numOscillators);
-    
-    // Main chart margin (make sure it doesn't overlap with the bottom oscillators, and leave a visual gap)
-    const mainBottom = Math.min(0.85, totalOscillatorHeight + 0.12);
-    chart.priceScale("right").applyOptions({
-      scaleMargins: { top: 0.1, bottom: mainBottom },
-    });
-
-    // Each oscillator gets a slice of the bottom portion
-    scaleArray.forEach((scaleId, index) => {
-      const actualPaneHeight = totalOscillatorHeight / numOscillators;
-      const baseTop = 1 - totalOscillatorHeight + (index * actualPaneHeight);
-      let top = Math.max(0, Math.min(0.95, baseTop + 0.05));
-      let bottom = Math.max(0, Math.min(0.95, 1 - (baseTop + actualPaneHeight) + 0.05));
-      
-      if (top + bottom >= 1) {
-        if (bottom > top) bottom = 0.95 - top;
-        else top = 0.95 - bottom;
+  // Handle visibility for all overlay indicators
+  activeIndicators.forEach(ind => {
+      const isMin = minimizedIndicators.has(ind.id);
+      if (isOverlay(ind.type)) {
+          for (const [key, series] of seriesRef.current.entries()) {
+              if (key.startsWith(ind.id)) {
+                  series.applyOptions({ visible: !isMin });
+              }
+          }
       }
-      
-      try {
-        chart.priceScale(scaleId).applyOptions({
-          scaleMargins: { top, bottom },
-        });
-      } catch (e) {
-        console.error('Error applying scale options for', scaleId, e);
-      }
-    }); } else {
-    // Reset main chart margin
-    chart.priceScale("right").applyOptions({
-      scaleMargins: { top: 0.1, bottom: 0.1 },
-    });
-  }
+  });
 }
 
