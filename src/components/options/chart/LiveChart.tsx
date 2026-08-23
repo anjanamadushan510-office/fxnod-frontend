@@ -1556,9 +1556,9 @@ function syncIndicators(
       }
       
       // Update Price Lines (Overbought / Oversold)
-      const existingLines = (smiLine as any).priceLines || [];
+      const existingLines = (smiLine as any).__customPriceLines || [];
       existingLines.forEach((line: any) => smiLine.removePriceLine(line));
-      (smiLine as any).priceLines = [];
+      (smiLine as any).__customPriceLines = [];
       
       const showZones = ind.params.showZones !== false;
       if (showZones) {
@@ -1574,7 +1574,7 @@ function syncIndicators(
           lineWidth: 1, 
           lineStyle: 2 
         });
-        (smiLine as any).priceLines.push(ob, os);
+        (smiLine as any).__customPriceLines.push(ob, os);
       }
 
       const q = ind.params.period || 10;
