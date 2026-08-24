@@ -5,10 +5,10 @@ import type { Route } from "next";
 import Link from "next/link";
 import { cn } from "@/lib/cn";
 import { BotChart } from "@/components/bot/BotChart";
+import { BotPicker } from "@/components/bot/BotPicker";
 import { BotTabs, type DraftTab } from "@/components/bot/BotTabs";
 import { BotTopBar } from "@/components/bot/BotTopBar";
 import { HistoryTable } from "@/components/bot/HistoryTable";
-import { SelectBot } from "@/components/bot/SelectBot";
 import { SessionStats } from "@/components/bot/SessionStats";
 import { SplitHandle } from "@/components/bot/SplitHandle";
 import { TradeConfiguration } from "@/components/bot/TradeConfiguration";
@@ -44,10 +44,16 @@ import type {
 /**
  * /options/dbot — automated trading.
  *
- * Layout: a tab per bot, a configuration rail, and a work area split between the
- * trade list and the chart. Both splits are draggable and remembered.
+ * A tab per bot. An empty tab shows the bot picker; choosing a bot turns that
+ * tab into its workspace — a configuration rail plus a work area split between
+ * the trade list and the chart, both splits draggable and remembered.
  *
- * Two things the structure is deliberate about:
+ * Choosing is a step rather than a permanent control in the rail, because it is
+ * a decision made once: a run's strategy is snapshotted server-side at start and
+ * cannot be swapped underneath it. A picker that sits there for the whole
+ * session implies otherwise.
+ *
+ * Two more things the structure is deliberate about:
  *
  *   A tab for a RUNNING bot is a view of server state, not browser state. It
  *   survives a refresh, appears on another device, and cannot be closed — only
@@ -96,7 +102,9 @@ export default function DBotPage() {
 
   const newDraft = useCallback(() => {
     const id = `draft-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-    setDrafts((prev) => [...prev, { id, label: "New bot" }]);
+    // No strategy yet — the tab opens on the picker, like a new browser tab
+    // opening on its new-tab page.
+    setDrafts((prev) => [...prev, { id, label: "New bot", sub: "choose a bot" }]);
     setDraftForms((prev) => ({ ...prev, [id]: defaultFormState() }));
     setActiveId(id);
     return id;
@@ -151,15 +159,56 @@ export default function DBotPage() {
   );
 
   // A live run's strategy is fixed — it was snapshotted server-side at start.
+  // A draft has one only once the user has picked; there is deliberately no
+  // fallback to the first strategy, because defaulting to a bot nobody chose is
+  // how someone starts the wrong one.
   const selectedStrategyId = activeRun
     ? activeRun.strategy_id
-    : (draftStrategies[activeId] ?? strategies[0]?.strategy_id ?? "");
+    : (draftStrategies[activeId] ?? "");
   const selected = strategies.find((s) => s.strategy_id === selectedStrategyId);
+
+  /** True while this tab is still the picker rather than a bot. */
+  const picking = !activeRun && !selected;
 
   const selectStrategy = useCallback(
     (id: string) => setDraftStrategies((prev) => ({ ...prev, [activeId]: id })),
     [activeId],
   );
+
+  /** Send a not-yet-started tab back to the picker. */
+  const unselectStrategy = useCallback(() => {
+    setDraftStrategies((prev) => {
+      const next = { ...prev };
+      delete next[activeId];
+      return next;
+    });
+  }, [activeId]);
+
+  // Tab labels follow the choice: an empty tab reads "New bot / choose a bot",
+  // and becomes the bot's name the moment one is picked.
+  const draftTabs: DraftTab[] = useMemo(
+    () =>
+      drafts.map((d) => {
+        const strategyId = draftStrategies[d.id];
+        const name = strategies.find(
+          (s) => s.strategy_id === strategyId,
+        )?.display_name;
+        return {
+          id: d.id,
+          label: name ?? "New bot",
+          sub: name ? "not started" : "choose a bot",
+        };
+      }),
+    [drafts, draftStrategies, strategies],
+  );
+
+  const runningCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const run of activeRuns) {
+      counts[run.strategy_id] = (counts[run.strategy_id] ?? 0) + 1;
+    }
+    return counts;
+  }, [activeRuns]);
 
   // ── Trades for the selected run ───────────────────────────────────────────
   const tradesQuery = useListBotRunTrades(
@@ -178,7 +227,9 @@ export default function DBotPage() {
   const chartMarketId = activeRun
     ? derivToMarketId(activeRun.symbol)
     : form.marketId;
-  const { candles, ready: chartReady } = useBotCandles(chartMarketId);
+  // Not while the picker is up: a market subscription opened for a chart nobody
+  // is looking at still costs a Deriv subscription slot.
+  const { candles, ready: chartReady } = useBotCandles(chartMarketId, !picking);
 
   // ── Layout ────────────────────────────────────────────────────────────────
   const railSplit = useResizable({
@@ -279,7 +330,7 @@ export default function DBotPage() {
 
       <BotTabs
         runs={activeRuns}
-        drafts={drafts}
+        drafts={draftTabs}
         activeId={activeId}
         onSelect={setActiveId}
         onCloseDraft={closeDraft}
@@ -304,26 +355,34 @@ export default function DBotPage() {
       {notice && <Banner tone="info">{notice}</Banner>}
       {errors.length > 0 && <Banner tone="error">{errors.join(" · ")}</Banner>}
 
-      {/* Rail | work area. Percentage-based so the split survives a window
-          resize, which a pixel split does not. */}
+      {/* An empty tab is the picker; a chosen bot is the workspace. Nothing of
+          the workspace renders while picking — a rail and an empty chart around
+          a "choose a bot" screen would just be furniture. */}
+      {picking ? (
+        <BotPicker
+          strategies={strategies}
+          onSelect={selectStrategy}
+          runningCounts={runningCounts}
+          loading={strategiesQuery.isLoading}
+        />
+      ) : (
       <div ref={railSplit.containerRef} className="flex min-h-0 flex-1">
         <aside
           style={{ width: `${railSplit.size}%` }}
           className="flex min-w-0 flex-col gap-4 overflow-y-auto border-r border-opt-line bg-opt-bg-elev p-3"
         >
-          <SelectBot
-            bots={strategies.map((s) => ({
-              id: s.strategy_id,
-              name: s.display_name,
-              tagline: s.description ?? "",
-              contractType: s.supported_contract_types[0] ?? "",
-            }))}
-            selectedId={selectedStrategyId}
-            onSelect={selectStrategy}
-            disabled={Boolean(activeRun)}
-          />
-
-          <div className="h-px w-full bg-opt-line" />
+          {/* Only a draft can go back. A live run's strategy was snapshotted
+              server-side at start; offering to change it would be a lie. */}
+          {!activeRun && (
+            <button
+              type="button"
+              onClick={unselectStrategy}
+              className="-mb-1 flex w-fit items-center gap-1.5 text-[11px] font-semibold text-opt-ink-3 transition-colors hover:text-opt-ink"
+            >
+              <span aria-hidden="true">←</span>
+              Choose a different bot
+            </button>
+          )}
 
           {selected && (
             <TradeConfiguration
@@ -410,6 +469,7 @@ export default function DBotPage() {
           </div>
         </main>
       </div>
+      )}
     </div>
   );
 }

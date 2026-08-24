@@ -28,6 +28,8 @@ export interface DraftTab {
   /** Local-only id. */
   id: string;
   label: string;
+  /** Second line. An empty tab says what it is still waiting for. */
+  sub: string;
 }
 
 interface BotTabsProps {
@@ -83,7 +85,7 @@ export function BotTabs({
           key={draft.id}
           id={draft.id}
           label={draft.label}
-          sub="not started"
+          sub={draft.sub}
           active={activeId === draft.id}
           onSelect={onSelect}
           onClose={onCloseDraft}
