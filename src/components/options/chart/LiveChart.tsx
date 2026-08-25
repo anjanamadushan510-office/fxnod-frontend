@@ -18,6 +18,7 @@ import {
   BarSeries,
   LineSeries,
   HistogramSeries,
+  BaselineSeries,
   ColorType,
   CrosshairMode,
   LineStyle,
