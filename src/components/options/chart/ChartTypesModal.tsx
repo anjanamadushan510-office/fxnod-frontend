@@ -79,11 +79,13 @@ export function ChartTypesModal({
           <div className="grid grid-cols-4 gap-2.5">
             {CHART_TYPES.map((type) => {
               const active = chartType === type.id;
+              const disabled = interval === "1t" && type.id !== "area";
               return (
                 <button
                   key={type.id}
                   type="button"
-                  onClick={() => onSelectChartType(type.id)}
+                  disabled={disabled}
+                  onClick={() => !disabled && onSelectChartType(type.id)}
                   aria-pressed={active}
                   style={
                     active
@@ -96,8 +98,10 @@ export function ChartTypesModal({
                   }
                   className={cn(
                     "flex flex-col items-center gap-2 rounded-xl border px-2 py-3 transition-colors",
-                    !active &&
-                      "border-opt-line text-opt-ink hover:border-opt-line-strong",
+                    disabled
+                      ? "cursor-not-allowed border-opt-line bg-opt-bg-sunk text-opt-ink-4 opacity-50"
+                      : !active &&
+                        "border-opt-line text-opt-ink hover:border-opt-line-strong",
                   )}
                 >
                   <ChartTypeGlyph id={type.id} />
@@ -113,7 +117,7 @@ export function ChartTypesModal({
             <div className="grid grid-cols-4 gap-2">
               {INTERVALS.map((opt) => {
                 const active = interval === opt.id;
-                const disabled = tickOnly && opt.id !== "1t";
+                const disabled = (tickOnly && opt.id !== "1t") || (chartType !== "area" && opt.id === "1t");
                 return (
                   <button
                     key={opt.id}
