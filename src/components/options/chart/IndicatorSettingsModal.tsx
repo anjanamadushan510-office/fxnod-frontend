@@ -21,7 +21,7 @@ function CustomColorPicker({ value, onChange }: { value: string; onChange: (v: s
         onClick={() => setIsOpen(!isOpen)}
         className="flex w-full items-center justify-between rounded border border-opt-line bg-transparent px-2 py-1.5 focus:border-opt-ink"
       >
-        <div className="h-5 w-full max-w-[220px] rounded" style={{ backgroundColor: value }} />
+        <div className="h-5 w-full max-w-[220px] rounded shadow-[inset_0_0_0_1px_rgba(0,0,0,0.1)]" style={{ backgroundColor: value }} />
         <ChevronDown className={`h-4 w-4 text-opt-ink-3 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
       {isOpen && (
@@ -36,7 +36,7 @@ function CustomColorPicker({ value, onChange }: { value: string; onChange: (v: s
                     onChange(c);
                     setIsOpen(false);
                   }}
-                  className={`h-5 w-5 rounded-sm transition-transform hover:scale-110 ${value === c ? 'ring-2 ring-opt-ink ring-offset-1 ring-offset-opt-bg-elev' : ''}`}
+                  className={`h-5 w-5 rounded-sm transition-transform hover:scale-110 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.1)] ${value === c ? 'ring-2 ring-opt-ink ring-offset-1 ring-offset-opt-bg-elev' : ''}`}
                   style={{ backgroundColor: c }}
                 />
               ))}
