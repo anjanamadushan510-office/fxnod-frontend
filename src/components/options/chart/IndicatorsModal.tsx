@@ -41,7 +41,7 @@ export const INDICATOR_LIST: { id: string; name: string; category: Category; dis
   // Momentum
   { id: "awesome_oscillator", name: "Awesome Oscillator", category: "Momentum", requiresOHLC: true, Icon: IconAwesomeOscillator },
   { id: "dpo", name: "Detrended Price Oscillator", category: "Momentum", Icon: IconDPO },
-  { id: "MACD", name: "MACD", category: "Momentum", Icon: IconMACD },
+  { id: "MACD", name: "MACD", category: "Momentum", requiresOHLC: true, Icon: IconMACD },
   { id: "roc", name: "Price Rate of Change", category: "Momentum", Icon: IconROC },
   { id: "RSI", name: "Relative Strength Index (RSI)", category: "Momentum", Icon: IconRSI },
   { id: "stochastic", name: "Stochastic Oscillator", category: "Momentum", requiresOHLC: true, Icon: IconStochastic },
@@ -49,21 +49,21 @@ export const INDICATOR_LIST: { id: string; name: string; category: Category; dis
   { id: "wpr", name: "William's Percent Range", category: "Momentum", requiresOHLC: true, Icon: IconWPR },
   // Trend
   { id: "aroon", name: "Aroon", category: "Trend", Icon: IconAroon },
-  { id: "adx", name: "ADX/DMS", category: "Trend", Icon: IconADX },
+  { id: "adx", name: "ADX/DMS", category: "Trend", requiresOHLC: true, Icon: IconADX },
   { id: "cci", name: "Commodity Channel Index", category: "Trend", requiresOHLC: true, Icon: IconCCI },
-  { id: "ichimoku", name: "Ichimoku Clouds", category: "Trend", Icon: IconIchimoku },
-  { id: "parabolic_sar", name: "Parabolic SAR", category: "Trend", Icon: IconParabolicSAR },
-  { id: "zigzag", name: "Zig Zag", category: "Trend", Icon: IconZigZag },
+  { id: "ichimoku", name: "Ichimoku Clouds", category: "Trend", requiresOHLC: true, Icon: IconIchimoku },
+  { id: "parabolic_sar", name: "Parabolic SAR", category: "Trend", requiresOHLC: true, Icon: IconParabolicSAR },
+  { id: "zigzag", name: "Zig Zag", category: "Trend", requiresOHLC: true, Icon: IconZigZag },
   // Volatility
   { id: "bollinger", name: "Bollinger Bands", category: "Volatility", Icon: IconGenericVolatility },
-  { id: "donchian", name: "Donchian Channel", category: "Volatility", Icon: IconGenericVolatility },
+  { id: "donchian", name: "Donchian Channel", category: "Volatility", requiresOHLC: true, Icon: IconGenericVolatility },
   // Moving averages
   { id: "ma", name: "Moving Average (MA)", category: "Moving averages", Icon: IconGenericMA },
-  { id: "ma_envelope", name: "Moving Average Envelope", category: "Moving averages", Icon: IconGenericMA },
-  { id: "rainbow_ma", name: "Rainbow Moving Average", category: "Moving averages", Icon: IconGenericMA },
+  { id: "ma_envelope", name: "Moving Average Envelope", category: "Moving averages", requiresOHLC: true, Icon: IconGenericMA },
+  { id: "rainbow_ma", name: "Rainbow Moving Average", category: "Moving averages", requiresOHLC: true, Icon: IconGenericMA },
   // Others
-  { id: "alligator", name: "Alligator", category: "Others", Icon: IconGenericOther },
-  { id: "fractal", name: "Fractal Chaos Bands", category: "Others", Icon: IconGenericOther },
+  { id: "alligator", name: "Alligator", category: "Others", requiresOHLC: true, Icon: IconGenericOther },
+  { id: "fractal", name: "Fractal Chaos Bands", category: "Others", requiresOHLC: true, Icon: IconGenericOther },
 ];
 
 export function IndicatorsModal({ symbol, interval, onClose }: IndicatorsModalProps) {
