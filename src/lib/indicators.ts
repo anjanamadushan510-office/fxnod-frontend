@@ -853,25 +853,21 @@ export function calculateFractalChaosBands(high: number[], low: number[], lookba
   return { upper, lower };
 }
 
-
-
 export function calculateDPO(data: number[], period: number = 14, maType: string = "Simple"): number[] {
   const result: number[] = new Array(data.length).fill(NaN);
   if (data.length < period) return result;
   
   const ma = calculateMA(data, period, maType);
-  const shift = Math.floor(period / 2) + 1;
   
   for (let i = 0; i < data.length; i++) {
-    const shiftedIdx = i - shift;
-    if (shiftedIdx >= 0 && !isNaN(ma[shiftedIdx])) {
-      result[i] = data[i] - ma[shiftedIdx];
+    const currentMA = ma[i];
+    if (!isNaN(currentMA)) {
+      result[i] = data[i] - currentMA;
     }
   }
   
   return result;
 }
-
 
 export interface SMIResult {
   smi: number[];
