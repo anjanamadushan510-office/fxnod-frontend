@@ -1001,17 +1001,21 @@ function syncIndicators(
       if (!hist || !macdLine || !signalLine) {
         hist = chart.addSeries(HistogramSeries, {
           priceScaleId: `${ind.id}-scale`,
-          priceFormat: { type: 'price', precision: 4, minMove: 0.0001 }
+          priceFormat: { type: 'price', precision: 2, minMove: 0.01 },
+          lastValueVisible: false,
+          priceLineVisible: false
         });
         macdLine = chart.addSeries(LineSeries, {
+          color: ind.params.macdColor || "#000000",
           lineWidth: 2,
           priceScaleId: `${ind.id}-scale`,
-          priceFormat: { type: 'price', precision: 4, minMove: 0.0001 }
+          priceFormat: { type: 'price', precision: 2, minMove: 0.01 }
         });
         signalLine = chart.addSeries(LineSeries, {
+          color: ind.params.signalColor || "#f44336",
           lineWidth: 2,
           priceScaleId: `${ind.id}-scale`,
-          priceFormat: { type: 'price', precision: 4, minMove: 0.0001 }
+          priceFormat: { type: 'price', precision: 2, minMove: 0.01 }
         });
         chart.priceScale(`${ind.id}-scale`).applyOptions({
           scaleMargins: { top: 0.75, bottom: 0 },
@@ -1019,14 +1023,19 @@ function syncIndicators(
         seriesRef.current.set(`${ind.id}-hist`, hist);
         seriesRef.current.set(`${ind.id}-macd`, macdLine);
         seriesRef.current.set(`${ind.id}-signal`, signalLine);
+      } else {
+        macdLine.applyOptions({ color: ind.params.macdColor || "#000000" });
+        signalLine.applyOptions({ color: ind.params.signalColor || "#f44336" });
       }
 
       const pFast = ind.params.fastPeriod || 12;
       const pSlow = ind.params.slowPeriod || 26;
       const pSignal = ind.params.signalPeriod || 9;
+      const incColor = ind.params.increasingBarColor || "#4caf50";
+      const decColor = ind.params.decreasingBarColor || "#f44336";
       const results = calculateMACD(valueArray, pFast, pSlow, pSignal);
 
-      const histData = results.histogram.map((val, i) => ({ time: timeArray[i], value: val, color: val >= 0 ? "#26a69a" : "#ef5350" })).filter(d => !isNaN(d.value));
+      const histData = results.histogram.map((val, i) => ({ time: timeArray[i], value: val, color: val >= 0 ? incColor : decColor })).filter(d => !isNaN(d.value));
       const macdData = results.macd.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
       const signalData = results.signal.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
 
