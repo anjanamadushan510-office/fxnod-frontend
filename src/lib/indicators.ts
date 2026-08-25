@@ -860,11 +860,12 @@ export function calculateDPO(data: number[], period: number = 14, maType: string
   if (data.length < period) return result;
   
   const ma = calculateMA(data, period, maType);
+  const shift = Math.floor(period / 2) + 1;
   
   for (let i = 0; i < data.length; i++) {
-    const currentMA = ma[i];
-    if (!isNaN(currentMA)) {
-      result[i] = data[i] - currentMA;
+    const shiftedIdx = i - shift;
+    if (shiftedIdx >= 0 && !isNaN(ma[shiftedIdx])) {
+      result[i] = data[i] - ma[shiftedIdx];
     }
   }
   
