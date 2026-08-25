@@ -251,7 +251,7 @@ export function IndicatorsModal({ symbol, interval, onClose }: IndicatorsModalPr
         <div className="flex-1 flex flex-col bg-opt-bg-elev">
           <div className="flex items-center justify-between border-b border-opt-line px-4 py-3 min-h-[57px]">
             <div className="flex items-center w-full relative">
-              <Search className="absolute left-7 top-1/2 -translate-y-1/2 h-4 w-4 text-opt-ink-3" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-opt-ink-3" />
               <input
                 type="text"
                 placeholder="Search"
