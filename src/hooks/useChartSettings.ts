@@ -94,7 +94,19 @@ export function useChartSettings(): ChartSettings {
     [update],
   );
   const setTradeType = useCallback(
-    (id: TradeTypeId) => update({ trade_type: id }),
+    (id: TradeTypeId) => {
+      const isTickOnly =
+        id === "even_odd" ||
+        id === "matches_differs" ||
+        id === "over_under" ||
+        id === "accumulators";
+
+      if (isTickOnly) {
+        update({ trade_type: id, interval: "1t", chart_type: "area" });
+      } else {
+        update({ trade_type: id });
+      }
+    },
     [update],
   );
 

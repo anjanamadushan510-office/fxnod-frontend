@@ -58,7 +58,8 @@ export function ChartPanel({
   const tickOnly =
     tradeType === "even_odd" ||
     tradeType === "matches_differs" ||
-    tradeType === "over_under";
+    tradeType === "over_under" ||
+    tradeType === "accumulators";
 
   // Latest streamed price + the session anchor for the change indicator.
   const [livePrice, setLivePrice] = useState<number | null>(null);
