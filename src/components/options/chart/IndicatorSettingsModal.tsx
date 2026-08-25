@@ -27,7 +27,7 @@ function CustomColorPicker({ value, onChange }: { value: string; onChange: (v: s
       {isOpen && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
-          <div className="absolute left-0 top-full z-20 mt-1 w-max rounded-xl border border-opt-line bg-opt-bg-elev p-3 shadow-2xl">
+          <div className="absolute right-0 top-full z-20 mt-1 w-max rounded-xl border border-opt-line bg-opt-bg-elev p-3 shadow-2xl">
             <div className="grid gap-1.5" style={{ gridTemplateColumns: 'repeat(14, minmax(0, 1fr))' }}>
               {PALETTE_COLORS.map((c, i) => (
                 <button
@@ -304,7 +304,7 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
             <X className="h-4 w-4" />
           </button>
         </div>
-        <div className="custom-scrollbar flex flex-col gap-4 overflow-y-auto p-4">
+        <div className="custom-scrollbar flex flex-col gap-4 overflow-x-hidden overflow-y-auto p-4">
                     {indicator.type === 'smi' ? (
             <div className="flex flex-col gap-4">
               <div>
