@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Settings, Trash2, Zap, Activity, TrendingUp, Waves, LineChart, Shapes } from "lucide-react";
+import { X, Settings, Trash2, Zap, Activity, TrendingUp, Waves, LineChart, Shapes, Search } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { IndicatorSettingsModal } from "./IndicatorSettingsModal";
 
@@ -69,6 +69,7 @@ export const INDICATOR_LIST: { id: string; name: string; category: Category; dis
 export function IndicatorsModal({ symbol, interval, onClose }: IndicatorsModalProps) {
   const [tab, setTab] = useState<Category>("Active");
   const [settingsIndicatorId, setSettingsIndicatorId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { indicators, addIndicator, removeIndicator, updateIndicator, clearIndicators } = useChartIndicators();
   const activeIndicators = indicators.filter((ind) => ind.symbol === symbol);
@@ -84,8 +85,8 @@ export function IndicatorsModal({ symbol, interval, onClose }: IndicatorsModalPr
   const renderActiveTab = () => {
     if (activeIndicators.length === 0) {
       return (
-        <div className="flex h-[250px] flex-col items-center justify-center text-center text-opt-ink-3">
-          <p className="text-[13px]">No active indicators.</p>
+        <div className="flex h-full flex-col items-center justify-center text-center text-opt-ink-3">
+          <p className="text-[13px]">No active indicators yet.</p>
           <p className="text-[11px] mt-1">Select a category to add one.</p>
         </div>
       );
@@ -93,6 +94,16 @@ export function IndicatorsModal({ symbol, interval, onClose }: IndicatorsModalPr
 
     return (
       <div className="flex flex-col gap-2 p-4">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-[12px] font-normal text-opt-ink-3">Up to 5 active indicators allowed.</span>
+          <button
+            type="button"
+            onClick={() => clearIndicators(symbol)}
+            className="text-[12px] font-semibold text-opt-ink-3 hover:text-opt-ink whitespace-nowrap"
+          >
+            Clear all
+          </button>
+        </div>
         {activeIndicators.map((ind) => {
           const meta = INDICATOR_LIST.find((i) => i.id === ind.type);
           return (
@@ -163,6 +174,46 @@ export function IndicatorsModal({ symbol, interval, onClose }: IndicatorsModalPr
     );
   };
 
+  const renderSearchResults = () => {
+    const list = INDICATOR_LIST.filter((i) => i.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    const isTick = interval === "1t";
+    const isAtLimit = activeIndicators.length >= 5;
+
+    if (list.length === 0) {
+      return (
+        <div className="flex h-full flex-col items-center justify-center text-center text-opt-ink-3">
+          <p className="text-[13px]">No results found for "{searchQuery}".</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex flex-col gap-2 p-4">
+        {list.map((ind) => {
+          const isDisabled = ind.disabled || (isTick && ind.requiresOHLC) || isAtLimit;
+          const title = isTick && ind.requiresOHLC ? "Not available on tick charts" : (isAtLimit ? "Up to 5 active indicators allowed" : undefined);
+          return (
+            <div key={ind.id} className={cn("flex items-center justify-between rounded-lg border border-opt-line p-3 transition-colors", isDisabled ? "opacity-50 grayscale" : "hover:bg-opt-bg-sunk")}>
+              <div className="flex items-center gap-3">
+                {ind.Icon && <ind.Icon className="h-5 w-5 opacity-90" />}
+                <span className="text-[13px] font-medium text-opt-ink">{ind.name}</span>
+              </div>
+              <button
+                type="button"
+                disabled={isDisabled}
+                title={title}
+                onClick={() => !isDisabled && addIndicator(symbol, ind.id as IndicatorType)}
+                className={cn("rounded px-3 py-1 text-[12px] font-semibold transition-colors", isDisabled ? "bg-opt-bg-sunk text-opt-ink-4 cursor-not-allowed" : "bg-opt-line text-opt-ink hover:bg-opt-line-strong")}
+              >
+                Add
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -170,9 +221,9 @@ export function IndicatorsModal({ symbol, interval, onClose }: IndicatorsModalPr
       aria-modal="true"
       aria-label="Indicators"
     >
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-transparent" onClick={onClose} />
 
-      <div className="relative z-10 flex h-[480px] w-[min(720px,calc(100vw-32px))] overflow-hidden rounded-2xl border border-opt-line bg-opt-bg-elev shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
+      <div className="relative z-10 flex h-[480px] w-[min(720px,calc(100vw-32px))] overflow-hidden rounded-md border border-opt-line bg-opt-bg-elev shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
         
         {/* Left Sidebar Tabs */}
         <div className="w-[180px] flex-shrink-0 border-r border-opt-line bg-opt-bg flex flex-col">
@@ -199,40 +250,32 @@ export function IndicatorsModal({ symbol, interval, onClose }: IndicatorsModalPr
         {/* Right Content Area */}
         <div className="flex-1 flex flex-col bg-opt-bg-elev">
           <div className="flex items-center justify-between border-b border-opt-line px-4 py-3 min-h-[57px]">
-            <div className="flex items-center justify-between w-full">
-              {/* Header space */}
-              <div className="text-[14px] font-semibold text-opt-ink flex items-center">
-                <span>{tab === "Active" ? "Active indicators" : tab}</span>
-                {tab === "Active" && (
-                  <span className="text-[11px] font-normal text-opt-ink-3 ml-4">
-                    Up to 5 active indicators allowed.
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center gap-3">
-                {tab === "Active" && activeIndicators.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => clearIndicators(symbol)}
-                    className="text-[12px] font-semibold text-opt-ink-3 hover:text-opt-ink whitespace-nowrap"
-                  >
-                    Clear all
-                  </button>
-                )}
-                <button
-                  type="button"
-                  aria-label="Close"
-                  onClick={onClose}
-                  className="grid h-8 w-8 place-items-center rounded-lg text-opt-ink-3 transition-colors hover:bg-opt-bg-sunk hover:text-opt-ink"
-                >
-                  <X className="h-[18px] w-[18px]" />
-                </button>
-              </div>
+            <div className="flex items-center w-full relative">
+              <Search className="absolute left-7 top-1/2 -translate-y-1/2 h-4 w-4 text-opt-ink-3" />
+              <input
+                type="text"
+                placeholder="Search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-opt-bg border border-opt-line rounded-md py-1.5 pl-10 pr-3 text-[13px] text-opt-ink placeholder:text-opt-ink-3 focus:outline-none focus:border-opt-ink-3 transition-colors"
+              />
+              <button
+                type="button"
+                aria-label="Close"
+                onClick={onClose}
+                className="ml-3 grid h-8 w-8 place-items-center rounded-lg text-opt-ink-3 transition-colors hover:bg-opt-bg-sunk hover:text-opt-ink flex-shrink-0"
+              >
+                <X className="h-[18px] w-[18px]" />
+              </button>
             </div>
           </div>
 
           <div className="flex-1 overflow-y-auto">
-            {tab === "Active" ? renderActiveTab() : renderCategoryTab(tab)}
+            {searchQuery 
+              ? renderSearchResults() 
+              : tab === "Active" 
+                ? renderActiveTab() 
+                : renderCategoryTab(tab)}
           </div>
         </div>
       </div>
