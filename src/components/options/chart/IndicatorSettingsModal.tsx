@@ -297,14 +297,14 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-transparent" onClick={onClose} />
-      <div className="relative z-10 flex max-h-[85vh] w-full max-w-sm flex-col rounded-md border border-opt-line bg-opt-bg-elev shadow-2xl">
+      <div className="relative z-10 flex max-h-[85vh] w-full max-w-[420px] flex-col rounded-md border border-opt-line bg-opt-bg-elev shadow-2xl">
         <div className="flex shrink-0 items-center justify-between border-b border-opt-line px-4 py-3">
           <h2 className="text-[14px] font-semibold text-opt-ink">{INDICATOR_LIST.find(i => i.id === indicator.type)?.name || indicator.type.toUpperCase()}</h2>
           <button onClick={onClose} className="text-opt-ink-3 transition-colors hover:text-opt-ink">
             <X className="h-4 w-4" />
           </button>
         </div>
-        <div className="custom-scrollbar flex flex-col gap-4 overflow-y-auto p-4 pb-48">
+        <div className="flex flex-col gap-4 overflow-visible p-4">
                     {indicator.type === 'smi' ? (
             <div className="flex flex-col gap-4">
               <div>
