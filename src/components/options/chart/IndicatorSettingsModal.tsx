@@ -4,14 +4,12 @@ import { useChartIndicators, DEFAULT_INDICATOR_PARAMS } from "@/stores/useChartI
 import { INDICATOR_LIST } from "./IndicatorsModal";
 
 const PALETTE_COLORS = [
-  "#ffffff", "#ffcdd2", "#ffccbc", "#ffe0b2", "#ffecb3", "#fff9c4", "#f0f4c3", "#dcedc8",
-  "#c8e6c9", "#b2dfdb", "#b2ebf2", "#b3e5fc", "#bbdefb", "#c5cae9", "#e1bee7", "#f8bbd0",
-  "#bdbdbd", "#ef5350", "#ff7043", "#ffa726", "#ffca28", "#ffee58", "#d4e157", "#9ccc65",
-  "#66bb6a", "#26a69a", "#26c6da", "#29b6f6", "#42a5f5", "#5c6bc0", "#ab47bc", "#ec407a",
-  "#757575", "#c62828", "#d84315", "#ef6c00", "#ff8f00", "#fbc02d", "#9e9d24", "#558b2f",
-  "#2e7d32", "#00695c", "#00838f", "#0277bd", "#1565c0", "#283593", "#6a1b9a", "#ad1457",
-  "#000000", "#b71c1c", "#bf360c", "#e65100", "#ff6f00", "#f57f17", "#827717", "#33691e",
-  "#1b5e20", "#004d40", "#006064", "#01579b", "#0d47a1", "#1a237e", "#4a148c", "#880e4f"
+  "#ffffff", "#e1e1e1", "#cccccc", "#b7b7b7", "#a0a0a5", "#898989", "#707070", "#626262", "#555555", "#464646", "#363636", "#262626", "#1d1d1d", "#000000",
+  "#f4977c", "#f7ac84", "#fbc58d", "#fff69e", "#c4de9e", "#85c99e", "#7fcdc7", "#75d0f4", "#81a8d7", "#8594c8", "#8983bc", "#a187bd", "#bb8dbe", "#f29bc1",
+  "#ef6c53", "#f38d5b", "#f8ae63", "#fff371", "#acd277", "#43b77a", "#2ebbb3", "#00bff0", "#4a8dc8", "#5875b7", "#625da6", "#8561a7", "#a665a7", "#ee6fa9",
+  "#ea1d2c", "#ee652e", "#f4932f", "#fff126", "#8ec648", "#00a553", "#00a99c", "#00afed", "#0073ba", "#0056a4", "#323390", "#66308f", "#912a8e", "#e9088c",
+  "#9b0b16", "#9e4117", "#a16118", "#c6b920", "#5a852d", "#007238", "#00746a", "#0077a1", "#004c7f", "#003570", "#1d1762", "#441261", "#62095f", "#9c005d",
+  "#770001", "#792e03", "#7b4906", "#817a0b", "#41661e", "#005827", "#005951", "#003b5c", "#001d40", "#000e35", "#04002c", "#19002b", "#2c002a", "#580028"
 ];
 
 function CustomColorPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
@@ -30,7 +28,7 @@ function CustomColorPicker({ value, onChange }: { value: string; onChange: (v: s
         <>
           <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
           <div className="absolute right-0 top-full z-20 mt-1 w-max rounded-xl border border-opt-line bg-opt-bg-elev p-3 shadow-2xl">
-            <div className="grid gap-1.5" style={{ gridTemplateColumns: 'repeat(16, minmax(0, 1fr))' }}>
+            <div className="grid gap-1.5" style={{ gridTemplateColumns: 'repeat(14, minmax(0, 1fr))' }}>
               {PALETTE_COLORS.map((c, i) => (
                 <button
                   key={`${c}-${i}`}
