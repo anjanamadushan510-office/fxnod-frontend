@@ -56,11 +56,11 @@ export function ChartTypesModal({
       aria-label="Chart types"
     >
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className="absolute inset-0 bg-transparent"
         onClick={onClose}
       />
 
-      <div className="relative z-10 flex w-[min(460px,calc(100vw-32px))] flex-col overflow-hidden rounded-2xl border border-opt-line bg-opt-bg-elev shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
+      <div className="relative z-10 flex w-[min(460px,calc(100vw-32px))] flex-col overflow-hidden rounded-md border border-opt-line bg-opt-bg-elev shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-opt-line px-5 py-4">
           <h2 className="text-[16px] font-bold text-opt-ink">Chart types</h2>
@@ -97,7 +97,7 @@ export function ChartTypesModal({
                         : undefined
                     }
                     className={cn(
-                      "flex w-full flex-col items-center gap-2 rounded-xl border px-2 py-3 transition-colors",
+                      "flex w-full flex-col items-center gap-2 rounded-md border px-2 py-3 transition-colors",
                       disabled
                         ? "cursor-not-allowed border-opt-line bg-opt-bg-sunk text-opt-ink-4 opacity-50"
                         : !active &&
@@ -135,7 +135,7 @@ export function ChartTypesModal({
                       onClick={() => !disabled && onSelectInterval(opt.id)}
                       aria-pressed={active}
                       className={cn(
-                        "w-full rounded-lg border px-1.5 py-2 text-[12px] font-medium transition-colors",
+                        "w-full rounded-md border px-1.5 py-2 text-[12px] font-medium transition-colors",
                         disabled
                           ? "cursor-not-allowed border-opt-line bg-opt-bg-sunk text-opt-ink-4 opacity-50"
                           : active
