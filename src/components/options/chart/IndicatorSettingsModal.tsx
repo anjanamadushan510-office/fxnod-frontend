@@ -4,11 +4,14 @@ import { useChartIndicators, DEFAULT_INDICATOR_PARAMS } from "@/stores/useChartI
 import { INDICATOR_LIST } from "./IndicatorsModal";
 
 const PALETTE_COLORS = [
-  "#ffcdd2", "#f8bbd0", "#e1bee7", "#d1c4e9", "#c5cae9", "#bbdefb", "#b2ebf2", "#b2dfdb", "#c8e6c9", "#dcedc8", "#fff9c4", "#ffecb3", "#ffe0b2", "#ffffff",
-  "#ef9a9a", "#f48fb1", "#ce93d8", "#b39ddb", "#9fa8da", "#90caf9", "#80deea", "#80cbc4", "#a5d6a7", "#c5e1a5", "#fff59d", "#ffe082", "#ffcc80", "#eeeeee",
-  "#e57373", "#f06292", "#ba68c8", "#9575cd", "#7986cb", "#64b5f6", "#4dd0e1", "#4db6ac", "#81c784", "#aed581", "#fff176", "#ffd54f", "#ffb74d", "#e0e0e0",
-  "#f44336", "#e91e63", "#9c27b0", "#673ab7", "#3f51b5", "#2196f3", "#00bcd4", "#009688", "#4caf50", "#8bc34a", "#ffeb3b", "#ffc107", "#ff9800", "#9e9e9e",
-  "#c62828", "#ad1457", "#6a1b9a", "#4527a0", "#283593", "#1565c0", "#00838f", "#00695c", "#2e7d32", "#558b2f", "#f9a825", "#ff8f00", "#ef6c00", "#000000"
+  "#ffffff", "#ffcdd2", "#ffccbc", "#ffe0b2", "#ffecb3", "#fff9c4", "#f0f4c3", "#dcedc8",
+  "#c8e6c9", "#b2dfdb", "#b2ebf2", "#b3e5fc", "#bbdefb", "#c5cae9", "#e1bee7", "#f8bbd0",
+  "#bdbdbd", "#ef5350", "#ff7043", "#ffa726", "#ffca28", "#ffee58", "#d4e157", "#9ccc65",
+  "#66bb6a", "#26a69a", "#26c6da", "#29b6f6", "#42a5f5", "#5c6bc0", "#ab47bc", "#ec407a",
+  "#757575", "#c62828", "#d84315", "#ef6c00", "#ff8f00", "#fbc02d", "#9e9d24", "#558b2f",
+  "#2e7d32", "#00695c", "#00838f", "#0277bd", "#1565c0", "#283593", "#6a1b9a", "#ad1457",
+  "#000000", "#b71c1c", "#bf360c", "#e65100", "#ff6f00", "#f57f17", "#827717", "#33691e",
+  "#1b5e20", "#004d40", "#006064", "#01579b", "#0d47a1", "#1a237e", "#4a148c", "#880e4f"
 ];
 
 function CustomColorPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
@@ -27,7 +30,7 @@ function CustomColorPicker({ value, onChange }: { value: string; onChange: (v: s
         <>
           <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
           <div className="absolute right-0 top-full z-20 mt-1 w-max rounded-xl border border-opt-line bg-opt-bg-elev p-3 shadow-2xl">
-            <div className="grid gap-1.5" style={{ gridTemplateColumns: 'repeat(14, minmax(0, 1fr))' }}>
+            <div className="grid gap-1.5" style={{ gridTemplateColumns: 'repeat(16, minmax(0, 1fr))' }}>
               {PALETTE_COLORS.map((c, i) => (
                 <button
                   key={`${c}-${i}`}
