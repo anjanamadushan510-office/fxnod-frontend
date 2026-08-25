@@ -1077,8 +1077,7 @@ function syncIndicators(
           } : {})
         });
         chart.priceScale(`${ind.id}-scale`).applyOptions({ 
-          scaleMargins: { top: 0.8, bottom: 0 },
-          ...(ind.type === "wpr" ? { autoScale: false } : {})
+          scaleMargins: { top: 0.8, bottom: 0 }
         });
         
         if (ind.type === "roc") {
