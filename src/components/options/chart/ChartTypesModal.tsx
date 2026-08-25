@@ -81,32 +81,38 @@ export function ChartTypesModal({
               const active = chartType === type.id;
               const disabled = interval === "1t" && type.id !== "area";
               return (
-                <button
-                  key={type.id}
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => !disabled && onSelectChartType(type.id)}
-                  aria-pressed={active}
-                  style={
-                    active
-                      ? {
-                          borderColor: TEAL,
-                          backgroundColor: "rgba(0,167,158,0.10)",
-                          color: TEAL,
-                        }
-                      : undefined
-                  }
-                  className={cn(
-                    "flex flex-col items-center gap-2 rounded-xl border px-2 py-3 transition-colors",
-                    disabled
-                      ? "cursor-not-allowed border-opt-line bg-opt-bg-sunk text-opt-ink-4 opacity-50"
-                      : !active &&
-                        "border-opt-line text-opt-ink hover:border-opt-line-strong",
+                <div key={type.id} className="relative group">
+                  <button
+                    type="button"
+                    disabled={disabled}
+                    onClick={() => !disabled && onSelectChartType(type.id)}
+                    aria-pressed={active}
+                    style={
+                      active
+                        ? {
+                            borderColor: TEAL,
+                            backgroundColor: "rgba(0,167,158,0.10)",
+                            color: TEAL,
+                          }
+                        : undefined
+                    }
+                    className={cn(
+                      "flex w-full flex-col items-center gap-2 rounded-xl border px-2 py-3 transition-colors",
+                      disabled
+                        ? "cursor-not-allowed border-opt-line bg-opt-bg-sunk text-opt-ink-4 opacity-50"
+                        : !active &&
+                          "border-opt-line text-opt-ink hover:border-opt-line-strong",
+                    )}
+                  >
+                    <ChartTypeGlyph id={type.id} />
+                    <span className="text-[12px] font-medium">{type.label}</span>
+                  </button>
+                  {disabled && (
+                    <div className="absolute bottom-[calc(100%+8px)] left-1/2 z-50 mb-1 hidden w-max -translate-x-1/2 rounded bg-opt-bg-sunk px-2 py-1 text-[11px] font-medium text-opt-ink shadow-sm border border-opt-line group-hover:block pointer-events-none">
+                      Available only for non-tick time intervals.
+                    </div>
                   )}
-                >
-                  <ChartTypeGlyph id={type.id} />
-                  <span className="text-[12px] font-medium">{type.label}</span>
-                </button>
+                </div>
               );
             })}
           </div>
@@ -118,24 +124,33 @@ export function ChartTypesModal({
               {INTERVALS.map((opt) => {
                 const active = interval === opt.id;
                 const disabled = (tickOnly && opt.id !== "1t") || (chartType !== "area" && opt.id === "1t");
+                let tooltipMsg = "";
+                if (tickOnly && opt.id !== "1t") tooltipMsg = "Available only for non-tick trade types.";
+                if (chartType !== "area" && opt.id === "1t") tooltipMsg = "Available only for Area chart type.";
                 return (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    disabled={disabled}
-                    onClick={() => !disabled && onSelectInterval(opt.id)}
-                    aria-pressed={active}
-                    className={cn(
-                      "rounded-lg border px-1.5 py-2 text-[12px] font-medium transition-colors",
-                      disabled
-                        ? "cursor-not-allowed border-opt-line bg-opt-bg-sunk text-opt-ink-4 opacity-50"
-                        : active
-                          ? "border-opt-ink text-opt-ink"
-                          : "border-opt-line text-opt-ink-2 hover:border-opt-line-strong hover:text-opt-ink",
+                  <div key={opt.id} className="relative group">
+                    <button
+                      type="button"
+                      disabled={disabled}
+                      onClick={() => !disabled && onSelectInterval(opt.id)}
+                      aria-pressed={active}
+                      className={cn(
+                        "w-full rounded-lg border px-1.5 py-2 text-[12px] font-medium transition-colors",
+                        disabled
+                          ? "cursor-not-allowed border-opt-line bg-opt-bg-sunk text-opt-ink-4 opacity-50"
+                          : active
+                            ? "border-opt-ink text-opt-ink"
+                            : "border-opt-line text-opt-ink-2 hover:border-opt-line-strong hover:text-opt-ink",
+                      )}
+                    >
+                      {opt.label}
+                    </button>
+                    {disabled && (
+                      <div className="absolute bottom-[calc(100%+8px)] left-1/2 z-50 mb-1 hidden w-max -translate-x-1/2 rounded bg-opt-bg-sunk px-2 py-1 text-[11px] font-medium text-opt-ink shadow-sm border border-opt-line group-hover:block pointer-events-none">
+                        {tooltipMsg}
+                      </div>
                     )}
-                  >
-                    {opt.label}
-                  </button>
+                  </div>
                 );
               })}
             </div>
