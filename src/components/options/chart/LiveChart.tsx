@@ -1621,49 +1621,72 @@ function syncIndicators(
         if (lipsData.length > 0) lips.setData(lipsData as any);
       
     } else if (ind.type === 'smi') {
-      let smiLine = seriesRef.current.get(`${ind.id}-smi`) as ISeriesApi<'Line'>;
-      let signalLine = seriesRef.current.get(`${ind.id}-signal`) as ISeriesApi<'Line'>;
-      
-      if (!smiLine) {
-        smiLine = chart.addSeries(LineSeries, { 
-          color: ind.params.color || '#000000', 
-          lineWidth: 1, 
-          priceScaleId: `${ind.id}-scale`,
-          priceFormat: { type: 'price', precision: 2, minMove: 0.01 }
-        });
+        let smiLine = seriesRef.current.get(`${ind.id}-smi`) as ISeriesApi<'Line'>;
+        let signalLine = seriesRef.current.get(`${ind.id}-signal`) as ISeriesApi<'Line'>;
+        let fillSeries = seriesRef.current.get(`${ind.id}-fill`) as ISeriesApi<'Candlestick'>;
         
-        signalLine = chart.addSeries(LineSeries, { 
-          color: ind.params.signalColor || '#ff0000', 
-          lineWidth: 1, 
-          priceScaleId: `${ind.id}-scale`,
-          priceFormat: { type: 'price', precision: 2, minMove: 0.01 }
-        });
+        if (!smiLine) {
+          fillSeries = chart.addSeries(CandlestickSeries, {
+            upColor: 'rgba(128, 128, 128, 0.3)',
+            downColor: 'rgba(128, 128, 128, 0.3)',
+            borderVisible: false,
+            wickVisible: false,
+            priceScaleId: `${ind.id}-scale`,
+            lastValueVisible: false,
+            priceLineVisible: false,
+          });
 
-        // Add 0 line
-        smiLine.createPriceLine({ price: 0, color: 'rgba(0,0,0,0.2)', lineWidth: 1, lineStyle: 2, axisLabelVisible: false });
-        
-        seriesRef.current.set(`${ind.id}-smi`, smiLine);
-        seriesRef.current.set(`${ind.id}-signal`, signalLine);
-      } else {
-        smiLine.applyOptions({ color: ind.params.color || '#000000' });
-        signalLine.applyOptions({ color: ind.params.signalColor || '#ff0000' });
-      }
+          smiLine = chart.addSeries(LineSeries, { 
+            color: ind.params.color || '#000000', 
+            lineWidth: 1, 
+            priceScaleId: `${ind.id}-scale`,
+            priceFormat: { type: 'price', precision: 2, minMove: 0.01 }
+          });
+          
+          signalLine = chart.addSeries(LineSeries, { 
+            color: ind.params.signalColor || '#ff0000', 
+            lineWidth: 1, 
+            priceScaleId: `${ind.id}-scale`,
+            priceFormat: { type: 'price', precision: 2, minMove: 0.01 }
+          });
+  
+          // Add 0 line
+          smiLine.createPriceLine({ price: 0, color: 'rgba(0,0,0,0.2)', lineWidth: 1, lineStyle: 2, axisLabelVisible: false });
+          // Price lines will be added dynamically in the update block
+          
+          seriesRef.current.set(`${ind.id}-fill`, fillSeries);
+          seriesRef.current.set(`${ind.id}-smi`, smiLine);
+          seriesRef.current.set(`${ind.id}-signal`, signalLine);
+        } else {
+          smiLine.applyOptions({ color: ind.params.color || '#000000' });
+          signalLine.applyOptions({ color: ind.params.signalColor || '#ff0000' });
+        }
       
       // Update Price Lines (Overbought / Oversold)
       const showZones = ind.params.showZones !== false;
       if (showZones) {
-          lineWidth: 1, 
-          lineStyle: 2,
-          axisLabelVisible: false
-        });
-        const os = smiLine.createPriceLine({ 
-          price: ind.params.overSoldValue ?? -40, 
-          color: ind.params.overSoldColor || '#808080', 
-          lineWidth: 1, 
-          lineStyle: 2,
-          axisLabelVisible: false
-        });
-        (smiLine as any).__customPriceLines.push(ob, os);
+        const obVal = ind.params.overBoughtValue ?? 40;
+        const osVal = ind.params.overSoldValue ?? -40;
+        const obCol = ind.params.overBoughtColor || '#808080';
+        const osCol = ind.params.overSoldColor || '#808080';
+        
+        let obPriceLine = seriesRef.current.get(`${ind.id}-ob-line`) as any;
+        let osPriceLine = seriesRef.current.get(`${ind.id}-os-line`) as any;
+        
+        if (!obPriceLine) {
+          obPriceLine = smiLine.createPriceLine({ price: obVal, color: obCol, lineWidth: 1, lineStyle: 2, axisLabelVisible: false });
+          osPriceLine = smiLine.createPriceLine({ price: osVal, color: osCol, lineWidth: 1, lineStyle: 2, axisLabelVisible: false });
+          seriesRef.current.set(`${ind.id}-ob-line`, obPriceLine);
+          seriesRef.current.set(`${ind.id}-os-line`, osPriceLine);
+        } else {
+          obPriceLine.applyOptions({ price: obVal, color: obCol });
+          osPriceLine.applyOptions({ price: osVal, color: osCol });
+        }
+      } else {
+        let obPriceLine = seriesRef.current.get(`${ind.id}-ob-line`) as any;
+        let osPriceLine = seriesRef.current.get(`${ind.id}-os-line`) as any;
+        if (obPriceLine) { smiLine.removePriceLine(obPriceLine); seriesRef.current.delete(`${ind.id}-ob-line`); }
+        if (osPriceLine) { smiLine.removePriceLine(osPriceLine); seriesRef.current.delete(`${ind.id}-os-line`); }
       }
 
       const q = ind.params.period || 10;
@@ -1675,9 +1698,24 @@ function syncIndicators(
       const results = calculateSMI(highArray, lowArray, valueArray, q, r, s, sig, maType);
       
       const smiData = results.smi.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value) && isFinite(d.value));
-      console.log('SMI debug:', { dataLen: valueArray.length, smiDataLen: smiData.length, firstValid: smiData[0] });
       const sigData = results.signal.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value) && isFinite(d.value));
       
+      const fillData = [];
+      for (let i = 0; i < timeArray.length; i++) {
+        const sVal = results.smi[i];
+        const sigVal = results.signal[i];
+        if (!isNaN(sVal) && isFinite(sVal) && !isNaN(sigVal) && isFinite(sigVal)) {
+          fillData.push({
+            time: timeArray[i],
+            open: sVal,
+            close: sigVal,
+            high: Math.max(sVal, sigVal),
+            low: Math.min(sVal, sigVal)
+          });
+        }
+      }
+
+      if (fillData.length > 0) fillSeries.setData(fillData as any);
       if (smiData.length > 0) smiLine.setData(smiData as any);
       if (sigData.length > 0) signalLine.setData(sigData as any);
 
