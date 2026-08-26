@@ -12,7 +12,7 @@ export interface IndicatorConfig {
 
 export const DEFAULT_INDICATOR_PARAMS: Record<IndicatorType, Record<string, any>> = {
   ma: { maColor: "#ff0000", period: 50, field: "Close", movingAverageType: "Simple", offset: 0 },
-  ma_envelope: { topColor: "#000000", medianColor: "#000000", bottomColor: "#000000", fillColor: "#cccccc", channelFill: true, period: 50, movingAverageType: "Simple", shift: 5, shiftType: "percent" },
+  ma_envelope: { topColor: "#000000", medianColor: "#000000", bottomColor: "#000000", fillColor: "#000000", channelFill: true, period: 50, movingAverageType: "Simple", shift: 5, shiftType: "percent" },
   rainbow_ma: { period: 2, movingAverageType: "Simple" },
   MACD: { macdColor: "#000000", signalColor: "#f44336", increasingBarColor: "#4caf50", decreasingBarColor: "#f44336", fastPeriod: 12, slowPeriod: 26, signalPeriod: 9 },
   RSI: { rsiColor: "#000000", period: 14, field: "Close", overBoughtValue: 80, overBoughtColor: "#000000", overSoldValue: 20, overSoldColor: "#000000", showZones: true },
