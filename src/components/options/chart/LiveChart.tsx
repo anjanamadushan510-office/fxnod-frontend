@@ -1278,8 +1278,8 @@ function syncIndicators(
 
         const pK = ind.params.period || 14;
         const pD = 3;
-        // Deriv uses Slow Stochastic (14,C,Y,Y) = 3-period smoothing on K, 3-period on D
-        const smoothing = 3;
+        // Deriv's K = raw (unsмoothed) %K, D = SMA(3) of K  [STOCHASTIC (14,C,Y,Y)]
+        const smoothing = 1;
         
         let targetArray = valueArray;
         switch (ind.params.field) {
