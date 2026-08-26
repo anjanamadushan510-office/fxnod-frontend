@@ -836,14 +836,28 @@ function syncIndicators(
     }
   } else {
     const ascendingTicks = ascending(ticks);
+    let currentSecond = -1;
+    let currentHigh = -Infinity;
+    let currentLow = Infinity;
+    
     for (const t of ascendingTicks) {
+      const second = Math.floor(t.time);
+      if (second !== currentSecond) {
+        currentSecond = second;
+        currentHigh = t.value;
+        currentLow = t.value;
+      } else {
+        if (t.value > currentHigh) currentHigh = t.value;
+        if (t.value < currentLow) currentLow = t.value;
+      }
+      
       timeArray.push(t.time as UTCTimestamp);
       valueArray.push(t.value);
-      highArray.push(t.value);
-      lowArray.push(t.value);
+      highArray.push(currentHigh);
+      lowArray.push(currentLow);
       openArray.push(t.value);
-      hl2Array.push(t.value);
-      hlc3Array.push(t.value);
+      hl2Array.push((currentHigh + currentLow) / 2);
+      hlc3Array.push((currentHigh + currentLow + t.value) / 3);
     }
   }
 
