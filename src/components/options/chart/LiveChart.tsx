@@ -1422,8 +1422,8 @@ function syncIndicators(
       let upLine = seriesRef.current.get(`${ind.id}-aroonUp`) as ISeriesApi<"Line">;
       let downLine = seriesRef.current.get(`${ind.id}-aroonDown`) as ISeriesApi<"Line">;
       if (!upLine || !downLine) {
-        upLine = chart.addSeries(LineSeries, { color: ind.params.aroonUpColor || "#00ff00", lineWidth: 2, priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
-        downLine = chart.addSeries(LineSeries, { color: ind.params.aroonDownColor || "#ff0000", lineWidth: 2, priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+        upLine = chart.addSeries(LineSeries, { color: ind.params.aroonUpColor || "#00ff00", lineWidth: 2, priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'custom', formatter: (p: number) => `▲ ${p.toFixed(2)}`, minMove: 0.01 } });
+        downLine = chart.addSeries(LineSeries, { color: ind.params.aroonDownColor || "#ff0000", lineWidth: 2, priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'custom', formatter: (p: number) => `▼ ${p.toFixed(2)}`, minMove: 0.01 } });
         chart.priceScale(`${ind.id}-scale`).applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
         seriesRef.current.set(`${ind.id}-aroonUp`, upLine);
         seriesRef.current.set(`${ind.id}-aroonDown`, downLine);
