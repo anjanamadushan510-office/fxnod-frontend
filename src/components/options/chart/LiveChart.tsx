@@ -1248,18 +1248,27 @@ function syncIndicators(
       const data = results.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
       if (data.length > 0) series.setData(data as any);
     } else if (ind.type === "cci") {
-      let series = seriesRef.current.get(ind.id) as ISeriesApi<"Line">;
+      let series = seriesRef.current.get(ind.id) as ISeriesApi<"Baseline">;
       if (!series) {
-        series = chart.addSeries(LineSeries, {
-          color: ind.params.cciColor || "#000000",
-          lineWidth: 2,
+        series = chart.addSeries(BaselineSeries, {
+          baseValue: { type: 'price', price: 0 },
+          topFillColor1: 'rgba(0, 0, 0, 0.4)',
+          topFillColor2: 'rgba(0, 0, 0, 0.4)',
+          topLineColor: ind.params.cciColor || "#000000",
+          bottomFillColor1: 'rgba(0, 0, 0, 0.4)',
+          bottomFillColor2: 'rgba(0, 0, 0, 0.4)',
+          bottomLineColor: ind.params.cciColor || "#000000",
+          lineWidth: 1,
           priceScaleId: `${ind.id}-scale`,
           priceFormat: { type: 'price', precision: 2, minMove: 0.01 }
         });
         chart.priceScale(`${ind.id}-scale`).applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
         seriesRef.current.set(ind.id, series);
       } else {
-        series.applyOptions({ color: ind.params.cciColor || "#000000" });
+        series.applyOptions({ 
+          topLineColor: ind.params.cciColor || "#000000",
+          bottomLineColor: ind.params.cciColor || "#000000"
+        });
       }
 
       if (ind.params.showZones !== false) {
