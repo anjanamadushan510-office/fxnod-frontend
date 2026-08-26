@@ -1674,8 +1674,8 @@ function syncIndicators(
         let osPriceLine = seriesRef.current.get(`${ind.id}-os-line`) as any;
         
         if (!obPriceLine) {
-          obPriceLine = smiLine.createPriceLine({ price: obVal, color: obCol, lineWidth: 1, lineStyle: 0, axisLabelVisible: false });
-          osPriceLine = smiLine.createPriceLine({ price: osVal, color: osCol, lineWidth: 1, lineStyle: 0, axisLabelVisible: false });
+          obPriceLine = smiLine.createPriceLine({ price: obVal, color: obCol, lineWidth: 1, lineVisible: false, axisLabelVisible: true });
+          osPriceLine = smiLine.createPriceLine({ price: osVal, color: osCol, lineWidth: 1, lineVisible: false, axisLabelVisible: true });
           seriesRef.current.set(`${ind.id}-ob-line`, obPriceLine);
           seriesRef.current.set(`${ind.id}-os-line`, osPriceLine);
         } else {
