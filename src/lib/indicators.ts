@@ -241,9 +241,9 @@ export function calculateStochastic(high: number[], low: number[], close: number
   const finalK: number[] = new Array(close.length).fill(NaN);
   const finalD: number[] = new Array(close.length).fill(NaN);
 
-  for (let i = 0; i < fastK.length; i++) {
-    if (!isNaN(fastK[i])) {
-      finalK[i] = fastK[i];
+  for (let i = 0; i < slowKValues.length; i++) {
+    if (!isNaN(slowKValues[i])) {
+      finalK[validFastKIndices[i]] = slowKValues[i];
     }
   }
 
