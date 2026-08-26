@@ -1726,7 +1726,7 @@ function syncIndicators(
         let lower = seriesRef.current.get(`${ind.id}-lower`) as ISeriesApi<'Line'>;
         if (!upper || !middle || !lower) {
           upper = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.upperColor || '#000000', lineWidth: 1, priceScaleId: 'right', priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
-          middle = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.middleColor || '#000000', lineWidth: 1, lineStyle: 2, priceScaleId: 'right', priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+          middle = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.middleColor || '#000000', lineWidth: 1, priceScaleId: 'right', priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
           lower = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.lowerColor || '#000000', lineWidth: 1, priceScaleId: 'right', priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
           seriesRef.current.set(`${ind.id}-upper`, upper);
           seriesRef.current.set(`${ind.id}-middle`, middle);
