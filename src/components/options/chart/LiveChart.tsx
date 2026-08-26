@@ -1640,14 +1640,16 @@ function syncIndicators(
             color: ind.params.color || '#000000', 
             lineWidth: 1, 
             priceScaleId: `${ind.id}-scale`,
-            priceFormat: { type: 'price', precision: 2, minMove: 0.01 }
+            priceFormat: { type: 'price', precision: 2, minMove: 0.01 },
+            priceLineVisible: false
           });
           
           signalLine = chart.addSeries(LineSeries, { 
             color: ind.params.signalColor || '#ff0000', 
             lineWidth: 1, 
             priceScaleId: `${ind.id}-scale`,
-            priceFormat: { type: 'price', precision: 2, minMove: 0.01 }
+            priceFormat: { type: 'price', precision: 2, minMove: 0.01 },
+            priceLineVisible: false
           });
   
           // Add 0 line
@@ -1674,8 +1676,8 @@ function syncIndicators(
         let osPriceLine = seriesRef.current.get(`${ind.id}-os-line`) as any;
         
         if (!obPriceLine) {
-          obPriceLine = smiLine.createPriceLine({ price: obVal, color: obCol, lineWidth: 1, lineVisible: false, axisLabelVisible: true });
-          osPriceLine = smiLine.createPriceLine({ price: osVal, color: osCol, lineWidth: 1, lineVisible: false, axisLabelVisible: true });
+          obPriceLine = smiLine.createPriceLine({ price: obVal, color: obCol, lineWidth: 1, lineStyle: 0, axisLabelVisible: false });
+          osPriceLine = smiLine.createPriceLine({ price: osVal, color: osCol, lineWidth: 1, lineStyle: 0, axisLabelVisible: false });
           seriesRef.current.set(`${ind.id}-ob-line`, obPriceLine);
           seriesRef.current.set(`${ind.id}-os-line`, osPriceLine);
         } else {
