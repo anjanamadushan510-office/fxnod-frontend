@@ -1009,12 +1009,16 @@ function syncIndicators(
       let lower = seriesRef.current.get(`${ind.id}-lower`) as ISeriesApi<"Line">;
       
       if (!upper || !middle || !lower) {
-        upper = chart.addSeries(LineSeries, { priceLineVisible: false, color: '#2196f3', lineWidth: 1, priceScaleId: 'right' });
-        middle = chart.addSeries(LineSeries, { priceLineVisible: false, color: '#ff9800', lineWidth: 1, priceScaleId: 'right' });
-        lower = chart.addSeries(LineSeries, { priceLineVisible: false, color: '#2196f3', lineWidth: 1, priceScaleId: 'right' });
+        upper = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.topColor || '#000000', lineWidth: 1, priceScaleId: 'right' });
+        middle = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.medianColor || '#000000', lineWidth: 1, priceScaleId: 'right' });
+        lower = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.bottomColor || '#000000', lineWidth: 1, priceScaleId: 'right' });
         seriesRef.current.set(`${ind.id}-upper`, upper);
         seriesRef.current.set(`${ind.id}-middle`, middle);
         seriesRef.current.set(`${ind.id}-lower`, lower);
+      } else {
+        upper.applyOptions({ color: ind.params.topColor || '#000000' });
+        middle.applyOptions({ color: ind.params.medianColor || '#000000' });
+        lower.applyOptions({ color: ind.params.bottomColor || '#000000' });
       }
       
       const p = ind.params.period || 50;
@@ -1031,6 +1035,23 @@ function syncIndicators(
       if (upperData.length > 0) upper.setData(upperData as any);
       if (middleData.length > 0) middle.setData(middleData as any);
       if (lowerData.length > 0) lower.setData(lowerData as any);
+
+      let fillPlugin = pluginsRef.current.get(`${ind.id}-fill`) as any;
+      if (ind.params.channelFill !== false) {
+        const userFill = ind.params.fillColor ? hexToRgba(ind.params.fillColor as string, 0.2) : "rgba(128, 128, 128, 0.2)";
+        if (!fillPlugin) {
+            fillPlugin = new IchimokuCloudPlugin(upperData as any, lowerData as any, userFill, userFill);
+            upper.attachPrimitive(fillPlugin);
+            pluginsRef.current.set(`${ind.id}-fill`, fillPlugin);
+            pluginsRef.current.set(`${ind.id}-upper`, fillPlugin); 
+        } else {
+            fillPlugin.updateData(upperData as any, lowerData as any, userFill, userFill);
+        }
+      } else if (fillPlugin) {
+        upper.detachPrimitive(fillPlugin);
+        pluginsRef.current.delete(`${ind.id}-fill`);
+        pluginsRef.current.delete(`${ind.id}-upper`);
+      }
     } else if (ind.type === "rainbow_ma") {
       const numLines = 10;
       let linesArr: ISeriesApi<"Line">[] = [];
