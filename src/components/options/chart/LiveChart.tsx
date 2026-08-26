@@ -1278,8 +1278,8 @@ function syncIndicators(
 
         const pK = ind.params.period || 14;
         const pD = 3;
-        // Deriv uses Fast Stochastic for the black line by default on tick charts
-        const smoothing = 1;
+        // Deriv uses Slow Stochastic (14,C,Y,Y) = 3-period smoothing on K, 3-period on D
+        const smoothing = 3;
         
         let targetArray = valueArray;
         switch (ind.params.field) {
