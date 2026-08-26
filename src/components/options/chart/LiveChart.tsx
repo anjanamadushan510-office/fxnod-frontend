@@ -1651,7 +1651,7 @@ function syncIndicators(
           });
   
           // Add 0 line
-          smiLine.createPriceLine({ price: 0, color: 'rgba(0,0,0,0.2)', lineWidth: 1, lineStyle: 2, axisLabelVisible: false });
+          smiLine.createPriceLine({ price: 0, color: 'rgba(0,0,0,0.2)', lineWidth: 1, lineStyle: 0, axisLabelVisible: false });
           // Price lines will be added dynamically in the update block
           
           seriesRef.current.set(`${ind.id}-fill`, fillSeries);
@@ -1674,8 +1674,8 @@ function syncIndicators(
         let osPriceLine = seriesRef.current.get(`${ind.id}-os-line`) as any;
         
         if (!obPriceLine) {
-          obPriceLine = smiLine.createPriceLine({ price: obVal, color: obCol, lineWidth: 1, lineStyle: 2, axisLabelVisible: false });
-          osPriceLine = smiLine.createPriceLine({ price: osVal, color: osCol, lineWidth: 1, lineStyle: 2, axisLabelVisible: false });
+          obPriceLine = smiLine.createPriceLine({ price: obVal, color: obCol, lineWidth: 1, lineStyle: 0, axisLabelVisible: false });
+          osPriceLine = smiLine.createPriceLine({ price: osVal, color: osCol, lineWidth: 1, lineStyle: 0, axisLabelVisible: false });
           seriesRef.current.set(`${ind.id}-ob-line`, obPriceLine);
           seriesRef.current.set(`${ind.id}-os-line`, osPriceLine);
         } else {
