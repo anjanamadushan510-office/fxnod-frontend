@@ -1305,12 +1305,54 @@ function syncIndicators(
           case "Hlc/3": targetArray = hlc3Array; break;
         }
 
-        // Deriv uses standard H/L method ("C" = Close price source, but H/L for range)
-        const stochHigh = highArray;
-        const stochLow = lowArray;
-        const results = calculateStochastic(stochHigh, stochLow, targetArray, pK, pD, smoothing);
-        const kData = results.k.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
-        const dData = results.d.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+        // Deriv uses 1-second candles to calculate Stochastic even on tick charts
+        let stochK: number[] = [];
+        let stochD: number[] = [];
+        
+        if (candles && candles.length > 0) {
+            const results = calculateStochastic(highArray, lowArray, targetArray, pK, pD, smoothing);
+            stochK = results.k;
+            stochD = results.d;
+        } else {
+            const secCandles = new Map<number, { high: number, low: number, close: number }>();
+            for (let i = 0; i < timeArray.length; i++) {
+                const sec = Math.floor(timeArray[i]);
+                const val = targetArray[i];
+                if (!secCandles.has(sec)) {
+                    secCandles.set(sec, { high: val, low: val, close: val });
+                } else {
+                    const c = secCandles.get(sec)!;
+                    if (val > c.high) c.high = val;
+                    if (val < c.low) c.low = val;
+                    c.close = val;
+                }
+            }
+            
+            const sortedSecs = Array.from(secCandles.keys()).sort((a,b) => a - b);
+            const secHighs = sortedSecs.map(s => secCandles.get(s)!.high);
+            const secLows = sortedSecs.map(s => secCandles.get(s)!.low);
+            const secCloses = sortedSecs.map(s => secCandles.get(s)!.close);
+            
+            const secResults = calculateStochastic(secHighs, secLows, secCloses, pK, pD, smoothing);
+            
+            const secToK = new Map<number, number>();
+            const secToD = new Map<number, number>();
+            for (let i = 0; i < sortedSecs.length; i++) {
+                secToK.set(sortedSecs[i], secResults.k[i]);
+                secToD.set(sortedSecs[i], secResults.d[i]);
+            }
+            
+            stochK = new Array(timeArray.length).fill(NaN);
+            stochD = new Array(timeArray.length).fill(NaN);
+            for (let i = 0; i < timeArray.length; i++) {
+                const sec = Math.floor(timeArray[i]);
+                stochK[i] = secToK.get(sec) ?? NaN;
+                stochD[i] = secToD.get(sec) ?? NaN;
+            }
+        }
+        
+        const kData = stochK.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
+        const dData = stochD.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
         if (kData.length > 0) kLine.setData(kData as any);
         if (dData.length > 0) dLine.setData(dData as any);
     } else if (ind.type === "aroon") {
