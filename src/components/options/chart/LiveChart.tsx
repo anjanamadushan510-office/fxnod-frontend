@@ -1546,7 +1546,7 @@ function syncIndicators(
         tenkan = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.conversionLineColor || "#2962FF", lineWidth: 1, priceScaleId: "right", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
         kijun = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.baseLineColor || "#ef5350", lineWidth: 1, priceScaleId: "right", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
         senkouA = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.leadingSpanAColor || "#4caf50", lineWidth: 1, priceScaleId: "right", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
-        senkouB = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.leadingSpanBColor || "#ef5350", lineWidth: 1, priceScaleId: "right", lineStyle: LineStyle.Dashed, priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+        senkouB = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.leadingSpanBColor || "#ef5350", lineWidth: 1, priceScaleId: "right", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
         chikou = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.laggingSpanColor || "#00e676", lineWidth: 1, priceScaleId: "right", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
         seriesRef.current.set(`${ind.id}-tenkan`, tenkan);
         seriesRef.current.set(`${ind.id}-kijun`, kijun);
