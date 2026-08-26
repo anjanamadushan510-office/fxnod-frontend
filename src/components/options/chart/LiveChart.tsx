@@ -1315,8 +1315,12 @@ function syncIndicators(
             stochD = results.d;
         } else {
             const secCandles = new Map<number, { high: number, low: number, close: number }>();
+            let minSec = Infinity;
+            let maxSec = -Infinity;
             for (let i = 0; i < timeArray.length; i++) {
                 const sec = Math.floor(timeArray[i]);
+                if (sec < minSec) minSec = sec;
+                if (sec > maxSec) maxSec = sec;
                 const val = targetArray[i];
                 if (!secCandles.has(sec)) {
                     secCandles.set(sec, { high: val, low: val, close: val });
@@ -1328,7 +1332,18 @@ function syncIndicators(
                 }
             }
             
-            const sortedSecs = Array.from(secCandles.keys()).sort((a,b) => a - b);
+            // Fill missing seconds to ensure period K maps to exact real-time seconds
+            const sortedSecs: number[] = [];
+            let lastClose = targetArray[0] ?? 0;
+            for (let s = minSec; s <= maxSec; s++) {
+                sortedSecs.push(s);
+                if (secCandles.has(s)) {
+                    lastClose = secCandles.get(s)!.close;
+                } else {
+                    secCandles.set(s, { high: lastClose, low: lastClose, close: lastClose });
+                }
+            }
+            
             const secHighs = sortedSecs.map(s => secCandles.get(s)!.high);
             const secLows = sortedSecs.map(s => secCandles.get(s)!.low);
             const secCloses = sortedSecs.map(s => secCandles.get(s)!.close);
