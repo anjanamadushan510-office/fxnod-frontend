@@ -259,12 +259,12 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
 
       if (seriesKind === "candlestick") {
         if (chartType === "ohlc") {
-          seriesRef.current = chart.addSeries(BarSeries, {
+          seriesRef.current = chart.addSeries(BarSeries, { priceLineVisible: false,
             upColor: rise,
             downColor: fall,
           });
         } else if (chartType === "hollow") {
-          seriesRef.current = chart.addSeries(CandlestickSeries, {
+          seriesRef.current = chart.addSeries(CandlestickSeries, { priceLineVisible: false,
             upColor: "transparent",
             downColor: fall,
             borderUpColor: rise,
@@ -273,7 +273,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
             wickDownColor: fall,
           });
         } else {
-          seriesRef.current = chart.addSeries(CandlestickSeries, {
+          seriesRef.current = chart.addSeries(CandlestickSeries, { priceLineVisible: false,
             upColor: rise,
             downColor: fall,
             borderUpColor: rise,
@@ -917,7 +917,7 @@ function syncIndicators(
       if (!series) {
         // RSI goes on a separate sub-pane scale, SMA/EMA go on right axis
         const isRsi = ind.type === "RSI";
-        series = chart.addSeries(LineSeries, {
+        series = chart.addSeries(LineSeries, { priceLineVisible: false,
           color: isRsi ? "#9c27b0" : (ind.params.maType === "SMA" ? "#ff9800" : (ind.params.maType === "EMA" ? "#2196f3" : "#00A79E")),
           lineWidth: 2,
           priceScaleId: isRsi ? `${ind.id}-scale` : "right",
@@ -1008,9 +1008,9 @@ function syncIndicators(
       let lower = seriesRef.current.get(`${ind.id}-lower`) as ISeriesApi<"Line">;
       
       if (!upper || !middle || !lower) {
-        upper = chart.addSeries(LineSeries, { color: '#2196f3', lineWidth: 1, priceScaleId: 'right' });
-        middle = chart.addSeries(LineSeries, { color: '#ff9800', lineWidth: 1, priceScaleId: 'right' });
-        lower = chart.addSeries(LineSeries, { color: '#2196f3', lineWidth: 1, priceScaleId: 'right' });
+        upper = chart.addSeries(LineSeries, { priceLineVisible: false, color: '#2196f3', lineWidth: 1, priceScaleId: 'right' });
+        middle = chart.addSeries(LineSeries, { priceLineVisible: false, color: '#ff9800', lineWidth: 1, priceScaleId: 'right' });
+        lower = chart.addSeries(LineSeries, { priceLineVisible: false, color: '#2196f3', lineWidth: 1, priceScaleId: 'right' });
         seriesRef.current.set(`${ind.id}-upper`, upper);
         seriesRef.current.set(`${ind.id}-middle`, middle);
         seriesRef.current.set(`${ind.id}-lower`, lower);
@@ -1042,7 +1042,7 @@ function syncIndicators(
       for (let k = 0; k < numLines; k++) {
         let line = seriesRef.current.get(`${ind.id}-rainbow-${k}`) as ISeriesApi<"Line">;
         if (!line) {
-          line = chart.addSeries(LineSeries, { color: colors[k], lineWidth: 1, priceScaleId: 'right' });
+          line = chart.addSeries(LineSeries, { priceLineVisible: false, color: colors[k], lineWidth: 1, priceScaleId: 'right' });
           seriesRef.current.set(`${ind.id}-rainbow-${k}`, line);
         }
         linesArr.push(line);
@@ -1068,13 +1068,13 @@ function syncIndicators(
           lastValueVisible: false,
           priceLineVisible: false
         });
-        macdLine = chart.addSeries(LineSeries, {
+        macdLine = chart.addSeries(LineSeries, { priceLineVisible: false,
           color: ind.params.macdColor || "#000000",
           lineWidth: 2,
           priceScaleId: `${ind.id}-scale`,
           priceFormat: { type: 'price', precision: 2, minMove: 0.01 }
         });
-        signalLine = chart.addSeries(LineSeries, {
+        signalLine = chart.addSeries(LineSeries, { priceLineVisible: false,
           color: ind.params.signalColor || "#f44336",
           lineWidth: 2,
           priceScaleId: `${ind.id}-scale`,
@@ -1108,7 +1108,7 @@ function syncIndicators(
     } else if (ind.type === "awesome_oscillator") {
       let hist = seriesRef.current.get(ind.id) as ISeriesApi<"Histogram">;
       if (!hist) {
-        hist = chart.addSeries(HistogramSeries, {
+        hist = chart.addSeries(HistogramSeries, { priceLineVisible: false,
           color: "#26a69a",
           priceScaleId: `${ind.id}-scale`,
           priceFormat: { type: 'price', precision: 4, minMove: 0.0001 }
@@ -1129,7 +1129,7 @@ function syncIndicators(
     } else if (ind.type === "roc" || ind.type === "wpr") {
       let series = seriesRef.current.get(ind.id) as ISeriesApi<"Line">;
       if (!series) {
-        series = chart.addSeries(LineSeries, {
+        series = chart.addSeries(LineSeries, { priceLineVisible: false,
           color: ind.type === "roc" ? "#000000" : (ind.params.wprColor || "#000000"),
           lineWidth: 2,
           priceScaleId: `${ind.id}-scale`,
@@ -1250,7 +1250,7 @@ function syncIndicators(
     } else if (ind.type === "cci") {
       let series = seriesRef.current.get(ind.id) as ISeriesApi<"Line">;
       if (!series) {
-        series = chart.addSeries(LineSeries, {
+        series = chart.addSeries(LineSeries, { priceLineVisible: false,
           color: ind.params.cciColor || "#000000",
           lineWidth: 1,
           priceScaleId: `${ind.id}-scale`,
@@ -1347,8 +1347,8 @@ function syncIndicators(
         let kLine = seriesRef.current.get(`${ind.id}-k`) as ISeriesApi<"Line">;
         let dLine = seriesRef.current.get(`${ind.id}-d`) as ISeriesApi<"Line">;
         if (!kLine || !dLine) {
-          kLine = chart.addSeries(LineSeries, { color: ind.params.fastColor || "#000000", lineWidth: 2, priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'price', precision: 2, minMove: 0.01 }, autoscaleInfoProvider: () => ({ priceRange: { minValue: 0, maxValue: 100 } }) });
-          dLine = chart.addSeries(LineSeries, { color: ind.params.slowColor || "#ff0000", lineWidth: 2, priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'price', precision: 2, minMove: 0.01 }, autoscaleInfoProvider: () => ({ priceRange: { minValue: 0, maxValue: 100 } }) });
+          kLine = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.fastColor || "#000000", lineWidth: 2, priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'price', precision: 2, minMove: 0.01 }, autoscaleInfoProvider: () => ({ priceRange: { minValue: 0, maxValue: 100 } }) });
+          dLine = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.slowColor || "#ff0000", lineWidth: 2, priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'price', precision: 2, minMove: 0.01 }, autoscaleInfoProvider: () => ({ priceRange: { minValue: 0, maxValue: 100 } }) });
           chart.priceScale(`${ind.id}-scale`).applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
           seriesRef.current.set(`${ind.id}-k`, kLine);
           seriesRef.current.set(`${ind.id}-d`, dLine);
@@ -1470,8 +1470,8 @@ function syncIndicators(
       let upLine = seriesRef.current.get(`${ind.id}-aroonUp`) as ISeriesApi<"Line">;
       let downLine = seriesRef.current.get(`${ind.id}-aroonDown`) as ISeriesApi<"Line">;
       if (!upLine || !downLine) {
-        upLine = chart.addSeries(LineSeries, { color: ind.params.aroonUpColor || "#00ff00", lineWidth: 2, priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'custom', formatter: (p: number) => `▲ ${p.toFixed(2)}`, minMove: 0.01 } });
-        downLine = chart.addSeries(LineSeries, { color: ind.params.aroonDownColor || "#ff0000", lineWidth: 2, priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'custom', formatter: (p: number) => `▼ ${p.toFixed(2)}`, minMove: 0.01 } });
+        upLine = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.aroonUpColor || "#00ff00", lineWidth: 2, priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'custom', formatter: (p: number) => `▲ ${p.toFixed(2)}`, minMove: 0.01 } });
+        downLine = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.aroonDownColor || "#ff0000", lineWidth: 2, priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'custom', formatter: (p: number) => `▼ ${p.toFixed(2)}`, minMove: 0.01 } });
         chart.priceScale(`${ind.id}-scale`).applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
         seriesRef.current.set(`${ind.id}-aroonUp`, upLine);
         seriesRef.current.set(`${ind.id}-aroonDown`, downLine);
@@ -1497,10 +1497,10 @@ function syncIndicators(
         if (minusDI) chart.removeSeries(minusDI);
         if (hist) chart.removeSeries(hist);
         
-        hist = chart.addSeries(HistogramSeries, { priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
-        adxLine = chart.addSeries(LineSeries, { color: ind.params.adxColor || "#000000", lineWidth: 2, priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
-        plusDI = chart.addSeries(LineSeries, { color: ind.params.plusDiColor || "#00ff00", lineWidth: 2, priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
-        minusDI = chart.addSeries(LineSeries, { color: ind.params.minusDiColor || "#ff0000", lineWidth: 2, priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+        hist = chart.addSeries(HistogramSeries, { priceLineVisible: false, priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+        adxLine = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.adxColor || "#000000", lineWidth: 2, priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+        plusDI = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.plusDiColor || "#00ff00", lineWidth: 2, priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+        minusDI = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.minusDiColor || "#ff0000", lineWidth: 2, priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
         chart.priceScale(`${ind.id}-scale`).applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
         
         seriesRef.current.set(`${ind.id}-hist`, hist);
@@ -1543,11 +1543,11 @@ function syncIndicators(
       let senkouB = seriesRef.current.get(`${ind.id}-senkouB`) as ISeriesApi<"Line">;
       let chikou = seriesRef.current.get(`${ind.id}-chikou`) as ISeriesApi<"Line">;
       if (!tenkan || !kijun || !senkouA || !senkouB || !chikou) {
-        tenkan = chart.addSeries(LineSeries, { color: ind.params.conversionLineColor || "#2962FF", lineWidth: 1, priceScaleId: "right", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
-        kijun = chart.addSeries(LineSeries, { color: ind.params.baseLineColor || "#ef5350", lineWidth: 1, priceScaleId: "right", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
-        senkouA = chart.addSeries(LineSeries, { color: ind.params.leadingSpanAColor || "#4caf50", lineWidth: 1, priceScaleId: "right", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
-        senkouB = chart.addSeries(LineSeries, { color: ind.params.leadingSpanBColor || "#ef5350", lineWidth: 1, priceScaleId: "right", lineStyle: LineStyle.Dashed, priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
-        chikou = chart.addSeries(LineSeries, { color: ind.params.laggingSpanColor || "#00e676", lineWidth: 1, priceScaleId: "right", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+        tenkan = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.conversionLineColor || "#2962FF", lineWidth: 1, priceScaleId: "right", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+        kijun = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.baseLineColor || "#ef5350", lineWidth: 1, priceScaleId: "right", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+        senkouA = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.leadingSpanAColor || "#4caf50", lineWidth: 1, priceScaleId: "right", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+        senkouB = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.leadingSpanBColor || "#ef5350", lineWidth: 1, priceScaleId: "right", lineStyle: LineStyle.Dashed, priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+        chikou = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.laggingSpanColor || "#00e676", lineWidth: 1, priceScaleId: "right", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
         seriesRef.current.set(`${ind.id}-tenkan`, tenkan);
         seriesRef.current.set(`${ind.id}-kijun`, kijun);
         seriesRef.current.set(`${ind.id}-senkouA`, senkouA);
@@ -1615,7 +1615,7 @@ function syncIndicators(
       
       if (!sar) {
         // Transparent LineSeries to hold the markers
-        sar = chart.addSeries(LineSeries, { 
+        sar = chart.addSeries(LineSeries, { priceLineVisible: false, 
           color: "rgba(0,0,0,0)", 
           lineWidth: 1, 
           priceScaleId: "right",
@@ -1652,7 +1652,7 @@ function syncIndicators(
     } else if (ind.type === "zigzag") {
       let zigzag = seriesRef.current.get(`${ind.id}-zigzag`) as ISeriesApi<"Line">;
       if (!zigzag) {
-        zigzag = chart.addSeries(LineSeries, { color: ind.params.zigZagColor || "#000000", lineWidth: 2, priceScaleId: "right", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+        zigzag = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.zigZagColor || "#000000", lineWidth: 2, priceScaleId: "right", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
         seriesRef.current.set(`${ind.id}-zigzag`, zigzag);
       } else {
         zigzag.applyOptions({ color: ind.params.zigZagColor || "#000000" });
@@ -1666,9 +1666,9 @@ function syncIndicators(
         let middle = seriesRef.current.get(`${ind.id}-middle`) as ISeriesApi<'Line'>;
         let lower = seriesRef.current.get(`${ind.id}-lower`) as ISeriesApi<'Line'>;
         if (!upper || !middle || !lower) {
-          upper = chart.addSeries(LineSeries, { color: ind.params.upperColor || '#000000', lineWidth: 1, priceScaleId: 'right', priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
-          middle = chart.addSeries(LineSeries, { color: ind.params.middleColor || '#000000', lineWidth: 1, priceScaleId: 'right', priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
-          lower = chart.addSeries(LineSeries, { color: ind.params.lowerColor || '#000000', lineWidth: 1, priceScaleId: 'right', priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+          upper = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.upperColor || '#000000', lineWidth: 1, priceScaleId: 'right', priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+          middle = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.middleColor || '#000000', lineWidth: 1, priceScaleId: 'right', priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+          lower = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.lowerColor || '#000000', lineWidth: 1, priceScaleId: 'right', priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
           seriesRef.current.set(`${ind.id}-upper`, upper);
           seriesRef.current.set(`${ind.id}-middle`, middle);
           seriesRef.current.set(`${ind.id}-lower`, lower);
@@ -1703,9 +1703,9 @@ function syncIndicators(
         let middle = seriesRef.current.get(`${ind.id}-middle`) as ISeriesApi<'Line'>;
         let lower = seriesRef.current.get(`${ind.id}-lower`) as ISeriesApi<'Line'>;
         if (!upper || !middle || !lower) {
-          upper = chart.addSeries(LineSeries, { color: ind.params.upperColor || '#000000', lineWidth: 1, priceScaleId: 'right', priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
-          middle = chart.addSeries(LineSeries, { color: ind.params.middleColor || '#000000', lineWidth: 1, lineStyle: 2, priceScaleId: 'right', priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
-          lower = chart.addSeries(LineSeries, { color: ind.params.lowerColor || '#000000', lineWidth: 1, priceScaleId: 'right', priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+          upper = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.upperColor || '#000000', lineWidth: 1, priceScaleId: 'right', priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+          middle = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.middleColor || '#000000', lineWidth: 1, lineStyle: 2, priceScaleId: 'right', priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+          lower = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.lowerColor || '#000000', lineWidth: 1, priceScaleId: 'right', priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
           seriesRef.current.set(`${ind.id}-upper`, upper);
           seriesRef.current.set(`${ind.id}-middle`, middle);
           seriesRef.current.set(`${ind.id}-lower`, lower);
@@ -1913,7 +1913,7 @@ function syncIndicators(
     } else if (ind.type === 'dpo') {
       let series = seriesRef.current.get(ind.id) as ISeriesApi<'Line'>;
       if (!series) {
-        series = chart.addSeries(LineSeries, { 
+        series = chart.addSeries(LineSeries, { priceLineVisible: false, 
           color: ind.params.color || '#000000', 
           lineWidth: 1, 
           priceScaleId: `${ind.id}-scale`,
