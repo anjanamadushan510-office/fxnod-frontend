@@ -1248,16 +1248,10 @@ function syncIndicators(
       const data = results.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
       if (data.length > 0) series.setData(data as any);
     } else if (ind.type === "cci") {
-      let series = seriesRef.current.get(ind.id) as ISeriesApi<"Baseline">;
+      let series = seriesRef.current.get(ind.id) as ISeriesApi<"Line">;
       if (!series) {
-        series = chart.addSeries(BaselineSeries, {
-          baseValue: { type: 'price', price: 0 },
-          topFillColor1: 'rgba(0, 0, 0, 0.4)',
-          topFillColor2: 'rgba(0, 0, 0, 0.4)',
-          topLineColor: ind.params.cciColor || "#000000",
-          bottomFillColor1: 'rgba(0, 0, 0, 0.4)',
-          bottomFillColor2: 'rgba(0, 0, 0, 0.4)',
-          bottomLineColor: ind.params.cciColor || "#000000",
+        series = chart.addSeries(LineSeries, {
+          color: ind.params.cciColor || "#000000",
           lineWidth: 1,
           priceScaleId: `${ind.id}-scale`,
           priceFormat: { type: 'price', precision: 2, minMove: 0.01 }
@@ -1265,10 +1259,7 @@ function syncIndicators(
         chart.priceScale(`${ind.id}-scale`).applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
         seriesRef.current.set(ind.id, series);
       } else {
-        series.applyOptions({ 
-          topLineColor: ind.params.cciColor || "#000000",
-          bottomLineColor: ind.params.cciColor || "#000000"
-        });
+        series.applyOptions({ color: ind.params.cciColor || "#000000" });
       }
 
       if (ind.params.showZones !== false) {
@@ -1279,6 +1270,10 @@ function syncIndicators(
         
         let obLine = seriesRef.current.get(`${ind.id}-ob`) as ISeriesApi<"Line">;
         let osLine = seriesRef.current.get(`${ind.id}-os`) as ISeriesApi<"Line">;
+        
+        let obFill = seriesRef.current.get(`${ind.id}-ob-fill`) as ISeriesApi<"Baseline">;
+        let osFill = seriesRef.current.get(`${ind.id}-os-fill`) as ISeriesApi<"Baseline">;
+
         if (!obLine || !osLine) {
             obLine = chart.addSeries(LineSeries, { color: obCol, lineWidth: 1, lineStyle: LineStyle.Solid, priceScaleId: `${ind.id}-scale`, lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
             osLine = chart.addSeries(LineSeries, { color: osCol, lineWidth: 1, lineStyle: LineStyle.Solid, priceScaleId: `${ind.id}-scale`, lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
@@ -1289,6 +1284,37 @@ function syncIndicators(
             osLine.applyOptions({ color: osCol });
         }
         
+        if (!obFill || !osFill) {
+            obFill = chart.addSeries(BaselineSeries, {
+                baseValue: { type: 'price', price: obVal },
+                topLineColor: 'transparent',
+                bottomLineColor: 'transparent',
+                topFillColor1: 'rgba(0, 0, 0, 0.4)',
+                topFillColor2: 'rgba(0, 0, 0, 0.4)',
+                bottomFillColor1: 'transparent',
+                bottomFillColor2: 'transparent',
+                priceScaleId: `${ind.id}-scale`,
+                lastValueVisible: false,
+                priceLineVisible: false,
+                crosshairMarkerVisible: false
+            });
+            osFill = chart.addSeries(BaselineSeries, {
+                baseValue: { type: 'price', price: osVal },
+                topLineColor: 'transparent',
+                bottomLineColor: 'transparent',
+                topFillColor1: 'transparent',
+                topFillColor2: 'transparent',
+                bottomFillColor1: 'rgba(0, 0, 0, 0.4)',
+                bottomFillColor2: 'rgba(0, 0, 0, 0.4)',
+                priceScaleId: `${ind.id}-scale`,
+                lastValueVisible: false,
+                priceLineVisible: false,
+                crosshairMarkerVisible: false
+            });
+            seriesRef.current.set(`${ind.id}-ob-fill`, obFill);
+            seriesRef.current.set(`${ind.id}-os-fill`, osFill);
+        }
+
         const obData = timeArray.map((t) => ({ time: t, value: obVal }));
         const osData = timeArray.map((t) => ({ time: t, value: osVal }));
         obLine.setData(obData as any);
@@ -1296,14 +1322,27 @@ function syncIndicators(
       } else {
         let obLine = seriesRef.current.get(`${ind.id}-ob`) as ISeriesApi<"Line"> | undefined;
         let osLine = seriesRef.current.get(`${ind.id}-os`) as ISeriesApi<"Line"> | undefined;
+        let obFill = seriesRef.current.get(`${ind.id}-ob-fill`) as ISeriesApi<"Baseline"> | undefined;
+        let osFill = seriesRef.current.get(`${ind.id}-os-fill`) as ISeriesApi<"Baseline"> | undefined;
+        
         if (obLine) { chart.removeSeries(obLine); seriesRef.current.delete(`${ind.id}-ob`); }
         if (osLine) { chart.removeSeries(osLine); seriesRef.current.delete(`${ind.id}-os`); }
+        if (obFill) { chart.removeSeries(obFill); seriesRef.current.delete(`${ind.id}-ob-fill`); }
+        if (osFill) { chart.removeSeries(osFill); seriesRef.current.delete(`${ind.id}-os-fill`); }
       }
 
       const p = ind.params.period || 20;
       const results = calculateCCI(highArray, lowArray, valueArray, p);
       const data = results.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
-      if (data.length > 0) series.setData(data as any);
+      if (data.length > 0) {
+         series.setData(data as any);
+         if (ind.params.showZones !== false) {
+             const obFill = seriesRef.current.get(`${ind.id}-ob-fill`) as ISeriesApi<"Baseline"> | undefined;
+             const osFill = seriesRef.current.get(`${ind.id}-os-fill`) as ISeriesApi<"Baseline"> | undefined;
+             if (obFill) obFill.setData(data as any);
+             if (osFill) osFill.setData(data as any);
+         }
+      }
       } else if (ind.type === "stochastic") {
         let kLine = seriesRef.current.get(`${ind.id}-k`) as ISeriesApi<"Line">;
         let dLine = seriesRef.current.get(`${ind.id}-d`) as ISeriesApi<"Line">;
