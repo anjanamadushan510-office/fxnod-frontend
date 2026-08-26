@@ -1745,6 +1745,17 @@ function syncIndicators(
         if (upperData.length > 0) upper.setData(upperData as any);
         if (middleData.length > 0) middle.setData(middleData as any);
         if (lowerData.length > 0) lower.setData(lowerData as any);
+
+        let fillPlugin = pluginsRef.current.get(`${ind.id}-fill`) as any;
+        const userFill = ind.params.fillColor ? hexToRgba(ind.params.fillColor as string, 0.2) : "rgba(128, 128, 128, 0.2)";
+        if (!fillPlugin) {
+            fillPlugin = new IchimokuCloudPlugin(upperData as any, lowerData as any, userFill, userFill);
+            upper.attachPrimitive(fillPlugin);
+            pluginsRef.current.set(`${ind.id}-fill`, fillPlugin);
+            pluginsRef.current.set(`${ind.id}-upper`, fillPlugin); 
+        } else {
+            fillPlugin.updateData(upperData as any, lowerData as any, userFill, userFill);
+        }
       } else if (ind.type === 'alligator') {
         let jaw = seriesRef.current.get(`${ind.id}-jaw`) as ISeriesApi<'Line'>;
         let teeth = seriesRef.current.get(`${ind.id}-teeth`) as ISeriesApi<'Line'>;
