@@ -50,6 +50,7 @@ import {
 } from "@/stores/useChartDrawings";
 import { CHART_COLORS } from "./chartColors";
 import { EndPriceLinePlugin } from "./plugins/EndPriceLinePlugin";
+import { IchimokuCloudPlugin } from "./plugins/IchimokuCloudPlugin";
 import { TrendPrimitive, VerticalPrimitive } from "./chartPrimitives";
 import type { ChartTypeId, IntervalId } from "./chartSettings";
 import { useChartIndicators, type IndicatorConfig } from "@/stores/useChartIndicators";
@@ -1609,6 +1610,15 @@ function syncIndicators(
       if (senkouAData.length > 0) senkouA.setData(senkouAData as any);
       if (senkouBData.length > 0) senkouB.setData(senkouBData as any);
       if (chikouData.length > 0) chikou.setData(chikouData as any);
+      
+      let cloud = pluginsRef.current.get(`${ind.id}-senkouA`) as any;
+      if (!cloud) {
+          cloud = new IchimokuCloudPlugin(senkouAData as any, senkouBData as any, "rgba(0, 255, 0, 0.2)", "rgba(255, 0, 0, 0.2)");
+          senkouA.attachPrimitive(cloud);
+          pluginsRef.current.set(`${ind.id}-senkouA`, cloud);
+      } else {
+          cloud.updateData(senkouAData as any, senkouBData as any);
+      }
     } else if (ind.type === "parabolic_sar") {
       let sar = seriesRef.current.get(`${ind.id}-sar`) as ISeriesApi<"Line">;
       let sarPlugin = pluginsRef.current.get(`${ind.id}-sar`);
