@@ -189,59 +189,71 @@ export interface StochasticResult {
   d: number[];
 }
 
-export function calculateStochastic(
-  high: number[],
-  low: number[],
-  close: number[],
-  periodK: number,
-  periodD: number,
-  smoothing: number = 3
-): StochasticResult {
-  const n = close.length;
-
-  // Step 1: Calculate raw Fast %K
-  const rawK: number[] = new Array(n).fill(NaN);
-  for (let i = periodK - 1; i < n; i++) {
-    let hh = high[i - periodK + 1];
-    let ll = low[i - periodK + 1];
-    for (let j = i - periodK + 2; j <= i; j++) {
-      if (high[j] > hh) hh = high[j];
-      if (low[j] < ll) ll = low[j];
+export function calculateStochastic(high: number[], low: number[], close: number[], periodK: number, periodD: number, smoothing: number = 3): StochasticResult {
+  const fastK: number[] = new Array(close.length).fill(NaN);
+  for (let i = periodK - 1; i < close.length; i++) {
+    let highestHigh = high[i - periodK + 1];
+    let lowestLow = low[i - periodK + 1];
+    
+    for (let j = 1; j < periodK; j++) {
+      const idx = i - periodK + 1 + j;
+      if (high[idx] > highestHigh) highestHigh = high[idx];
+      if (low[idx] < lowestLow) lowestLow = low[idx];
     }
-    rawK[i] = (hh !== ll) ? ((close[i] - ll) / (hh - ll)) * 100 : 50;
-  }
 
-  // Step 2: Smooth %K (Slow %K) using SMA of smoothing period, index-aligned
-  const slowK: number[] = new Array(n).fill(NaN);
-  if (smoothing <= 1) {
-    for (let i = 0; i < n; i++) slowK[i] = rawK[i];
-  } else {
-    for (let i = 0; i < n; i++) {
-      if (i < periodK - 1 + smoothing - 1) continue;
-      let sum = 0;
-      let count = 0;
-      for (let j = 0; j < smoothing; j++) {
-        const val = rawK[i - j];
-        if (!isNaN(val)) { sum += val; count++; }
-      }
-      if (count === smoothing) slowK[i] = sum / smoothing;
+    if (highestHigh !== lowestLow) {
+      fastK[i] = ((close[i] - lowestLow) / (highestHigh - lowestLow)) * 100;
+    } else {
+      fastK[i] = 50;
     }
   }
 
-  // Step 3: %D = SMA(periodD) of slowK, index-aligned
-  const slowD: number[] = new Array(n).fill(NaN);
-  for (let i = 0; i < n; i++) {
-    let sum = 0;
-    let count = 0;
-    for (let j = 0; j < periodD; j++) {
-      if (i - j < 0) break;
-      const val = slowK[i - j];
-      if (!isNaN(val)) { sum += val; count++; }
+  // 1. Extract valid fastK
+  const validFastK: number[] = [];
+  const validFastKIndices: number[] = [];
+  for (let i = 0; i < fastK.length; i++) {
+    if (!isNaN(fastK[i])) {
+      validFastK.push(fastK[i]);
+      validFastKIndices.push(i);
     }
-    if (count === periodD) slowD[i] = sum / periodD;
   }
 
-  return { k: slowK, d: slowD };
+  // 2. Smooth to get slowK
+  let slowKValues = validFastK;
+  if (smoothing > 1) {
+    slowKValues = calculateSMA(validFastK, smoothing);
+  }
+
+  // 3. Extract valid slowK for %D calculation
+  const validSlowK: number[] = [];
+  const validSlowKIndices: number[] = [];
+  for (let i = 0; i < slowKValues.length; i++) {
+    if (!isNaN(slowKValues[i])) {
+      validSlowK.push(slowKValues[i]);
+      validSlowKIndices.push(validFastKIndices[i]);
+    }
+  }
+
+  // 4. Calculate %D
+  const dValues = calculateSMA(validSlowK, periodD);
+
+  // 5. Map back to original length arrays
+  const finalK: number[] = new Array(close.length).fill(NaN);
+  const finalD: number[] = new Array(close.length).fill(NaN);
+
+  for (let i = 0; i < slowKValues.length; i++) {
+    if (!isNaN(slowKValues[i])) {
+      finalK[validFastKIndices[i]] = slowKValues[i];
+    }
+  }
+
+  for (let i = 0; i < dValues.length; i++) {
+    if (!isNaN(dValues[i])) {
+      finalD[validSlowKIndices[i]] = dValues[i];
+    }
+  }
+
+  return { k: finalK, d: finalD };
 }
 
 // Commodity Channel Index (CCI)
