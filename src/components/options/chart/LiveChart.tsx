@@ -164,7 +164,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
     const pendingTrendRef = useRef<{ time: Time; price: number } | null>(null);
 
     const [status, setStatus] = useState<FeedStatus>("idle");
-    const [paneHeight, setPaneHeight] = useState(0.22);
+    const [paneHeights, setPaneHeights] = useState<Record<string, number>>({});
     const [isResizing, setIsResizing] = useState(false);
 
     const activeScales = new Set<string>();
@@ -313,7 +313,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
       );
       // Re-attach user drawings to the fresh series.
       applyDrawings(seriesRef.current, drawingsRef.current, drawingObjsRef);
-      syncIndicators(chart, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeight, minimizedIndicators);
+      syncIndicators(chart, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeights, minimizedIndicators);
       // chart.timeScale().fitContent();
     }, [seriesKind, chartType]);
 
@@ -387,7 +387,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
     // Re-sync indicators when the active list changes.
     useEffect(() => {
       if (chartRef.current) {
-        syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicators, seriesKind, ticksRef.current, candlesRef.current, paneHeight, minimizedIndicators);
+        syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicators, seriesKind, ticksRef.current, candlesRef.current, paneHeights, minimizedIndicators);
       }
     }, [activeIndicators, seriesKind]);
 
@@ -406,7 +406,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
           );
           // chartRef.current?.timeScale().fitContent();
         }
-        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeight, minimizedIndicators);
+        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeights, minimizedIndicators);
         const last = ticks[ticks.length - 1];
         if (last) {
             onPrice?.(last.value);
@@ -425,7 +425,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
             /* out-of-order tick — ignore */
           }
         }
-        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeight, minimizedIndicators);
+        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeights, minimizedIndicators);
         onPrice?.(tick.value);
           endPriceLineRef.current?.updatePosition(tick.time as UTCTimestamp, tick.value);
       },
@@ -437,7 +437,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
         }));
         hydrateSeries(seriesRef.current, seriesKind, ticksRef.current, candles);
         // chartRef.current?.timeScale().fitContent();
-        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeight, minimizedIndicators);
+        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeights, minimizedIndicators);
         const last = candles[candles.length - 1];
         if (last) {
             onPrice?.(last.close);
@@ -460,7 +460,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
         } catch {
           /* out-of-order candle — ignore */
         }
-        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeight, minimizedIndicators);
+        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeights, minimizedIndicators);
         onPrice?.(candle.close);
           endPriceLineRef.current?.updatePosition(candle.time as UTCTimestamp, candle.close);
       },
@@ -510,21 +510,31 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
           })}
         </div>
 
-        {activeIndicators.filter(ind => !["ma", "ma_envelope", "rainbow_ma", "bollinger", "donchian", "alligator", "fractal", "ichimoku", "parabolic_sar", "zigzag"].includes(ind.type)).map((ind, index, arr) => {
-          const meta = INDICATOR_LIST.find(i => i.id === ind.type);
-          const name = meta ? meta.name.toUpperCase() : ind.type.toUpperCase();
-          const totalOscillatorHeight = Math.min(0.8, paneHeight * arr.length);
-          const actualPaneHeight = totalOscillatorHeight / arr.length;
-          const baseTop = 1 - totalOscillatorHeight + (index * actualPaneHeight);
-          
-          return (
-            <div key={ind.id} className="absolute left-14 z-10 flex items-center gap-2 pointer-events-auto group" style={{ top: `calc((100% - 26px) * ${baseTop} + 6px)` }}>
-               <span className="text-[10px] font-bold text-opt-ink-2 px-1 rounded">{name}</span>
-               <button onClick={() => setSettingsIndicatorId(ind.id)} className="opacity-100 p-1 hover:bg-opt-bg-hover rounded text-opt-ink-3 hover:text-opt-ink-1 transition-all"><Settings className="w-3 h-3" /></button>
-               <button onClick={() => removeIndicator(ind.id)} className="opacity-100 p-1 hover:bg-opt-bg-hover rounded text-opt-ink-3 hover:text-red-400 transition-all"><Trash2 className="w-3 h-3" /></button>
-            </div>
-          );
-        })}
+        {(() => {
+          const oscillatorsList = activeIndicators.filter(ind => !["ma", "ma_envelope", "rainbow_ma", "bollinger", "donchian", "alligator", "fractal", "ichimoku", "parabolic_sar", "zigzag"].includes(ind.type));
+          let totalOsc = 0;
+          oscillatorsList.forEach(ind => {
+            totalOsc += minimizedIndicators.has(ind.id) ? 0.03 : (paneHeights[ind.id] ?? 0.22);
+          });
+          totalOsc = Math.min(0.8, totalOsc);
+          let currentBaseTop = 1 - totalOsc;
+
+          return oscillatorsList.map((ind, index) => {
+            const meta = INDICATOR_LIST.find(i => i.id === ind.type);
+            const name = meta ? meta.name.toUpperCase() : ind.type.toUpperCase();
+            const height = minimizedIndicators.has(ind.id) ? 0.03 : (paneHeights[ind.id] ?? 0.22);
+            const baseTop = currentBaseTop;
+            currentBaseTop += height;
+
+            return (
+              <div key={ind.id} className="absolute left-14 z-10 flex items-center gap-2 pointer-events-auto group" style={{ top: `calc((100% - 26px) * ${baseTop} + 6px)` }}>
+                 <span className="text-[10px] font-bold text-opt-ink-2 px-1 rounded">{name}</span>
+                 <button onClick={() => setSettingsIndicatorId(ind.id)} className="opacity-100 p-1 hover:bg-opt-bg-hover rounded text-opt-ink-3 hover:text-opt-ink-1 transition-all"><Settings className="w-3 h-3" /></button>
+                 <button onClick={() => removeIndicator(ind.id)} className="opacity-100 p-1 hover:bg-opt-bg-hover rounded text-opt-ink-3 hover:text-red-400 transition-all"><Trash2 className="w-3 h-3" /></button>
+              </div>
+            );
+          });
+        })()}
 
         {settingsIndicatorId && (
           <IndicatorSettingsModal 
@@ -535,65 +545,99 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
         )}
 
         <div ref={containerRef} className="absolute inset-0" />
-        {Array.from({ length: numOscillators }).map((_, index) => (
-          <div 
-            key={`pane-handle-${index}`}
-            style={{ 
-              position: 'absolute', 
-              top: `calc((100% - 26px) * ${1 - (paneHeight * numOscillators) + (index * paneHeight)})`,
-              left: 0, 
-              right: 0, 
-              height: '14px', 
-              marginTop: '-7px', 
-              cursor: 'ns-resize',
-              zIndex: 20,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-            onPointerDown={(e) => {
-               e.preventDefault();
-               setIsResizing(true);
-               const startY = e.clientY;
-               const startHeight = paneHeight;
-               const container = containerRef.current;
-               if (!container) return;
-               const containerHeight = container.clientHeight;
-               
-               const handleMove = (moveEvent: PointerEvent) => {
-                  const deltaY = moveEvent.clientY - startY;
-                  const deltaPercent = deltaY / containerHeight;
-                  const oldTop = 1 - (startHeight * numOscillators) + (index * startHeight);
-                  const newTop = oldTop + deltaPercent;
-                  
-                  let newPaneHeight = (1 - newTop) / (numOscillators - index);
-                  
-                  if (newPaneHeight < 0.1) newPaneHeight = 0.1;
-                  if (newPaneHeight * numOscillators > 0.8) newPaneHeight = 0.8 / numOscillators;
-                  
-                  setPaneHeight(newPaneHeight);
-               };
-               
-               const handleUp = () => {
-                  setIsResizing(false);
-                  window.removeEventListener('pointermove', handleMove);
-                  window.removeEventListener('pointerup', handleUp);
-               };
-               
-               window.addEventListener('pointermove', handleMove);
-               window.addEventListener('pointerup', handleUp);
-            }}
-          >
-            {/* The horizontal separator line */}
-            <div className={`absolute left-0 right-0 h-[1px] pointer-events-none transition-colors ${isResizing ? 'bg-blue-500' : 'bg-opt-ink-3 opacity-40'}`} style={{ top: '50%' }}></div>
-            
-            {/* The drag pill */}
-            <div className={`w-[36px] h-[14px] rounded-full flex flex-col items-center justify-center border shadow-sm relative z-10 gap-[2px] transition-colors ${isResizing ? 'border-blue-500 bg-opt-bg-elev' : 'border-opt-line-strong bg-opt-bg-elev hover:bg-opt-bg-sunk'}`}>
-              <div className={`w-[12px] h-[1.5px] rounded-full transition-colors ${isResizing ? 'bg-blue-500' : 'bg-opt-ink-3 opacity-60'}`}></div>
-              <div className={`w-[12px] h-[1.5px] rounded-full transition-colors ${isResizing ? 'bg-blue-500' : 'bg-opt-ink-3 opacity-60'}`}></div>
-            </div>
-          </div>
-        ))}
+        {(() => {
+          const oscillatorsList = activeIndicators.filter(ind => !["ma", "ma_envelope", "rainbow_ma", "bollinger", "donchian", "alligator", "fractal", "ichimoku", "parabolic_sar", "zigzag"].includes(ind.type));
+          let totalOsc = 0;
+          oscillatorsList.forEach(ind => {
+            totalOsc += minimizedIndicators.has(ind.id) ? 0.03 : (paneHeights[ind.id] ?? 0.22);
+          });
+          totalOsc = Math.min(0.8, totalOsc);
+          let currentBaseTop = 1 - totalOsc;
+
+          return oscillatorsList.map((ind, index) => {
+            const isMinimized = minimizedIndicators.has(ind.id);
+            const height = isMinimized ? 0.03 : (paneHeights[ind.id] ?? 0.22);
+            const thisTop = currentBaseTop;
+            currentBaseTop += height;
+
+            return (
+              <div 
+                key={`pane-handle-${ind.id}`}
+                style={{ 
+                  position: 'absolute', 
+                  top: `calc((100% - 26px) * ${thisTop})`,
+                  left: 0, 
+                  right: 0, 
+                  height: '14px', 
+                  marginTop: '-7px', 
+                  cursor: 'ns-resize',
+                  zIndex: 20,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+                onPointerDown={(e) => {
+                   e.preventDefault();
+                   if (isMinimized) return; // don't resize minimized panes
+                   setIsResizing(true);
+                   const startY = e.clientY;
+                   const startHeight = height;
+                   const prevInd = index > 0 ? oscillatorsList[index - 1] : null;
+                   const startPrevHeight = prevInd ? (paneHeights[prevInd.id] ?? 0.22) : 0;
+                   
+                   const container = containerRef.current;
+                   if (!container) return;
+                   const containerHeight = container.clientHeight;
+                   
+                   const handleMove = (moveEvent: PointerEvent) => {
+                      const deltaY = moveEvent.clientY - startY;
+                      const deltaPercent = deltaY / containerHeight;
+                      
+                      setPaneHeights(prev => {
+                          const newHeights = { ...prev };
+                          if (index === 0) {
+                              let h = startHeight - deltaPercent;
+                              if (h < 0.1) h = 0.1;
+                              if (h > 0.8) h = 0.8;
+                              newHeights[ind.id] = h;
+                          } else if (prevInd) {
+                              let h = startHeight - deltaPercent;
+                              let p = startPrevHeight + deltaPercent;
+                              
+                              if (h < 0.1) {
+                                  p -= (0.1 - h);
+                                  h = 0.1;
+                              }
+                              if (p < 0.1) {
+                                  h -= (0.1 - p);
+                                  p = 0.1;
+                              }
+                              newHeights[ind.id] = h;
+                              newHeights[prevInd.id] = p;
+                          }
+                          return newHeights;
+                      });
+                   };
+                   
+                   const handleUp = () => {
+                      setIsResizing(false);
+                      window.removeEventListener('pointermove', handleMove);
+                      window.removeEventListener('pointerup', handleUp);
+                   };
+                   
+                   window.addEventListener('pointermove', handleMove);
+                   window.addEventListener('pointerup', handleUp);
+                }}
+              >
+                <div className={`absolute left-0 right-0 h-[1px] pointer-events-none transition-colors ${isResizing ? 'bg-blue-500' : 'bg-opt-ink-3 opacity-40'}`} style={{ top: '50%' }}></div>
+                <div className={`w-[36px] h-[14px] rounded-full flex flex-col items-center justify-center border shadow-sm relative z-10 gap-[2px] transition-colors ${isResizing ? 'border-blue-500 bg-opt-bg-elev' : 'border-opt-line-strong bg-opt-bg-elev hover:bg-opt-bg-sunk'}`}>
+                  <div className={`w-[12px] h-[1.5px] rounded-full transition-colors ${isResizing ? 'bg-blue-500' : 'bg-opt-ink-3 opacity-60'}`}></div>
+                  <div className={`w-[12px] h-[1.5px] rounded-full transition-colors ${isResizing ? 'bg-blue-500' : 'bg-opt-ink-3 opacity-60'}`}></div>
+                </div>
+              </div>
+            );
+          });
+        })()}
         <FeedStatusBadge status={status} unsupported={!derivSymbol} />
       </div>
     );
@@ -798,7 +842,7 @@ function syncIndicators(
   seriesKind: "area" | "candlestick",
   ticks: FeedTick[],
   candles: FeedCandle[],
-  paneHeight: number,
+  paneHeights: Record<string, number>,
   minimizedIndicators: Set<string> = new Set()
 ) {
   // Remove series that are no longer active
@@ -1906,7 +1950,7 @@ function syncIndicators(
 
   let totalOscillatorHeight = 0;
   oscillators.forEach(ind => {
-      totalOscillatorHeight += minimizedIndicators.has(ind.id) ? 0.03 : paneHeight;
+      totalOscillatorHeight += minimizedIndicators.has(ind.id) ? 0.03 : (paneHeights[ind.id] ?? 0.22);
   });
   totalOscillatorHeight = Math.min(0.8, totalOscillatorHeight);
 
@@ -1919,7 +1963,7 @@ function syncIndicators(
 
   oscillators.forEach((ind) => {
     const scaleId = `${ind.id}-scale`;
-    const actualPaneHeight = minimizedIndicators.has(ind.id) ? 0.03 : paneHeight;
+    const actualPaneHeight = minimizedIndicators.has(ind.id) ? 0.03 : (paneHeights[ind.id] ?? 0.22);
     const baseTop = currentTopOffset;
     currentTopOffset += actualPaneHeight;
 
