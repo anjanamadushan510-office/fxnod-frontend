@@ -1708,6 +1708,17 @@ function syncIndicators(
         if (upperData.length > 0) upper.setData(upperData as any);
         if (middleData.length > 0) middle.setData(middleData as any);
         if (lowerData.length > 0) lower.setData(lowerData as any);
+        
+        let fillPlugin = pluginsRef.current.get(`${ind.id}-fill`) as any;
+        if (!fillPlugin) {
+            fillPlugin = new IchimokuCloudPlugin(upperData as any, lowerData as any, "rgba(128, 128, 128, 0.2)", "rgba(128, 128, 128, 0.2)");
+            upper.attachPrimitive(fillPlugin);
+            pluginsRef.current.set(`${ind.id}-fill`, fillPlugin);
+            // Also store it under the upper series ID so the cleanup loop correctly detaches it when Bollinger is removed
+            pluginsRef.current.set(`${ind.id}-upper`, fillPlugin); 
+        } else {
+            fillPlugin.updateData(upperData as any, lowerData as any);
+        }
       } else if (ind.type === 'donchian') {
         let upper = seriesRef.current.get(`${ind.id}-upper`) as ISeriesApi<'Line'>;
         let middle = seriesRef.current.get(`${ind.id}-middle`) as ISeriesApi<'Line'>;
