@@ -4,6 +4,7 @@
 import { Settings, Trash2, ChevronDown, Maximize, EyeOff } from "lucide-react";
 import { INDICATOR_LIST } from "./IndicatorsModal";
 import { IndicatorSettingsModal } from "./IndicatorSettingsModal";
+import { FillBetweenPlugin, type FillBetweenData } from "./plugins/FillBetweenPlugin";
 import {
   forwardRef,
   useEffect,
@@ -1621,23 +1622,21 @@ function syncIndicators(
         if (lipsData.length > 0) lips.setData(lipsData as any);
       
     } else if (ind.type === 'smi') {
-        let smiLine = seriesRef.current.get(`${ind.id}-smi`) as ISeriesApi<'Baseline'>;
+        let smiLine = seriesRef.current.get(`${ind.id}-smi`) as ISeriesApi<'Line'>;
         let signalLine = seriesRef.current.get(`${ind.id}-signal`) as ISeriesApi<'Line'>;
+        let fillPlugin = seriesRef.current.get(`${ind.id}-fill-plugin`) as unknown as FillBetweenPlugin;
         
         if (!smiLine) {
-          smiLine = chart.addSeries(BaselineSeries, { 
-            baseValue: { type: 'price', price: 0 },
-            topLineColor: ind.params.color || '#000000',
-            bottomLineColor: ind.params.color || '#000000',
-            topFillColor1: 'rgba(128, 128, 128, 0.3)',
-            topFillColor2: 'rgba(128, 128, 128, 0.3)',
-            bottomFillColor1: 'rgba(128, 128, 128, 0.3)',
-            bottomFillColor2: 'rgba(128, 128, 128, 0.3)',
+          smiLine = chart.addSeries(LineSeries, { 
+            color: ind.params.color || '#000000', 
             lineWidth: 1, 
             priceScaleId: `${ind.id}-scale`,
             priceFormat: { type: 'price', precision: 2, minMove: 0.01 },
             priceLineVisible: false
           });
+          
+          fillPlugin = new FillBetweenPlugin('rgba(128, 128, 128, 0.3)');
+          smiLine.attachPrimitive(fillPlugin);
           
           signalLine = chart.addSeries(LineSeries, { 
             color: ind.params.signalColor || '#ff0000', 
@@ -1652,11 +1651,9 @@ function syncIndicators(
           
           seriesRef.current.set(`${ind.id}-smi`, smiLine);
           seriesRef.current.set(`${ind.id}-signal`, signalLine);
+          seriesRef.current.set(`${ind.id}-fill-plugin`, fillPlugin as any);
         } else {
-          smiLine.applyOptions({ 
-            topLineColor: ind.params.color || '#000000',
-            bottomLineColor: ind.params.color || '#000000'
-          });
+          smiLine.applyOptions({ color: ind.params.color || '#000000' });
           signalLine.applyOptions({ color: ind.params.signalColor || '#ff0000' });
         }
       
@@ -1698,6 +1695,20 @@ function syncIndicators(
       const smiData = results.smi.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value) && isFinite(d.value));
       const sigData = results.signal.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value) && isFinite(d.value));
 
+      const fillData: FillBetweenData[] = [];
+      for (let i = 0; i < timeArray.length; i++) {
+        const sVal = results.smi[i];
+        const sigVal = results.signal[i];
+        if (!isNaN(sVal) && isFinite(sVal) && !isNaN(sigVal) && isFinite(sigVal)) {
+          fillData.push({
+            time: timeArray[i],
+            value1: sVal,
+            value2: sigVal
+          });
+        }
+      }
+
+      if (fillData.length > 0) fillPlugin.setData(fillData);
       if (smiData.length > 0) smiLine.setData(smiData as any);
       if (sigData.length > 0) signalLine.setData(sigData as any);
 
