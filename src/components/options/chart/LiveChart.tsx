@@ -535,11 +535,12 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
         )}
 
         <div ref={containerRef} className="absolute inset-0" />
-        {numOscillators > 0 && (
+        {Array.from({ length: numOscillators }).map((_, index) => (
           <div 
+            key={`pane-handle-${index}`}
             style={{ 
               position: 'absolute', 
-              top: `calc((100% - 26px) * ${1 - (paneHeight * numOscillators) - 0.01})`,
+              top: `calc((100% - 26px) * ${1 - (paneHeight * numOscillators) + (index * paneHeight)})`,
               left: 0, 
               right: 0, 
               height: '14px', 
@@ -562,7 +563,10 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
                const handleMove = (moveEvent: PointerEvent) => {
                   const deltaY = moveEvent.clientY - startY;
                   const deltaPercent = deltaY / containerHeight;
-                  let newPaneHeight = startHeight - (deltaPercent / numOscillators);
+                  const oldTop = 1 - (startHeight * numOscillators) + (index * startHeight);
+                  const newTop = oldTop + deltaPercent;
+                  
+                  let newPaneHeight = (1 - newTop) / (numOscillators - index);
                   
                   if (newPaneHeight < 0.1) newPaneHeight = 0.1;
                   if (newPaneHeight * numOscillators > 0.8) newPaneHeight = 0.8 / numOscillators;
@@ -589,7 +593,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
               <div className={`w-[12px] h-[1.5px] rounded-full transition-colors ${isResizing ? 'bg-blue-500' : 'bg-opt-ink-3 opacity-60'}`}></div>
             </div>
           </div>
-        )}
+        ))}
         <FeedStatusBadge status={status} unsupported={!derivSymbol} />
       </div>
     );
