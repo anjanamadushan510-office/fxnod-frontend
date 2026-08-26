@@ -57,9 +57,13 @@ export class IchimokuCloudPlugin implements ISeriesPrimitive {
         )];
     }
 
-    updateData(senkouA: CloudData[], senkouB: CloudData[]) {
+    updateData(senkouA: CloudData[], senkouB: CloudData[], upColor?: string, downColor?: string) {
         this._senkouA = senkouA;
         this._senkouB = senkouB;
+        if (upColor) this._upColor = upColor;
+        if (downColor) this._downColor = downColor;
+        
+        // Also update the pane view which holds the colors! Wait!
         this._requestUpdate();
     }
 
