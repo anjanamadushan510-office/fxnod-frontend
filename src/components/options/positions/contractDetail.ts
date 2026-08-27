@@ -257,6 +257,9 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
   const ts = (h as any).tick_stream;
   if (ts && Array.isArray(ts) && ts.length > 0) {
     if (backendDurUnit === "t" && backendDurSecs > 0) {
+      const isTouch = h.frontend_contract_type?.toLowerCase().includes("touch") || (h as any).contract_type?.toUpperCase().includes("TOUCH");
+      const needsSyntheticStart = !isTurbos && !isAccu && !isTouch;
+      
       let entryIdx = -1;
       for (let i = 0; i < ts.length; i++) {
         if (ts[i].epoch > startTime) {
@@ -267,15 +270,11 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
       
       if (entryIdx === -1) entryIdx = Math.max(0, ts.length - backendDurSecs);
       
-      const maxExitIdx = Math.min(ts.length - 1, entryIdx + Math.max(0, backendDurSecs - 1));
+      const targetExitIdx = entryIdx + Math.max(0, needsSyntheticStart ? backendDurSecs - 1 : backendDurSecs);
+      const maxExitIdx = Math.min(ts.length - 1, targetExitIdx);
       let exitIdx = maxExitIdx;
       
-      // We do not need to search for exitSpot by value in historyToDetail.
-      // Deriv's historical tick_stream is naturally truncated at the exact exit tick.
-      // Searching by value causes false positives (e.g. matching an earlier tick with the same price).
-      // If the contract ended early (e.g. Touch), ts.length - 1 will naturally bound maxExitIdx.
-      
-      const hasStartPoint = entryIdx > 0;
+      const hasStartPoint = needsSyntheticStart && entryIdx > 0;
       const startIdx = hasStartPoint ? entryIdx - 1 : entryIdx;
       const elapsed = ts.slice(startIdx, exitIdx + 1);
       
@@ -285,19 +284,21 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
         kind: "normal" as any
       }));
       
-      if (hasStartPoint) {
-          if (ticks.length > 0) ticks[0].time = startTime;
-      } else if (ticks.length > 0) {
-          ticks.unshift({
-              time: startTime,
-              value: ticks[0].value,
-              kind: "normal" as any
-          });
+      if (needsSyntheticStart) {
+          if (hasStartPoint) {
+              if (ticks.length > 0) ticks[0].time = startTime;
+          } else if (ticks.length > 0) {
+              ticks.unshift({
+                  time: startTime,
+                  value: ticks[0].value,
+                  kind: "normal" as any
+              });
+          }
       }
       
       // Guarantee exactly N+1 points if contract went full term
       const expectedPoints = backendDurSecs + 1;
-      const isEarlyExit = (ts.length - 1) < entryIdx + Math.max(0, backendDurSecs - 1);
+      const isEarlyExit = (ts.length - 1) < targetExitIdx;
       
       if (!isEarlyExit) {
           while (ticks.length < expectedPoints) {
@@ -446,6 +447,11 @@ export function simPositionToDetail(p: Position): ContractDetail {
   let foundExit = false;
   if (p.tickStream && p.tickStream.length > 0) {
     let ts = p.tickStream;
+    const isAccu = p.contractType === "accumulators" || p.contractType === "ACCU" || (p as any).contract_type === "ACCU";
+    const isTurbos = p.contractType === "turbos" || p.contractType === "TURBOSLONG" || p.contractType === "TURBOSSHORT" || (p as any).contract_type?.includes("TURBOS");
+    const isTouch = p.contractType?.toLowerCase().includes("touch") || (p as any).contract_type?.toLowerCase().includes("touch");
+    const needsSyntheticStart = !isTurbos && !isAccu && !isTouch;
+    
     let entryIdx = -1;
     for (let i = 0; i < ts.length; i++) {
         const tEpoch = ts[i].epoch || (start + i);
@@ -453,15 +459,17 @@ export function simPositionToDetail(p: Position): ContractDetail {
     }
     if (entryIdx === -1) entryIdx = 0;
 
+    const targetExitIdx = entryIdx + Math.max(0, needsSyntheticStart ? numPoints - 1 : numPoints);
+
     if ((p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost") && exit > 0) {
-      const maxExitIdx = Math.min(ts.length - 1, entryIdx + Math.max(0, numPoints - 1));
+      const maxExitIdx = Math.min(ts.length - 1, targetExitIdx);
       let exitIdx = maxExitIdx;
       
-      const hasStartPoint = entryIdx > 0;
+      const hasStartPoint = needsSyntheticStart && entryIdx > 0;
       const startIdx = hasStartPoint ? entryIdx - 1 : entryIdx;
       ts = ts.slice(startIdx, exitIdx + 1);
     } else {
-      const hasStartPoint = entryIdx > 0;
+      const hasStartPoint = needsSyntheticStart && entryIdx > 0;
       const startIdx = hasStartPoint ? entryIdx - 1 : entryIdx;
       ts = ts.slice(startIdx);
     }
@@ -472,18 +480,17 @@ export function simPositionToDetail(p: Position): ContractDetail {
       kind: "normal",
     }));
     
-    const isAccu = p.contractType === "accumulators" || p.contractType === "ACCU" || (p as any).contract_type === "ACCU";
-    const isTurbos = p.contractType === "turbos" || p.contractType === "TURBOSLONG" || p.contractType === "TURBOSSHORT" || (p as any).contract_type?.includes("TURBOS");
-    const hasStartPoint = ticks.length > 0; // In sim we always have a start point if stream isn't empty
-    
-    if (hasStartPoint) {
-        if (ticks.length > 0) ticks[0].time = start;
-    } else if (ticks.length > 0) {
-        ticks.unshift({
-            time: start,
-            value: ticks[0].value,
-            kind: "normal"
-        });
+    if (needsSyntheticStart) {
+        const hasStartPoint = ticks.length > 0; 
+        if (hasStartPoint) {
+            if (ticks.length > 0) ticks[0].time = start;
+        } else if (ticks.length > 0) {
+            ticks.unshift({
+                time: start,
+                value: ticks[0].value,
+                kind: "normal"
+            });
+        }
     }
     
     // Guarantee exactly N+1 points in sim as well
@@ -496,7 +503,9 @@ export function simPositionToDetail(p: Position): ContractDetail {
             if (tEpoch > start) { originalEntryIdx = i; break; }
         }
         if (originalEntryIdx === -1) originalEntryIdx = 0;
-        const isEarlyExit = ((p.tickStream || []).length - 1) < originalEntryIdx + Math.max(0, numPoints - 1);
+        
+        const originalTargetExitIdx = originalEntryIdx + Math.max(0, needsSyntheticStart ? numPoints - 1 : numPoints);
+        const isEarlyExit = ((p.tickStream || []).length - 1) < originalTargetExitIdx;
         
         if (!isEarlyExit) {
             while (ticks.length < expectedPoints) {
