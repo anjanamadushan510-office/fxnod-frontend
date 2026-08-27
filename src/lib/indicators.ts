@@ -699,8 +699,8 @@ export function calculateTimeSeries(data: number[], period: number): number[] {
     }
     const m = (period * sumXY - sumX * sumY) / (period * sumX2 - sumX * sumX);
     const b = (sumY - m * sumX) / period;
-    // Forecast next point, which is at index `period`
-    result[i] = m * period + b;
+    // Evaluate at current point which is `period - 1`
+    result[i] = m * (period - 1) + b;
   }
   
   return result;
