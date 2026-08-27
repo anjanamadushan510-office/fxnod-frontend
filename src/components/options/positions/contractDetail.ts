@@ -268,8 +268,21 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
         }
       }
       
+      // For Turbos, Deriv's tick_stream starts one tick BEFORE the actual entry spot
+      // (the pre-contract market tick). Find the real entry by matching entrySpot value
+      // using a forward search from the first tick after startTime.
+      if (isTurbos && entryIdx >= 0 && entrySpot > 0) {
+        for (let i = entryIdx; i < Math.min(ts.length, entryIdx + 5); i++) {
+          const val = Number(ts[i].tick_display_value) || Number(ts[i].tick) || 0;
+          if (Math.abs(val - entrySpot) < 0.000001) {
+            entryIdx = i;
+            break;
+          }
+        }
+      }
+
       if (entryIdx === -1) entryIdx = Math.max(0, ts.length - backendDurSecs);
-      
+
       const targetExitIdx = entryIdx + Math.max(0, needsSyntheticStart ? backendDurSecs - 1 : backendDurSecs);
       const maxExitIdx = Math.min(ts.length - 1, targetExitIdx);
       let exitIdx = maxExitIdx;
