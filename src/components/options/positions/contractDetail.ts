@@ -257,19 +257,6 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
   const ts = (h as any).tick_stream;
   if (ts && Array.isArray(ts) && ts.length > 0) {
     if (backendDurUnit === "t" && backendDurSecs > 0) {
-      let exitIdx = ts.length - 1;
-      let foundExit = false;
-      if (exitSpot > 0) {
-        for (let i = ts.length - 1; i >= 0; i--) {
-          const val = Number(ts[i].tick_display_value) || Number(ts[i].tick) || 0;
-          if (Math.abs(val - exitSpot) < 0.000001) {
-            exitIdx = i;
-            foundExit = true;
-            break;
-          }
-        }
-      }
-      
       let entryIdx = -1;
       for (let i = 0; i < ts.length; i++) {
         if (ts[i].epoch > startTime) {
@@ -278,10 +265,21 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
         }
       }
       
-      if (entryIdx === -1) entryIdx = Math.max(0, exitIdx - backendDurSecs + 1);
+      if (entryIdx === -1) entryIdx = Math.max(0, ts.length - backendDurSecs);
       
-      if (!foundExit) {
-          exitIdx = Math.min(ts.length - 1, entryIdx + Math.max(0, backendDurSecs - 1));
+      const maxExitIdx = Math.min(ts.length - 1, entryIdx + Math.max(0, backendDurSecs - 1));
+      let exitIdx = maxExitIdx;
+      let foundExit = false;
+      
+      if (exitSpot > 0) {
+        for (let i = maxExitIdx; i >= Math.max(0, entryIdx); i--) {
+          const val = Number(ts[i].tick_display_value) || Number(ts[i].tick) || 0;
+          if (Math.abs(val - exitSpot) < 0.000001) {
+            exitIdx = i;
+            foundExit = true;
+            break;
+          }
+        }
       }
       
       const hasStartPoint = entryIdx > 0;
@@ -302,6 +300,23 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
               value: ticks[0].value,
               kind: "normal" as any
           });
+      }
+      
+      // Guarantee exactly N+1 points if contract went full term
+      const expectedPoints = backendDurSecs + 1;
+      const isEarlyExit = foundExit && exitIdx < maxExitIdx;
+      
+      if (!isEarlyExit) {
+          while (ticks.length < expectedPoints) {
+              ticks.push({
+                  time: ticks[ticks.length - 1].time + 1,
+                  value: exitSpot > 0 ? exitSpot : ticks[ticks.length - 1].value,
+                  kind: "normal" as any
+              });
+          }
+          if (ticks.length > expectedPoints) {
+              ticks = ticks.slice(0, expectedPoints);
+          }
       }
       
       if (ticks.length > 0) {
@@ -438,10 +453,17 @@ export function simPositionToDetail(p: Position): ContractDetail {
   let foundExit = false;
   if (p.tickStream && p.tickStream.length > 0) {
     let ts = p.tickStream;
-    // Truncate trailing ticks if the trade is finished (e.g. Touch/No Touch early exit)
+    let entryIdx = -1;
+    for (let i = 0; i < ts.length; i++) {
+        const tEpoch = ts[i].epoch || (start + i);
+        if (tEpoch > start) { entryIdx = i; break; }
+    }
+    if (entryIdx === -1) entryIdx = 0;
+
     if ((p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost") && exit > 0) {
-      let exitIdx = ts.length - 1;
-      for (let i = ts.length - 1; i >= 0; i--) {
+      const maxExitIdx = Math.min(ts.length - 1, entryIdx + Math.max(0, numPoints - 1));
+      let exitIdx = maxExitIdx;
+      for (let i = maxExitIdx; i >= entryIdx; i--) {
         const val = Number(ts[i].tick_display_value) || Number(ts[i].tick) || 0;
         if (Math.abs(val - exit) < 0.000001) {
           exitIdx = i;
@@ -449,18 +471,13 @@ export function simPositionToDetail(p: Position): ContractDetail {
           break;
         }
       }
-      const isAccu = p.contractType === "accumulators" || p.contractType === "ACCU" || (p as any).contract_type === "ACCU";
-      const isTurbos = p.contractType === "turbos" || p.contractType === "TURBOSLONG" || p.contractType === "TURBOSSHORT" || (p as any).contract_type?.includes("TURBOS");
-      
-      let entryIdx = -1;
-      for (let i = 0; i < ts.length; i++) {
-          const tEpoch = ts[i].epoch || (start + i);
-          if (tEpoch > start) { entryIdx = i; break; }
-      }
-      
       const hasStartPoint = entryIdx > 0;
-      const startIdx = hasStartPoint ? entryIdx - 1 : (entryIdx === -1 ? 0 : entryIdx);
+      const startIdx = hasStartPoint ? entryIdx - 1 : entryIdx;
       ts = ts.slice(startIdx, exitIdx + 1);
+    } else {
+      const hasStartPoint = entryIdx > 0;
+      const startIdx = hasStartPoint ? entryIdx - 1 : entryIdx;
+      ts = ts.slice(startIdx);
     }
     
     ticks = ts.map((t: any, i: number) => ({
@@ -481,6 +498,26 @@ export function simPositionToDetail(p: Position): ContractDetail {
             value: ticks[0].value,
             kind: "normal"
         });
+    }
+    
+    // Guarantee exactly N+1 points in sim as well
+    const expectedPoints = numPoints + 1;
+    if ((p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost")) {
+        // If it ended early, we don't pad, but if it went full term, we enforce the point count
+        if (ticks.length > expectedPoints) {
+            ticks = ticks.slice(0, expectedPoints);
+        } else if (ticks.length < expectedPoints && ticks.length > 0) {
+            // Only pad if it looks like a full term contract that's missing ticks
+            if (ticks[ticks.length - 1].value === exit) {
+                 while (ticks.length < expectedPoints) {
+                    ticks.push({
+                        time: ticks[ticks.length - 1].time + 1,
+                        value: exit,
+                        kind: "normal"
+                    });
+                }
+            }
+        }
     }
     
     if (ticks.length > 0) {
