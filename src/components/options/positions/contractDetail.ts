@@ -258,7 +258,9 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
   if (ts && Array.isArray(ts) && ts.length > 0) {
     if (backendDurUnit === "t" && backendDurSecs > 0) {
       const isTouch = h.frontend_contract_type?.toLowerCase().includes("touch") || (h as any).contract_type?.toUpperCase().includes("TOUCH");
-      const needsSyntheticStart = !isTurbos && !isAccu && !isTouch;
+      // Turbos also needs a synthetic start point (white circle before bubble 1)
+      // Only Touch and Accu use entry spot as the first unnumbered point
+      const needsSyntheticStart = !isAccu && !isTouch;
       
       let entryIdx = -1;
       for (let i = 0; i < ts.length; i++) {
@@ -463,7 +465,7 @@ export function simPositionToDetail(p: Position): ContractDetail {
     const isAccu = p.contractType === "accumulators" || p.contractType === "ACCU" || (p as any).contract_type === "ACCU";
     const isTurbos = p.contractType === "turbos" || p.contractType === "TURBOSLONG" || p.contractType === "TURBOSSHORT" || (p as any).contract_type?.includes("TURBOS");
     const isTouch = p.contractType?.toLowerCase().includes("touch") || (p as any).contract_type?.toLowerCase().includes("touch");
-    const needsSyntheticStart = !isTurbos && !isAccu && !isTouch;
+    const needsSyntheticStart = !isAccu && !isTouch; // Turbos also needs synthetic start
     
     let entryIdx = -1;
     for (let i = 0; i < ts.length; i++) {
