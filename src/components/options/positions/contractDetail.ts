@@ -298,27 +298,31 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
       ticks = elapsed.map((t: any, i: number) => ({
         time: t.epoch || (startTime + (isTurbos ? 0 : 1) + i),
         value: Number(t.tick_display_value) || Number(t.tick) || 0,
-        kind: i === 0 ? "entry" : (i === elapsed.length - 1 ? "exit" : "normal")
+        kind: "normal" as any
       }));
       
-      if (!foundExit && exitSpot > 0 && ticks.length > 0) {
-        ticks.push({
-          time: ticks[ticks.length - 1].time + 1,
-          value: exitSpot,
-          kind: "exit"
-        });
-        if (ticks.length > 1) {
-          ticks[ticks.length - 2].kind = "normal";
-        }
+      if (!isTurbos && !isAccu) {
+          if (hasStartPoint) {
+              if (ticks.length > 0) ticks[0].time = startTime;
+          } else if (ticks.length > 0) {
+              ticks.unshift({
+                  time: startTime,
+                  value: ticks[0].value,
+                  kind: "normal" as any
+              });
+          }
       }
       
-      // If we prepended the start point, the actual entry spot is at index 1
-      if (hasStartPoint && ticks.length > 1) {
-        entrySpot = entrySpot || ticks[1].value;
-        entryTime = ticks[1].time;
-      } else if (ticks.length > 0) {
-        entrySpot = entrySpot || ticks[0].value;
-        entryTime = ticks[0].time;
+      if (ticks.length > 0) {
+          ticks[0].kind = "entry";
+          ticks[ticks.length - 1].kind = "exit";
+      }
+      
+      // Standard contracts ALWAYS have start point at index 0 and entry at index 1
+      const entryIndex = (!isTurbos && !isAccu && ticks.length > 1) ? 1 : 0;
+      if (ticks.length > entryIndex) {
+        entrySpot = entrySpot || ticks[entryIndex].value;
+        entryTime = ticks[entryIndex].time;
       }
     } else {
       ticks = ts.map((t: any, i: number) => {
@@ -477,6 +481,22 @@ export function simPositionToDetail(p: Position): ContractDetail {
       value: Number(t.tick_display_value) || Number(t.tick) || 0,
       kind: "normal",
     }));
+    
+    const isAccu = p.contractType === "accumulators" || p.contractType === "ACCU" || (p as any).contract_type === "ACCU";
+    const isTurbos = p.contractType === "turbos" || p.contractType === "TURBOSLONG" || p.contractType === "TURBOSSHORT" || (p as any).contract_type?.includes("TURBOS");
+    const hasStartPoint = !isTurbos && !isAccu && ticks.length > 0;
+    
+    if (!isTurbos && !isAccu) {
+        if (hasStartPoint) {
+            if (ticks.length > 0) ticks[0].time = start;
+        } else if (ticks.length > 0) {
+            ticks.unshift({
+                time: start,
+                value: ticks[0].value,
+                kind: "normal"
+            });
+        }
+    }
     
     if (ticks.length > 0) {
       ticks[0].kind = "entry";
