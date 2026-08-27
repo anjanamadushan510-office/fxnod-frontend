@@ -148,7 +148,8 @@ export function ContractDetailChart({ detail }: { detail: ContractDetail }) {
             timeLabel,
             t.value.toFixed(Math.abs(t.value) < 10 ? 4 : 2),
             detail.outcome === "won",
-            isTickContract
+            isTickContract,
+            isTickContract ? detail.ticks.length - 1 : undefined
           );
           series.attachPrimitive(exitPlugin);
         } else {

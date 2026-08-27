@@ -16,6 +16,7 @@ export class ExitSpotPlugin implements ISeriesPrimitive {
     private _priceLabel: string;
     private _isWon: boolean;
     private _isTickContract: boolean;
+    private _tickNumber?: number;
 
     constructor(
         time: UTCTimestamp,
@@ -23,7 +24,8 @@ export class ExitSpotPlugin implements ISeriesPrimitive {
         timeLabel: string,
         priceLabel: string,
         isWon: boolean,
-        isTickContract: boolean
+        isTickContract: boolean,
+        tickNumber?: number
     ) {
         this._time = time;
         this._price = price;
@@ -31,6 +33,7 @@ export class ExitSpotPlugin implements ISeriesPrimitive {
         this._priceLabel = priceLabel;
         this._isWon = isWon;
         this._isTickContract = isTickContract;
+        this._tickNumber = tickNumber;
     }
 
     attached(param: SeriesAttachedParameter) {
@@ -61,6 +64,7 @@ class ExitSpotPaneView implements IPrimitivePaneView {
     private _priceLabel: string;
     private _isWon: boolean;
     private _isTickContract: boolean;
+    private _tickNumber?: number;
 
     constructor(
         series: SeriesAttachedParameter,
@@ -69,7 +73,8 @@ class ExitSpotPaneView implements IPrimitivePaneView {
         timeLabel: string,
         priceLabel: string,
         isWon: boolean,
-        isTickContract: boolean
+        isTickContract: boolean,
+        tickNumber?: number
     ) {
         this._series = series;
         this._time = time;
@@ -78,6 +83,7 @@ class ExitSpotPaneView implements IPrimitivePaneView {
         this._priceLabel = priceLabel;
         this._isWon = isWon;
         this._isTickContract = isTickContract;
+        this._tickNumber = tickNumber;
     }
 
     zOrder() {
@@ -94,7 +100,8 @@ class ExitSpotPaneView implements IPrimitivePaneView {
             this._timeLabel,
             this._priceLabel,
             this._isWon,
-            this._isTickContract
+            this._isTickContract,
+            this._tickNumber
         );
     }
 }
@@ -107,6 +114,7 @@ class ExitSpotRenderer implements IPrimitivePaneRenderer {
     private _priceLabel: string;
     private _isWon: boolean;
     private _isTickContract: boolean;
+    private _tickNumber?: number;
 
     constructor(
         series: SeriesAttachedParameter,
@@ -115,7 +123,8 @@ class ExitSpotRenderer implements IPrimitivePaneRenderer {
         timeLabel: string,
         priceLabel: string,
         isWon: boolean,
-        isTickContract: boolean
+        isTickContract: boolean,
+        tickNumber?: number
     ) {
         this._series = series;
         this._time = time;
@@ -124,6 +133,7 @@ class ExitSpotRenderer implements IPrimitivePaneRenderer {
         this._priceLabel = priceLabel;
         this._isWon = isWon;
         this._isTickContract = isTickContract;
+        this._tickNumber = tickNumber;
     }
 
     draw(target: any) {
@@ -162,9 +172,18 @@ class ExitSpotRenderer implements IPrimitivePaneRenderer {
             
             // 3. Draw big black dot at (x, y)
             ctx.beginPath();
-            ctx.arc(x, y, 6, 0, 2 * Math.PI);
+            ctx.arc(x, y, 7, 0, 2 * Math.PI);
             ctx.fillStyle = "#333333"; 
             ctx.fill();
+
+            // Draw number inside if tick contract
+            if (this._isTickContract && this._tickNumber !== undefined) {
+                ctx.font = "bold 9px Arial, sans-serif";
+                ctx.fillStyle = "#ffffff";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(String(this._tickNumber), x, y + 1);
+            }
 
             // 4. Draw the tooltip label
             let labelWidth = 64;

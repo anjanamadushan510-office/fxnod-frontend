@@ -264,20 +264,14 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
         }
       }
       
-      const startIdx = Math.max(0, exitIdx - backendDurSecs + 1);
+      const startIdx = Math.max(0, exitIdx - backendDurSecs); // Entry + N ticks
       const elapsed = ts.slice(startIdx, exitIdx + 1);
       
       ticks = elapsed.map((t: any, i: number) => ({
         time: t.epoch || (startTime + i + 1),
         value: Number(t.tick_display_value) || Number(t.tick) || 0,
-        kind: i === elapsed.length - 1 ? "exit" : "normal"
+        kind: i === 0 ? "entry" : (i === elapsed.length - 1 ? "exit" : "normal")
       }));
-
-      ticks.unshift({
-        time: startTime,
-        value: entrySpot || ticks[0]?.value || 0,
-        kind: "entry"
-      });
     } else {
       ticks = ts.map((t: any, i: number) => {
         const time = t.epoch || (startTime + i);
@@ -288,14 +282,9 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
       });
       
       if (ticks.length > 0) {
-        if (ticks[0].time > startTime) {
-          ticks.unshift({
-            time: startTime,
-            value: entrySpot || ticks[0].value,
-            kind: "entry",
-          });
-        } else {
-          ticks[0].kind = "entry";
+        ticks[0].kind = "entry";
+        if (ticks.length > 1) {
+          ticks[ticks.length - 1].kind = "exit";
         }
       }
     }
@@ -416,7 +405,7 @@ export function simPositionToDetail(p: Position): ContractDetail {
       let startIdx = 0;
       if (isTick) {
         const requestedTicks = parseInt(p.status || "0", 10) || 5; // try to parse from "5 ticks"
-        startIdx = Math.max(0, exitIdx - requestedTicks + 1);
+        startIdx = Math.max(0, exitIdx - requestedTicks);
       }
       ts = ts.slice(startIdx, exitIdx + 1);
     }
@@ -427,18 +416,11 @@ export function simPositionToDetail(p: Position): ContractDetail {
       kind: "normal",
     }));
     
-    if (ticks[0].time > start) {
-      ticks.unshift({
-        time: start,
-        value: entry || ticks[0].value,
-        kind: "entry",
-      });
-    } else {
+    if (ticks.length > 0) {
       ticks[0].kind = "entry";
-    }
-    
-    if (p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost") {
-      ticks[ticks.length - 1].kind = "exit";
+      if (p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost") {
+        ticks[ticks.length - 1].kind = "exit";
+      }
     }
   } else {
     ticks = genTicks(entry, exit || entry, start, now, numPoints);
@@ -468,7 +450,7 @@ export function simPositionToDetail(p: Position): ContractDetail {
     entrySpot: entry,
     entryTime: start,
     exitSpot: exit,
-    exitTime: (p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost") && ticks.length > 0 ? ticks[ticks.length - 1].time : now,
+    exitTime: (p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost") && ticks.length > 0 ? ticks[ticks.length - 1].time + 1 : now,
     expiryTime: p.expiryTime,
     payoutPerPoint: (p.contractType === "vanillas" || p.contractType === "turbos" || p.contractType === "VANILLALONGCALL" || p.contractType === "VANILLALONGPUT" || p.contractType === "TURBOSLONG" || p.contractType === "TURBOSSHORT") ? ((p as any).display_number_of_contracts ? Number((p as any).display_number_of_contracts) : p.stake) : undefined,
     commission: p.commission,
