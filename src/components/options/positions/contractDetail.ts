@@ -268,28 +268,24 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
       }
       
       const isTurbos = h.frontend_contract_type === "turbos" || h.frontend_contract_type === "TURBOSLONG" || h.frontend_contract_type === "TURBOSSHORT" || (h as any).contract_type?.includes("TURBOS");
-      let entryIdx = -1;
-      for (let i = 0; i < ts.length; i++) {
-          const tEpoch = ts[i].epoch;
-          if (isTurbos) {
-              if (tEpoch >= startTime) {
-                  entryIdx = i;
-                  break;
-              }
-          } else {
-              if (tEpoch > startTime) {
+      let startIdx = 0;
+      
+      if (isTurbos) {
+          let entryIdx = -1;
+          for (let i = 0; i < ts.length; i++) {
+              if (ts[i].epoch >= startTime) {
                   entryIdx = i;
                   break;
               }
           }
+          if (entryIdx === -1) entryIdx = Math.max(0, exitIdx - backendDurSecs);
+          if (!foundExit) {
+              exitIdx = Math.min(ts.length - 1, entryIdx + backendDurSecs);
+          }
+          startIdx = entryIdx;
+      } else {
+          startIdx = Math.max(0, exitIdx - backendDurSecs);
       }
-      if (entryIdx === -1) entryIdx = Math.max(0, exitIdx - backendDurSecs);
-
-      if (!foundExit) {
-          exitIdx = Math.min(ts.length - 1, entryIdx + backendDurSecs);
-      }
-      
-      const startIdx = entryIdx;
       const elapsed = ts.slice(startIdx, exitIdx + 1);
       
       ticks = elapsed.map((t: any, i: number) => ({
