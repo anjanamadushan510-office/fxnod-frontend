@@ -126,7 +126,7 @@ export function ContractDetailChart({ detail }: { detail: ContractDetail }) {
     const isTickContract = detail.duration.includes("tick") && !isMultiplier;
 
     const tickSpots: TickSpot[] = [];
-    
+    let tickNumber = 0;
     detail.ticks.forEach((t, i) => {
       // Format timestamp as HH:MM:SS for the label
       const date = new Date(t.time * 1000);
@@ -135,7 +135,10 @@ export function ContractDetailChart({ detail }: { detail: ContractDetail }) {
       const ss = String(date.getUTCSeconds()).padStart(2, "0");
       const timeLabel = `${hh}:${mm}:${ss}`;
 
-      const isEntry = i === 0;
+      // kind="entry" = hollow white circle (start point OR entry spot) — never numbered
+      // kind="exit"  = exit bubble (numbered as tickNumber+1)
+      // kind="normal" = numbered bubble
+      const isEntry = t.kind === "entry";
       const isExit = i === detail.ticks.length - 1;
 
       // Only show markers for entry, exit, or all ticks if it's a tick contract
@@ -149,16 +152,25 @@ export function ContractDetailChart({ detail }: { detail: ContractDetail }) {
             t.value.toFixed(Math.abs(t.value) < 10 ? 4 : 2),
             detail.outcome === "won",
             isTickContract,
-            isTickContract ? detail.ticks.length - 1 : undefined
+            isTickContract ? tickNumber + 1 : undefined
           );
           series.attachPrimitive(exitPlugin);
-        } else {
-          // Standard marker for entry or intermediate ticks
+        } else if (isEntry) {
+          // Entry circles (start point and entry spot) rendered as hollow circles — no number
           tickSpots.push({
             time: t.time as UTCTimestamp,
             price: t.value,
-            label: String(i),
-            isEntry
+            label: "0",
+            isEntry: true
+          });
+        } else {
+          // Normal numbered tick bubble
+          tickNumber++;
+          tickSpots.push({
+            time: t.time as UTCTimestamp,
+            price: t.value,
+            label: String(tickNumber),
+            isEntry: false
           });
         }
       }

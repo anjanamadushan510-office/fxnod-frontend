@@ -285,36 +285,38 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
 
       if (entryIdx === -1) entryIdx = Math.max(0, ts.length - backendDurSecs);
 
-      const targetExitIdx = entryIdx + Math.max(0, needsSyntheticStart ? backendDurSecs - 1 : backendDurSecs);
+      // Unified exit index: always entryIdx + N
+      // For synthetic-start (Higher/Lower, Turbos): we have synthetic+entry+N ticks = N+2 total
+      // For non-synthetic (Touch, Accu): we have entry+N ticks = N+1 total
+      const targetExitIdx = entryIdx + backendDurSecs;
       const maxExitIdx = Math.min(ts.length - 1, targetExitIdx);
       let exitIdx = maxExitIdx;
       
-      // For synthetic-start contracts (Higher/Lower, Turbos):
-      //   Always slice from entryIdx - never go back to entryIdx-1.
-      //   Then prepend a synthetic start point at startTime.
-      //   This guarantees NO extra unlabelled dot between white circle and bubble 1.
-      // For non-synthetic contracts (Touch, Accu):
-      //   Slice from entryIdx as-is; entry IS the first visible point.
-      const sliceStart = entryIdx;
-      const elapsed = ts.slice(sliceStart, exitIdx + 1);
+      // Always slice from entryIdx (entry spot) onwards — no pre-entry ticks included
+      const elapsed = ts.slice(entryIdx, exitIdx + 1);
       
       ticks = elapsed.map((t: any, i: number) => ({
-        time: t.epoch || (startTime + i + 1), // Fallback if epoch missing
+        time: t.epoch || (startTime + i + 1),
         value: Number(t.tick_display_value) || Number(t.tick) || 0,
         kind: "normal" as any
       }));
       
       if (needsSyntheticStart && ticks.length > 0) {
-          // Prepend clean synthetic start at startTime using entry spot value
+          // Prepend clean synthetic start at startTime
           ticks.unshift({
               time: startTime,
               value: ticks[0].value,
               kind: "normal" as any
           });
+          // Mark the entry spot (now at index 1) as "entry" kind too
+          // so the chart renders it as an unnumbered hollow circle (like Deriv)
+          if (ticks.length > 1) {
+              ticks[1].kind = "entry" as any;
+          }
       }
       
-      // Guarantee exactly N+1 points if contract went full term
-      const expectedPoints = backendDurSecs + 1;
+      // Expected total: synthetic_start + entry + N ticks (for synthetic) or entry + N ticks (non-synthetic)
+      const expectedPoints = needsSyntheticStart ? backendDurSecs + 2 : backendDurSecs + 1;
       const isEarlyExit = (ts.length - 1) < targetExitIdx;
       
       if (!isEarlyExit) {
@@ -476,12 +478,11 @@ export function simPositionToDetail(p: Position): ContractDetail {
     }
     if (entryIdx === -1) entryIdx = 0;
 
-    const targetExitIdx = entryIdx + Math.max(0, needsSyntheticStart ? numPoints - 1 : numPoints);
+    const targetExitIdx = entryIdx + numPoints;
 
     if ((p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost") && exit > 0) {
       const maxExitIdx = Math.min(ts.length - 1, targetExitIdx);
       let exitIdx = maxExitIdx;
-      // Always slice from entryIdx (no back-stepping to avoid extra unlabelled dots)
       ts = ts.slice(entryIdx, exitIdx + 1);
     } else {
       ts = ts.slice(entryIdx);
@@ -494,18 +495,20 @@ export function simPositionToDetail(p: Position): ContractDetail {
     }));
     
     if (needsSyntheticStart && ticks.length > 0) {
-        // Always prepend a clean synthetic start point
         ticks.unshift({
             time: start,
             value: ticks[0].value,
             kind: "normal"
         });
+        // Mark the entry spot (now at index 1) as "entry" kind too
+        if (ticks.length > 1) {
+            ticks[1].kind = "entry";
+        }
     }
     
     // Guarantee exactly N+1 points in sim as well
-    const expectedPoints = numPoints + 1;
+    const expectedPoints = needsSyntheticStart ? numPoints + 2 : numPoints + 1;
     if ((p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost")) {
-        // We evaluate early exit based on the original ts array length
         let originalEntryIdx = -1;
         for (let i = 0; i < (p.tickStream || []).length; i++) {
             const tEpoch = (p.tickStream || [])[i].epoch || (start + i);
@@ -513,7 +516,7 @@ export function simPositionToDetail(p: Position): ContractDetail {
         }
         if (originalEntryIdx === -1) originalEntryIdx = 0;
         
-        const originalTargetExitIdx = originalEntryIdx + Math.max(0, needsSyntheticStart ? numPoints - 1 : numPoints);
+        const originalTargetExitIdx = originalEntryIdx + numPoints;
         const isEarlyExit = ((p.tickStream || []).length - 1) < originalTargetExitIdx;
         
         if (!isEarlyExit) {
