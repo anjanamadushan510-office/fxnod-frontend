@@ -1056,16 +1056,19 @@ function syncIndicators(
       const numLines = 10;
       let linesArr: ISeriesApi<"Line">[] = [];
       
-      const colors = [
+      const defaultColors = [
         '#ff3b3b', '#ff9800', '#ffeb3b', '#8bc34a', '#4caf50', 
         '#00bcd4', '#2196f3', '#3f51b5', '#9c27b0', '#e91e63'
       ];
+      const colors = Array.from({length: numLines}, (_, k) => ind.params[`sma${k+1}Color`] || defaultColors[k]);
       
       for (let k = 0; k < numLines; k++) {
         let line = seriesRef.current.get(`${ind.id}-rainbow-${k}`) as ISeriesApi<"Line">;
         if (!line) {
           line = chart.addSeries(LineSeries, { priceLineVisible: false, color: colors[k], lineWidth: 1, priceScaleId: 'right' });
           seriesRef.current.set(`${ind.id}-rainbow-${k}`, line);
+        } else {
+          line.applyOptions({ color: colors[k] });
         }
         linesArr.push(line);
       }

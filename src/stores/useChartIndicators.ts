@@ -13,7 +13,7 @@ export interface IndicatorConfig {
 export const DEFAULT_INDICATOR_PARAMS: Record<IndicatorType, Record<string, any>> = {
   ma: { maColor: "#ff0000", period: 50, field: "Close", movingAverageType: "Simple", offset: 0 },
   ma_envelope: { topColor: "#000000", medianColor: "#000000", bottomColor: "#000000", fillColor: "#000000", channelFill: true, period: 50, movingAverageType: "Simple", shift: 5, shiftType: "percent" },
-  rainbow_ma: { period: 2, movingAverageType: "Simple" },
+  rainbow_ma: { field: "Close", period: 2, movingAverageType: "Simple", sma1Color: '#ff3b3b', sma2Color: '#ff9800', sma3Color: '#ffeb3b', sma4Color: '#8bc34a', sma5Color: '#4caf50', sma6Color: '#00bcd4', sma7Color: '#2196f3', sma8Color: '#3f51b5', sma9Color: '#9c27b0', sma10Color: '#e91e63' },
   MACD: { macdColor: "#000000", signalColor: "#f44336", increasingBarColor: "#4caf50", decreasingBarColor: "#f44336", fastPeriod: 12, slowPeriod: 26, signalPeriod: 9 },
   RSI: { rsiColor: "#000000", period: 14, field: "Close", overBoughtValue: 80, overBoughtColor: "#000000", overSoldValue: 20, overSoldColor: "#000000", showZones: true },
   awesome_oscillator: { increasingBarColor: "#26a69a", decreasingBarColor: "#ef5350" },
