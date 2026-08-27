@@ -271,21 +271,28 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
       }
       
       let entryIdx = -1;
-      
       for (let i = 0; i < ts.length; i++) {
-        if (ts[i].epoch >= startTime) {
-          entryIdx = i;
-          break;
+        if (isTurbos || isAccu) {
+          if (ts[i].epoch >= startTime) {
+            entryIdx = i;
+            break;
+          }
+        } else {
+          if (ts[i].epoch > startTime) {
+            entryIdx = i;
+            break;
+          }
         }
       }
       
-      if (entryIdx === -1) entryIdx = Math.max(0, exitIdx - backendDurSecs);
+      if (entryIdx === -1) entryIdx = Math.max(0, exitIdx - backendDurSecs + 1);
       
       if (!foundExit) {
-          exitIdx = Math.min(ts.length - 1, entryIdx + backendDurSecs);
+          exitIdx = Math.min(ts.length - 1, entryIdx + Math.max(0, backendDurSecs - 1));
       }
       
-      const startIdx = entryIdx;
+      const hasStartPoint = !isTurbos && !isAccu && entryIdx > 0;
+      const startIdx = hasStartPoint ? entryIdx - 1 : entryIdx;
       const elapsed = ts.slice(startIdx, exitIdx + 1);
       
       ticks = elapsed.map((t: any, i: number) => ({
@@ -303,6 +310,15 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
         if (ticks.length > 1) {
           ticks[ticks.length - 2].kind = "normal";
         }
+      }
+      
+      // If we prepended the start point, the actual entry spot is at index 1
+      if (hasStartPoint && ticks.length > 1) {
+        entrySpot = entrySpot || ticks[1].value;
+        entryTime = ticks[1].time;
+      } else if (ticks.length > 0) {
+        entrySpot = entrySpot || ticks[0].value;
+        entryTime = ticks[0].time;
       }
     } else {
       ticks = ts.map((t: any, i: number) => {
@@ -322,18 +338,14 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
     }
 
     if (ticks.length > 0) {
-      if (entrySpot === 0) {
-        entrySpot = ticks[0].value;
-      }
       if (exitSpot === 0) exitSpot = ticks[ticks.length - 1].value;
       
       // Sync times with authoritative tick stream for BOTH tick and time contracts
       if (ticks[0].time <= startTime && !isAccu && !isTurbos) {
-        startTime = ticks[0].time - 1;
+        startTime = ticks[0].time;
       } else if ((isAccu || isTurbos) && ticks[0].time < startTime) {
         startTime = ticks[0].time; // Fallback if tick stream somehow started earlier
       }
-      entryTime = ticks[0].time;
       exitTime = ticks[ticks.length - 1].time;
     }
   } else if (entrySpot && exitSpot) {
@@ -438,26 +450,25 @@ export function simPositionToDetail(p: Position): ContractDetail {
         const val = Number(ts[i].tick_display_value) || Number(ts[i].tick) || 0;
         if (Math.abs(val - exit) < 0.000001) {
           exitIdx = i;
+          foundExit = true;
           break;
         }
       }
-      
+      const isAccu = p.contractType === "accumulators" || p.contractType === "ACCU" || (p as any).contract_type === "ACCU";
       const isTurbos = p.contractType === "turbos" || p.contractType === "TURBOSLONG" || p.contractType === "TURBOSSHORT" || (p as any).contract_type?.includes("TURBOS");
+      
       let entryIdx = -1;
       for (let i = 0; i < ts.length; i++) {
           const tEpoch = ts[i].epoch || (start + i);
-          if (tEpoch >= start) { entryIdx = i; break; }
+          if (isTurbos || isAccu) {
+            if (tEpoch >= start) { entryIdx = i; break; }
+          } else {
+            if (tEpoch > start) { entryIdx = i; break; }
+          }
       }
       
-      let startIdx = 0;
-      if (isTick) {
-        if (entryIdx !== -1) {
-            startIdx = entryIdx;
-        } else {
-            const requestedTicks = parseInt(p.status || "0", 10) || 5;
-            startIdx = Math.max(0, exitIdx - requestedTicks);
-        }
-      }
+      const hasStartPoint = !isTurbos && !isAccu && entryIdx > 0;
+      const startIdx = hasStartPoint ? entryIdx - 1 : (entryIdx === -1 ? 0 : entryIdx);
       ts = ts.slice(startIdx, exitIdx + 1);
     }
     
