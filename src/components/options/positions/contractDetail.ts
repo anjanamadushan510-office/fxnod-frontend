@@ -287,19 +287,20 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
           ticks[ticks.length - 1].kind = "exit";
         }
         
-        // Sync times with authoritative tick stream
-        if (ticks[0].time <= startTime) {
-            startTime = ticks[0].time - 1;
-        }
-        entryTime = ticks[0].time;
-        if (entrySpot === 0) entrySpot = ticks[0].value;
       }
     }
 
-    if (entrySpot === 0 && ticks.length > 0) entrySpot = backendDurUnit === "t" && ticks.length > 2 ? ticks[2].value : ticks[0].value;
-    if (exitSpot === 0 && ticks.length > 0) exitSpot = ticks[ticks.length - 1].value;
-    startTime = ticks[0].time;
-    exitTime = ticks[ticks.length - 1].time;
+    if (ticks.length > 0) {
+      if (entrySpot === 0) entrySpot = backendDurUnit === "t" && ticks.length > 2 ? ticks[2].value : ticks[0].value;
+      if (exitSpot === 0) exitSpot = ticks[ticks.length - 1].value;
+      
+      // Sync times with authoritative tick stream for BOTH tick and time contracts
+      if (ticks[0].time <= startTime) {
+        startTime = ticks[0].time - 1;
+      }
+      entryTime = ticks[0].time;
+      exitTime = ticks[ticks.length - 1].time + (backendDurUnit === "t" ? 1 : 0);
+    }
   } else if (entrySpot && exitSpot) {
     if (exitTime === startTime) exitTime = startTime + 5; // fallback
     const isTickFallback = backendDurUnit === "t";
