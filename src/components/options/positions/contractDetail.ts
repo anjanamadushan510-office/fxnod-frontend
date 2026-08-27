@@ -298,6 +298,17 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
         value: Number(t.tick_display_value) || Number(t.tick) || 0,
         kind: i === 0 ? "entry" : (i === elapsed.length - 1 ? "exit" : "normal")
       }));
+      
+      if (!foundExit && exitSpot > 0 && ticks.length > 0) {
+        ticks.push({
+          time: ticks[ticks.length - 1].time + 1,
+          value: exitSpot,
+          kind: "exit"
+        });
+        if (ticks.length > 1) {
+          ticks[ticks.length - 2].kind = "normal";
+        }
+      }
     } else {
       ticks = ts.map((t: any, i: number) => {
         const time = t.epoch || (startTime + i);
@@ -351,9 +362,7 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
 		
 		if (backendDurUnit === "t" && backendDurSecs > 0) {
 			// Tick-based trade: use requested duration
-			let count = backendDurSecs;
-			if (isAccumulator && !won && count > 0) count -= 1;
-			durationLabel = `${count} ticks`;
+			durationLabel = `${backendDurSecs} ticks`;
 		} else if (backendDurSecs > 0) {
 			// Time-based trade (secs, mins, hours): show the stored value directly.
 			durationLabel = backendDurUnit === "m"
@@ -363,9 +372,7 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
 					: `${backendDurSecs} secs`;
 		} else if (ticks.length > 1) {
 			// Fallback: infer from tick_stream if duration_unit not yet stored
-			let count = ticks.length - 1;
-			if (isAccumulator && !won && count > 0) count -= 1;
-			durationLabel = `${count} ticks`;
+			durationLabel = `${ticks.length - 1} ticks`;
 		} else {
 			// Last resort: epoch diff
 			durationLabel = `${seconds} secs`;
@@ -431,6 +438,7 @@ export function simPositionToDetail(p: Position): ContractDetail {
   const numPoints = isTick ? Math.max(5, now - start) : Math.max(10, Math.min(100, now - start));
 
   let ticks: any[] = [];
+  let foundExit = false;
   if (p.tickStream && p.tickStream.length > 0) {
     let ts = p.tickStream;
     // Truncate trailing ticks if the trade is finished (e.g. Touch/No Touch early exit)
@@ -475,7 +483,15 @@ export function simPositionToDetail(p: Position): ContractDetail {
     
     if (ticks.length > 0) {
       ticks[0].kind = "entry";
-      if (p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost") {
+      
+      const isClosed = p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost";
+      if (isClosed && !foundExit && exit > 0 && isTick) {
+        ticks.push({
+          time: ticks[ticks.length - 1].time + 1,
+          value: exit,
+          kind: "exit"
+        });
+      } else if (isClosed) {
         ticks[ticks.length - 1].kind = "exit";
       }
       
