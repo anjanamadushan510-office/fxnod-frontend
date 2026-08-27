@@ -299,7 +299,11 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
         startTime = ticks[0].time - 1;
       }
       entryTime = ticks[0].time;
-      exitTime = ticks[ticks.length - 1].time + (backendDurUnit === "t" ? 1 : 0);
+      let endedEarly = false;
+      if (backendDurUnit === "t" && backendDurSecs > 0) {
+        endedEarly = (ticks.length - 1) < backendDurSecs;
+      }
+      exitTime = ticks[ticks.length - 1].time + (endedEarly ? 1 : 0);
     }
   } else if (entrySpot && exitSpot) {
     if (exitTime === startTime) exitTime = startTime + 5; // fallback
@@ -439,6 +443,15 @@ export function simPositionToDetail(p: Position): ContractDetail {
     ticks = genTicks(entry, exit || entry, start, now, numPoints);
   }
 
+  const isClosed = p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost";
+  let endedEarly = false;
+  if (isTick && isClosed) {
+    const requestedTicks = parseInt(p.status || "0", 10) || 5;
+    if (ticks.length > 0 && (ticks.length - 1) < requestedTicks) {
+      endedEarly = true;
+    }
+  }
+
   return {
     id: p.id,
     marketId: p.marketId,
@@ -463,7 +476,7 @@ export function simPositionToDetail(p: Position): ContractDetail {
     entrySpot: entry,
     entryTime: ticks.length > 0 ? ticks[0].time : start,
     exitSpot: exit,
-    exitTime: (p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost") && ticks.length > 0 ? ticks[ticks.length - 1].time + 1 : now,
+    exitTime: isClosed && ticks.length > 0 ? ticks[ticks.length - 1].time + (endedEarly ? 1 : 0) : now,
     expiryTime: p.expiryTime,
     payoutPerPoint: (p.contractType === "vanillas" || p.contractType === "turbos" || p.contractType === "VANILLALONGCALL" || p.contractType === "VANILLALONGPUT" || p.contractType === "TURBOSLONG" || p.contractType === "TURBOSSHORT") ? ((p as any).display_number_of_contracts ? Number((p as any).display_number_of_contracts) : p.stake) : undefined,
     commission: p.commission,
