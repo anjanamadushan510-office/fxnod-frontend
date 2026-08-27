@@ -255,21 +255,45 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
   if (ts && Array.isArray(ts) && ts.length > 0) {
     if (backendDurUnit === "t" && backendDurSecs > 0) {
       let exitIdx = ts.length - 1;
+      let foundExit = false;
       if (exitSpot > 0) {
         for (let i = ts.length - 1; i >= 0; i--) {
           const val = Number(ts[i].tick_display_value) || Number(ts[i].tick) || 0;
           if (Math.abs(val - exitSpot) < 0.000001) {
             exitIdx = i;
+            foundExit = true;
             break;
           }
         }
       }
       
-      const startIdx = Math.max(0, exitIdx - backendDurSecs); // Entry + N ticks
+      const isTurbos = h.frontend_contract_type === "turbos" || h.frontend_contract_type === "TURBOSLONG" || h.frontend_contract_type === "TURBOSSHORT" || (h as any).contract_type?.includes("TURBOS");
+      let entryIdx = -1;
+      for (let i = 0; i < ts.length; i++) {
+          const tEpoch = ts[i].epoch;
+          if (isTurbos) {
+              if (tEpoch >= startTime) {
+                  entryIdx = i;
+                  break;
+              }
+          } else {
+              if (tEpoch > startTime) {
+                  entryIdx = i;
+                  break;
+              }
+          }
+      }
+      if (entryIdx === -1) entryIdx = Math.max(0, exitIdx - backendDurSecs);
+
+      if (!foundExit) {
+          exitIdx = Math.min(ts.length - 1, entryIdx + backendDurSecs);
+      }
+      
+      const startIdx = entryIdx;
       const elapsed = ts.slice(startIdx, exitIdx + 1);
       
       ticks = elapsed.map((t: any, i: number) => ({
-        time: t.epoch || (startTime + i + 1),
+        time: t.epoch || (startTime + (isTurbos ? 0 : 1) + i),
         value: Number(t.tick_display_value) || Number(t.tick) || 0,
         kind: i === 0 ? "entry" : (i === elapsed.length - 1 ? "exit" : "normal")
       }));
@@ -295,8 +319,13 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
       if (exitSpot === 0) exitSpot = ticks[ticks.length - 1].value;
       
       // Sync times with authoritative tick stream for BOTH tick and time contracts
-      if (ticks[0].time <= startTime) {
+      const isAccu = h.frontend_contract_type === "accumulators" || h.frontend_contract_type === "ACCU" || (h as any).contract_type === "ACCU";
+      const isTurb = h.frontend_contract_type === "turbos" || h.frontend_contract_type === "TURBOSLONG" || h.frontend_contract_type === "TURBOSSHORT" || (h as any).contract_type?.includes("TURBOS");
+      
+      if (ticks[0].time <= startTime && !isAccu && !isTurb) {
         startTime = ticks[0].time - 1;
+      } else if ((isAccu || isTurb) && ticks[0].time < startTime) {
+        startTime = ticks[0].time; // Fallback if tick stream somehow started earlier
       }
       entryTime = ticks[0].time;
       let endedEarly = false;
@@ -435,8 +464,13 @@ export function simPositionToDetail(p: Position): ContractDetail {
       }
       
       // Sync times with authoritative tick stream
-      if (ticks[0].time <= start) {
+      const isAccu = p.contractType === "accumulators" || p.contractType === "ACCU" || (p as any).contract_type === "ACCU";
+      const isTurb = p.contractType === "turbos" || p.contractType === "TURBOSLONG" || p.contractType === "TURBOSSHORT" || (p as any).contract_type?.includes("TURBOS");
+
+      if (ticks[0].time <= start && !isAccu && !isTurb) {
           start = ticks[0].time - 1;
+      } else if ((isAccu || isTurb) && ticks[0].time < start) {
+          start = ticks[0].time;
       }
     }
   } else {
