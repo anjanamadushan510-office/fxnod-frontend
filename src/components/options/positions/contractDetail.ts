@@ -289,9 +289,14 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
       const maxExitIdx = Math.min(ts.length - 1, targetExitIdx);
       let exitIdx = maxExitIdx;
       
-      const hasStartPoint = needsSyntheticStart && entryIdx > 0;
-      const startIdx = hasStartPoint ? entryIdx - 1 : entryIdx;
-      const elapsed = ts.slice(startIdx, exitIdx + 1);
+      // For synthetic-start contracts (Higher/Lower, Turbos):
+      //   Always slice from entryIdx - never go back to entryIdx-1.
+      //   Then prepend a synthetic start point at startTime.
+      //   This guarantees NO extra unlabelled dot between white circle and bubble 1.
+      // For non-synthetic contracts (Touch, Accu):
+      //   Slice from entryIdx as-is; entry IS the first visible point.
+      const sliceStart = entryIdx;
+      const elapsed = ts.slice(sliceStart, exitIdx + 1);
       
       ticks = elapsed.map((t: any, i: number) => ({
         time: t.epoch || (startTime + i + 1), // Fallback if epoch missing
@@ -299,16 +304,13 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
         kind: "normal" as any
       }));
       
-      if (needsSyntheticStart) {
-          if (hasStartPoint) {
-              if (ticks.length > 0) ticks[0].time = startTime;
-          } else if (ticks.length > 0) {
-              ticks.unshift({
-                  time: startTime,
-                  value: ticks[0].value,
-                  kind: "normal" as any
-              });
-          }
+      if (needsSyntheticStart && ticks.length > 0) {
+          // Prepend clean synthetic start at startTime using entry spot value
+          ticks.unshift({
+              time: startTime,
+              value: ticks[0].value,
+              kind: "normal" as any
+          });
       }
       
       // Guarantee exactly N+1 points if contract went full term
@@ -479,14 +481,10 @@ export function simPositionToDetail(p: Position): ContractDetail {
     if ((p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost") && exit > 0) {
       const maxExitIdx = Math.min(ts.length - 1, targetExitIdx);
       let exitIdx = maxExitIdx;
-      
-      const hasStartPoint = needsSyntheticStart && entryIdx > 0;
-      const startIdx = hasStartPoint ? entryIdx - 1 : entryIdx;
-      ts = ts.slice(startIdx, exitIdx + 1);
+      // Always slice from entryIdx (no back-stepping to avoid extra unlabelled dots)
+      ts = ts.slice(entryIdx, exitIdx + 1);
     } else {
-      const hasStartPoint = needsSyntheticStart && entryIdx > 0;
-      const startIdx = hasStartPoint ? entryIdx - 1 : entryIdx;
-      ts = ts.slice(startIdx);
+      ts = ts.slice(entryIdx);
     }
     
     ticks = ts.map((t: any, i: number) => ({
@@ -495,17 +493,13 @@ export function simPositionToDetail(p: Position): ContractDetail {
       kind: "normal",
     }));
     
-    if (needsSyntheticStart) {
-        const hasStartPoint = ticks.length > 0; 
-        if (hasStartPoint) {
-            if (ticks.length > 0) ticks[0].time = start;
-        } else if (ticks.length > 0) {
-            ticks.unshift({
-                time: start,
-                value: ticks[0].value,
-                kind: "normal"
-            });
-        }
+    if (needsSyntheticStart && ticks.length > 0) {
+        // Always prepend a clean synthetic start point
+        ticks.unshift({
+            time: start,
+            value: ticks[0].value,
+            kind: "normal"
+        });
     }
     
     // Guarantee exactly N+1 points in sim as well
