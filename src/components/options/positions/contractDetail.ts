@@ -272,16 +272,9 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
       
       let entryIdx = -1;
       for (let i = 0; i < ts.length; i++) {
-        if (isTurbos || isAccu) {
-          if (ts[i].epoch >= startTime) {
-            entryIdx = i;
-            break;
-          }
-        } else {
-          if (ts[i].epoch > startTime) {
-            entryIdx = i;
-            break;
-          }
+        if (ts[i].epoch > startTime) {
+          entryIdx = i;
+          break;
         }
       }
       
@@ -291,26 +284,24 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
           exitIdx = Math.min(ts.length - 1, entryIdx + Math.max(0, backendDurSecs - 1));
       }
       
-      const hasStartPoint = !isTurbos && !isAccu && entryIdx > 0;
+      const hasStartPoint = entryIdx > 0;
       const startIdx = hasStartPoint ? entryIdx - 1 : entryIdx;
       const elapsed = ts.slice(startIdx, exitIdx + 1);
       
       ticks = elapsed.map((t: any, i: number) => ({
-        time: t.epoch || (startTime + (isTurbos ? 0 : 1) + i),
+        time: t.epoch || (startTime + i + 1), // Fallback if epoch missing
         value: Number(t.tick_display_value) || Number(t.tick) || 0,
         kind: "normal" as any
       }));
       
-      if (!isTurbos && !isAccu) {
-          if (hasStartPoint) {
-              if (ticks.length > 0) ticks[0].time = startTime;
-          } else if (ticks.length > 0) {
-              ticks.unshift({
-                  time: startTime,
-                  value: ticks[0].value,
-                  kind: "normal" as any
-              });
-          }
+      if (hasStartPoint) {
+          if (ticks.length > 0) ticks[0].time = startTime;
+      } else if (ticks.length > 0) {
+          ticks.unshift({
+              time: startTime,
+              value: ticks[0].value,
+              kind: "normal" as any
+          });
       }
       
       if (ticks.length > 0) {
@@ -319,7 +310,7 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
       }
       
       // Standard contracts ALWAYS have start point at index 0 and entry at index 1
-      const entryIndex = (!isTurbos && !isAccu && ticks.length > 1) ? 1 : 0;
+      const entryIndex = ticks.length > 1 ? 1 : 0;
       if (ticks.length > entryIndex) {
         entrySpot = entrySpot || ticks[entryIndex].value;
         entryTime = ticks[entryIndex].time;
@@ -464,14 +455,10 @@ export function simPositionToDetail(p: Position): ContractDetail {
       let entryIdx = -1;
       for (let i = 0; i < ts.length; i++) {
           const tEpoch = ts[i].epoch || (start + i);
-          if (isTurbos || isAccu) {
-            if (tEpoch >= start) { entryIdx = i; break; }
-          } else {
-            if (tEpoch > start) { entryIdx = i; break; }
-          }
+          if (tEpoch > start) { entryIdx = i; break; }
       }
       
-      const hasStartPoint = !isTurbos && !isAccu && entryIdx > 0;
+      const hasStartPoint = entryIdx > 0;
       const startIdx = hasStartPoint ? entryIdx - 1 : (entryIdx === -1 ? 0 : entryIdx);
       ts = ts.slice(startIdx, exitIdx + 1);
     }
@@ -484,18 +471,16 @@ export function simPositionToDetail(p: Position): ContractDetail {
     
     const isAccu = p.contractType === "accumulators" || p.contractType === "ACCU" || (p as any).contract_type === "ACCU";
     const isTurbos = p.contractType === "turbos" || p.contractType === "TURBOSLONG" || p.contractType === "TURBOSSHORT" || (p as any).contract_type?.includes("TURBOS");
-    const hasStartPoint = !isTurbos && !isAccu && ticks.length > 0;
+    const hasStartPoint = ticks.length > 0; // In sim we always have a start point if stream isn't empty
     
-    if (!isTurbos && !isAccu) {
-        if (hasStartPoint) {
-            if (ticks.length > 0) ticks[0].time = start;
-        } else if (ticks.length > 0) {
-            ticks.unshift({
-                time: start,
-                value: ticks[0].value,
-                kind: "normal"
-            });
-        }
+    if (hasStartPoint) {
+        if (ticks.length > 0) ticks[0].time = start;
+    } else if (ticks.length > 0) {
+        ticks.unshift({
+            time: start,
+            value: ticks[0].value,
+            kind: "normal"
+        });
     }
     
     if (ticks.length > 0) {
