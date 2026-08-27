@@ -323,11 +323,7 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
 
     if (ticks.length > 0) {
       if (entrySpot === 0) {
-        if (backendDurUnit === "t" && ticks.length > 2 && !isAccu && !isTurbos) {
-          entrySpot = ticks[1].value;
-        } else {
-          entrySpot = ticks[0].value;
-        }
+        entrySpot = ticks[0].value;
       }
       if (exitSpot === 0) exitSpot = ticks[ticks.length - 1].value;
       
@@ -337,12 +333,8 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
       } else if ((isAccu || isTurbos) && ticks[0].time < startTime) {
         startTime = ticks[0].time; // Fallback if tick stream somehow started earlier
       }
-      entryTime = ticks.length > 1 && !isAccu && !isTurbos ? ticks[1].time : ticks[0].time;
-      let endedEarly = false;
-      if (backendDurUnit === "t" && backendDurSecs > 0) {
-        endedEarly = (ticks.length - 1) < backendDurSecs;
-      }
-      exitTime = ticks[ticks.length - 1].time + (endedEarly ? 1 : 0);
+      entryTime = ticks[0].time;
+      exitTime = ticks[ticks.length - 1].time;
     }
   } else if (entrySpot && exitSpot) {
     if (exitTime === startTime) exitTime = startTime + 5; // fallback
