@@ -108,9 +108,11 @@ function framePatch(frame: PositionFrame, existing?: Position): Partial<Position
   const value = toNum(frame.bid_price);
   if (value !== undefined) patch.contractValue = value;
   const entry = toNum(frame.entry_spot);
+  const exit = toNum(frame.exit_spot);
   const current = toNum(frame.current_spot);
   if (current !== undefined) patch.currentSpot = current;
   if (entry !== undefined) patch.entrySpot = entry;
+  if (exit !== undefined) patch.exitSpot = exit;
   if (frame.barrier !== undefined) patch.barrier = frame.barrier;
   if (frame.buy_transaction_id !== undefined) patch.buy_transaction_id = frame.buy_transaction_id;
   if (frame.sell_transaction_id !== undefined) patch.sell_transaction_id = frame.sell_transaction_id;
@@ -138,6 +140,7 @@ function frameToPosition(frame: PositionFrame): Position {
     contractValue: toNum(frame.bid_price) ?? stake,
     entrySpot: toNum(frame.entry_spot),
     currentSpot: toNum(frame.current_spot),
+    exitSpot: toNum(frame.exit_spot),
     barrier: frame.barrier,
     pnl: toNum(frame.profit) ?? 0,
     outcome:

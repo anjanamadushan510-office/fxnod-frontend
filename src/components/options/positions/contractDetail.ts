@@ -268,24 +268,29 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
       }
       
       const isTurbos = h.frontend_contract_type === "turbos" || h.frontend_contract_type === "TURBOSLONG" || h.frontend_contract_type === "TURBOSSHORT" || (h as any).contract_type?.includes("TURBOS");
-      let startIdx = 0;
+      let entryIdx = -1;
       
-      if (isTurbos) {
-          let entryIdx = -1;
-          for (let i = 0; i < ts.length; i++) {
+      for (let i = 0; i < ts.length; i++) {
+          if (isTurbos) {
               if (ts[i].epoch >= startTime) {
                   entryIdx = i;
                   break;
               }
+          } else {
+              if (ts[i].epoch > startTime) {
+                  entryIdx = i;
+                  break;
+              }
           }
-          if (entryIdx === -1) entryIdx = Math.max(0, exitIdx - backendDurSecs);
-          if (!foundExit) {
-              exitIdx = Math.min(ts.length - 1, entryIdx + backendDurSecs);
-          }
-          startIdx = entryIdx;
-      } else {
-          startIdx = Math.max(0, exitIdx - backendDurSecs);
       }
+      
+      if (entryIdx === -1) entryIdx = Math.max(0, exitIdx - backendDurSecs);
+      
+      if (!foundExit) {
+          exitIdx = Math.min(ts.length - 1, entryIdx + backendDurSecs);
+      }
+      
+      const startIdx = entryIdx;
       const elapsed = ts.slice(startIdx, exitIdx + 1);
       
       ticks = elapsed.map((t: any, i: number) => ({
@@ -415,7 +420,7 @@ function parseBarrier(barrierVal: string | number | null | undefined, entrySpot:
 /** Best-effort ContractDetail for an in-progress open position. */
 export function simPositionToDetail(p: Position): ContractDetail {
   const entry = p.entrySpot ?? 0;
-  const exit = p.currentSpot ?? +(entry + p.pnl * 0.1).toFixed(entry < 10 ? 4 : 2);
+  const exit = p.exitSpot ?? p.currentSpot ?? +(entry + p.pnl * 0.1).toFixed(entry < 10 ? 4 : 2);
   let start = p.startTime || (Math.floor(Date.now() / 1000) - 5);
   let now = Math.floor(Date.now() / 1000);
   if (now < start + 1) now = start + 1;
@@ -439,10 +444,25 @@ export function simPositionToDetail(p: Position): ContractDetail {
         }
       }
       
+      const isTurbos = p.contractType === "turbos" || p.contractType === "TURBOSLONG" || p.contractType === "TURBOSSHORT" || (p as any).contract_type?.includes("TURBOS");
+      let entryIdx = -1;
+      for (let i = 0; i < ts.length; i++) {
+          const tEpoch = ts[i].epoch || (start + i);
+          if (isTurbos) {
+              if (tEpoch >= start) { entryIdx = i; break; }
+          } else {
+              if (tEpoch > start) { entryIdx = i; break; }
+          }
+      }
+      
       let startIdx = 0;
       if (isTick) {
-        const requestedTicks = parseInt(p.status || "0", 10) || 5; // try to parse from "5 ticks"
-        startIdx = Math.max(0, exitIdx - requestedTicks);
+        if (entryIdx !== -1) {
+            startIdx = entryIdx;
+        } else {
+            const requestedTicks = parseInt(p.status || "0", 10) || 5;
+            startIdx = Math.max(0, exitIdx - requestedTicks);
+        }
       }
       ts = ts.slice(startIdx, exitIdx + 1);
     }

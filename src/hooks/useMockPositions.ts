@@ -20,6 +20,7 @@ export interface Position {
   /** Where the contract was opened. */
   entrySpot?: number;
   currentSpot?: number;
+  exitSpot?: number;
   /** For Accumulators / Turbos / Multipliers. */
   barrier?: number | string;
   takeProfit?: number | null;

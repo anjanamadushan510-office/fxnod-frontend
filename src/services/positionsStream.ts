@@ -46,6 +46,7 @@ export interface PositionFrame {
   growth_rate?: number;
   stake?: string;
   entry_spot?: string;
+  exit_spot?: string;
   barrier?: string;
   expiry_time?: number;
   start_time?: number; // epoch seconds
