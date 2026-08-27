@@ -24,6 +24,7 @@ import {
   IconGenericTrend,
   IconGenericVolatility,
   IconGenericMA,
+  IconRainbowMA,
   IconGenericOther,
 } from "@/components/ui/IndicatorIcons";
 
@@ -60,7 +61,7 @@ export const INDICATOR_LIST: { id: string; name: string; category: Category; dis
   // Moving averages
   { id: "ma", name: "Moving Average (MA)", category: "Moving averages", Icon: IconGenericMA },
   { id: "ma_envelope", name: "Moving Average Envelope", category: "Moving averages", requiresOHLC: true, Icon: IconGenericMA },
-  { id: "rainbow_ma", name: "Rainbow Moving Average", category: "Moving averages", requiresOHLC: true, Icon: IconGenericMA },
+  { id: "rainbow_ma", name: "Rainbow Moving Average", category: "Moving averages", requiresOHLC: true, Icon: IconRainbowMA },
   // Others
   { id: "alligator", name: "Alligator", category: "Others", requiresOHLC: true, Icon: IconGenericOther },
   { id: "fractal", name: "Fractal Chaos Bands", category: "Others", requiresOHLC: true, Icon: IconGenericOther },

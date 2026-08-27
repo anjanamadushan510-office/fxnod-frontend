@@ -180,7 +180,17 @@ export function IconGenericOther({ className }: IconProps) {
     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={cn("w-5 h-5", className)}>
       <circle cx="6" cy="12" r="2" fill={GREY} />
       <circle cx="12" cy="12" r="2" fill={GREY} />
-      <circle cx="18" cy="12" r="2" fill={GREY} />
+    </svg>
+  );
+}
+
+export function IconRainbowMA({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={cn("w-5 h-5", className)}>
+      <path d="M4 16 L8 8 L14 12 L20 4" stroke="#ff3b3b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M4 18 L8 10 L14 14 L20 6" stroke="#ff9800" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M4 20 L8 12 L14 16 L20 8" stroke="#00bcd4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M4 22 L8 14 L14 18 L20 10" stroke="#9c27b0" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
