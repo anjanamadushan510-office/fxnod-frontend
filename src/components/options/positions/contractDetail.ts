@@ -257,19 +257,6 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
   const ts = (h as any).tick_stream;
   if (ts && Array.isArray(ts) && ts.length > 0) {
     if (backendDurUnit === "t" && backendDurSecs > 0) {
-      let exitIdx = ts.length - 1;
-      let foundExit = false;
-      if (exitSpot > 0) {
-        for (let i = ts.length - 1; i >= 0; i--) {
-          const val = Number(ts[i].tick_display_value) || Number(ts[i].tick) || 0;
-          if (Math.abs(val - exitSpot) < 0.000001) {
-            exitIdx = i;
-            foundExit = true;
-            break;
-          }
-        }
-      }
-      
       let entryIdx = -1;
       for (let i = 0; i < ts.length; i++) {
         if (ts[i].epoch > startTime) {
@@ -277,16 +264,23 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
           break;
         }
       }
+      if (entryIdx === -1) entryIdx = 0;
       
-      if (entryIdx === -1) entryIdx = Math.max(0, exitIdx - backendDurSecs + 1);
-      
-      if (!foundExit) {
-          exitIdx = Math.min(ts.length - 1, entryIdx + Math.max(0, backendDurSecs - 1));
-      }
+      let exitIdx = Math.min(ts.length - 1, entryIdx + Math.max(0, backendDurSecs - 1));
       
       const hasStartPoint = entryIdx > 0;
       const startIdx = hasStartPoint ? entryIdx - 1 : entryIdx;
       const elapsed = ts.slice(startIdx, exitIdx + 1);
+      
+      // Definitively force the last point to match the API's reported exit spot
+      // This prevents the chart from showing a mismatched final value for strictly bounded tick arrays.
+      if (exitSpot > 0 && elapsed.length > 0) {
+         elapsed[elapsed.length - 1] = {
+             epoch: exitTime > 0 ? exitTime : elapsed[elapsed.length - 1].epoch,
+             tick: exitSpot,
+             tick_display_value: exitSpot.toString()
+         };
+      }
       
       ticks = elapsed.map((t: any, i: number) => ({
         time: t.epoch || (startTime + i + 1), // Fallback if epoch missing
