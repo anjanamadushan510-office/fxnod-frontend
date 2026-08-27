@@ -269,18 +269,11 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
       
       const maxExitIdx = Math.min(ts.length - 1, entryIdx + Math.max(0, backendDurSecs - 1));
       let exitIdx = maxExitIdx;
-      let foundExit = false;
       
-      if (exitSpot > 0) {
-        for (let i = maxExitIdx; i >= Math.max(0, entryIdx); i--) {
-          const val = Number(ts[i].tick_display_value) || Number(ts[i].tick) || 0;
-          if (Math.abs(val - exitSpot) < 0.000001) {
-            exitIdx = i;
-            foundExit = true;
-            break;
-          }
-        }
-      }
+      // We do not need to search for exitSpot by value in historyToDetail.
+      // Deriv's historical tick_stream is naturally truncated at the exact exit tick.
+      // Searching by value causes false positives (e.g. matching an earlier tick with the same price).
+      // If the contract ended early (e.g. Touch), ts.length - 1 will naturally bound maxExitIdx.
       
       const hasStartPoint = entryIdx > 0;
       const startIdx = hasStartPoint ? entryIdx - 1 : entryIdx;
@@ -304,7 +297,7 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
       
       // Guarantee exactly N+1 points if contract went full term
       const expectedPoints = backendDurSecs + 1;
-      const isEarlyExit = foundExit && exitIdx < maxExitIdx;
+      const isEarlyExit = (ts.length - 1) < entryIdx + Math.max(0, backendDurSecs - 1);
       
       if (!isEarlyExit) {
           while (ticks.length < expectedPoints) {
@@ -463,14 +456,7 @@ export function simPositionToDetail(p: Position): ContractDetail {
     if ((p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost") && exit > 0) {
       const maxExitIdx = Math.min(ts.length - 1, entryIdx + Math.max(0, numPoints - 1));
       let exitIdx = maxExitIdx;
-      for (let i = maxExitIdx; i >= entryIdx; i--) {
-        const val = Number(ts[i].tick_display_value) || Number(ts[i].tick) || 0;
-        if (Math.abs(val - exit) < 0.000001) {
-          exitIdx = i;
-          foundExit = true;
-          break;
-        }
-      }
+      
       const hasStartPoint = entryIdx > 0;
       const startIdx = hasStartPoint ? entryIdx - 1 : entryIdx;
       ts = ts.slice(startIdx, exitIdx + 1);
@@ -503,19 +489,25 @@ export function simPositionToDetail(p: Position): ContractDetail {
     // Guarantee exactly N+1 points in sim as well
     const expectedPoints = numPoints + 1;
     if ((p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost")) {
-        // If it ended early, we don't pad, but if it went full term, we enforce the point count
-        if (ticks.length > expectedPoints) {
-            ticks = ticks.slice(0, expectedPoints);
-        } else if (ticks.length < expectedPoints && ticks.length > 0) {
-            // Only pad if it looks like a full term contract that's missing ticks
-            if (ticks[ticks.length - 1].value === exit) {
-                 while (ticks.length < expectedPoints) {
-                    ticks.push({
-                        time: ticks[ticks.length - 1].time + 1,
-                        value: exit,
-                        kind: "normal"
-                    });
-                }
+        // We evaluate early exit based on the original ts array length
+        let originalEntryIdx = -1;
+        for (let i = 0; i < (p.tickStream || []).length; i++) {
+            const tEpoch = (p.tickStream || [])[i].epoch || (start + i);
+            if (tEpoch > start) { originalEntryIdx = i; break; }
+        }
+        if (originalEntryIdx === -1) originalEntryIdx = 0;
+        const isEarlyExit = ((p.tickStream || []).length - 1) < originalEntryIdx + Math.max(0, numPoints - 1);
+        
+        if (!isEarlyExit) {
+            while (ticks.length < expectedPoints) {
+                ticks.push({
+                    time: ticks[ticks.length - 1].time + 1,
+                    value: exit,
+                    kind: "normal"
+                });
+            }
+            if (ticks.length > expectedPoints) {
+                ticks = ticks.slice(0, expectedPoints);
             }
         }
     }
