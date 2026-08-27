@@ -248,6 +248,7 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
 
   let entrySpot = Number((h as any).entry_spot) || 0;
   let exitSpot = Number((h as any).exit_spot) || 0;
+  let entryTime = startTime + 1;
 
   let ticks: ContractTick[] = [];
   const ts = (h as any).tick_stream;
@@ -280,12 +281,18 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
         if (i === ts.length - 1) kind = "exit";
         return { time, value, kind };
       });
-      
       if (ticks.length > 0) {
         ticks[0].kind = "entry";
         if (ticks.length > 1) {
           ticks[ticks.length - 1].kind = "exit";
         }
+        
+        // Sync times with authoritative tick stream
+        if (ticks[0].time <= startTime) {
+            startTime = ticks[0].time - 1;
+        }
+        entryTime = ticks[0].time;
+        if (entrySpot === 0) entrySpot = ticks[0].value;
       }
     }
 
@@ -356,7 +363,7 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
       lowBarrier: (h as any).low_barrier ? Number((h as any).low_barrier) : undefined,
       startTime,
       entrySpot,
-      entryTime: startTime + 1,
+      entryTime,
       exitSpot,
       exitTime,
       payoutPerPoint: (h.frontend_contract_type === "vanillas" || h.frontend_contract_type === "turbos" || h.frontend_contract_type === "TURBOSLONG" || h.frontend_contract_type === "TURBOSSHORT") ? potentialPayout : undefined,
@@ -379,7 +386,7 @@ function parseBarrier(barrierVal: string | number | null | undefined, entrySpot:
 export function simPositionToDetail(p: Position): ContractDetail {
   const entry = p.entrySpot ?? 0;
   const exit = p.currentSpot ?? +(entry + p.pnl * 0.1).toFixed(entry < 10 ? 4 : 2);
-  const start = p.startTime || (Math.floor(Date.now() / 1000) - 5);
+  let start = p.startTime || (Math.floor(Date.now() / 1000) - 5);
   let now = Math.floor(Date.now() / 1000);
   if (now < start + 1) now = start + 1;
   const won = p.pnl >= 0;
@@ -421,6 +428,11 @@ export function simPositionToDetail(p: Position): ContractDetail {
       if (p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost") {
         ticks[ticks.length - 1].kind = "exit";
       }
+      
+      // Sync times with authoritative tick stream
+      if (ticks[0].time <= start) {
+          start = ticks[0].time - 1;
+      }
     }
   } else {
     ticks = genTicks(entry, exit || entry, start, now, numPoints);
@@ -448,7 +460,7 @@ export function simPositionToDetail(p: Position): ContractDetail {
     barrier: parseBarrier(p.barrier, entry),
     startTime: start,
     entrySpot: entry,
-    entryTime: start,
+    entryTime: ticks.length > 0 ? ticks[0].time : start,
     exitSpot: exit,
     exitTime: (p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost") && ticks.length > 0 ? ticks[ticks.length - 1].time + 1 : now,
     expiryTime: p.expiryTime,
