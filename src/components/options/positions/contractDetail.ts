@@ -402,8 +402,8 @@ export function simPositionToDetail(p: Position): ContractDetail {
   let ticks: any[] = [];
   if (p.tickStream && p.tickStream.length > 0) {
     let ts = p.tickStream;
-    // Truncate trailing ticks if the trade is finished
-    if (isTick && (p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost") && exit > 0) {
+    // Truncate trailing ticks if the trade is finished (e.g. Touch/No Touch early exit)
+    if ((p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost") && exit > 0) {
       let exitIdx = ts.length - 1;
       for (let i = ts.length - 1; i >= 0; i--) {
         const val = Number(ts[i].tick_display_value) || Number(ts[i].tick) || 0;
@@ -413,8 +413,11 @@ export function simPositionToDetail(p: Position): ContractDetail {
         }
       }
       
-      const requestedTicks = parseInt(p.status || "0", 10) || 5; // try to parse from "5 ticks"
-      const startIdx = Math.max(0, exitIdx - requestedTicks + 1);
+      let startIdx = 0;
+      if (isTick) {
+        const requestedTicks = parseInt(p.status || "0", 10) || 5; // try to parse from "5 ticks"
+        startIdx = Math.max(0, exitIdx - requestedTicks + 1);
+      }
       ts = ts.slice(startIdx, exitIdx + 1);
     }
     
@@ -465,7 +468,7 @@ export function simPositionToDetail(p: Position): ContractDetail {
     entrySpot: entry,
     entryTime: start,
     exitSpot: exit,
-    exitTime: now,
+    exitTime: (p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost") && ticks.length > 0 ? ticks[ticks.length - 1].time : now,
     expiryTime: p.expiryTime,
     payoutPerPoint: (p.contractType === "vanillas" || p.contractType === "turbos" || p.contractType === "VANILLALONGCALL" || p.contractType === "VANILLALONGPUT" || p.contractType === "TURBOSLONG" || p.contractType === "TURBOSSHORT") ? ((p as any).display_number_of_contracts ? Number((p as any).display_number_of_contracts) : p.stake) : undefined,
     commission: p.commission,

@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import {
   ColorType,
-  LineSeries,
+  AreaSeries,
   LineStyle,
   createChart,
   createSeriesMarkers,
@@ -15,6 +15,7 @@ import { CHART_COLORS } from "../chart/chartColors";
 import type { ContractDetail } from "./contractDetail";
 import { AccumulatorBarriersPlugin } from "../chart/plugins/AccumulatorBarriersPlugin";
 import { ExitSpotPlugin } from "../chart/plugins/ExitSpotPlugin";
+import { TickSpotsPlugin, type TickSpot } from "../chart/plugins/TickSpotsPlugin";
 
 /**
  * Right-panel chart of the Contract Details modal (Deriv §10): a second
@@ -55,7 +56,12 @@ export function ContractDetailChart({ detail }: { detail: ContractDetail }) {
       timeScale: { borderColor: line, timeVisible: true, secondsVisible: true },
     });
 
-        const series = chart.addSeries(LineSeries, { color: ink, lineWidth: 2 });
+    const series = chart.addSeries(AreaSeries, { 
+      lineColor: ink, 
+      lineWidth: 2,
+      topColor: 'rgba(128, 128, 128, 0.15)',
+      bottomColor: 'rgba(128, 128, 128, 0)'
+    });
     const chartData: any[] = detail.ticks.map((t) => ({ time: t.time as UTCTimestamp, value: t.value }));
 
     if (detail.expiryTime && detail.expiryTime > detail.exitTime) {
@@ -116,16 +122,10 @@ export function ContractDetailChart({ detail }: { detail: ContractDetail }) {
       }
     }
 
-    const CIRCLED = ["", "①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩"];
-    const circled = (n: number) => CIRCLED[n] ?? String(n);
-
     const isMultiplier = detail.tradeTypeLabel.toLowerCase().includes("multiplier") || detail.type === "multipliers" || detail.type === "MULTUP" || detail.type === "MULTDOWN";
     const isTickContract = detail.duration.includes("tick") && !isMultiplier;
 
-    // Numbered tick nodes; exit node coloured by outcome, entry node teal.
-    // i=0 is the entry/start tick (Deriv shows it as an open circle, unnumbered).
-    // Subsequent ticks are numbered 1, 2, 3 ... matching Deriv's display (only for tick contracts).
-    const markers: SeriesMarker<Time>[] = [];
+    const tickSpots: TickSpot[] = [];
     
     detail.ticks.forEach((t, i) => {
       // Format timestamp as HH:MM:SS for the label
@@ -140,49 +140,32 @@ export function ContractDetailChart({ detail }: { detail: ContractDetail }) {
 
       // Only show markers for entry, exit, or all ticks if it's a tick contract
       if (isEntry || isExit || isTickContract) {
-        const isAccumulator = detail.tradeTypeLabel.includes("Accumulator");
-        let label = "";
-
-        if (isAccumulator) {
-          // Deriv's accumulator chart only labels the exit tick, intermediate ticks are just plain dots
-          if (isExit) {
-            label = timeLabel;
-          }
-        } else if (isMultiplier) {
-          // Multipliers only show time on the exit tick
-          if (isExit) {
-            label = timeLabel;
-          }
-        } else {
-          // Entry tick (i=0) and Exit tick on non-tick contracts: no number, just timestamp
-          label = isEntry || (!isTickContract && isExit) ? timeLabel : `${circled(i)} ${timeLabel}`;
-        }
-
         if (isExit) {
           // Use our custom plugin for the exact Deriv exit spot look
           const exitPlugin = new ExitSpotPlugin(
             t.time as UTCTimestamp,
             t.value,
             timeLabel,
-            t.value.toFixed(2), // We could format depending on symbol pip size, but .2f is ok
+            t.value.toFixed(Math.abs(t.value) < 10 ? 4 : 2),
             detail.outcome === "won",
             isTickContract
           );
           series.attachPrimitive(exitPlugin);
         } else {
           // Standard marker for entry or intermediate ticks
-          markers.push({
+          tickSpots.push({
             time: t.time as UTCTimestamp,
-            position: "aboveBar",
-            color: inkFaint,
-            shape: "circle",
-            ...(label ? { text: label } : {}),
+            price: t.value,
+            label: String(i),
+            isEntry
           });
         }
       }
     });
     
-    createSeriesMarkers(series, markers);
+    if (tickSpots.length > 0) {
+      series.attachPrimitive(new TickSpotsPlugin(tickSpots));
+    }
 
     chart.timeScale().fitContent();
 
