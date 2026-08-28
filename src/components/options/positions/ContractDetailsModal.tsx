@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { X, ArrowUpRight, ArrowDownRight, FileText, Clock, Target, Timer, Flag, CircleDot } from "lucide-react";
 import { useContractDetails } from "@/stores/useContractDetails";
+import { useOpenPositions } from "@/stores/useOpenPositions";
 import { cn } from "@/lib/cn";
 import { ContractDetailChart } from "./ContractDetailChart";
 import {
   formatContractTime,
+  simPositionToDetail,
   type ContractDetail,
 } from "./contractDetail";
 
@@ -18,9 +20,16 @@ import {
  * from a position card's ⇗ expand).
  */
 export function ContractDetailsModal() {
-  const detail = useContractDetails((s) => s.detail);
+  const storeDetail = useContractDetails((s) => s.detail);
   const close = useContractDetails((s) => s.close);
+  const openPositions = useOpenPositions((s) => s.positions);
   const [target, setTarget] = useState<Element | null>(null);
+
+  const livePosition = storeDetail 
+    ? openPositions.find((p) => String(p.id) === String(storeDetail.id))
+    : null;
+    
+  const detail = livePosition ? simPositionToDetail(livePosition) : storeDetail;
 
   useEffect(() => {
     setTarget(document.querySelector('[data-app="options"]') ?? document.body);
