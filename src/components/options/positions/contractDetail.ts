@@ -281,6 +281,8 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
             break;
           }
         }
+      }
+      
       const typeStr = (h.frontend_contract_type || h.contract_type || (h as any).contract_type || "").toUpperCase();
       const isDigit = typeStr.includes("DIGIT") || typeStr === "EVEN_ODD" || typeStr === "MATCHES_DIFFERS" || typeStr === "OVER_UNDER";
       
@@ -539,8 +541,9 @@ export function simPositionToDetail(p: Position): ContractDetail {
             ticks[1].kind = "entry" as any;
         }
         ticks[ticks.length - 1].kind = "exit" as any;
+    }
       
-      const isClosed = p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost";
+    const isClosed = p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost";
       if (isClosed && !foundExit && exit > 0 && isTick) {
         ticks.push({
           time: ticks[ticks.length - 1].time + 1,
@@ -552,15 +555,11 @@ export function simPositionToDetail(p: Position): ContractDetail {
       }
       
       // Sync times with authoritative tick stream
-      const isAccu = p.contractType === "accumulators" || p.contractType === "ACCU" || (p as any).contract_type === "ACCU";
-      const isTurb = p.contractType === "turbos" || p.contractType === "TURBOSLONG" || p.contractType === "TURBOSSHORT" || (p as any).contract_type?.includes("TURBOS");
-
-      if (ticks[0].time <= start && !isAccu && !isTurb) {
+      if (ticks[0].time <= start && !isAccu && !isTurbos) {
           start = ticks[0].time - 1;
-      } else if ((isAccu || isTurb) && ticks[0].time < start) {
+      } else if ((isAccu || isTurbos) && ticks[0].time < start) {
           start = ticks[0].time;
       }
-    }
   } else {
     ticks = genTicks(entry, exit || entry, start, now, numPoints);
   }
