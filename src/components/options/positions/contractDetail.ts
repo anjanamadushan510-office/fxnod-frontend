@@ -333,12 +333,9 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
           }
       }
       
-      // Truncate at exitTime if available
-      if (exitTime && exitTime > 0) {
-          ticks = ticks.filter(t => t.time <= exitTime);
-      }
-      
       if (ticks.length > 0) {
+          // For non-digits, the entry spot (index 1, because 0 is pre-start) gets a hollow circle marker (kind="entry").
+          // For digits, the entry spot IS the first evaluated tick, so it gets a numbered bubble (kind="normal").
           if (!isDigit && ticks.length > 1) {
               ticks[1].kind = "entry";
           }
@@ -540,29 +537,24 @@ export function simPositionToDetail(p: Position): ContractDetail {
     }
     
     if (ticks.length > 0) {
-        const isClosed = p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost";
-        if (isClosed && exit > 0) {
-            // Cap at max possible ticks
-            const maxExpected = isDigit ? numPoints + 1 : numPoints + 2;
-            if (ticks.length > maxExpected) {
-                ticks = ticks.slice(0, maxExpected);
-            }
-            // If the last tick isn't the exit spot, it was an early exit. Truncate at the real exit.
-            if (Math.abs(ticks[ticks.length - 1].value - exit) > 0.000001) {
-                const realExitIdx = ticks.findIndex(t => Math.abs(t.value - exit) < 0.000001 && t.kind !== "pre-start");
-                if (realExitIdx >= 0) {
-                    ticks = ticks.slice(0, realExitIdx + 1);
-                }
-            }
-        }
-
         if (!isDigit && ticks.length > 1) {
             ticks[1].kind = "entry" as any;
         }
         ticks[ticks.length - 1].kind = "exit" as any;
     }
       
-    // Sync times with authoritative tick stream
+    const isClosed = p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost";
+      if (isClosed && !foundExit && exit > 0 && isTick) {
+        ticks.push({
+          time: ticks[ticks.length - 1].time + 1,
+          value: exit,
+          kind: "exit"
+        });
+      } else if (isClosed) {
+        ticks[ticks.length - 1].kind = "exit";
+      }
+      
+      // Sync times with authoritative tick stream
       if (ticks[0].time <= start && !isAccu && !isTurbos) {
           start = ticks[0].time - 1;
       } else if ((isAccu || isTurbos) && ticks[0].time < start) {
