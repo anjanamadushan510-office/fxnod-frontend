@@ -244,7 +244,7 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
 
   // TradeHistoryEntry created_at is an ISO string, parse it to epoch seconds
   let startTime = Math.floor(new Date(h.created_at).getTime() / 1000);
-  let exitTime = Number((h as any).exit_tick_time) || Number((h as any).sell_time) || (backendDurSecs > 0 ? startTime + backendDurSecs : startTime);
+  let exitTime = Number((h as any).sell_time) || Number((h as any).exit_tick_time) || (backendDurSecs > 0 ? startTime + backendDurSecs : startTime);
 
   let entrySpot = Number((h as any).entry_spot) || 0;
   let exitSpot = Number((h as any).exit_spot) || 0;
@@ -349,11 +349,17 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
         entryTime = ticks[entryIndex].time;
       }
     } else {
-      ticks = ts.map((t: any, i: number) => {
+      let filteredTs = ts;
+      if (exitTime > 0) {
+        filteredTs = ts.filter((t: any) => (t.epoch || 0) <= exitTime);
+        if (filteredTs.length === 0) filteredTs = ts;
+      }
+      
+      ticks = filteredTs.map((t: any, i: number) => {
         const time = t.epoch || (startTime + i);
         const value = Number(t.tick_display_value) || Number(t.tick) || 0;
         let kind: "entry" | "exit" | "normal" | "pre-start" = "normal";
-        if (i === ts.length - 1) kind = "exit";
+        if (i === filteredTs.length - 1) kind = "exit";
         return { time, value, kind };
       });
       if (ticks.length > 0) {
@@ -361,19 +367,11 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
         if (ticks.length > 1) {
           ticks[ticks.length - 1].kind = "exit";
         }
-        
       }
     }
 
     if (ticks.length > 0) {
-      if (exitTime > 0) {
-          // Drop any ticks that were streamed after the actual exit time
-          while (ticks.length > 0 && ticks[ticks.length - 1].time > exitTime) {
-              ticks.pop();
-          }
-      }
-
-      if (ticks.length > 0 && exitSpot > 0 && exitTime > 0) {
+      if (exitSpot > 0 && exitTime > 0) {
           const lastTick = ticks[ticks.length - 1];
           if (exitTime > lastTick.time) {
               lastTick.kind = "normal";
@@ -387,20 +385,15 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
           }
       }
 
-      if (ticks.length > 0) {
-          ticks[ticks.length - 1].kind = "exit";
-          if (exitSpot === 0) exitSpot = ticks[ticks.length - 1].value;
-          exitTime = ticks[ticks.length - 1].time;
-      }
+      if (exitSpot === 0) exitSpot = ticks[ticks.length - 1].value;
       
       // Sync times with authoritative tick stream for BOTH tick and time contracts
-      if (ticks.length > 0) {
-          if (ticks[0].time <= startTime && !isAccu && !isTurbos) {
-            startTime = ticks[0].time;
-          } else if ((isAccu || isTurbos) && ticks[0].time < startTime) {
-            startTime = ticks[0].time; // Fallback if tick stream somehow started earlier
-          }
+      if (ticks[0].time <= startTime && !isAccu && !isTurbos) {
+        startTime = ticks[0].time;
+      } else if ((isAccu || isTurbos) && ticks[0].time < startTime) {
+        startTime = ticks[0].time; // Fallback if tick stream somehow started earlier
       }
+      exitTime = ticks[ticks.length - 1].time;
     }
   } else if (entrySpot && exitSpot) {
     if (exitTime === startTime) exitTime = startTime + 5; // fallback
