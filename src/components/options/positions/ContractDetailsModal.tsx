@@ -270,7 +270,7 @@ function LeftPanel({
         <Row label="Exit spot" icon={<div className="w-[14px] h-[14px] rounded-full bg-opt-bg border-[3px] border-opt-ink" />} isTimeline>
           <span>{detail.exitSpot.toFixed(dp)}</span>
           <span className="text-[11px] text-opt-ink-3 mt-0.5">
-            {formatContractTime(detail.exitTime)}
+            {formatContractTime(detail.ticks && detail.ticks.length > 0 ? detail.ticks[detail.ticks.length - 1].time : detail.exitTime)}
           </span>
         </Row>
         
