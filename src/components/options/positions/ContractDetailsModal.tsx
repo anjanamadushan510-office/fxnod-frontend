@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { X, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { X, ArrowUpRight, ArrowDownRight, FileText, Clock, Target, Timer, Flag, CircleDot } from "lucide-react";
 import { useContractDetails } from "@/stores/useContractDetails";
 import { cn } from "@/lib/cn";
 import { ContractDetailChart } from "./ContractDetailChart";
@@ -192,74 +192,90 @@ function LeftPanel({
 
       <div className="h-px bg-opt-line" />
 
-      <div className="flex flex-col gap-2.5">
-        <Row label="Reference ID">
+      <div className="flex flex-col gap-0 relative pt-1">
+        {/* Continuous timeline background line */}
+        <div className="absolute left-[7px] top-[140px] bottom-[20px] w-px bg-opt-line z-0" />
+
+        <Row label="Reference ID" icon={<FileText className="w-3.5 h-3.5 text-opt-ink-3" />}>
           <div className="flex flex-col gap-0.5">
             {detail.buyTransactionId > 0 ? (
               <a
                 href={`https://dtrader.deriv.com/contract/${detail.derivContractId}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-mono text-opt-ink hover:underline"
+                className="hover:underline"
               >
                 {detail.buyTransactionId} (Buy)
               </a>
             ) : (
-              <span className="font-mono">—</span>
+              <span>—</span>
             )}
             {detail.sellTransactionId > 0 && (
-              <span className="font-mono">{detail.sellTransactionId} (Sell)</span>
+              <span>{detail.sellTransactionId} (Sell)</span>
             )}
           </div>
         </Row>
-        {isMultiplier && (
-          <Row label="% Commission">
-            <span className="font-mono">{detail.commission !== undefined ? `${detail.commission.toFixed(2)} USD` : "0.00 USD"}</span>
+        
+        {isMultiplier ? (
+          <Row label="% Commission" icon={<FileText className="w-3.5 h-3.5 text-opt-ink-3" />}>
+            <span>{detail.commission !== undefined ? `${detail.commission.toFixed(2)} USD` : "0.00 USD"}</span>
+          </Row>
+        ) : (
+          <Row label="Duration" icon={<Clock className="w-3.5 h-3.5 text-opt-ink-3" />}>
+            <span>{detail.duration}</span>
           </Row>
         )}
-        {!isMultiplier && <Row label="Duration">{detail.duration}</Row>}
+
         {detail.type === "even_odd" || detail.type === "DIGITEVEN" || detail.type === "DIGITODD" ? (
-          <Row label="Target">
-            <span className="font-mono text-[14px] font-semibold text-opt-ink">
+          <Row label="Target" icon={<Target className="w-3.5 h-3.5 text-opt-ink-3" />}>
+            <span className="font-sans text-[14px] font-semibold text-opt-ink">
               {detail.side === "fall" ? "Odd" : "Even"}
             </span>
           </Row>
         ) : detail.type === "matches_differs" ? (
-          <Row label="Target">
-            <span className="font-mono text-[14px] font-semibold text-opt-ink">
+          <Row label="Target" icon={<Target className="w-3.5 h-3.5 text-opt-ink-3" />}>
+            <span className="font-sans text-[14px] font-semibold text-opt-ink">
               {detail.tradeTypeLabel === "Matches" ? "Equals " : "Differs from "} {detail.barrier}
             </span>
           </Row>
         ) : detail.type === "over_under" ? (
-          <Row label="Target">
-            <span className="font-mono text-[14px] font-semibold text-opt-ink">
+          <Row label="Target" icon={<Target className="w-3.5 h-3.5 text-opt-ink-3" />}>
+            <span className="font-sans text-[14px] font-semibold text-opt-ink">
               {detail.tradeTypeLabel === "Over" ? "Over " : "Under "} {detail.barrier}
             </span>
           </Row>
         ) : (detail.type !== "accumulators" && !isMultiplier) && (
-          <Row label={(detail.type === "vanillas" || detail.type === "VANILLALONGCALL" || detail.type === "VANILLALONGPUT") ? "Strike" : "Barrier"}>
-            <span className="font-mono">{detail.barrier}</span>
+          <Row 
+            label={(detail.type === "vanillas" || detail.type === "VANILLALONGCALL" || detail.type === "VANILLALONGPUT") ? "Strike" : "Barrier"}
+            icon={<Target className="w-3.5 h-3.5 text-opt-ink-3" />}
+          >
+            <span>{detail.barrier}</span>
           </Row>
         )}
-        <Row label="Start time">
-          <span className="font-mono text-[11px]">
+
+        <Row label="Start time" icon={<Timer className="w-3.5 h-3.5 text-opt-ink-3" />} isTimeline>
+          <span className="text-[12px]">
             {formatContractTime(detail.startTime)}
           </span>
         </Row>
-        <Row label="Entry spot">
-          <span className="font-mono">{detail.entrySpot.toFixed(dp)}</span>
-          <span className="font-mono text-[11px] text-opt-ink-3">
+        
+        <Row label="Entry spot" icon={<CircleDot className="w-3.5 h-3.5 text-opt-ink" fill="currentColor" />} isTimeline>
+          <span>{detail.entrySpot.toFixed(dp)}</span>
+          <span className="text-[11px] text-opt-ink-3 mt-0.5">
             {formatContractTime(detail.entryTime)}
           </span>
         </Row>
-        <Row label="Exit spot">
-          <span className="font-mono">{detail.exitSpot.toFixed(dp)}</span>
-          <span className="font-mono text-[11px] text-opt-ink-3">
+        
+        {/* Combine Exit spot & Exit time to match Deriv's layout better, or just list Exit spot and then Exit time */}
+        <Row label="Exit spot" icon={<div className="w-[14px] h-[14px] rounded-full bg-opt-bg border-[3px] border-opt-ink" />} isTimeline>
+          <span>{detail.exitSpot.toFixed(dp)}</span>
+          <span className="text-[11px] text-opt-ink-3 mt-0.5">
             {formatContractTime(detail.exitTime)}
           </span>
         </Row>
-        <Row label="Exit time">
-          <span className="font-mono text-[11px]">
+        
+        <Row label="Exit time" icon={<Flag className="w-3.5 h-3.5 text-opt-ink" fill="currentColor" />} isTimeline isLast>
+          <span className="text-[12px]">
             {formatContractTime(detail.exitTime)}
           </span>
         </Row>
@@ -289,15 +305,32 @@ function Stat({
 
 function Row({
   label,
+  icon,
+  isTimeline,
+  isLast,
   children,
 }: {
   label: string;
+  icon?: React.ReactNode;
+  isTimeline?: boolean;
+  isLast?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex items-start justify-between gap-3 text-[12px]">
-      <span className="text-opt-ink-3">{label}</span>
-      <span className="flex flex-col items-end text-opt-ink">{children}</span>
+    <div className="flex items-start gap-3 relative pb-4">
+      {icon && (
+        <div className="flex flex-col items-center pt-1 relative z-10 w-4 shrink-0">
+          <div className="bg-opt-bg h-4 w-4 rounded-full flex items-center justify-center relative z-20 shrink-0">
+             {icon}
+          </div>
+        </div>
+      )}
+      <div className="flex flex-col gap-0.5">
+        <span className="text-[11px] text-opt-ink-3 leading-tight">{label}</span>
+        <div className="flex flex-col items-start font-mono text-[12px] text-opt-ink leading-tight font-medium">
+          {children}
+        </div>
+      </div>
     </div>
   );
 }
