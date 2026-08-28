@@ -284,7 +284,7 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
       }
       
       const typeStr = (h.frontend_contract_type || h.contract_type || (h as any).contract_type || "").toUpperCase();
-      const isDigit = typeStr.includes("DIGIT") || typeStr === "EVEN_ODD" || typeStr === "MATCHES_DIFFERS" || typeStr === "OVER_UNDER";
+      const isDigit = typeStr.includes("DIGIT") || typeStr === "EVEN_ODD" || typeStr === "MATCHES_DIFFERS" || typeStr === "OVER_UNDER" || typeStr.includes("TURBOS");
       
       if (entryIdx === -1) entryIdx = Math.max(0, ts.length - backendDurSecs);
 
@@ -483,7 +483,7 @@ export function simPositionToDetail(p: Position): ContractDetail {
     }
     if (entryIdx === -1) entryIdx = 0;
     const typeStr = (p.contractType || (p as any).contract_type || "").toUpperCase();
-    const isDigit = typeStr.includes("DIGIT") || typeStr === "EVEN_ODD" || typeStr === "MATCHES_DIFFERS" || typeStr === "OVER_UNDER";
+    const isDigit = typeStr.includes("DIGIT") || typeStr === "EVEN_ODD" || typeStr === "MATCHES_DIFFERS" || typeStr === "OVER_UNDER" || typeStr.includes("TURBOS");
 
     const targetExitIdx = entryIdx + (isDigit ? numPoints - 1 : numPoints);
 
