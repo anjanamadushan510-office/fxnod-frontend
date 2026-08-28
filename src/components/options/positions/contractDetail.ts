@@ -540,7 +540,6 @@ export function simPositionToDetail(p: Position): ContractDetail {
         if (!isDigit && ticks.length > 1) {
             ticks[1].kind = "entry" as any;
         }
-        ticks[ticks.length - 1].kind = "exit" as any;
     }
       
     const isClosed = p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost";

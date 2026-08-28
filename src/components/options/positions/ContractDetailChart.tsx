@@ -70,6 +70,28 @@ export function ContractDetailChart({ detail }: { detail: ContractDetail }) {
         chartData.push({ time: t as UTCTimestamp });
       }
     }
+    
+    // Add forward whitespace for open tick contracts to prevent x-axis squishing
+    const hasExit = detail.ticks.some((t) => t.kind === "exit");
+    if (!hasExit && detail.ticks.length > 0) {
+      const match = detail.duration.match(/(\d+)\/(\d+)\s+ticks?/i);
+      let missingTicks = 0;
+      if (match) {
+        missingTicks = parseInt(match[2], 10) - parseInt(match[1], 10);
+      } else if (detail.duration.includes("tick")) {
+        const totalMatch = detail.duration.match(/(\d+)\s+ticks?/i);
+        if (totalMatch) {
+            missingTicks = Math.max(0, parseInt(totalMatch[1], 10) - detail.ticks.length + 1);
+        }
+      }
+      // Guarantee at least 1 tick of forward space if it's open, to keep the crosshair looking alive
+      missingTicks = Math.max(1, missingTicks);
+      
+      const lastTime = detail.ticks[detail.ticks.length - 1].time;
+      for (let i = 1; i <= missingTicks; i++) {
+        chartData.push({ time: (lastTime + i) as UTCTimestamp });
+      }
+    }
 
     series.setData(chartData);
 
@@ -141,7 +163,7 @@ export function ContractDetailChart({ detail }: { detail: ContractDetail }) {
       if (t.kind === "pre-start") return;
 
       const isEntry = t.kind === "entry";
-      const isExit = i === detail.ticks.length - 1;
+      const isExit = t.kind === "exit";
 
       // Only show markers for entry, exit, or all ticks if it's a tick contract
       if (isEntry || isExit || isTickContract) {
