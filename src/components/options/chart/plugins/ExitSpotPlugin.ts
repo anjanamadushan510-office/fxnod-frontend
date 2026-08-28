@@ -52,7 +52,7 @@ export class ExitSpotPlugin implements ISeriesPrimitive {
 
     paneViews(): readonly IPrimitivePaneView[] {
         if (!this._series) return [];
-        return [new ExitSpotPaneView(this._series, this._time, this._price, this._timeLabel, this._priceLabel, this._isWon, this._isTickContract)];
+        return [new ExitSpotPaneView(this._series, this._time, this._price, this._timeLabel, this._priceLabel, this._isWon, this._isTickContract, this._tickNumber)];
     }
 }
 

@@ -138,6 +138,8 @@ export function ContractDetailChart({ detail }: { detail: ContractDetail }) {
       // kind="entry" = hollow white circle (start point OR entry spot) — never numbered
       // kind="exit"  = exit bubble (numbered as tickNumber+1)
       // kind="normal" = numbered bubble
+      if (t.kind === "pre-start") return;
+
       const isEntry = t.kind === "entry";
       const isExit = i === detail.ticks.length - 1;
 

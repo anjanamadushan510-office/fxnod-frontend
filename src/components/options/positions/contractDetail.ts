@@ -15,7 +15,7 @@ export interface ContractTick {
   /** Epoch seconds (UTCTimestamp). */
   time: number;
   value: number;
-  kind: "entry" | "exit" | "normal";
+  kind: "entry" | "exit" | "normal" | "pre-start";
 }
 
 export interface ContractDetail {
@@ -281,18 +281,19 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
             break;
           }
         }
-      }
-
+      const typeStr = (h.frontend_contract_type || h.contract_type || (h as any).contract_type || "").toUpperCase();
+      const isDigit = typeStr.includes("DIGIT") || typeStr === "EVEN_ODD" || typeStr === "MATCHES_DIFFERS" || typeStr === "OVER_UNDER";
+      
       if (entryIdx === -1) entryIdx = Math.max(0, ts.length - backendDurSecs);
 
-      // Unified exit index: always entryIdx + N
-      // For synthetic-start (Higher/Lower, Turbos): we have synthetic+entry+N ticks = N+2 total
-      // For non-synthetic (Touch, Accu): we have entry+N ticks = N+1 total
-      const targetExitIdx = entryIdx + backendDurSecs;
+      // Unified exit index:
+      // Digits (e.g. Even/Odd): N ticks INCLUSIVE of entry spot. -> exitIdx = entryIdx + N - 1
+      // Non-Digits (e.g. Turbos): N ticks AFTER entry spot. -> exitIdx = entryIdx + N
+      const targetExitIdx = entryIdx + (isDigit ? backendDurSecs - 1 : backendDurSecs);
       const maxExitIdx = Math.min(ts.length - 1, targetExitIdx);
       let exitIdx = maxExitIdx;
       
-      // Always slice from entryIdx (entry spot) onwards — no pre-entry ticks included
+      // Always slice from entryIdx (entry spot) onwards
       const elapsed = ts.slice(entryIdx, exitIdx + 1);
       
       ticks = elapsed.map((t: any, i: number) => ({
@@ -301,22 +302,20 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
         kind: "normal" as any
       }));
       
-      if (needsSyntheticStart && ticks.length > 0) {
-          // Prepend clean synthetic start at startTime
+      // Prepend a "pre-start" line from startTime to entry spot to visually anchor the chart.
+      // This point has `kind = "pre-start"` so it will NOT receive any circular marker.
+      if (ticks.length > 0 && ticks[0].time > startTime) {
           ticks.unshift({
               time: startTime,
               value: ticks[0].value,
-              kind: "normal" as any
+              kind: "pre-start" as any
           });
-          // Mark the entry spot (now at index 1) as "entry" kind too
-          // so the chart renders it as an unnumbered hollow circle (like Deriv)
-          if (ticks.length > 1) {
-              ticks[1].kind = "entry" as any;
-          }
       }
       
-      // Expected total: synthetic_start + entry + N ticks (for synthetic) or entry + N ticks (non-synthetic)
-      const expectedPoints = needsSyntheticStart ? backendDurSecs + 2 : backendDurSecs + 1;
+      // Expected total:
+      // Digits: N points (plus the 1 pre-start) = N + 1
+      // Non-Digits: N points after entry + entry = N + 1 (plus the 1 pre-start) = N + 2
+      const expectedPoints = isDigit ? backendDurSecs + 1 : backendDurSecs + 2;
       const isEarlyExit = (ts.length - 1) < targetExitIdx;
       
       if (!isEarlyExit) {
@@ -333,11 +332,15 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
       }
       
       if (ticks.length > 0) {
-          ticks[0].kind = "entry";
+          // For non-digits, the entry spot (index 1, because 0 is pre-start) gets a hollow circle marker (kind="entry").
+          // For digits, the entry spot IS the first evaluated tick, so it gets a numbered bubble (kind="normal").
+          if (!isDigit && ticks.length > 1) {
+              ticks[1].kind = "entry";
+          }
           ticks[ticks.length - 1].kind = "exit";
       }
       
-      // Standard contracts ALWAYS have start point at index 0 and entry at index 1
+      // Compute entry spot/time
       const entryIndex = ticks.length > 1 ? 1 : 0;
       if (ticks.length > entryIndex) {
         entrySpot = entrySpot || ticks[entryIndex].value;
@@ -347,7 +350,7 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
       ticks = ts.map((t: any, i: number) => {
         const time = t.epoch || (startTime + i);
         const value = Number(t.tick_display_value) || Number(t.tick) || 0;
-        let kind: "entry" | "exit" | "normal" = "normal";
+        let kind: "entry" | "exit" | "normal" | "pre-start" = "normal";
         if (i === ts.length - 1) kind = "exit";
         return { time, value, kind };
       });
@@ -477,8 +480,10 @@ export function simPositionToDetail(p: Position): ContractDetail {
         if (tEpoch > start) { entryIdx = i; break; }
     }
     if (entryIdx === -1) entryIdx = 0;
+    const typeStr = (p.contractType || (p as any).contract_type || "").toUpperCase();
+    const isDigit = typeStr.includes("DIGIT") || typeStr === "EVEN_ODD" || typeStr === "MATCHES_DIFFERS" || typeStr === "OVER_UNDER";
 
-    const targetExitIdx = entryIdx + numPoints;
+    const targetExitIdx = entryIdx + (isDigit ? numPoints - 1 : numPoints);
 
     if ((p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost") && exit > 0) {
       const maxExitIdx = Math.min(ts.length - 1, targetExitIdx);
@@ -491,23 +496,19 @@ export function simPositionToDetail(p: Position): ContractDetail {
     ticks = ts.map((t: any, i: number) => ({
       time: t.epoch || (start + i),
       value: Number(t.tick_display_value) || Number(t.tick) || 0,
-      kind: "normal",
+      kind: "normal" as any,
     }));
     
-    if (needsSyntheticStart && ticks.length > 0) {
+    if (ticks.length > 0 && ticks[0].time > start) {
         ticks.unshift({
             time: start,
             value: ticks[0].value,
-            kind: "normal"
+            kind: "pre-start" as any
         });
-        // Mark the entry spot (now at index 1) as "entry" kind too
-        if (ticks.length > 1) {
-            ticks[1].kind = "entry";
-        }
     }
     
-    // Guarantee exactly N+1 points in sim as well
-    const expectedPoints = needsSyntheticStart ? numPoints + 2 : numPoints + 1;
+    // Expected points
+    const expectedPoints = isDigit ? numPoints + 1 : numPoints + 2;
     if ((p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost")) {
         let originalEntryIdx = -1;
         for (let i = 0; i < (p.tickStream || []).length; i++) {
@@ -516,7 +517,7 @@ export function simPositionToDetail(p: Position): ContractDetail {
         }
         if (originalEntryIdx === -1) originalEntryIdx = 0;
         
-        const originalTargetExitIdx = originalEntryIdx + numPoints;
+        const originalTargetExitIdx = originalEntryIdx + (isDigit ? numPoints - 1 : numPoints);
         const isEarlyExit = ((p.tickStream || []).length - 1) < originalTargetExitIdx;
         
         if (!isEarlyExit) {
@@ -524,7 +525,7 @@ export function simPositionToDetail(p: Position): ContractDetail {
                 ticks.push({
                     time: ticks[ticks.length - 1].time + 1,
                     value: exit,
-                    kind: "normal"
+                    kind: "normal" as any
                 });
             }
             if (ticks.length > expectedPoints) {
@@ -534,7 +535,10 @@ export function simPositionToDetail(p: Position): ContractDetail {
     }
     
     if (ticks.length > 0) {
-      ticks[0].kind = "entry";
+        if (!isDigit && ticks.length > 1) {
+            ticks[1].kind = "entry" as any;
+        }
+        ticks[ticks.length - 1].kind = "exit" as any;
       
       const isClosed = p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost";
       if (isClosed && !foundExit && exit > 0 && isTick) {
