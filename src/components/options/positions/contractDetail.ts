@@ -244,7 +244,7 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
 
   // TradeHistoryEntry created_at is an ISO string, parse it to epoch seconds
   let startTime = Math.floor(new Date(h.created_at).getTime() / 1000);
-  let exitTime = Number((h as any).sell_time) || Number((h as any).exit_tick_time) || (backendDurSecs > 0 ? startTime + backendDurSecs : startTime);
+  let exitTime = backendDurSecs > 0 ? startTime + backendDurSecs : startTime;
 
   let entrySpot = Number((h as any).entry_spot) || 0;
   let exitSpot = Number((h as any).exit_spot) || 0;
@@ -366,20 +366,6 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
     }
 
     if (ticks.length > 0) {
-      if (exitSpot > 0 && exitTime > 0) {
-          const lastTick = ticks[ticks.length - 1];
-          if (exitTime > lastTick.time) {
-              lastTick.kind = "normal";
-              ticks.push({
-                  time: exitTime,
-                  value: exitSpot,
-                  kind: "exit"
-              });
-          } else if (exitTime === lastTick.time && lastTick.value !== exitSpot) {
-              lastTick.value = exitSpot;
-          }
-      }
-
       if (exitSpot === 0) exitSpot = ticks[ticks.length - 1].value;
       
       // Sync times with authoritative tick stream for BOTH tick and time contracts
