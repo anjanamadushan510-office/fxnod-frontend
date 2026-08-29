@@ -927,17 +927,16 @@ export function calculateFractalChaosBands(high: number[], low: number[], lookba
   return { upper, lower };
 }
 
-export function calculateDPO(data: number[], period: number = 14, maType: string = "Simple"): number[] {
+export function calculateDPO(data: number[], period: number = 21, maType: string = "Simple"): number[] {
   const result: number[] = new Array(data.length).fill(NaN);
   if (data.length < period) return result;
   
   const ma = calculateMA(data, period, maType);
-  const barsback = Math.floor(period / 2) + 1;
   
-  for (let i = barsback; i < data.length; i++) {
-    const pastMA = ma[i - barsback];
-    if (!isNaN(pastMA)) {
-      result[i] = data[i] - pastMA;
+  for (let i = 0; i < data.length; i++) {
+    const currentMA = ma[i];
+    if (!isNaN(currentMA)) {
+      result[i] = data[i] - currentMA;
     }
   }
   

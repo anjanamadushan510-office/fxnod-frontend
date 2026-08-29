@@ -30,7 +30,7 @@ export const DEFAULT_INDICATOR_PARAMS: Record<IndicatorType, Record<string, any>
   donchian: { upperColor: "#000000", middleColor: "#000000", lowerColor: "#000000", fillColor: "rgba(0, 0, 0, 0.1)", highPeriod: 20, lowPeriod: 20, channelFill: true },
   alligator: { jawColor: '#2962FF', teethColor: '#FF0000', lipsColor: '#00FF00', showLines: true, jawPeriod: 13, jawShift: 8, teethPeriod: 8, teethShift: 5, lipsPeriod: 5, lipsShift: 3, showFractals: false },
   fractal: { fractalHighColor: "#000000", fractalLowColor: "#000000", fractalChannelColor: "#000000", channelFill: true },
-  dpo: { color: "#000000", period: 14, field: "Close", movingAverageType: "Simple" },
+  dpo: { color: "#000000", period: 21, field: "Close", movingAverageType: "Simple" },
   smi: { color: "#000000", signalColor: "#ff0000", period: 10, smoothingPeriod1: 3, smoothingPeriod2: 3, signalPeriod: 10, movingAverageType: "Exponential", overBoughtValue: 40, overBoughtColor: "#808080", overSoldValue: -40, overSoldColor: "#808080", showZones: true },
   supertrend: { upColor: "#00FF00", downColor: "#FF0000", period: 10, multiplier: 3 },
 };
