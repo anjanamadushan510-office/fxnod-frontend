@@ -17,7 +17,6 @@ export interface UserPublic {
   is_email_verified: boolean;
   is_active: boolean;
   kyc_status: string;
-  role: 'admin' | 'user';
   created_at: string;
   updated_at: string;
 }

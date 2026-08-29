@@ -4,7 +4,6 @@ import type { ReactNode } from "react";
 import { TopNav } from "@/components/layout/TopNav";
 import { BarsIcon, AppsGridIcon } from "@/components/ui/Icons";
 import { cn } from "@/lib/cn";
-import { AdminTile } from "./AdminTile";
 
 /**
  * /options — platform picker.
@@ -74,7 +73,6 @@ export default function OptionsHubPage() {
           {PLATFORMS.map((platform) => (
             <PlatformCard key={platform.key} platform={platform} />
           ))}
-          <AdminTile />
         </div>
       </div>
     </>
