@@ -42,11 +42,11 @@ export const INDICATOR_LIST: { id: string; name: string; category: Category; dis
   // Momentum
   { id: "awesome_oscillator", name: "Awesome Oscillator", category: "Momentum", requiresOHLC: true, Icon: IconAwesomeOscillator },
   { id: "dpo", name: "Detrended Price Oscillator", category: "Momentum", Icon: IconDPO },
-  { id: "MACD", name: "MACD", category: "Momentum", requiresOHLC: true, Icon: IconMACD },
+  { id: "MACD", name: "MACD", category: "Momentum", Icon: IconMACD },
   { id: "roc", name: "Price Rate of Change", category: "Momentum", Icon: IconROC },
   { id: "RSI", name: "Relative Strength Index (RSI)", category: "Momentum", Icon: IconRSI },
   { id: "stochastic", name: "Stochastic Oscillator", category: "Momentum", requiresOHLC: true, Icon: IconStochastic },
-  { id: "smi", name: "Stochastic Momentum Index", category: "Momentum", requiresOHLC: true, Icon: IconStochastic },
+  { id: "smi", name: "Stochastic Momentum Index", category: "Momentum", Icon: IconStochastic },
   { id: "wpr", name: "William's Percent Range", category: "Momentum", requiresOHLC: true, Icon: IconWPR },
   // Trend
   { id: "aroon", name: "Aroon", category: "Trend", Icon: IconAroon },
