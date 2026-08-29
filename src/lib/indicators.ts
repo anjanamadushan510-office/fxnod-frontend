@@ -931,27 +931,12 @@ export function calculateDPO(data: number[], period: number = 21, maType: string
   const result: number[] = new Array(data.length).fill(NaN);
   if (data.length < period) return result;
   
-  // Deriv's custom "Detrended Price Oscillator" (labeled "Moving Average" in their UI)
-  // actually calculates the difference between a smoothed price and a double-smoothed price,
-  // making it behave like a MACD rather than a standard DPO.
-  const ma1 = calculateMA(data, period, maType);
-  
-  // Create an array of MA1 values (padded with NaN where undefined) to feed into the second MA
-  const validMa1 = ma1.filter(v => !isNaN(v));
-  if (validMa1.length < period) return result;
-  
-  const ma2_short = calculateMA(validMa1, period, maType);
-  
-  // Pad ma2_short back to the original data length
-  const ma2 = new Array(data.length).fill(NaN);
-  const offset = data.length - validMa1.length;
-  for (let i = 0; i < ma2_short.length; i++) {
-    ma2[i + offset] = ma2_short[i];
-  }
+  const ma = calculateMA(data, period, maType);
   
   for (let i = 0; i < data.length; i++) {
-    if (!isNaN(ma1[i]) && !isNaN(ma2[i])) {
-      result[i] = ma1[i] - ma2[i];
+    const currentMA = ma[i];
+    if (!isNaN(currentMA)) {
+      result[i] = data[i] - currentMA;
     }
   }
   
