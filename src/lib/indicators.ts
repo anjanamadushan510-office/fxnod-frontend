@@ -65,9 +65,9 @@ export function calculateSupertrend(
         : finalLower[i - 1];
 
       if (result.trend[i - 1] === 1) {
-        result.trend[i] = close[i] <= finalUpper[i] ? -1 : 1;
+        result.trend[i] = close[i] < finalLower[i] ? -1 : 1;
       } else {
-        result.trend[i] = close[i] >= finalLower[i] ? 1 : -1;
+        result.trend[i] = close[i] > finalUpper[i] ? 1 : -1;
       }
     }
     
