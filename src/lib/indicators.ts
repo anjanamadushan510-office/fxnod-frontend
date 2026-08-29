@@ -4,6 +4,80 @@
  * or over historical data arrays to feed lightweight-charts.
  */
 
+// Supertrend
+export function calculateSupertrend(
+  high: number[],
+  low: number[],
+  close: number[],
+  period: number = 10,
+  multiplier: number = 3
+) {
+  const result = {
+    trend: new Array(close.length).fill(NaN),
+    up: new Array(close.length).fill(NaN),
+    down: new Array(close.length).fill(NaN),
+  };
+
+  if (close.length <= period) return result;
+
+  const atr = new Array(close.length).fill(0);
+  let trSum = 0;
+
+  for (let i = 1; i <= period; i++) {
+    const tr = Math.max(
+      high[i] - low[i],
+      Math.abs(high[i] - close[i - 1]),
+      Math.abs(low[i] - close[i - 1])
+    );
+    trSum += tr;
+    atr[i] = trSum / i; // simple average initially
+  }
+
+  for (let i = period + 1; i < close.length; i++) {
+    const tr = Math.max(
+      high[i] - low[i],
+      Math.abs(high[i] - close[i - 1]),
+      Math.abs(low[i] - close[i - 1])
+    );
+    // Wilder's Smoothing for ATR
+    atr[i] = (atr[i - 1] * (period - 1) + tr) / period;
+  }
+
+  let finalUpper = new Array(close.length).fill(0);
+  let finalLower = new Array(close.length).fill(0);
+
+  for (let i = period; i < close.length; i++) {
+    const hl2 = (high[i] + low[i]) / 2;
+    const basicUpper = hl2 + multiplier * atr[i];
+    const basicLower = hl2 - multiplier * atr[i];
+
+    if (i === period) {
+      finalUpper[i] = basicUpper;
+      finalLower[i] = basicLower;
+      result.trend[i] = 1; // start up
+    } else {
+      finalUpper[i] = (basicUpper < finalUpper[i - 1] || close[i - 1] > finalUpper[i - 1]) 
+        ? basicUpper 
+        : finalUpper[i - 1];
+        
+      finalLower[i] = (basicLower > finalLower[i - 1] || close[i - 1] < finalLower[i - 1]) 
+        ? basicLower 
+        : finalLower[i - 1];
+
+      if (result.trend[i - 1] === 1) {
+        result.trend[i] = close[i] <= finalUpper[i] ? -1 : 1;
+      } else {
+        result.trend[i] = close[i] >= finalLower[i] ? 1 : -1;
+      }
+    }
+    
+    result.up[i] = finalLower[i]; // When trend is 1, it follows finalLower
+    result.down[i] = finalUpper[i]; // When trend is -1, it follows finalUpper
+  }
+
+  return result;
+}
+
 // Simple Moving Average (SMA)
 export function calculateSMA(data: number[], period: number): number[] {
   const result: number[] = new Array(data.length).fill(NaN);

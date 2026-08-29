@@ -57,7 +57,7 @@ import { useChartIndicators, type IndicatorConfig } from "@/stores/useChartIndic
 import { 
   calculateSMA, calculateEMA, calculateMA, calculateRSI, calculateMACD,
   calculateAwesomeOscillator, calculateROC, calculateStochastic, calculateWilliamsR,
-  calculateCCI, calculateAroon, calculateADX, calculateIchimoku, calculateParabolicSAR, calculateZigZag, calculateBollingerBands, calculateDonchianChannel, calculateWMA, calculateMAEnvelope, calculateRainbowMA, calculateAlligator, calculateFractalChaosBands, calculateDPO, calculateSMI
+  calculateCCI, calculateAroon, calculateADX, calculateIchimoku, calculateParabolicSAR, calculateZigZag, calculateBollingerBands, calculateDonchianChannel, calculateWMA, calculateMAEnvelope, calculateRainbowMA, calculateAlligator, calculateFractalChaosBands, calculateDPO, calculateSMI, calculateSupertrend
   } from "@/lib/indicators";
 
 /** Accent color for user-drawn lines (drawn on canvas — needs literal hex). */
@@ -1002,6 +1002,38 @@ function syncIndicators(
       const data = results.map((val, i) => ({ time: timeArray[i], value: val })).filter(d => !isNaN(d.value));
       if (data.length > 0) {
         series.setData(data as any);
+      }
+    } else if (ind.type === "supertrend") {
+      let series = seriesRef.current.get(ind.id) as ISeriesApi<"Line">;
+      if (!series) {
+        series = chart.addSeries(LineSeries, { 
+          lineWidth: 2, 
+          crosshairMarkerVisible: false,
+          priceLineVisible: false 
+        });
+        seriesRef.current.set(ind.id, series);
+      }
+
+      const p = ind.params.period || 10;
+      const m = ind.params.multiplier || 3;
+      const upColor = ind.params.upColor || "#00FF00";
+      const downColor = ind.params.downColor || "#FF0000";
+
+      const results = calculateSupertrend(highArray, lowArray, valueArray, p, m);
+      const lineData: any[] = [];
+      
+      for (let i = 0; i < timeArray.length; i++) {
+        const isUp = results.trend[i] === 1;
+        const value = isUp ? results.up[i] : results.down[i];
+        const color = isUp ? upColor : downColor;
+
+        if (!isNaN(value)) {
+          lineData.push({ time: timeArray[i], value, color });
+        }
+      }
+
+      if (lineData.length > 0) {
+        series.setData(lineData);
       }
     } else if (ind.type === "ma_envelope") {
       let upper = seriesRef.current.get(`${ind.id}-upper`) as ISeriesApi<"Line">;

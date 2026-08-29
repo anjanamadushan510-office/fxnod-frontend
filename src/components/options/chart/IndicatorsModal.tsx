@@ -55,6 +55,7 @@ export const INDICATOR_LIST: { id: string; name: string; category: Category; dis
   { id: "ichimoku", name: "Ichimoku Clouds", category: "Trend", requiresOHLC: true, Icon: IconIchimoku },
   { id: "parabolic_sar", name: "Parabolic SAR", category: "Trend", requiresOHLC: true, Icon: IconParabolicSAR },
   { id: "zigzag", name: "Zig Zag", category: "Trend", requiresOHLC: true, Icon: IconZigZag },
+  { id: "supertrend", name: "Supertrend", category: "Trend", requiresOHLC: true, Icon: IconGenericTrend },
   // Volatility
   { id: "bollinger", name: "Bollinger Bands", category: "Volatility", Icon: IconGenericVolatility },
   { id: "donchian", name: "Donchian Channel", category: "Volatility", requiresOHLC: true, Icon: IconGenericVolatility },
