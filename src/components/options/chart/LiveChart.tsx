@@ -1004,57 +1004,38 @@ function syncIndicators(
         series.setData(data as any);
       }
     } else if (ind.type === "supertrend") {
-      let seriesUp = seriesRef.current.get(`${ind.id}-up`) as ISeriesApi<"Line">;
-      let seriesDown = seriesRef.current.get(`${ind.id}-down`) as ISeriesApi<"Line">;
-      if (!seriesUp || !seriesDown) {
-        seriesUp = chart.addSeries(LineSeries, { 
+      let series = seriesRef.current.get(ind.id) as ISeriesApi<"Line">;
+      if (!series) {
+        series = chart.addSeries(LineSeries, { 
           lineWidth: 2, 
-          color: ind.params.upColor || "#00FF00",
+          lineType: LineType.WithSteps,
           crosshairMarkerVisible: false,
           priceLineVisible: false 
         });
-        seriesDown = chart.addSeries(LineSeries, { 
-          lineWidth: 2, 
-          color: ind.params.downColor || "#FF0000",
-          crosshairMarkerVisible: false,
-          priceLineVisible: false 
-        });
-        seriesRef.current.set(`${ind.id}-up`, seriesUp);
-        seriesRef.current.set(`${ind.id}-down`, seriesDown);
-      } else {
-        seriesUp.applyOptions({ color: ind.params.upColor || "#00FF00" });
-        seriesDown.applyOptions({ color: ind.params.downColor || "#FF0000" });
+        seriesRef.current.set(ind.id, series);
       }
 
       const p = ind.params.period || 10;
       const m = ind.params.multiplier || 3;
+      const upColor = ind.params.upColor || "#00FF00";
+      const downColor = ind.params.downColor || "#FF0000";
 
       const results = calculateSupertrend(highArray, lowArray, valueArray, p, m);
-      const lineDataUp: any[] = [];
-      const lineDataDown: any[] = [];
+      const lineData: any[] = [];
       
       for (let i = 0; i < timeArray.length; i++) {
         const isUp = results.trend[i] === 1;
+        const value = isUp ? results.up[i] : results.down[i];
+        const color = isUp ? upColor : downColor;
 
-        if (isUp) {
-          if (!isNaN(results.up[i])) {
-            lineDataUp.push({ time: timeArray[i], value: results.up[i] });
-          } else {
-            lineDataUp.push({ time: timeArray[i] });
-          }
-          lineDataDown.push({ time: timeArray[i] }); // Whitespace to break the down line
-        } else {
-          if (!isNaN(results.down[i])) {
-            lineDataDown.push({ time: timeArray[i], value: results.down[i] });
-          } else {
-            lineDataDown.push({ time: timeArray[i] });
-          }
-          lineDataUp.push({ time: timeArray[i] }); // Whitespace to break the up line
+        if (!isNaN(value)) {
+          lineData.push({ time: timeArray[i], value, color });
         }
       }
 
-      seriesUp.setData(lineDataUp);
-      seriesDown.setData(lineDataDown);
+      if (lineData.length > 0) {
+        series.setData(lineData);
+      }
     } else if (ind.type === "ma_envelope") {
       let upper = seriesRef.current.get(`${ind.id}-upper`) as ISeriesApi<"Line">;
       let middle = seriesRef.current.get(`${ind.id}-middle`) as ISeriesApi<"Line">;
