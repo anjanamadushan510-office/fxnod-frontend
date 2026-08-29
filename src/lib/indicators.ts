@@ -932,11 +932,12 @@ export function calculateDPO(data: number[], period: number = 14, maType: string
   if (data.length < period) return result;
   
   const ma = calculateMA(data, period, maType);
+  const barsback = Math.floor(period / 2) + 1;
   
-  for (let i = 0; i < data.length; i++) {
-    const currentMA = ma[i];
-    if (!isNaN(currentMA)) {
-      result[i] = data[i] - currentMA;
+  for (let i = barsback; i < data.length; i++) {
+    const pastMA = ma[i - barsback];
+    if (!isNaN(pastMA)) {
+      result[i] = data[i] - pastMA;
     }
   }
   
