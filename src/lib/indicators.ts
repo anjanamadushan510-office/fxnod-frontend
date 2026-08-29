@@ -931,12 +931,16 @@ export function calculateDPO(data: number[], period: number = 21, maType: string
   const result: number[] = new Array(data.length).fill(NaN);
   if (data.length < period) return result;
   
+  // Standard DPO formula: Price[i] - SMA[i - (period/2 + 1)]
+  // The SMA is displaced backwards by (period/2 + 1) bars
+  // This removes the long-term trend and isolates short-term price cycles
   const ma = calculateMA(data, period, maType);
+  const barsback = Math.floor(period / 2) + 1;
   
-  for (let i = 0; i < data.length; i++) {
-    const currentMA = ma[i];
-    if (!isNaN(currentMA)) {
-      result[i] = data[i] - currentMA;
+  for (let i = barsback; i < data.length; i++) {
+    const displacedMA = ma[i - barsback];
+    if (!isNaN(displacedMA)) {
+      result[i] = data[i] - displacedMA;
     }
   }
   
