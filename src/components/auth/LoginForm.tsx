@@ -32,16 +32,8 @@ export function LoginForm() {
       onSuccess: async (data) => {
         setAccessToken(data.access_token);
         await bootstrap(); // GET /users/me → store user + status: authenticated
-        
         toast.success("Welcome back");
-
-        // Check if the newly logged-in user is an admin
-        const currentUser = useAuthStore.getState().user;
-        if (currentUser?.role === "admin") {
-          router.push("/admin/dashboard" as Route);
-        } else {
-          router.push("/" as Route);
-        }
+        router.push("/" as Route);
       },
       onError: (err) => {
         const parsed = parseApiError(err, "Login failed. Please try again.");
