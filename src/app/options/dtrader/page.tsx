@@ -175,17 +175,17 @@ function OptionsPageInner() {
 
       {showWarning && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowWarning(false)} />
-          <div className="relative flex w-[400px] flex-col rounded-xl border border-opt-line bg-opt-bg-elev shadow-2xl overflow-hidden p-6 gap-4">
-            <h2 className="text-[16px] font-bold text-opt-ink">Are you sure?</h2>
-            <p className="text-[13px] text-opt-ink-3">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowWarning(false)} />
+          <div className="relative flex w-[400px] flex-col rounded-lg bg-white shadow-2xl p-6">
+            <h2 className="text-[16px] font-bold text-[#333333]">Are you sure?</h2>
+            <p className="text-[14px] leading-relaxed text-[#333333] mt-4 mb-6">
               Some of your active indicators don't support 1-tick intervals. If you switch to this trade type, these indicators will be removed from your chart.
             </p>
-            <div className="flex items-center justify-end gap-3 mt-2">
+            <div className="flex items-center justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setShowWarning(false)}
-                className="rounded-md border border-opt-line px-4 py-2 text-[13px] font-semibold text-opt-ink hover:bg-opt-bg-sunk transition-colors"
+                className="rounded border border-[#999999] bg-[#f2f3f4] px-4 py-2 text-[14px] font-bold text-[#333333] hover:bg-[#e6e9ed] transition-colors"
               >
                 Cancel
               </button>
@@ -196,7 +196,7 @@ function OptionsPageInner() {
                   if (pendingTradeType) setTradeType(pendingTradeType);
                   setShowWarning(false);
                 }}
-                className="rounded-md bg-[#ff444f] px-4 py-2 text-[13px] font-semibold text-white hover:bg-[#e03d46] transition-colors"
+                className="rounded bg-[#ff444f] px-4 py-2 text-[14px] font-bold text-white hover:bg-[#eb3e48] transition-colors"
               >
                 Continue
               </button>
