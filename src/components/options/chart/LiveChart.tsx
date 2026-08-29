@@ -2012,9 +2012,10 @@ function syncIndicators(
         // Add a zero line for DPO
         series.createPriceLine({
             price: 0,
-            color: 'rgba(0, 0, 0, 0.3)',
+            color: '#e5e7eb',
             lineWidth: 1,
-            lineStyle: 2, // Dashed line
+            lineStyle: 0, // Solid line
+            axisLabelVisible: false,
         });
 
         seriesRef.current.set(ind.id, series);
