@@ -2012,7 +2012,7 @@ function syncIndicators(
         // Add a zero line for DPO
         series.createPriceLine({
             price: 0,
-            color: '#e5e7eb',
+            color: '#999999',
             lineWidth: 1,
             lineStyle: 0, // Solid line
             axisLabelVisible: false,
