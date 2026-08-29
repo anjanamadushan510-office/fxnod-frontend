@@ -10,10 +10,13 @@ import {
   type ChartTypeId,
   type IntervalId,
 } from "./chartSettings";
+import { useChartIndicators } from "@/stores/useChartIndicators";
+import { INDICATOR_LIST } from "./IndicatorsModal";
 
 const TEAL = "#00A79E";
 
 interface ChartTypesModalProps {
+  symbol: string;
   chartType: ChartTypeId;
   interval: IntervalId;
   /** When true (digit trade types), only "1 tick" is enabled (§4.2.2). */
@@ -31,6 +34,7 @@ interface ChartTypesModalProps {
  * toggle is local UI state (chart perf wiring comes later).
  */
 export function ChartTypesModal({
+  symbol,
   chartType,
   interval,
   tickOnly,
@@ -39,6 +43,11 @@ export function ChartTypesModal({
   onClose,
 }: ChartTypesModalProps) {
   const [smooth, setSmooth] = useState(true);
+  
+  const { indicators, removeIndicator } = useChartIndicators();
+  const [showWarning, setShowWarning] = useState(false);
+  const [pendingInterval, setPendingInterval] = useState<IntervalId | null>(null);
+  const [incompatibleList, setIncompatibleList] = useState<string[]>([]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -132,7 +141,23 @@ export function ChartTypesModal({
                     <button
                       type="button"
                       disabled={disabled}
-                      onClick={() => !disabled && onSelectInterval(opt.id)}
+                      onClick={() => {
+                        if (disabled) return;
+                        if (opt.id === "1t") {
+                          const active = indicators.filter(i => i.symbol === symbol);
+                          const incompatible = active.filter(ind => {
+                            const meta = INDICATOR_LIST.find(m => m.id === ind.type);
+                            return meta?.requiresOHLC;
+                          });
+                          if (incompatible.length > 0) {
+                            setIncompatibleList(incompatible.map(i => i.id));
+                            setPendingInterval(opt.id);
+                            setShowWarning(true);
+                            return;
+                          }
+                        }
+                        onSelectInterval(opt.id);
+                      }}
                       aria-pressed={active}
                       className={cn(
                         "w-full rounded-md border px-1.5 py-2 text-[12px] font-medium transition-colors",
@@ -195,6 +220,38 @@ export function ChartTypesModal({
           type.
         </div>
       </div>
+      
+      {showWarning && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowWarning(false)} />
+          <div className="relative flex w-[400px] flex-col rounded-xl border border-opt-line bg-opt-bg-elev shadow-2xl overflow-hidden p-6 gap-4">
+            <h2 className="text-[16px] font-bold text-opt-ink">Are you sure?</h2>
+            <p className="text-[13px] text-opt-ink-3">
+              Some of your active indicators don't support 1-tick intervals. If you change to a 1-tick interval, these indicators will be removed from your chart.
+            </p>
+            <div className="flex items-center justify-end gap-3 mt-2">
+              <button
+                type="button"
+                onClick={() => setShowWarning(false)}
+                className="rounded-md border border-opt-line px-4 py-2 text-[13px] font-semibold text-opt-ink hover:bg-opt-bg-sunk transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  incompatibleList.forEach(id => removeIndicator(id));
+                  if (pendingInterval) onSelectInterval(pendingInterval);
+                  setShowWarning(false);
+                }}
+                className="rounded-md bg-[#ff444f] px-4 py-2 text-[13px] font-semibold text-white hover:bg-[#e03d46] transition-colors"
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

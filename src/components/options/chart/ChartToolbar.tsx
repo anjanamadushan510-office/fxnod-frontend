@@ -118,6 +118,7 @@ export function ChartToolbar({
 
       {typesOpen && (
         <ChartTypesModal
+          symbol={symbol}
           chartType={chartType}
           interval={interval}
           tickOnly={tickOnly}
