@@ -498,7 +498,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
         
         {/* Indicator Legends */}
         <div className="absolute top-2 left-14 z-10 flex flex-col gap-1 pointer-events-none">
-          {activeIndicators.filter(ind => ["ma", "ma_envelope", "rainbow_ma", "bollinger", "donchian", "alligator", "fractal", "ichimoku", "parabolic_sar", "zigzag"].includes(ind.type)).map(ind => {
+          {activeIndicators.filter(ind => ["ma", "ma_envelope", "rainbow_ma", "bollinger", "donchian", "alligator", "fractal", "ichimoku", "parabolic_sar", "zigzag", "supertrend"].includes(ind.type)).map(ind => {
             const meta = INDICATOR_LIST.find(i => i.id === ind.type);
             const name = meta ? meta.name : ind.type;
             return (
@@ -512,7 +512,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
         </div>
 
         {(() => {
-          const oscillatorsList = activeIndicators.filter(ind => !["ma", "ma_envelope", "rainbow_ma", "bollinger", "donchian", "alligator", "fractal", "ichimoku", "parabolic_sar", "zigzag"].includes(ind.type));
+          const oscillatorsList = activeIndicators.filter(ind => !["ma", "ma_envelope", "rainbow_ma", "bollinger", "donchian", "alligator", "fractal", "ichimoku", "parabolic_sar", "zigzag", "supertrend"].includes(ind.type));
           let totalOsc = 0;
           oscillatorsList.forEach(ind => {
             totalOsc += minimizedIndicators.has(ind.id) ? 0.03 : (paneHeights[ind.id] ?? 0.22);
@@ -547,7 +547,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
 
         <div ref={containerRef} className="absolute inset-0" />
         {(() => {
-          const oscillatorsList = activeIndicators.filter(ind => !["ma", "ma_envelope", "rainbow_ma", "bollinger", "donchian", "alligator", "fractal", "ichimoku", "parabolic_sar", "zigzag"].includes(ind.type));
+          const oscillatorsList = activeIndicators.filter(ind => !["ma", "ma_envelope", "rainbow_ma", "bollinger", "donchian", "alligator", "fractal", "ichimoku", "parabolic_sar", "zigzag", "supertrend"].includes(ind.type));
           let totalOsc = 0;
           oscillatorsList.forEach(ind => {
             totalOsc += minimizedIndicators.has(ind.id) ? 0.03 : (paneHeights[ind.id] ?? 0.22);
@@ -2083,7 +2083,7 @@ function syncIndicators(
   }
   
   // Layout active oscillators dynamically to create a multi-pane effect without overlapping the main chart
-  const isOverlay = (type: string) => ["ma", "ma_envelope", "rainbow_ma", "bollinger", "donchian", "alligator", "fractal", "ichimoku", "parabolic_sar", "zigzag"].includes(type);
+  const isOverlay = (type: string) => ["ma", "ma_envelope", "rainbow_ma", "bollinger", "donchian", "alligator", "fractal", "ichimoku", "parabolic_sar", "zigzag", "supertrend"].includes(type);
   const oscillators = activeIndicators.filter(ind => !isOverlay(ind.type));
   const numOscillators = oscillators.length;
 
