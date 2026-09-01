@@ -234,3 +234,87 @@ function isPositiveDecimal(raw: string): boolean {
   if (!/^\d+(\.\d+)?$/.test(v)) return false;
   return Number.parseFloat(v) > 0;
 }
+
+/**
+ * Serializes form state into a preset configuration object.
+ */
+export function toPresetConfig(state: BotFormState): Record<string, unknown> {
+  return {
+    marketId: state.marketId,
+    currency: state.currency,
+    direction: state.direction,
+    growthRate: state.growthRate,
+    multiplier: state.multiplier,
+    digit: state.digit,
+    autoDigit: state.autoDigit,
+    barrierDigit: state.barrierDigit,
+    barrierAbove: state.barrierAbove,
+    barrierOffset: state.barrierOffset,
+    duration: state.duration,
+    durationUnit: state.durationUnit,
+    stake: state.stake,
+    takeProfit: state.takeProfit,
+    perTradeStopLoss: state.perTradeStopLoss,
+    sessionStopLoss: state.sessionStopLoss,
+    sessionTargetProfit: state.sessionTargetProfit,
+    maxTrades: state.maxTrades,
+    martingaleEnabled: state.martingaleEnabled,
+    martingaleMultiplier: state.martingaleMultiplier,
+    martingaleMaxSteps: state.martingaleMaxSteps,
+    indicators: state.indicators,
+  };
+}
+
+/**
+ * Restores full BotFormState from a saved preset configuration,
+ * falling back safely to defaultFormState() for any missing or invalid fields.
+ */
+export function fromPresetConfig(raw: unknown): BotFormState {
+  const defaults = defaultFormState();
+  if (!raw || typeof raw !== "object") return defaults;
+
+  const cfg = raw as Record<string, unknown>;
+
+  return {
+    marketId: typeof cfg.marketId === "string" ? cfg.marketId : defaults.marketId,
+    currency: typeof cfg.currency === "string" ? cfg.currency : defaults.currency,
+    direction:
+      cfg.direction === "up" || cfg.direction === "down" || cfg.direction === "auto"
+        ? cfg.direction
+        : defaults.direction,
+    growthRate: typeof cfg.growthRate === "number" ? cfg.growthRate : defaults.growthRate,
+    multiplier: typeof cfg.multiplier === "number" ? cfg.multiplier : defaults.multiplier,
+    digit: typeof cfg.digit === "number" ? cfg.digit : defaults.digit,
+    autoDigit: typeof cfg.autoDigit === "boolean" ? cfg.autoDigit : defaults.autoDigit,
+    barrierDigit: typeof cfg.barrierDigit === "number" ? cfg.barrierDigit : defaults.barrierDigit,
+    barrierAbove: typeof cfg.barrierAbove === "boolean" ? cfg.barrierAbove : defaults.barrierAbove,
+    barrierOffset: typeof cfg.barrierOffset === "string" ? cfg.barrierOffset : defaults.barrierOffset,
+    duration: typeof cfg.duration === "string" ? cfg.duration : defaults.duration,
+    durationUnit: typeof cfg.durationUnit === "string" ? cfg.durationUnit : defaults.durationUnit,
+    stake: typeof cfg.stake === "string" ? cfg.stake : defaults.stake,
+    takeProfit: typeof cfg.takeProfit === "string" ? cfg.takeProfit : defaults.takeProfit,
+    perTradeStopLoss:
+      typeof cfg.perTradeStopLoss === "string" ? cfg.perTradeStopLoss : defaults.perTradeStopLoss,
+    sessionStopLoss:
+      typeof cfg.sessionStopLoss === "string" ? cfg.sessionStopLoss : defaults.sessionStopLoss,
+    sessionTargetProfit:
+      typeof cfg.sessionTargetProfit === "string"
+        ? cfg.sessionTargetProfit
+        : defaults.sessionTargetProfit,
+    maxTrades: typeof cfg.maxTrades === "string" ? cfg.maxTrades : defaults.maxTrades,
+    martingaleEnabled:
+      typeof cfg.martingaleEnabled === "boolean"
+        ? cfg.martingaleEnabled
+        : defaults.martingaleEnabled,
+    martingaleMultiplier:
+      typeof cfg.martingaleMultiplier === "string"
+        ? cfg.martingaleMultiplier
+        : defaults.martingaleMultiplier,
+    martingaleMaxSteps:
+      typeof cfg.martingaleMaxSteps === "string"
+        ? cfg.martingaleMaxSteps
+        : defaults.martingaleMaxSteps,
+    indicators: Array.isArray(cfg.indicators) ? (cfg.indicators as BotIndicator[]) : defaults.indicators,
+  };
+}
+

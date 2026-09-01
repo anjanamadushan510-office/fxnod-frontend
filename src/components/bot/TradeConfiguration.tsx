@@ -13,6 +13,7 @@ import {
 } from "./botMeta";
 import { IndicatorPicker, hasDirectionalIndicator } from "./IndicatorPicker";
 import type { BotFormState, Direction } from "./formState";
+import { PresetBar } from "./PresetBar";
 
 interface TradeConfigurationProps {
   strategyId: string;
@@ -49,6 +50,13 @@ export function TradeConfiguration({
 
   return (
     <section className="flex flex-col gap-3.5">
+      <PresetBar
+        strategyId={strategyId}
+        currentState={state}
+        onLoad={(loadedState) => onChange(loadedState)}
+        disabled={disabled}
+      />
+
       <h2 className="m-0 text-[13px] font-bold tracking-[-0.01em] text-opt-ink">
         Trade Configuration
       </h2>
