@@ -16,6 +16,7 @@ export interface UserPublic {
   phone: string | null;
   is_email_verified: boolean;
   is_active: boolean;
+  role: string;
   kyc_status: string;
   created_at: string;
   updated_at: string;

@@ -6,8 +6,10 @@ import axios, {
 import { env } from "@/lib/env";
 import {
   getAccessToken,
+  getAdminAccessToken,
   notifyAuthExpired,
   setAccessToken,
+  setAdminAccessToken,
 } from "./authToken";
 
 /**
@@ -33,7 +35,9 @@ export const api: AxiosInstance = axios.create({
 
 // ── Request: attach the in-memory access token ──────────────────────────────
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  const token = getAccessToken();
+  const isAdminRoute = config.url?.includes("/api/v1/admin") || config.url?.includes("/api/v1/auth/admin");
+  const token = isAdminRoute ? getAdminAccessToken() : getAccessToken();
+  
   if (token) {
     config.headers.set("Authorization", `Bearer ${token}`);
   }
@@ -48,24 +52,30 @@ const NO_REFRESH_PATHS = [
   "/api/v1/auth/login",
   "/api/v1/auth/refresh",
   "/api/v1/auth/register",
+  "/api/v1/auth/admin/login",
+  "/api/v1/auth/admin/refresh",
 ];
 
 let refreshInFlight: Promise<string | null> | null = null;
+let adminRefreshInFlight: Promise<string | null> | null = null;
 
-/**
- * Hit /auth/refresh once; the refresh cookie travels automatically via
- * credentials. Returns the new access token, or null if the session is dead.
- * Uses a bare axios call so it never recurses through this interceptor.
- */
-async function refreshAccessToken(): Promise<string | null> {
+async function refreshAccessToken(isAdmin: boolean): Promise<string | null> {
+  const refreshUrl = isAdmin 
+    ? `${env.apiUrl}/api/v1/auth/admin/refresh`
+    : `${env.apiUrl}/api/v1/auth/refresh`;
+
   try {
     const res = await axios.post<{ access_token: string }>(
-      `${env.apiUrl}/api/v1/auth/refresh`,
+      refreshUrl,
       {},
       { withCredentials: true, timeout: 15000 },
     );
     const next = res.data.access_token;
-    setAccessToken(next);
+    if (isAdmin) {
+      setAdminAccessToken(next);
+    } else {
+      setAccessToken(next);
+    }
     return next;
   } catch {
     return null;
@@ -85,19 +95,30 @@ api.interceptors.response.use(
     }
 
     original._retried = true;
+    const isAdminRoute = url.includes("/api/v1/admin") || url.includes("/api/v1/auth/admin");
 
-    // Coalesce concurrent 401s into one refresh round-trip.
-    refreshInFlight ??= refreshAccessToken().finally(() => {
-      refreshInFlight = null;
-    });
-    const newToken = await refreshInFlight;
-
-    if (!newToken) {
-      notifyAuthExpired();
-      return Promise.reject(error);
+    if (isAdminRoute) {
+      adminRefreshInFlight ??= refreshAccessToken(true).finally(() => {
+        adminRefreshInFlight = null;
+      });
+      const newToken = await adminRefreshInFlight;
+      if (!newToken) {
+        notifyAuthExpired();
+        return Promise.reject(error);
+      }
+      original.headers.set("Authorization", `Bearer ${newToken}`);
+    } else {
+      refreshInFlight ??= refreshAccessToken(false).finally(() => {
+        refreshInFlight = null;
+      });
+      const newToken = await refreshInFlight;
+      if (!newToken) {
+        notifyAuthExpired();
+        return Promise.reject(error);
+      }
+      original.headers.set("Authorization", `Bearer ${newToken}`);
     }
 
-    original.headers.set("Authorization", `Bearer ${newToken}`);
     return api(original);
   },
 );

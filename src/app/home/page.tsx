@@ -9,9 +9,11 @@ import { ExploreMarkets } from "@/components/home/ExploreMarkets";
 import { Highlights } from "@/components/home/Highlights";
 import { MobileBanner } from "@/components/home/MobileBanner";
 import { TotalValueCard } from "@/components/home/TotalValueCard";
+import { DepositModal } from "@/components/home/DepositModal";
 
 export default function HomePage() {
   const [active, setActive] = useState<SidebarKey>("home");
+  const [showDepositModal, setShowDepositModal] = useState(false);
 
   return (
     <>
@@ -23,7 +25,7 @@ export default function HomePage() {
 
           {/* Every direct child sits above the watermark. */}
           <div className="relative z-10 flex flex-col gap-8">
-            <TotalValueCard />
+            <TotalValueCard onDeposit={() => setShowDepositModal(true)} />
             <AccountsSection />
             <ExploreMarkets />
             <Highlights />
@@ -33,6 +35,10 @@ export default function HomePage() {
       </div>
 
       <MobileTabBar active={active} onSelect={setActive} />
+      
+      {showDepositModal && (
+        <DepositModal onClose={() => setShowDepositModal(false)} />
+      )}
     </>
   );
 }
