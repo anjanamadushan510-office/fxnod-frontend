@@ -26,6 +26,10 @@ import {
   useRevokeBotPackage,
   getListMyBotPackagesQueryKey,
 } from "@/services/api/endpoints/bots/packages";
+import {
+  useCreateBotPreset,
+  getListBotPresetsQueryKey,
+} from "@/services/api/endpoints/bots/presets";
 import type { BotPackage } from "@/services/api/model";
 import {
   fromPresetConfig,
@@ -39,6 +43,7 @@ interface BotPackageModalProps {
   strategyId: string;
   currentState: BotFormState;
   onLoadConfig: (state: BotFormState) => void;
+  onPresetCreated?: (presetId: string) => void;
   initialTab?: "export" | "licenses" | "import";
   disabled?: boolean;
 }
@@ -49,6 +54,7 @@ export function BotPackageModal({
   strategyId,
   currentState,
   onLoadConfig,
+  onPresetCreated,
   initialTab = "export",
   disabled = false,
 }: BotPackageModalProps) {
@@ -71,6 +77,18 @@ export function BotPackageModal({
     [packagesQuery.data],
   );
 
+  const createPresetMutation = useCreateBotPreset({
+    mutation: {
+      onSuccess: (newPreset) => {
+        queryClient.invalidateQueries({ queryKey: getListBotPresetsQueryKey(strategyId) });
+        queryClient.invalidateQueries({ queryKey: getListBotPresetsQueryKey() });
+        if (onPresetCreated) {
+          onPresetCreated(newPreset.id);
+        }
+      },
+    },
+  });
+
   const createMutation = useCreateBotPackage({
     mutation: {
       onSuccess: (res) => {
@@ -92,10 +110,23 @@ export function BotPackageModal({
   const claimMutation = useClaimBotPackage({
     mutation: {
       onSuccess: (res) => {
-        toast.success(`Bot "${res.name}" unlocked and imported successfully!`);
         const restored = fromPresetConfig(res.config);
         onLoadConfig(restored);
+
+        // Auto-save the imported bot to the user's saved presets!
+        const presetName = res.name || `${strategyId} (Imported)`;
+        createPresetMutation.mutate({
+          data: {
+            name: presetName,
+            strategy_id: res.strategy_id || strategyId,
+            config: toPresetConfig(restored),
+          },
+        });
+
+        toast.success(`Bot "${res.name}" imported and automatically saved to your presets!`);
         queryClient.invalidateQueries({ queryKey: getListMyBotPackagesQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getListBotPresetsQueryKey(strategyId) });
+        queryClient.invalidateQueries({ queryKey: getListBotPresetsQueryKey() });
         setImportFileContent("");
         setImportFileName("");
         setImportPassword("");

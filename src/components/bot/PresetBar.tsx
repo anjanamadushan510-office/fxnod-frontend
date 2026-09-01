@@ -428,6 +428,7 @@ export function PresetBar({
         strategyId={strategyId}
         currentState={currentState}
         onLoadConfig={onLoad}
+        onPresetCreated={(newPresetId) => setActivePresetId(newPresetId)}
         initialTab={packageModalTab}
         disabled={disabled}
       />
