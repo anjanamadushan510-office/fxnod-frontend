@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { toast } from "sonner";
 import { BellIcon, CaretDownIcon, MenuIcon } from "@/components/ui/Icons";
 import { useAuthStore } from "@/stores/authStore";
@@ -9,13 +10,12 @@ import { cn } from "@/lib/cn";
 interface NavItem {
   label: string;
   href?: string;
-  active?: boolean;
   /** Renders an Accounts-style dropdown instead of a link. */
   dropdown?: boolean;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: "DASHBOARD", href: "/home", active: true },
+  { label: "DASHBOARD", href: "/home" },
   { label: "SUBSCRIPTIONS", href: "/subscriptions" },
   { label: "TOOLS", href: "#" },
   { label: "ACCOUNTS", dropdown: true },
@@ -33,6 +33,8 @@ interface TopNavProps {
 }
 
 export function TopNav({ onMenu }: TopNavProps) {
+  const pathname = usePathname();
+
   return (
     <header
       className={cn(
@@ -67,8 +69,10 @@ export function TopNav({ onMenu }: TopNavProps) {
       </div>
 
       <nav className="ml-auto flex items-center gap-9 text-[13px] font-semibold tracking-[0.13em] max-lg:hidden">
-        {NAV_ITEMS.map((item) =>
-          item.dropdown ? (
+        {NAV_ITEMS.map((item) => {
+          const isActive = item.href && item.href !== "#" && pathname.startsWith(item.href);
+          
+          return item.dropdown ? (
             <AccountsDropdown key={item.label} label={item.label} />
           ) : (
             <a
@@ -76,21 +80,21 @@ export function TopNav({ onMenu }: TopNavProps) {
               href={item.href}
               className={cn(
                 "relative py-1.5 transition-colors",
-                item.active
+                isActive
                   ? "text-gold"
                   : "text-[#e9e3cb]/65 hover:text-[#e9e3cb]",
               )}
             >
               {item.label}
-              {item.active && (
+              {isActive && (
                 <span
                   aria-hidden
                   className="absolute -bottom-[22px] left-1/2 h-[3px] w-8 -translate-x-1/2 rounded-t-sm bg-gold"
                 />
               )}
             </a>
-          ),
-        )}
+          );
+        })}
       </nav>
 
       <div className="ml-9 flex items-center gap-[18px] max-lg:ml-auto">
