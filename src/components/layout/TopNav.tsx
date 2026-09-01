@@ -16,7 +16,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { label: "DASHBOARD", href: "/home", active: true },
-  { label: "MARKETS", href: "#" },
+  { label: "SUBSCRIPTIONS", href: "/subscriptions" },
   { label: "TOOLS", href: "#" },
   { label: "ACCOUNTS", dropdown: true },
   { label: "LEARN", href: "#" },
