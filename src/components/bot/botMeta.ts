@@ -114,8 +114,14 @@ export function indicatorMeta(kind: BotIndicatorKind): IndicatorMeta {
 
 /** Markets bots run on — the continuously-quoted synthetics. */
 export const BOT_MARKET_IDS = [
-  "vol_75_1s",
   "vol_100_1s",
+  "vol_75_1s",
   "vol_50_1s",
   "vol_25_1s",
+  "boom_1000",
+  "boom_500",
+  "crash_1000",
+  "crash_500",
+  "jump_10",
+  "jump_25",
 ] as const;
