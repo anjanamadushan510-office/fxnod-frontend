@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Bookmark, Check, ChevronDown, Plus, RotateCcw, Trash2, X } from "lucide-react";
+import { Bookmark, Check, ChevronDown, Download, Plus, RotateCcw, Trash2, Upload, X } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/cn";
 import {
@@ -18,6 +18,7 @@ import {
   toPresetConfig,
   type BotFormState,
 } from "./formState";
+import { BotPackageModal } from "./BotPackageModal";
 
 interface PresetBarProps {
   strategyId: string;
@@ -45,6 +46,10 @@ export function PresetBar({
   const [presetNameInput, setPresetNameInput] = useState("");
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [saveMode, setSaveMode] = useState<"new" | "overwrite">("new");
+
+  // Bot Package & Licensing Modal State
+  const [showPackageModal, setShowPackageModal] = useState(false);
+  const [packageModalTab, setPackageModalTab] = useState<"export" | "licenses" | "import">("export");
 
   const activePreset = useMemo(
     () => presets.find((p) => p.id === activePresetId) ?? null,
@@ -185,6 +190,34 @@ export function PresetBar({
         </div>
 
         <div className="flex items-center gap-1">
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => {
+              setPackageModalTab("import");
+              setShowPackageModal(true);
+            }}
+            title="Import / Unlock an encrypted bot package (.txt)"
+            className="flex h-6 items-center gap-1 rounded-[var(--opt-radius-sm)] border border-opt-line bg-opt-bg-elev px-2 text-[11px] font-semibold text-opt-ink transition-colors hover:border-opt-rise hover:text-opt-rise disabled:opacity-40"
+          >
+            <Upload className="h-3 w-3" />
+            <span>Import</span>
+          </button>
+
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => {
+              setPackageModalTab("export");
+              setShowPackageModal(true);
+            }}
+            title="Export / Download encrypted bot (.txt) with one-time password"
+            className="flex h-6 items-center gap-1 rounded-[var(--opt-radius-sm)] border border-opt-line bg-opt-bg-elev px-2 text-[11px] font-semibold text-gold transition-colors hover:border-gold hover:bg-gold/10 disabled:opacity-40"
+          >
+            <Download className="h-3 w-3" />
+            <span>Download Bot</span>
+          </button>
+
           {activePreset && (
             <button
               type="button"
@@ -387,6 +420,17 @@ export function PresetBar({
           </div>
         </div>
       )}
+
+      {/* Bot Package & One-Time Licensing Hub */}
+      <BotPackageModal
+        isOpen={showPackageModal}
+        onClose={() => setShowPackageModal(false)}
+        strategyId={strategyId}
+        currentState={currentState}
+        onLoadConfig={onLoad}
+        initialTab={packageModalTab}
+        disabled={disabled}
+      />
     </div>
   );
 }

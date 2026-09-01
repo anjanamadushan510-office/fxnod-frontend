@@ -40,6 +40,7 @@ export * from './botIndicator';
 export * from './botIndicatorKind';
 export * from './botLimitAdjustment';
 export * from './botLimits';
+export * from './botPackage';
 export * from './botPreset';
 export * from './botRiskLimits';
 export * from './botRun';
