@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { api } from "@/services/api";
 import Image from "next/image";
+import { Copy, Check } from "lucide-react";
 
 interface DepositModalProps {
   onClose: () => void;
@@ -16,6 +17,7 @@ export function DepositModal({ onClose }: DepositModalProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [copied, setCopied] = useState(false);
 
   const TRC20_ADDRESS = "TKvQGzF3YXWcnRZRMSiNZdzBts8xyvznUf";
 
@@ -143,8 +145,18 @@ export function DepositModal({ onClose }: DepositModalProps) {
             
             <div className="mb-4 text-center">
               <p className="text-sm text-ink-2 mb-2">Send exactly the amount below to this TRC-20 address:</p>
-              <div className="bg-body rounded-lg p-3 border border-line mb-4 break-all">
-                <span className="font-mono text-gold text-sm font-bold">{TRC20_ADDRESS}</span>
+              <div 
+                className="bg-body rounded-lg p-3 border border-line mb-4 flex items-center justify-between gap-3 cursor-pointer hover:border-gold transition-colors group"
+                onClick={() => {
+                  navigator.clipboard.writeText(TRC20_ADDRESS);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+              >
+                <span className="font-mono text-gold text-sm font-bold break-all">{TRC20_ADDRESS}</span>
+                <div className="p-2 bg-surface rounded-md text-ink-3 group-hover:text-gold transition-colors flex-shrink-0">
+                  {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                </div>
               </div>
               
               <div className="flex justify-center mb-4">
