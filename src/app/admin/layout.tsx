@@ -10,24 +10,11 @@ export default function AdminLayout({
     <div className="min-h-screen bg-[#f8f6f0]">
       {/* Top Navigation */}
       <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 sticky top-0 z-50">
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-3">
-            <ShieldAlert className="w-6 h-6 text-indigo-600" />
-            <Link href={"/admin/dashboard" as any} className="text-xl font-bold text-navy hover:text-indigo-600 transition-colors">
-              FXNOD Admin
-            </Link>
-          </div>
-          <nav className="flex gap-4 border-l border-gray-200 pl-6 ml-2">
-            <Link href={"/admin/dashboard" as any} className="text-sm font-medium text-gray-600 hover:text-indigo-600">
-              Dashboard
-            </Link>
-            <Link href={"/admin/users" as any} className="text-sm font-medium text-gray-600 hover:text-indigo-600">
-              Users
-            </Link>
-            <Link href={"/admin/deposits" as any} className="text-sm font-medium text-gray-600 hover:text-indigo-600">
-              Deposits
-            </Link>
-          </nav>
+        <div className="flex items-center gap-3">
+          <ShieldAlert className="w-6 h-6 text-indigo-600" />
+          <Link href={"/admin/dashboard" as any} className="text-xl font-bold text-navy hover:text-indigo-600 transition-colors">
+            FXNOD Admin Dashboard
+          </Link>
         </div>
         <div className="flex items-center gap-4">
           <div className="text-sm font-medium text-gray-500">
