@@ -73,6 +73,17 @@ export function usePanelBuy(request: ProposalRequest | null): PanelBuyResult {
   const placeTrade = usePlaceTrade({
     mutation: {
       onSuccess: (trade) => {
+        const confirmedAtUTC = new Date().toISOString();
+        console.log(
+          `[FxNod Trade Debug] ✅ TRADE CONFIRMED at ${confirmedAtUTC} (UTC)`,
+          {
+            trade_id: trade.trade_id,
+            deriv_contract_id: trade.deriv_contract_id,
+            buy_price: trade.buy_price,
+            payout_amount: trade.payout_amount,
+            confirmed_at_utc: confirmedAtUTC,
+          },
+        );
         setLastTrade(trade);
         toast.success("Trade placed", {
           description: `Buy ${trade.buy_price} · payout ${trade.payout_amount} · #${trade.trade_id}`,
@@ -80,6 +91,14 @@ export function usePanelBuy(request: ProposalRequest | null): PanelBuyResult {
         if (requestRef.current) applyPostTrade(requestRef.current, trade);
       },
       onError: (e) => {
+        const failedAtUTC = new Date().toISOString();
+        console.error(
+          `[FxNod Trade Debug] ❌ TRADE FAILED at ${failedAtUTC} (UTC)`,
+          {
+            error: detailOf(e) ?? String(e),
+            failed_at_utc: failedAtUTC,
+          },
+        );
         toast.error("Trade failed", {
           description: detailOf(e) ?? "Please try again.",
         });
@@ -118,6 +137,19 @@ export function usePanelBuy(request: ProposalRequest | null): PanelBuyResult {
       toast.error("Connect your Deriv account to place trades.");
       return;
     }
+    const clickedAtUTC = new Date().toISOString();
+    console.log(
+      `[FxNod Trade Debug] 🔵 BUY CLICKED at ${clickedAtUTC} (UTC)`,
+      {
+        clicked_at_utc: clickedAtUTC,
+        symbol: request.symbol,
+        contract_type: request.contract_type,
+        side: request.side,
+        stake: request.stake,
+        duration: request.duration,
+        duration_unit: request.duration_unit,
+      },
+    );
     placeTrade.mutate({ data: request });
   }
 
