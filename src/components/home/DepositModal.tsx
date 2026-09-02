@@ -30,7 +30,11 @@ export function DepositModal({ onClose }: DepositModalProps) {
         setError("Failed to generate payment link.");
       }
     } catch (err: any) {
-      setError(err.response?.data?.detail || err.message || "An error occurred");
+      if (err.response?.status === 401) {
+        setError("Please login to your account to deposit funds.");
+      } else {
+        setError(err.response?.data?.detail || err.message || "An error occurred");
+      }
     } finally {
       setLoading(false);
     }
