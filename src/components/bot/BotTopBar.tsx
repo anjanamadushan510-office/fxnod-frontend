@@ -4,6 +4,22 @@ import type { Route } from "next";
 import Link from "next/link";
 import { cn } from "@/lib/cn";
 import { CaretDownIcon, UserIcon } from "@/components/ui/Icons";
+import { BotMenu, type BotMenuItem } from "./BotMenu";
+
+/**
+ * The header's overflow menu. Header, not picker: the picker only exists in an
+ * empty tab, so anything put there is unreachable while a bot is running.
+ *
+ * This replaced a "Reports" button that had no onClick and had never done
+ * anything.
+ */
+const MENU_ITEMS: BotMenuItem[] = [
+  {
+    label: "dBot history",
+    hint: "Every run, including the ones that have finished",
+    href: "/options/dbot/history",
+  },
+];
 
 interface BotTopBarProps {
   loginId: string;
@@ -72,17 +88,7 @@ export function BotTopBar({
           <CaretDownIcon className="h-3 w-3 text-opt-ink-3" />
         </button>
 
-        <button
-          type="button"
-          className={cn(
-            "flex items-center gap-1.5 rounded-[var(--opt-radius-sm)] border border-opt-line",
-            "bg-opt-bg-elev px-3 py-2 text-[12px] font-semibold text-opt-ink-2",
-            "transition-colors hover:border-opt-line-strong max-lg:hidden",
-          )}
-        >
-          Reports
-          <CaretDownIcon className="h-3 w-3 text-opt-ink-3" />
-        </button>
+        <BotMenu items={MENU_ITEMS} />
       </div>
     </header>
   );

@@ -4,12 +4,20 @@ import { cn } from "@/lib/cn";
 import { ArrowDownIcon, ArrowUpIcon } from "@/components/ui/Icons";
 import type { BotTrade } from "./types";
 
-export function HistoryTable({ trades }: { trades: BotTrade[] }) {
+export function HistoryTable({
+  trades,
+  // The default reads as advice for a bot that has not started. On a finished
+  // run that advice is wrong, so the caller says what an empty list means there.
+  emptyMessage = "No trades yet. Configure a bot and start it to see its trades here.",
+}: {
+  trades: BotTrade[];
+  emptyMessage?: string;
+}) {
   if (trades.length === 0) {
     return (
       <div className="grid flex-1 place-items-center px-5 py-12 text-center">
         <p className="m-0 max-w-[30ch] text-[12px] leading-relaxed text-opt-ink-3">
-          No trades yet. Configure a bot and start it to see its trades here.
+          {emptyMessage}
         </p>
       </div>
     );

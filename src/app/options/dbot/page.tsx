@@ -8,7 +8,6 @@ import { cn } from "@/lib/cn";
 import { BotChart } from "@/components/bot/BotChart";
 import { BotPicker } from "@/components/bot/BotPicker";
 import { BotTabs, type DraftTab } from "@/components/bot/BotTabs";
-import { BotTopBar } from "@/components/bot/BotTopBar";
 import { HistoryTable } from "@/components/bot/HistoryTable";
 import { SessionStats } from "@/components/bot/SessionStats";
 import { SplitHandle } from "@/components/bot/SplitHandle";
@@ -21,7 +20,8 @@ import {
   type BotFormState,
 } from "@/components/bot/formState";
 import { useBotCandles } from "@/components/bot/useBotCandles";
-import type { BotSession, BotTrade } from "@/components/bot/types";
+import { toTradeRows } from "@/components/bot/tradeRows";
+import type { BotSession } from "@/components/bot/types";
 import { useDerivStatus } from "@/hooks/useDerivStatus";
 import { usePositionsWebSocket } from "@/hooks/usePositionsWebSocket";
 import { toDerivSymbol } from "@/services/deriv/derivSymbols";
@@ -39,7 +39,6 @@ import {
 import type {
   BotLimitAdjustment,
   BotRun,
-  BotRunTrade,
   BotStrategy,
   ListBotRuns200,
 } from "@/services/api/model";
@@ -78,7 +77,6 @@ export default function DBotPage() {
   const deriv = useDerivStatus();
   const authed = useAuthStore((s) => s.status === "authenticated");
   usePositionsWebSocket(authed);
-  const accountBalance = useAccountBalance((s) => s.balance);
   const accountCurrency = useAccountBalance((s) => s.currency);
 
   const queryClient = useQueryClient();
@@ -366,19 +364,10 @@ export default function DBotPage() {
     [activeRuns],
   );
 
+  // The page's own root is a fragment: the app frame and the header belong to
+  // this route's layout, so every dBot screen carries the same chrome.
   return (
-    <div
-      data-app="options"
-      data-opt-theme="light"
-      className="flex h-screen flex-col overflow-hidden bg-opt-bg font-sans text-opt-ink"
-    >
-      <BotTopBar
-        loginId={deriv.accountId ?? (deriv.isLoading ? "…" : "Not connected")}
-        balance={accountBalance}
-        currency={accountCurrency}
-        isVirtual={deriv.isVirtual}
-      />
-
+    <>
       <BotTabs
         runs={activeRuns}
         drafts={draftTabs}
@@ -521,7 +510,7 @@ export default function DBotPage() {
         </main>
       </div>
       )}
-    </div>
+    </>
   );
 }
 
@@ -542,23 +531,6 @@ function SectionHeader({ title, hint }: { title: string; hint?: string }) {
       {hint && <span className="truncate text-[10px] text-opt-ink-3">{hint}</span>}
     </div>
   );
-}
-
-/**
- * Turns API trades into the history table's rows. Times render in the viewer's
- * locale — someone reconciling their own trades reads their own clock.
- */
-function toTradeRows(trades: BotRunTrade[]): BotTrade[] {
-  return trades.map((t) => ({
-    id: t.trade_id,
-    time: new Date(t.created_at).toLocaleTimeString(),
-    direction: t.side === "fall" ? "down" : "up",
-    stake: Number.parseFloat(t.stake_amount) || 0,
-    result: t.outcome === "won" ? "won" : t.outcome === "lost" ? "lost" : "open",
-    // null, not 0, while unsettled — the table renders "--" rather than a
-    // break-even figure the contract has not produced.
-    pnl: t.profit_loss === undefined ? null : Number.parseFloat(t.profit_loss),
-  }));
 }
 
 function toSession(
