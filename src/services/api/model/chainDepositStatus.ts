@@ -30,18 +30,20 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
-import type { DecimalString } from './decimalString';
 
-export interface DepositAddressResponse {
-  id: string;
-  user_id: string;
-  /** The user's own address, stable for this chain and currency. Derived from FXNod's watch-only key; safe to save and reuse. */
-  address: string;
-  chain: string;
-  currency: string;
-  created_at: string;
-  /** Deposits below this are recorded but not credited. */
-  min_deposit: DecimalString;
-  /** Block confirmations before the deposit is credited. */
-  required_confirmations: number;
-}
+/**
+ * Lifecycle of an observed on-chain deposit. Only `credited` has moved money; every other value is a deposit seen and deliberately not paid.
+ */
+export type ChainDepositStatus = typeof ChainDepositStatus[keyof typeof ChainDepositStatus];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const ChainDepositStatus = {
+  pending: 'pending',
+  confirmed: 'confirmed',
+  credited: 'credited',
+  below_minimum: 'below_minimum',
+  orphaned: 'orphaned',
+  failed: 'failed',
+  rejected: 'rejected',
+} as const;

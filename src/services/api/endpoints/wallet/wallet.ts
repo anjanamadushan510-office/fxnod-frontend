@@ -51,10 +51,14 @@ import type {
 
 import type {
   BalanceResponse,
+  ChainDepositResponse,
   DepositAddressRequest,
   DepositAddressResponse,
   Error,
   GetWalletTransactionsParams,
+  ListChainDepositsParams,
+  ManualDepositCreate,
+  ManualDepositResponse,
   TransactionHistoryResponse,
   UnauthorizedResponse,
   ValidationErrorResponse,
@@ -316,6 +320,167 @@ export const useGetOrCreateDepositAddress = <TError = ErrorType<UnauthorizedResp
       > => {
 
       const mutationOptions = getGetOrCreateDepositAddressMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Deposits detected on chain, including ones still confirming. Scoped to the authenticated user. Every status other than `credited` carries a `status_reason` explaining why no balance was added.
+ * @summary List the caller's on-chain deposits
+ */
+export const listChainDeposits = (
+    params?: ListChainDepositsParams,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ChainDepositResponse[]>(
+      {url: `/api/v1/wallet/deposits`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+  
+
+
+
+export const getListChainDepositsQueryKey = (params?: ListChainDepositsParams,) => {
+    return [
+    `/api/v1/wallet/deposits`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getListChainDepositsQueryOptions = <TData = Awaited<ReturnType<typeof listChainDeposits>>, TError = ErrorType<UnauthorizedResponse | ValidationErrorResponse>>(params?: ListChainDepositsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listChainDeposits>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListChainDepositsQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listChainDeposits>>> = ({ signal }) => listChainDeposits(params, requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listChainDeposits>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListChainDepositsQueryResult = NonNullable<Awaited<ReturnType<typeof listChainDeposits>>>
+export type ListChainDepositsQueryError = ErrorType<UnauthorizedResponse | ValidationErrorResponse>
+
+
+export function useListChainDeposits<TData = Awaited<ReturnType<typeof listChainDeposits>>, TError = ErrorType<UnauthorizedResponse | ValidationErrorResponse>>(
+ params: undefined |  ListChainDepositsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listChainDeposits>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listChainDeposits>>,
+          TError,
+          Awaited<ReturnType<typeof listChainDeposits>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListChainDeposits<TData = Awaited<ReturnType<typeof listChainDeposits>>, TError = ErrorType<UnauthorizedResponse | ValidationErrorResponse>>(
+ params?: ListChainDepositsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listChainDeposits>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listChainDeposits>>,
+          TError,
+          Awaited<ReturnType<typeof listChainDeposits>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListChainDeposits<TData = Awaited<ReturnType<typeof listChainDeposits>>, TError = ErrorType<UnauthorizedResponse | ValidationErrorResponse>>(
+ params?: ListChainDepositsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listChainDeposits>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List the caller's on-chain deposits
+ */
+
+export function useListChainDeposits<TData = Awaited<ReturnType<typeof listChainDeposits>>, TError = ErrorType<UnauthorizedResponse | ValidationErrorResponse>>(
+ params?: ListChainDepositsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listChainDeposits>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListChainDepositsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * Fallback for deposits the chain monitor did not detect. Creates a request for operator review — never a credit. `amount` is the user's unverified claim; what is actually paid out is decided at approval.
+
+Rejects a transaction hash the monitor has already seen, which would otherwise be a route to being credited twice for one transfer.
+ * @summary Submit a manual deposit claim
+ */
+export const createManualDeposit = (
+    manualDepositCreate: BodyType<ManualDepositCreate>,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ManualDepositResponse>(
+      {url: `/api/v1/wallet/deposit/manual`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: manualDepositCreate, signal
+    },
+      options);
+    }
+  
+
+
+export const getCreateManualDepositMutationOptions = <TError = ErrorType<UnauthorizedResponse | Error | ValidationErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createManualDeposit>>, TError,{data: BodyType<ManualDepositCreate>}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof createManualDeposit>>, TError,{data: BodyType<ManualDepositCreate>}, TContext> => {
+
+const mutationKey = ['createManualDeposit'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createManualDeposit>>, {data: BodyType<ManualDepositCreate>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createManualDeposit(data,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateManualDepositMutationResult = NonNullable<Awaited<ReturnType<typeof createManualDeposit>>>
+    export type CreateManualDepositMutationBody = BodyType<ManualDepositCreate>
+    export type CreateManualDepositMutationError = ErrorType<UnauthorizedResponse | Error | ValidationErrorResponse>
+
+    /**
+ * @summary Submit a manual deposit claim
+ */
+export const useCreateManualDeposit = <TError = ErrorType<UnauthorizedResponse | Error | ValidationErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createManualDeposit>>, TError,{data: BodyType<ManualDepositCreate>}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof createManualDeposit>>,
+        TError,
+        {data: BodyType<ManualDepositCreate>},
+        TContext
+      > => {
+
+      const mutationOptions = getCreateManualDepositMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

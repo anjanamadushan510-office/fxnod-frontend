@@ -31,17 +31,23 @@ library, not a float.
  * OpenAPI spec version: 0.1.0
  */
 import type { DecimalString } from './decimalString';
+import type { ChainDepositStatus } from './chainDepositStatus';
 
-export interface DepositAddressResponse {
+export interface ChainDepositResponse {
   id: string;
   user_id: string;
-  /** The user's own address, stable for this chain and currency. Derived from FXNod's watch-only key; safe to save and reuse. */
-  address: string;
-  chain: string;
+  amount: DecimalString;
   currency: string;
+  chain: string;
+  tx_hash: string;
+  confirmations: number;
+  status: ChainDepositStatus;
+  /**
+   * Why a non-credited deposit was not paid out.
+   * @nullable
+   */
+  status_reason?: string | null;
   created_at: string;
-  /** Deposits below this are recorded but not credited. */
-  min_deposit: DecimalString;
-  /** Block confirmations before the deposit is credited. */
-  required_confirmations: number;
+  /** @nullable */
+  credited_at?: string | null;
 }

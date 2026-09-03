@@ -32,16 +32,8 @@ library, not a float.
  */
 import type { DecimalString } from './decimalString';
 
-export interface DepositAddressResponse {
-  id: string;
-  user_id: string;
-  /** The user's own address, stable for this chain and currency. Derived from FXNod's watch-only key; safe to save and reuse. */
-  address: string;
-  chain: string;
-  currency: string;
-  created_at: string;
-  /** Deposits below this are recorded but not credited. */
-  min_deposit: DecimalString;
-  /** Block confirmations before the deposit is credited. */
-  required_confirmations: number;
-}
+/**
+ * Amount the reviewer confirmed on chain. Omitting it credits the user's unverified claim instead.
+ * @nullable
+ */
+export type ManualDepositApprovalVerifiedAmount = DecimalString | null;
