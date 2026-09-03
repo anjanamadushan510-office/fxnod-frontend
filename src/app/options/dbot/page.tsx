@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Route } from "next";
 import Link from "next/link";
+import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/cn";
 import { BotChart } from "@/components/bot/BotChart";
 import { BotPicker } from "@/components/bot/BotPicker";
@@ -27,6 +28,7 @@ import { toDerivSymbol } from "@/services/deriv/derivSymbols";
 import { useAccountBalance } from "@/stores/useAccountBalance";
 import { useAuthStore } from "@/stores/authStore";
 import {
+  getListBotRunsQueryKey,
   useGetBotLimits,
   useListBotRunTrades,
   useListBotRuns,
@@ -39,6 +41,7 @@ import type {
   BotRun,
   BotRunTrade,
   BotStrategy,
+  ListBotRuns200,
 } from "@/services/api/model";
 
 /**
@@ -64,6 +67,13 @@ import type {
  *   the bot-worker does the trading, which is why closing this tab does not stop
  *   a bot and equally why it cannot disable one's stop loss.
  */
+/**
+ * Shared by the runs query and by the cache write that seeds a just-started run
+ * into it. They must agree exactly: orval builds the query key from these
+ * params, so a second object literal here would write to a key nothing reads.
+ */
+const RUNS_PARAMS = { limit: 20 } as const;
+
 export default function DBotPage() {
   const deriv = useDerivStatus();
   const authed = useAuthStore((s) => s.status === "authenticated");
@@ -71,12 +81,12 @@ export default function DBotPage() {
   const accountBalance = useAccountBalance((s) => s.balance);
   const accountCurrency = useAccountBalance((s) => s.currency);
 
+  const queryClient = useQueryClient();
   const strategiesQuery = useListBotStrategies();
   const limitsQuery = useGetBotLimits();
-  const runsQuery = useListBotRuns(
-    { limit: 20 },
-    { query: { refetchInterval: 3000 } },
-  );
+  const runsQuery = useListBotRuns(RUNS_PARAMS, {
+    query: { refetchInterval: 3000 },
+  });
 
   const strategies: BotStrategy[] = useMemo(
     () => strategiesQuery.data?.strategies ?? [],
@@ -87,6 +97,9 @@ export default function DBotPage() {
     () => (runsQuery.data?.runs ?? []).filter(isActive),
     [runsQuery.data],
   );
+
+  /** True until the runs query has produced either data or an error. */
+  const runsPending = runsQuery.isPending;
 
   const maxConcurrent = limitsQuery.data?.max_concurrent_runs ?? 1;
   const accountLossLimit = limitsQuery.data?.max_account_session_loss
@@ -111,7 +124,15 @@ export default function DBotPage() {
   }, []);
 
   // Open a draft when there is nothing to look at, so the page is never empty.
+  //
+  // The guard is load-bearing. "Nothing to look at" is only true once the server
+  // has actually answered — while the runs query is still pending, an empty list
+  // means "not known yet", and acting on it opened a picker tab above bots that
+  // were already running. An error resolves the query too, deliberately: if the
+  // engine is unreachable the user should still get a tab to configure in.
   useEffect(() => {
+    if (runsPending) return;
+
     if (activeRuns.length === 0 && drafts.length === 0) {
       newDraft();
       return;
@@ -124,7 +145,7 @@ export default function DBotPage() {
     if (!exists) {
       setActiveId(activeRuns[0]?.run_id ?? drafts[0]?.id ?? "");
     }
-  }, [activeRuns, drafts, activeId, newDraft]);
+  }, [runsPending, activeRuns, drafts, activeId, newDraft]);
 
   const closeDraft = useCallback(
     (id: string) => {
@@ -141,6 +162,27 @@ export default function DBotPage() {
       });
     },
     [],
+  );
+
+  /**
+   * Put a just-started run into the runs cache without waiting for the poll.
+   *
+   * Only ever ADDS the row the server itself returned — it does not invent one
+   * and does not edit an existing row — so the next refetch replaces it with the
+   * same run rather than correcting an optimistic guess.
+   */
+  const adoptRun = useCallback(
+    (run: BotRun) => {
+      queryClient.setQueryData<ListBotRuns200>(
+        getListBotRunsQueryKey(RUNS_PARAMS),
+        (prev) => {
+          const runs = prev?.runs ?? [];
+          if (runs.some((r) => r.run_id === run.run_id)) return prev;
+          return { ...prev, runs: [run, ...runs] };
+        },
+      );
+    },
+    [queryClient],
   );
 
   const activeRun = activeRuns.find((r) => r.run_id === activeId);
@@ -282,12 +324,21 @@ export default function DBotPage() {
       }
       // The draft became a run: drop the draft and follow the new run.
       //
-      // StartBotRunResponse types `run` as optional, so the id is read
+      // The started run goes into the runs cache FIRST, and that ordering is the
+      // whole point. Closing the draft and waiting for the next poll left one
+      // render with no drafts and no runs, which the "page is never empty"
+      // effect read as an idle page — so starting a bot spawned a blank picker
+      // tab and moved the user to it, and the bot they had just started looked
+      // like it had gone nowhere. Seeding the cache means the run's tab exists
+      // in the same render the draft's tab disappears.
+      //
+      // StartBotRunResponse types `run` as optional, so both are read
       // defensively — a 201 without one would otherwise leave the page pointing
       // at a draft that no longer exists.
-      const newRunId = res.run?.run_id;
+      const newRun = res.run;
+      if (newRun) adoptRun(newRun);
       closeDraft(activeId);
-      if (newRunId) setActiveId(newRunId);
+      if (newRun) setActiveId(newRun.run_id);
       await runsQuery.refetch();
     } catch (err) {
       setErrors([apiMessage(err)]);
