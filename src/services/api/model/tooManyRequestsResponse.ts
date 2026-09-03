@@ -30,38 +30,9 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
-import type { CommissionSourceType } from './commissionSourceType';
-import type { DecimalString } from './decimalString';
-import type { CommissionStatus } from './commissionStatus';
+import type { Error } from './error';
 
-export interface CommissionLedgerEntry {
-  id: string;
-  user_id: string;
-  source_user_id: string;
-  source_type: CommissionSourceType;
-  /** The thing that earned it — a trade id for trade_markup, a subscription purchase id for dbot_subscription. */
-  trade_id: string;
-  platform: string;
-  level: number;
-  accrued_markup_amount: DecimalString;
-  commission_percentage: DecimalString;
-  commission_amount: DecimalString;
-  currency: string;
-  deriv_settlement_period: string;
-  status: CommissionStatus;
-  accrued_at: string;
-  /**
-   * When a held commission becomes payable. Null for trade_markup, which waits for Deriv's monthly payout rather than for a clock.
-   * @nullable
-   */
-  payable_at?: string | null;
-  /** Held back from automatic settlement until a person has looked at it. Not an accusation and not a reversal — the amount is unchanged and the row is still accrued. */
-  review_required: boolean;
-  /**
-   * Machine-readable, e.g. shared_funding_source.
-   * @nullable
-   */
-  review_reason?: string | null;
-  /** @nullable */
-  settled_at?: string | null;
-}
+/**
+ * Per-user rate limit exceeded. `Retry-After` says how many seconds to wait. The limits are generous enough that no honest use meets them — they stop one account filling the manual review queue or hammering a paid provider.
+ */
+export type TooManyRequestsResponse = Error;

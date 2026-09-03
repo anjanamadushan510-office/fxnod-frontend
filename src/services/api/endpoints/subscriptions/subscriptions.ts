@@ -57,6 +57,7 @@ import type {
   SubscriptionPurchaseRequest,
   SubscriptionPurchaseResponse,
   SubscriptionStatusResponse,
+  TooManyRequestsResponse,
   UnauthorizedResponse,
   ValidationErrorResponse
 } from '../../model';
@@ -282,7 +283,7 @@ export const purchaseSubscription = (
   
 
 
-export const getPurchaseSubscriptionMutationOptions = <TError = ErrorType<UnauthorizedResponse | Error | ValidationErrorResponse>,
+export const getPurchaseSubscriptionMutationOptions = <TError = ErrorType<UnauthorizedResponse | Error | ValidationErrorResponse | TooManyRequestsResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof purchaseSubscription>>, TError,{data: BodyType<SubscriptionPurchaseRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof purchaseSubscription>>, TError,{data: BodyType<SubscriptionPurchaseRequest>}, TContext> => {
 
@@ -309,12 +310,12 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type PurchaseSubscriptionMutationResult = NonNullable<Awaited<ReturnType<typeof purchaseSubscription>>>
     export type PurchaseSubscriptionMutationBody = BodyType<SubscriptionPurchaseRequest>
-    export type PurchaseSubscriptionMutationError = ErrorType<UnauthorizedResponse | Error | ValidationErrorResponse>
+    export type PurchaseSubscriptionMutationError = ErrorType<UnauthorizedResponse | Error | ValidationErrorResponse | TooManyRequestsResponse>
 
     /**
  * @summary Buy or extend a subscription from the FXNod wallet
  */
-export const usePurchaseSubscription = <TError = ErrorType<UnauthorizedResponse | Error | ValidationErrorResponse>,
+export const usePurchaseSubscription = <TError = ErrorType<UnauthorizedResponse | Error | ValidationErrorResponse | TooManyRequestsResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof purchaseSubscription>>, TError,{data: BodyType<SubscriptionPurchaseRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof purchaseSubscription>>,

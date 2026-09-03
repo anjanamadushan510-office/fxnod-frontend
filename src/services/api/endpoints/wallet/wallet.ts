@@ -61,6 +61,7 @@ import type {
   ListChainDepositsParams,
   ManualDepositCreate,
   ManualDepositResponse,
+  TooManyRequestsResponse,
   TransactionHistoryResponse,
   UnauthorizedResponse,
   ValidationErrorResponse,
@@ -280,7 +281,7 @@ export const getOrCreateDepositAddress = (
   
 
 
-export const getGetOrCreateDepositAddressMutationOptions = <TError = ErrorType<UnauthorizedResponse | ValidationErrorResponse>,
+export const getGetOrCreateDepositAddressMutationOptions = <TError = ErrorType<UnauthorizedResponse | ValidationErrorResponse | TooManyRequestsResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getOrCreateDepositAddress>>, TError,{data: BodyType<DepositAddressRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof getOrCreateDepositAddress>>, TError,{data: BodyType<DepositAddressRequest>}, TContext> => {
 
@@ -307,12 +308,12 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type GetOrCreateDepositAddressMutationResult = NonNullable<Awaited<ReturnType<typeof getOrCreateDepositAddress>>>
     export type GetOrCreateDepositAddressMutationBody = BodyType<DepositAddressRequest>
-    export type GetOrCreateDepositAddressMutationError = ErrorType<UnauthorizedResponse | ValidationErrorResponse>
+    export type GetOrCreateDepositAddressMutationError = ErrorType<UnauthorizedResponse | ValidationErrorResponse | TooManyRequestsResponse>
 
     /**
  * @summary Get or create a deposit address
  */
-export const useGetOrCreateDepositAddress = <TError = ErrorType<UnauthorizedResponse | ValidationErrorResponse>,
+export const useGetOrCreateDepositAddress = <TError = ErrorType<UnauthorizedResponse | ValidationErrorResponse | TooManyRequestsResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getOrCreateDepositAddress>>, TError,{data: BodyType<DepositAddressRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof getOrCreateDepositAddress>>,
@@ -441,7 +442,7 @@ export const createBinancePayOrder = (
   
 
 
-export const getCreateBinancePayOrderMutationOptions = <TError = ErrorType<Error | UnauthorizedResponse | ValidationErrorResponse>,
+export const getCreateBinancePayOrderMutationOptions = <TError = ErrorType<Error | UnauthorizedResponse | ValidationErrorResponse | TooManyRequestsResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBinancePayOrder>>, TError,{data: BodyType<BinancePayOrderCreateRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof createBinancePayOrder>>, TError,{data: BodyType<BinancePayOrderCreateRequest>}, TContext> => {
 
@@ -468,12 +469,12 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type CreateBinancePayOrderMutationResult = NonNullable<Awaited<ReturnType<typeof createBinancePayOrder>>>
     export type CreateBinancePayOrderMutationBody = BodyType<BinancePayOrderCreateRequest>
-    export type CreateBinancePayOrderMutationError = ErrorType<Error | UnauthorizedResponse | ValidationErrorResponse>
+    export type CreateBinancePayOrderMutationError = ErrorType<Error | UnauthorizedResponse | ValidationErrorResponse | TooManyRequestsResponse>
 
     /**
  * @summary Open a Binance Pay order
  */
-export const useCreateBinancePayOrder = <TError = ErrorType<Error | UnauthorizedResponse | ValidationErrorResponse>,
+export const useCreateBinancePayOrder = <TError = ErrorType<Error | UnauthorizedResponse | ValidationErrorResponse | TooManyRequestsResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBinancePayOrder>>, TError,{data: BodyType<BinancePayOrderCreateRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createBinancePayOrder>>,
@@ -508,7 +509,7 @@ export const createManualDeposit = (
   
 
 
-export const getCreateManualDepositMutationOptions = <TError = ErrorType<UnauthorizedResponse | Error | ValidationErrorResponse>,
+export const getCreateManualDepositMutationOptions = <TError = ErrorType<UnauthorizedResponse | Error | ValidationErrorResponse | TooManyRequestsResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createManualDeposit>>, TError,{data: BodyType<ManualDepositCreate>}, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof createManualDeposit>>, TError,{data: BodyType<ManualDepositCreate>}, TContext> => {
 
@@ -535,12 +536,12 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type CreateManualDepositMutationResult = NonNullable<Awaited<ReturnType<typeof createManualDeposit>>>
     export type CreateManualDepositMutationBody = BodyType<ManualDepositCreate>
-    export type CreateManualDepositMutationError = ErrorType<UnauthorizedResponse | Error | ValidationErrorResponse>
+    export type CreateManualDepositMutationError = ErrorType<UnauthorizedResponse | Error | ValidationErrorResponse | TooManyRequestsResponse>
 
     /**
  * @summary Submit a manual deposit claim
  */
-export const useCreateManualDeposit = <TError = ErrorType<UnauthorizedResponse | Error | ValidationErrorResponse>,
+export const useCreateManualDeposit = <TError = ErrorType<UnauthorizedResponse | Error | ValidationErrorResponse | TooManyRequestsResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createManualDeposit>>, TError,{data: BodyType<ManualDepositCreate>}, TContext>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createManualDeposit>>,
@@ -572,7 +573,7 @@ export const requestWithdrawal = (
   
 
 
-export const getRequestWithdrawalMutationOptions = <TError = ErrorType<UnauthorizedResponse | Error | ValidationErrorResponse>,
+export const getRequestWithdrawalMutationOptions = <TError = ErrorType<UnauthorizedResponse | Error | ValidationErrorResponse | TooManyRequestsResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof requestWithdrawal>>, TError,{data: BodyType<WithdrawalRequestIn>}, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof requestWithdrawal>>, TError,{data: BodyType<WithdrawalRequestIn>}, TContext> => {
 
@@ -599,12 +600,12 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type RequestWithdrawalMutationResult = NonNullable<Awaited<ReturnType<typeof requestWithdrawal>>>
     export type RequestWithdrawalMutationBody = BodyType<WithdrawalRequestIn>
-    export type RequestWithdrawalMutationError = ErrorType<UnauthorizedResponse | Error | ValidationErrorResponse>
+    export type RequestWithdrawalMutationError = ErrorType<UnauthorizedResponse | Error | ValidationErrorResponse | TooManyRequestsResponse>
 
     /**
  * @summary Request a withdrawal
  */
-export const useRequestWithdrawal = <TError = ErrorType<UnauthorizedResponse | Error | ValidationErrorResponse>,
+export const useRequestWithdrawal = <TError = ErrorType<UnauthorizedResponse | Error | ValidationErrorResponse | TooManyRequestsResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof requestWithdrawal>>, TError,{data: BodyType<WithdrawalRequestIn>}, TContext>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof requestWithdrawal>>,

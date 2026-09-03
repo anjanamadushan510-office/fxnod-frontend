@@ -30,38 +30,20 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
-import type { CommissionSourceType } from './commissionSourceType';
-import type { DecimalString } from './decimalString';
-import type { CommissionStatus } from './commissionStatus';
 
-export interface CommissionLedgerEntry {
-  id: string;
-  user_id: string;
-  source_user_id: string;
-  source_type: CommissionSourceType;
-  /** The thing that earned it — a trade id for trade_markup, a subscription purchase id for dbot_subscription. */
-  trade_id: string;
-  platform: string;
-  level: number;
-  accrued_markup_amount: DecimalString;
-  commission_percentage: DecimalString;
-  commission_amount: DecimalString;
-  currency: string;
-  deriv_settlement_period: string;
-  status: CommissionStatus;
-  accrued_at: string;
+export interface AdminLoginRequest {
+  email: string;
   /**
-   * When a held commission becomes payable. Null for trade_markup, which waits for Deriv's monthly payout rather than for a clock.
-   * @nullable
+   * @minLength 1
+   * @maxLength 256
    */
-  payable_at?: string | null;
-  /** Held back from automatic settlement until a person has looked at it. Not an accusation and not a reversal — the amount is unchanged and the row is still accrued. */
-  review_required: boolean;
+  password: string;
   /**
-   * Machine-readable, e.g. shared_funding_source.
+   * A string, not an integer: a third of all codes begin with a zero, and an integer would strip it.
+   * @minLength 6
+   * @maxLength 8
    * @nullable
+   * @pattern ^[0-9]{6,8}$
    */
-  review_reason?: string | null;
-  /** @nullable */
-  settled_at?: string | null;
+  totp_code?: string | null;
 }

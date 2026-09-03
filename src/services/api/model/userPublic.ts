@@ -30,6 +30,7 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
+import type { UserPublicRole } from './userPublicRole';
 import type { KYCStatus } from './kYCStatus';
 
 export interface UserPublic {
@@ -43,6 +44,8 @@ export interface UserPublic {
   phone?: string | null;
   is_email_verified: boolean;
   is_active: boolean;
+  /** Granted only by the operator CLI inside the container; there is no HTTP route that creates an administrator. Returned on a user's own profile, where it is not a secret from them. */
+  role?: UserPublicRole;
   kyc_status: KYCStatus;
   created_at: string;
   updated_at: string;

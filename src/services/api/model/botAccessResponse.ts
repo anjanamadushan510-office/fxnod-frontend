@@ -30,38 +30,14 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
-import type { CommissionSourceType } from './commissionSourceType';
-import type { DecimalString } from './decimalString';
-import type { CommissionStatus } from './commissionStatus';
 
-export interface CommissionLedgerEntry {
-  id: string;
-  user_id: string;
-  source_user_id: string;
-  source_type: CommissionSourceType;
-  /** The thing that earned it — a trade id for trade_markup, a subscription purchase id for dbot_subscription. */
-  trade_id: string;
-  platform: string;
-  level: number;
-  accrued_markup_amount: DecimalString;
-  commission_percentage: DecimalString;
-  commission_amount: DecimalString;
-  currency: string;
-  deriv_settlement_period: string;
-  status: CommissionStatus;
-  accrued_at: string;
+export interface BotAccessResponse {
+  allowed: boolean;
+  /** Machine-readable, surfaced to the user when denied: no_subscription, subscription_expired, subscription_cancelled, active, lifetime. */
+  reason: string;
   /**
-   * When a held commission becomes payable. Null for trade_markup, which waits for Deriv's monthly payout rather than for a clock.
+   * When known. Lets the worker schedule its next check instead of polling blindly. Null for lifetime and when there is nothing to expire.
    * @nullable
    */
-  payable_at?: string | null;
-  /** Held back from automatic settlement until a person has looked at it. Not an accusation and not a reversal — the amount is unchanged and the row is still accrued. */
-  review_required: boolean;
-  /**
-   * Machine-readable, e.g. shared_funding_source.
-   * @nullable
-   */
-  review_reason?: string | null;
-  /** @nullable */
-  settled_at?: string | null;
+  expires_at?: string | null;
 }
