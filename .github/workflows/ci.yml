@@ -1,0 +1,52 @@
+# Frontend CI.
+#
+# This repository has had no CI at all. A `frontend` workflow exists in the
+# BACKEND repo, left over from when the two lived in one tree: it filters on
+# `paths: frontend/**` and sets `working-directory: frontend`, neither of which
+# exists there since the split, so it has never triggered once. Nothing has
+# ever checked that a commit to this repo type-checks or builds.
+#
+# Vercel builds on push, but a Vercel failure is found after the fact and only
+# by whoever looks. This runs on the pull request.
+name: ci
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+
+jobs:
+  verify:
+    name: Typecheck, lint & build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Verified to build cleanly on 20 and 22. Kept at 20 (LTS) to stay
+          # conservative against whatever Vercel is pinned to; note that
+          # `npm run gen:api` needs 22+, since orval requires it — codegen is a
+          # local step and is deliberately not run here.
+          node-version: "20"
+          cache: npm
+
+      # Strict: no `|| npm install` fallback. That fallback was in the old
+      # workflow and defeats the point of committing a lockfile — a
+      # package.json/lockfile mismatch would silently resolve to whatever is
+      # newest instead of failing, which is how a build passes in CI and breaks
+      # on Vercel.
+      - name: Install
+        run: npm ci
+
+      # `next build` type-checks too, but a dedicated pass fails faster and
+      # names the file plainly.
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
