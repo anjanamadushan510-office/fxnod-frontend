@@ -48,5 +48,14 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # src/lib/env.ts throws at build time when these are unset, which is the
+      # right behaviour for a deployment and means a build cannot run without
+      # them. They are placeholders on purpose: CI compiles and type-checks,
+      # it does not deploy or talk to anything, and baking a real hostname in
+      # here would put deployment config in a file that never deploys.
+      # Vercel supplies the real values from its own environment settings.
       - name: Build
+        env:
+          NEXT_PUBLIC_API_URL: https://api.invalid
+          NEXT_PUBLIC_WS_URL: wss://api.invalid
         run: npm run build
