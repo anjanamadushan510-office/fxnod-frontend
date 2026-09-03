@@ -11,7 +11,7 @@ import {
   useListBotPresets,
   useUpdateBotPreset,
   getListBotPresetsQueryKey,
-} from "@/services/api/endpoints/bots/presets";
+} from "@/services/api/endpoints/bots/bots";
 import type { BotPreset } from "@/services/api/model";
 import {
   fromPresetConfig,
@@ -34,7 +34,7 @@ export function PresetBar({
   disabled = false,
 }: PresetBarProps) {
   const queryClient = useQueryClient();
-  const presetsQuery = useListBotPresets(strategyId);
+  const presetsQuery = useListBotPresets({ strategy_id: strategyId });
 
   const presets: BotPreset[] = useMemo(
     () => presetsQuery.data?.presets ?? [],
@@ -69,7 +69,7 @@ export function PresetBar({
       onSuccess: (newPreset) => {
         toast.success(`Preset "${newPreset.name}" saved!`);
         queryClient.invalidateQueries({
-          queryKey: getListBotPresetsQueryKey(strategyId),
+          queryKey: getListBotPresetsQueryKey({ strategy_id: strategyId }),
         });
         setActivePresetId(newPreset.id);
         setShowSaveModal(false);
@@ -87,7 +87,7 @@ export function PresetBar({
       onSuccess: (updated) => {
         toast.success(`Preset "${updated.name}" updated!`);
         queryClient.invalidateQueries({
-          queryKey: getListBotPresetsQueryKey(strategyId),
+          queryKey: getListBotPresetsQueryKey({ strategy_id: strategyId }),
         });
         setShowSaveModal(false);
       },
@@ -103,7 +103,7 @@ export function PresetBar({
       onSuccess: () => {
         toast.success("Preset deleted");
         queryClient.invalidateQueries({
-          queryKey: getListBotPresetsQueryKey(strategyId),
+          queryKey: getListBotPresetsQueryKey({ strategy_id: strategyId }),
         });
         setActivePresetId(null);
         setDeleteConfirmId(null);

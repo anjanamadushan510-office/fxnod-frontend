@@ -32,14 +32,8 @@ library, not a float.
  */
 import type { DecimalString } from './decimalString';
 
-export type ProposalStreamFrameAllOf = {
-  /** Turbos — the payout-per-point values Deriv currently offers. Streamed only; the REST proposal endpoint does not return it.
- */
-  payout_choices?: string[];
-  /** Multipliers — the commission Deriv charges on the contract. Streamed only, like payout_choices: emitted by the `out` map in ws.go and NOT returned by /orders/proposal. Declaring it on ProposalResponse would tell every REST caller to expect a field that never arrives.
- */
-  commission?: DecimalString;
-  /** Multipliers — the spot at which the contract is force-closed. Streamed only, same as commission above.
- */
-  stop_out_level?: DecimalString;
-};
+export interface SellRequest {
+  contract_id: string;
+  /** Optional minimum acceptable proceeds. Omitted or empty accepts whatever Deriv quotes at the moment of sale. */
+  price?: DecimalString;
+}

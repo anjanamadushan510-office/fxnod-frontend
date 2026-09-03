@@ -60,6 +60,8 @@ import type {
   Error,
   ProposalRequest,
   ProposalResponse,
+  SellRequest,
+  SellResponse,
   TradeHistoryEntry,
   UnauthorizedResponse
 } from '../../model';
@@ -588,6 +590,73 @@ export const usePlaceTrade = <TError = ErrorType<Error | UnauthorizedResponse>,
       return useMutation(mutationOptions, queryClient);
     }
     /**
+ * Closes a position early at Deriv's current bid. `price` is an optional
+minimum acceptable proceeds — omit it to accept whatever Deriv quotes.
+
+ * @summary Sell an open contract before expiry
+ */
+export const sellPosition = (
+    sellRequest: BodyType<SellRequest>,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<SellResponse>(
+      {url: `/api/v1/orders/sell`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: sellRequest, signal
+    },
+      options);
+    }
+  
+
+
+export const getSellPositionMutationOptions = <TError = ErrorType<Error | UnauthorizedResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sellPosition>>, TError,{data: BodyType<SellRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof sellPosition>>, TError,{data: BodyType<SellRequest>}, TContext> => {
+
+const mutationKey = ['sellPosition'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof sellPosition>>, {data: BodyType<SellRequest>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  sellPosition(data,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SellPositionMutationResult = NonNullable<Awaited<ReturnType<typeof sellPosition>>>
+    export type SellPositionMutationBody = BodyType<SellRequest>
+    export type SellPositionMutationError = ErrorType<Error | UnauthorizedResponse>
+
+    /**
+ * @summary Sell an open contract before expiry
+ */
+export const useSellPosition = <TError = ErrorType<Error | UnauthorizedResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sellPosition>>, TError,{data: BodyType<SellRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof sellPosition>>,
+        TError,
+        {data: BodyType<SellRequest>},
+        TContext
+      > => {
+
+      const mutationOptions = getSellPositionMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
  * @summary Get user trade history
  */
 export const getTradeHistory = (
@@ -676,60 +745,6 @@ export function useGetTradeHistory<TData = Awaited<ReturnType<typeof getTradeHis
   return query;
 }
 
-export type SellRequestType = {
-  contract_id: string;
-  price?: string;
-};
 
-export type SellResponse = {
-  contract_id: string;
-  sold_for: string;
-  balance_after: string;
-  transaction_id: number;
-};
 
-export const sellPosition = (
-  sellRequest: BodyType<SellRequestType>,
-  options?: SecondParameter<typeof customInstance>,
-) => {
-  return customInstance<SellResponse>(
-    {
-      url: `/api/v1/orders/sell`,
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      data: sellRequest,
-    },
-    options,
-  );
-};
 
-export const useSellPosition = <
-  TError = ErrorType<Error | UnauthorizedResponse>,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof sellPosition>>,
-      TError,
-      { data: BodyType<SellRequestType> },
-      TContext
-    >;
-    request?: SecondParameter<typeof customInstance>;
-  },
-  queryClient?: QueryClient,
-) => {
-  const mutationKey = ['sellPosition'];
-  const mutationOptions = options?.mutation
-    ? { ...options.mutation, mutationKey }
-    : { mutationKey };
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof sellPosition>>,
-    { data: BodyType<SellRequestType> }
-  > = (props) => {
-    const { data } = props ?? {};
-    return sellPosition(data, options?.request);
-  };
-
-  return useMutation({ mutationFn, ...mutationOptions }, queryClient);
-};

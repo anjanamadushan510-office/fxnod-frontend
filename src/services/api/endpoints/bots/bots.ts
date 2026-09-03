@@ -51,14 +51,30 @@ import type {
 
 import type {
   BotLimits,
+  BotPackageFile,
+  BotPackageList,
+  BotPreset,
+  BotPresetList,
   BotRun,
+  ClaimBotPackageRequest,
+  ClaimBotPackageResponse,
+  CreateBotPackageRequest,
+  CreateBotPackageResponse,
+  CreateBotPresetRequest,
+  DeleteBotPreset200,
+  Error,
+  ListBotPresetsParams,
   ListBotRunTrades200,
   ListBotRunTradesParams,
   ListBotRuns200,
   ListBotRunsParams,
   ListBotStrategies200,
+  NotFoundResponse,
+  RevokeBotPackage200,
   StartBotRunRequest,
-  StartBotRunResponse
+  StartBotRunResponse,
+  UnauthorizedResponse,
+  UpdateBotPresetRequest
 } from '../../model';
 
 import { customInstance } from '../../mutator/custom-instance';
@@ -70,6 +86,756 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
 /**
+ * @summary Save a named bot configuration
+ */
+export const createBotPreset = (
+    createBotPresetRequest: BodyType<CreateBotPresetRequest>,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<BotPreset>(
+      {url: `/api/v1/bots/presets`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: createBotPresetRequest, signal
+    },
+      options);
+    }
+  
+
+
+export const getCreateBotPresetMutationOptions = <TError = ErrorType<Error | UnauthorizedResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBotPreset>>, TError,{data: BodyType<CreateBotPresetRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof createBotPreset>>, TError,{data: BodyType<CreateBotPresetRequest>}, TContext> => {
+
+const mutationKey = ['createBotPreset'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createBotPreset>>, {data: BodyType<CreateBotPresetRequest>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createBotPreset(data,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateBotPresetMutationResult = NonNullable<Awaited<ReturnType<typeof createBotPreset>>>
+    export type CreateBotPresetMutationBody = BodyType<CreateBotPresetRequest>
+    export type CreateBotPresetMutationError = ErrorType<Error | UnauthorizedResponse>
+
+    /**
+ * @summary Save a named bot configuration
+ */
+export const useCreateBotPreset = <TError = ErrorType<Error | UnauthorizedResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBotPreset>>, TError,{data: BodyType<CreateBotPresetRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof createBotPreset>>,
+        TError,
+        {data: BodyType<CreateBotPresetRequest>},
+        TContext
+      > => {
+
+      const mutationOptions = getCreateBotPresetMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * @summary List the caller's saved presets
+ */
+export const listBotPresets = (
+    params?: ListBotPresetsParams,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<BotPresetList>(
+      {url: `/api/v1/bots/presets`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+  
+
+
+
+export const getListBotPresetsQueryKey = (params?: ListBotPresetsParams,) => {
+    return [
+    `/api/v1/bots/presets`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getListBotPresetsQueryOptions = <TData = Awaited<ReturnType<typeof listBotPresets>>, TError = ErrorType<UnauthorizedResponse>>(params?: ListBotPresetsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBotPresets>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListBotPresetsQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listBotPresets>>> = ({ signal }) => listBotPresets(params, requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listBotPresets>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListBotPresetsQueryResult = NonNullable<Awaited<ReturnType<typeof listBotPresets>>>
+export type ListBotPresetsQueryError = ErrorType<UnauthorizedResponse>
+
+
+export function useListBotPresets<TData = Awaited<ReturnType<typeof listBotPresets>>, TError = ErrorType<UnauthorizedResponse>>(
+ params: undefined |  ListBotPresetsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBotPresets>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listBotPresets>>,
+          TError,
+          Awaited<ReturnType<typeof listBotPresets>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListBotPresets<TData = Awaited<ReturnType<typeof listBotPresets>>, TError = ErrorType<UnauthorizedResponse>>(
+ params?: ListBotPresetsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBotPresets>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listBotPresets>>,
+          TError,
+          Awaited<ReturnType<typeof listBotPresets>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListBotPresets<TData = Awaited<ReturnType<typeof listBotPresets>>, TError = ErrorType<UnauthorizedResponse>>(
+ params?: ListBotPresetsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBotPresets>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List the caller's saved presets
+ */
+
+export function useListBotPresets<TData = Awaited<ReturnType<typeof listBotPresets>>, TError = ErrorType<UnauthorizedResponse>>(
+ params?: ListBotPresetsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBotPresets>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListBotPresetsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * Returns 404 rather than 403 for a preset belonging to another user, so the endpoint cannot be used to enumerate ids.
+ * @summary Get one preset
+ */
+export const getBotPreset = (
+    presetId: string,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<BotPreset>(
+      {url: `/api/v1/bots/presets/${presetId}`, method: 'GET', signal
+    },
+      options);
+    }
+  
+
+
+
+export const getGetBotPresetQueryKey = (presetId?: string,) => {
+    return [
+    `/api/v1/bots/presets/${presetId}`
+    ] as const;
+    }
+
+    
+export const getGetBotPresetQueryOptions = <TData = Awaited<ReturnType<typeof getBotPreset>>, TError = ErrorType<UnauthorizedResponse | NotFoundResponse>>(presetId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBotPreset>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetBotPresetQueryKey(presetId);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBotPreset>>> = ({ signal }) => getBotPreset(presetId, requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(presetId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getBotPreset>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetBotPresetQueryResult = NonNullable<Awaited<ReturnType<typeof getBotPreset>>>
+export type GetBotPresetQueryError = ErrorType<UnauthorizedResponse | NotFoundResponse>
+
+
+export function useGetBotPreset<TData = Awaited<ReturnType<typeof getBotPreset>>, TError = ErrorType<UnauthorizedResponse | NotFoundResponse>>(
+ presetId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBotPreset>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBotPreset>>,
+          TError,
+          Awaited<ReturnType<typeof getBotPreset>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetBotPreset<TData = Awaited<ReturnType<typeof getBotPreset>>, TError = ErrorType<UnauthorizedResponse | NotFoundResponse>>(
+ presetId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBotPreset>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBotPreset>>,
+          TError,
+          Awaited<ReturnType<typeof getBotPreset>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetBotPreset<TData = Awaited<ReturnType<typeof getBotPreset>>, TError = ErrorType<UnauthorizedResponse | NotFoundResponse>>(
+ presetId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBotPreset>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get one preset
+ */
+
+export function useGetBotPreset<TData = Awaited<ReturnType<typeof getBotPreset>>, TError = ErrorType<UnauthorizedResponse | NotFoundResponse>>(
+ presetId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBotPreset>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetBotPresetQueryOptions(presetId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * @summary Rename or reconfigure a preset
+ */
+export const updateBotPreset = (
+    presetId: string,
+    updateBotPresetRequest: BodyType<UpdateBotPresetRequest>,
+ options?: SecondParameter<typeof customInstance>,) => {
+      
+      
+      return customInstance<BotPreset>(
+      {url: `/api/v1/bots/presets/${presetId}`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: updateBotPresetRequest
+    },
+      options);
+    }
+  
+
+
+export const getUpdateBotPresetMutationOptions = <TError = ErrorType<Error | UnauthorizedResponse | NotFoundResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateBotPreset>>, TError,{presetId: string;data: BodyType<UpdateBotPresetRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateBotPreset>>, TError,{presetId: string;data: BodyType<UpdateBotPresetRequest>}, TContext> => {
+
+const mutationKey = ['updateBotPreset'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateBotPreset>>, {presetId: string;data: BodyType<UpdateBotPresetRequest>}> = (props) => {
+          const {presetId,data} = props ?? {};
+
+          return  updateBotPreset(presetId,data,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateBotPresetMutationResult = NonNullable<Awaited<ReturnType<typeof updateBotPreset>>>
+    export type UpdateBotPresetMutationBody = BodyType<UpdateBotPresetRequest>
+    export type UpdateBotPresetMutationError = ErrorType<Error | UnauthorizedResponse | NotFoundResponse>
+
+    /**
+ * @summary Rename or reconfigure a preset
+ */
+export const useUpdateBotPreset = <TError = ErrorType<Error | UnauthorizedResponse | NotFoundResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateBotPreset>>, TError,{presetId: string;data: BodyType<UpdateBotPresetRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof updateBotPreset>>,
+        TError,
+        {presetId: string;data: BodyType<UpdateBotPresetRequest>},
+        TContext
+      > => {
+
+      const mutationOptions = getUpdateBotPresetMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * @summary Delete a preset
+ */
+export const deleteBotPreset = (
+    presetId: string,
+ options?: SecondParameter<typeof customInstance>,) => {
+      
+      
+      return customInstance<DeleteBotPreset200>(
+      {url: `/api/v1/bots/presets/${presetId}`, method: 'DELETE'
+    },
+      options);
+    }
+  
+
+
+export const getDeleteBotPresetMutationOptions = <TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteBotPreset>>, TError,{presetId: string}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteBotPreset>>, TError,{presetId: string}, TContext> => {
+
+const mutationKey = ['deleteBotPreset'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteBotPreset>>, {presetId: string}> = (props) => {
+          const {presetId} = props ?? {};
+
+          return  deleteBotPreset(presetId,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteBotPresetMutationResult = NonNullable<Awaited<ReturnType<typeof deleteBotPreset>>>
+    
+    export type DeleteBotPresetMutationError = ErrorType<UnauthorizedResponse | NotFoundResponse>
+
+    /**
+ * @summary Delete a preset
+ */
+export const useDeleteBotPreset = <TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteBotPreset>>, TError,{presetId: string}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof deleteBotPreset>>,
+        TError,
+        {presetId: string},
+        TContext
+      > => {
+
+      const mutationOptions = getDeleteBotPresetMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * The configuration is encrypted with a key derived from `password`. The password is never stored in recoverable form — losing it means losing the package.
+ * @summary Export a bot as a password-protected, one-time licensed package
+ */
+export const createBotPackage = (
+    createBotPackageRequest: BodyType<CreateBotPackageRequest>,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<CreateBotPackageResponse>(
+      {url: `/api/v1/bots/packages`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: createBotPackageRequest, signal
+    },
+      options);
+    }
+  
+
+
+export const getCreateBotPackageMutationOptions = <TError = ErrorType<Error | UnauthorizedResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBotPackage>>, TError,{data: BodyType<CreateBotPackageRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof createBotPackage>>, TError,{data: BodyType<CreateBotPackageRequest>}, TContext> => {
+
+const mutationKey = ['createBotPackage'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createBotPackage>>, {data: BodyType<CreateBotPackageRequest>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createBotPackage(data,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateBotPackageMutationResult = NonNullable<Awaited<ReturnType<typeof createBotPackage>>>
+    export type CreateBotPackageMutationBody = BodyType<CreateBotPackageRequest>
+    export type CreateBotPackageMutationError = ErrorType<Error | UnauthorizedResponse>
+
+    /**
+ * @summary Export a bot as a password-protected, one-time licensed package
+ */
+export const useCreateBotPackage = <TError = ErrorType<Error | UnauthorizedResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBotPackage>>, TError,{data: BodyType<CreateBotPackageRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof createBotPackage>>,
+        TError,
+        {data: BodyType<CreateBotPackageRequest>},
+        TContext
+      > => {
+
+      const mutationOptions = getCreateBotPackageMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * @summary List packages the caller created
+ */
+export const listMyBotPackages = (
+    
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<BotPackageList>(
+      {url: `/api/v1/bots/packages/mine`, method: 'GET', signal
+    },
+      options);
+    }
+  
+
+
+
+export const getListMyBotPackagesQueryKey = () => {
+    return [
+    `/api/v1/bots/packages/mine`
+    ] as const;
+    }
+
+    
+export const getListMyBotPackagesQueryOptions = <TData = Awaited<ReturnType<typeof listMyBotPackages>>, TError = ErrorType<UnauthorizedResponse>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listMyBotPackages>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListMyBotPackagesQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listMyBotPackages>>> = ({ signal }) => listMyBotPackages(requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listMyBotPackages>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListMyBotPackagesQueryResult = NonNullable<Awaited<ReturnType<typeof listMyBotPackages>>>
+export type ListMyBotPackagesQueryError = ErrorType<UnauthorizedResponse>
+
+
+export function useListMyBotPackages<TData = Awaited<ReturnType<typeof listMyBotPackages>>, TError = ErrorType<UnauthorizedResponse>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listMyBotPackages>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listMyBotPackages>>,
+          TError,
+          Awaited<ReturnType<typeof listMyBotPackages>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListMyBotPackages<TData = Awaited<ReturnType<typeof listMyBotPackages>>, TError = ErrorType<UnauthorizedResponse>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listMyBotPackages>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listMyBotPackages>>,
+          TError,
+          Awaited<ReturnType<typeof listMyBotPackages>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListMyBotPackages<TData = Awaited<ReturnType<typeof listMyBotPackages>>, TError = ErrorType<UnauthorizedResponse>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listMyBotPackages>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List packages the caller created
+ */
+
+export function useListMyBotPackages<TData = Awaited<ReturnType<typeof listMyBotPackages>>, TError = ErrorType<UnauthorizedResponse>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listMyBotPackages>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListMyBotPackagesQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * Supply either `package_id` or the exported `file_content`, plus the password. A package can be claimed once; a second attempt fails.
+ * @summary Claim a package and unlock its configuration
+ */
+export const claimBotPackage = (
+    claimBotPackageRequest: BodyType<ClaimBotPackageRequest>,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ClaimBotPackageResponse>(
+      {url: `/api/v1/bots/packages/claim`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: claimBotPackageRequest, signal
+    },
+      options);
+    }
+  
+
+
+export const getClaimBotPackageMutationOptions = <TError = ErrorType<Error | UnauthorizedResponse | NotFoundResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof claimBotPackage>>, TError,{data: BodyType<ClaimBotPackageRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof claimBotPackage>>, TError,{data: BodyType<ClaimBotPackageRequest>}, TContext> => {
+
+const mutationKey = ['claimBotPackage'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof claimBotPackage>>, {data: BodyType<ClaimBotPackageRequest>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  claimBotPackage(data,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ClaimBotPackageMutationResult = NonNullable<Awaited<ReturnType<typeof claimBotPackage>>>
+    export type ClaimBotPackageMutationBody = BodyType<ClaimBotPackageRequest>
+    export type ClaimBotPackageMutationError = ErrorType<Error | UnauthorizedResponse | NotFoundResponse>
+
+    /**
+ * @summary Claim a package and unlock its configuration
+ */
+export const useClaimBotPackage = <TError = ErrorType<Error | UnauthorizedResponse | NotFoundResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof claimBotPackage>>, TError,{data: BodyType<ClaimBotPackageRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof claimBotPackage>>,
+        TError,
+        {data: BodyType<ClaimBotPackageRequest>},
+        TContext
+      > => {
+
+      const mutationOptions = getClaimBotPackageMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * @summary Download the armoured package file
+ */
+export const downloadBotPackage = (
+    packageId: string,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<BotPackageFile>(
+      {url: `/api/v1/bots/packages/${packageId}/download`, method: 'GET', signal
+    },
+      options);
+    }
+  
+
+
+
+export const getDownloadBotPackageQueryKey = (packageId?: string,) => {
+    return [
+    `/api/v1/bots/packages/${packageId}/download`
+    ] as const;
+    }
+
+    
+export const getDownloadBotPackageQueryOptions = <TData = Awaited<ReturnType<typeof downloadBotPackage>>, TError = ErrorType<UnauthorizedResponse | NotFoundResponse>>(packageId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadBotPackage>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getDownloadBotPackageQueryKey(packageId);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof downloadBotPackage>>> = ({ signal }) => downloadBotPackage(packageId, requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(packageId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof downloadBotPackage>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type DownloadBotPackageQueryResult = NonNullable<Awaited<ReturnType<typeof downloadBotPackage>>>
+export type DownloadBotPackageQueryError = ErrorType<UnauthorizedResponse | NotFoundResponse>
+
+
+export function useDownloadBotPackage<TData = Awaited<ReturnType<typeof downloadBotPackage>>, TError = ErrorType<UnauthorizedResponse | NotFoundResponse>>(
+ packageId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadBotPackage>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof downloadBotPackage>>,
+          TError,
+          Awaited<ReturnType<typeof downloadBotPackage>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDownloadBotPackage<TData = Awaited<ReturnType<typeof downloadBotPackage>>, TError = ErrorType<UnauthorizedResponse | NotFoundResponse>>(
+ packageId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadBotPackage>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof downloadBotPackage>>,
+          TError,
+          Awaited<ReturnType<typeof downloadBotPackage>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDownloadBotPackage<TData = Awaited<ReturnType<typeof downloadBotPackage>>, TError = ErrorType<UnauthorizedResponse | NotFoundResponse>>(
+ packageId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadBotPackage>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Download the armoured package file
+ */
+
+export function useDownloadBotPackage<TData = Awaited<ReturnType<typeof downloadBotPackage>>, TError = ErrorType<UnauthorizedResponse | NotFoundResponse>>(
+ packageId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadBotPackage>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getDownloadBotPackageQueryOptions(packageId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * @summary Revoke an unclaimed package
+ */
+export const revokeBotPackage = (
+    packageId: string,
+ options?: SecondParameter<typeof customInstance>,) => {
+      
+      
+      return customInstance<RevokeBotPackage200>(
+      {url: `/api/v1/bots/packages/${packageId}`, method: 'DELETE'
+    },
+      options);
+    }
+  
+
+
+export const getRevokeBotPackageMutationOptions = <TError = ErrorType<UnauthorizedResponse | NotFoundResponse | Error>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof revokeBotPackage>>, TError,{packageId: string}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof revokeBotPackage>>, TError,{packageId: string}, TContext> => {
+
+const mutationKey = ['revokeBotPackage'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof revokeBotPackage>>, {packageId: string}> = (props) => {
+          const {packageId} = props ?? {};
+
+          return  revokeBotPackage(packageId,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RevokeBotPackageMutationResult = NonNullable<Awaited<ReturnType<typeof revokeBotPackage>>>
+    
+    export type RevokeBotPackageMutationError = ErrorType<UnauthorizedResponse | NotFoundResponse | Error>
+
+    /**
+ * @summary Revoke an unclaimed package
+ */
+export const useRevokeBotPackage = <TError = ErrorType<UnauthorizedResponse | NotFoundResponse | Error>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof revokeBotPackage>>, TError,{packageId: string}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof revokeBotPackage>>,
+        TError,
+        {packageId: string},
+        TContext
+      > => {
+
+      const mutationOptions = getRevokeBotPackageMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
  * Each bot carries a JSON Schema describing its own parameters. The frontend renders the configuration form from that schema, so adding a bot does not require a new settings screen.
 
  * @summary List available bots

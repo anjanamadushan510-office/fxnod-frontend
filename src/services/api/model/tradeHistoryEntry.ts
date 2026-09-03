@@ -31,6 +31,7 @@ library, not a float.
  * OpenAPI spec version: 0.1.0
  */
 import type { DecimalString } from './decimalString';
+import type { TradeHistoryEntryCommission } from './tradeHistoryEntryCommission';
 import type { TradeHistoryEntryOutcome } from './tradeHistoryEntryOutcome';
 import type { TradeHistoryEntryFinalPayoutAmount } from './tradeHistoryEntryFinalPayoutAmount';
 import type { TradeHistoryEntryEntrySpot } from './tradeHistoryEntryEntrySpot';
@@ -53,6 +54,11 @@ export interface TradeHistoryEntry {
   accrued_markup_amount: DecimalString;
   deriv_settlement_period: string;
   currency: string;
+  /**
+   * Multipliers — commission charged by Deriv. Null for contract types that do not carry one.
+   * @nullable
+   */
+  commission?: TradeHistoryEntryCommission;
   created_at: string;
   duration_seconds?: number;
   duration_unit?: string;
@@ -67,6 +73,10 @@ export interface TradeHistoryEntry {
   /** @nullable */
   barrier?: string | null;
   /** @nullable */
+  high_barrier?: string | null;
+  /** @nullable */
+  low_barrier?: string | null;
+  /** @nullable */
   final_payout_amount?: TradeHistoryEntryFinalPayoutAmount;
   /** @nullable */
   entry_spot?: TradeHistoryEntryEntrySpot;
@@ -74,6 +84,4 @@ export interface TradeHistoryEntry {
   exit_spot?: TradeHistoryEntryExitSpot;
   /** @nullable */
   tick_stream?: TradeHistoryEntryTickStreamItem[] | null;
-  /** @nullable */
-  commission?: DecimalString | null;
 }

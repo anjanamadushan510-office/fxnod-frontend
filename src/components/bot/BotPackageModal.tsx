@@ -25,11 +25,9 @@ import {
   useListMyBotPackages,
   useRevokeBotPackage,
   getListMyBotPackagesQueryKey,
-} from "@/services/api/endpoints/bots/packages";
-import {
   useCreateBotPreset,
   getListBotPresetsQueryKey,
-} from "@/services/api/endpoints/bots/presets";
+} from "@/services/api/endpoints/bots/bots";
 import type { BotPackage } from "@/services/api/model";
 import {
   fromPresetConfig,
@@ -80,7 +78,7 @@ export function BotPackageModal({
   const createPresetMutation = useCreateBotPreset({
     mutation: {
       onSuccess: (newPreset) => {
-        queryClient.invalidateQueries({ queryKey: getListBotPresetsQueryKey(strategyId) });
+        queryClient.invalidateQueries({ queryKey: getListBotPresetsQueryKey({ strategy_id: strategyId }) });
         queryClient.invalidateQueries({ queryKey: getListBotPresetsQueryKey() });
         if (onPresetCreated) {
           onPresetCreated(newPreset.id);
@@ -125,7 +123,7 @@ export function BotPackageModal({
 
         toast.success(`Bot "${res.name}" imported and automatically saved to your presets!`);
         queryClient.invalidateQueries({ queryKey: getListMyBotPackagesQueryKey() });
-        queryClient.invalidateQueries({ queryKey: getListBotPresetsQueryKey(strategyId) });
+        queryClient.invalidateQueries({ queryKey: getListBotPresetsQueryKey({ strategy_id: strategyId }) });
         queryClient.invalidateQueries({ queryKey: getListBotPresetsQueryKey() });
         setImportFileContent("");
         setImportFileName("");
