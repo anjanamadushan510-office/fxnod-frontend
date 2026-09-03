@@ -39,4 +39,10 @@ export interface OAuthLoginRequest {
   id_token?: string | null;
   /** @nullable */
   access_token?: string | null;
+  /**
+   * As on RegisterRequest, but applied only when this call CREATES an account. A returning user signing in through a referral link keeps whoever originally introduced them.
+   * @maxLength 32
+   * @nullable
+   */
+  referral_code?: string | null;
 }

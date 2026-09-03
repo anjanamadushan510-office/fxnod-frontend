@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Toaster } from "sonner";
 
+import { captureReferralCode } from "@/lib/referral";
 import { useAuthStore } from "@/stores/authStore";
 
 /**
@@ -38,6 +39,17 @@ export function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     void bootstrap();
   }, [bootstrap]);
+
+  // An affiliate link can land on any page, and the visitor may only register
+  // several pages later — so the code is picked up app-wide and remembered,
+  // rather than being read on the signup form where it usually is not.
+  //
+  // window.location rather than useSearchParams: this sits above every route,
+  // and useSearchParams here would opt the whole app out of static rendering.
+  // Only the entry URL matters, so reading it once on mount is enough.
+  useEffect(() => {
+    captureReferralCode(window.location.search);
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

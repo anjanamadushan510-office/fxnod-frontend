@@ -162,6 +162,8 @@ export * from './transactionDirection';
 export * from './transactionHistoryResponse';
 export * from './transactionResponse';
 export * from './transactionType';
+export * from './treasuryAddressHolding';
+export * from './treasuryHoldingsResponse';
 export * from './unauthorizedResponse';
 export * from './updateBotPresetRequest';
 export * from './updateBotPresetRequestConfig';

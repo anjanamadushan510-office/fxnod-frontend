@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { useRegister } from "@/services/api/endpoints/auth/auth";
 import { parseApiError } from "@/lib/apiError";
+import { clearReferralCode, readReferralCode } from "@/lib/referral";
 import { AuthShell } from "./AuthShell";
 import { Field, SubmitButton } from "./fields";
 
@@ -25,9 +26,17 @@ export function RegisterForm() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
+  // Read after mount, never during render: sessionStorage does not exist on the
+  // server, and this page is prerendered.
+  const [referralCode, setReferralCode] = useState<string | null>(null);
+  useEffect(() => setReferralCode(readReferralCode()), []);
+
   const registerMut = useRegister({
     mutation: {
       onSuccess: () => {
+        // Spent. Leaving it would attribute a second account made in the same
+        // browser session to the same affiliate.
+        clearReferralCode();
         toast.success("Account created — enter the code we emailed to verify.");
         // Registration issues an OTP; continue to the verification screen.
         router.push(`/auth/verify-otp?email=${encodeURIComponent(email)}` as Route);
@@ -53,6 +62,10 @@ export function RegisterForm() {
         email,
         password,
         confirm_password: confirmPassword,
+        // Carried from the `?ref=` this visit arrived by. The server decides
+        // whether the code resolves to anyone; an unknown one just leaves the
+        // account unattributed rather than failing the signup.
+        referral_code: referralCode,
       },
     });
   }
@@ -71,6 +84,16 @@ export function RegisterForm() {
       }
     >
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
+        {/* Attribution is a lasting fact about the account — who introduced you
+            never changes afterwards — so it is stated rather than applied
+            invisibly. The code, not a name: this page has no business asking
+            the server who owns it. */}
+        {referralCode && (
+          <p className="m-0 rounded-lg bg-gold-soft px-3 py-2 text-[12px] text-gold-3">
+            Invited with referral code{" "}
+            <span className="font-bold tracking-wide">{referralCode}</span>
+          </p>
+        )}
         <Field
           label="Full name"
           value={fullName}

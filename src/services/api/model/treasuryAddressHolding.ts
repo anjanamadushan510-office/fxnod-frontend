@@ -30,28 +30,18 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
+import type { DecimalString } from './decimalString';
 
-export interface RegisterRequest {
+export interface TreasuryAddressHolding {
+  address: string;
+  chain: string;
+  currency: string;
   /**
-   * @minLength 1
-   * @maxLength 200
-   */
-  full_name: string;
-  email: string;
-  /**
-   * @minLength 8
-   * @maxLength 128
-   */
-  password: string;
-  /**
-   * @minLength 8
-   * @maxLength 128
-   */
-  confirm_password: string;
-  /**
-   * The affiliate code from the `?ref=` on the link the user arrived by. Normalised to upper case. An unrecognised code does NOT fail registration — the user did not type it, the link did — it simply leaves the account unattributed.
-   * @maxLength 32
+   * Position under m/44'/195'/0'/0 — how the offline sweeper derives this address's key.
    * @nullable
    */
-  referral_code?: string | null;
+  derivation_index?: number | null;
+  deposit_count: number;
+  /** Lifetime credited, NOT the current on-chain balance. */
+  total_received: DecimalString;
 }
