@@ -1,5 +1,7 @@
 "use client";
 
+import type { Route } from "next";
+import Link from "next/link";
 import { Cpu, ArrowRight } from "lucide-react";
 
 export default function SubscriptionsPage() {
@@ -32,11 +34,17 @@ export default function SubscriptionsPage() {
             </p>
           </div>
           
+          {/* Goes to the plans, not to dBot itself: someone who arrives at a
+              subscriptions page is here to buy or check one, and the app is a
+              click away from there. The button used to do nothing at all. */}
           <div className="relative z-10 mt-8 flex items-center justify-between border-t border-gray-100 pt-6">
-            <button className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#c9a24e] to-[#d6b56b] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-[#c9a24e]/30 transition-all hover:shadow-[#c9a24e]/50 hover:brightness-110 active:scale-95">
-              Access dBot
+            <Link
+              href={"/options/dbot/subscription" as Route}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#c9a24e] to-[#d6b56b] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-[#c9a24e]/30 transition-all hover:shadow-[#c9a24e]/50 hover:brightness-110 active:scale-95"
+            >
+              View dBot plans
               <ArrowRight className="h-4 w-4" />
-            </button>
+            </Link>
           </div>
         </div>
       </div>

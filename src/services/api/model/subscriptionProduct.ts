@@ -30,31 +30,15 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
-import type { CommissionSourceType } from './commissionSourceType';
-import type { DecimalString } from './decimalString';
-import type { CommissionStatus } from './commissionStatus';
 
-export interface CommissionLedgerEntry {
-  id: string;
-  user_id: string;
-  source_user_id: string;
-  source_type: CommissionSourceType;
-  /** The thing that earned it — a trade id for trade_markup, a subscription purchase id for dbot_subscription. */
-  trade_id: string;
-  platform: string;
-  level: number;
-  accrued_markup_amount: DecimalString;
-  commission_percentage: DecimalString;
-  commission_amount: DecimalString;
-  currency: string;
-  deriv_settlement_period: string;
-  status: CommissionStatus;
-  accrued_at: string;
-  /**
-   * When a held commission becomes payable. Null for trade_markup, which waits for Deriv's monthly payout rather than for a clock.
-   * @nullable
-   */
-  payable_at?: string | null;
-  /** @nullable */
-  settled_at?: string | null;
-}
+/**
+ * A closed set. An unrecognised product is a 422, never an entitlement to something that does not exist.
+
+ */
+export type SubscriptionProduct = typeof SubscriptionProduct[keyof typeof SubscriptionProduct];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const SubscriptionProduct = {
+  dbot: 'dbot',
+} as const;

@@ -30,9 +30,11 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
+import type { CommissionSourceType } from './commissionSourceType';
 import type { DecimalString } from './decimalString';
 
 export interface CommissionTierOut {
+  source_type: CommissionSourceType;
   level: number;
   percentage: DecimalString;
   is_active: boolean;

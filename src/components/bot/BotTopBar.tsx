@@ -15,6 +15,11 @@ import { BotMenu, type BotMenuItem } from "./BotMenu";
  */
 const MENU_ITEMS: BotMenuItem[] = [
   {
+    label: "dBot subscription",
+    hint: "Your plan, and what it costs to renew",
+    href: "/options/dbot/subscription",
+  },
+  {
     label: "dBot history",
     hint: "Every run, including the ones that have finished",
     href: "/options/dbot/history",

@@ -30,31 +30,17 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
-import type { CommissionSourceType } from './commissionSourceType';
-import type { DecimalString } from './decimalString';
-import type { CommissionStatus } from './commissionStatus';
+import type { SubscriptionProduct } from './subscriptionProduct';
+import type { SubscriptionStatusResponseSubscription } from './subscriptionStatusResponseSubscription';
 
-export interface CommissionLedgerEntry {
-  id: string;
-  user_id: string;
-  source_user_id: string;
-  source_type: CommissionSourceType;
-  /** The thing that earned it — a trade id for trade_markup, a subscription purchase id for dbot_subscription. */
-  trade_id: string;
-  platform: string;
-  level: number;
-  accrued_markup_amount: DecimalString;
-  commission_percentage: DecimalString;
-  commission_amount: DecimalString;
-  currency: string;
-  deriv_settlement_period: string;
-  status: CommissionStatus;
-  accrued_at: string;
-  /**
-   * When a held commission becomes payable. Null for trade_markup, which waits for Deriv's monthly payout rather than for a clock.
-   * @nullable
-   */
-  payable_at?: string | null;
+export interface SubscriptionStatusResponse {
+  product: SubscriptionProduct;
+  /** Whether the user may use the product right now. Read this rather than subscription.status — it accounts for an expiry that has passed but not yet been marked.
+ */
+  entitled: boolean;
+  /** Machine-readable: no_subscription, subscription_expired, subscription_cancelled, active, lifetime.
+ */
+  reason: string;
   /** @nullable */
-  settled_at?: string | null;
+  subscription?: SubscriptionStatusResponseSubscription;
 }

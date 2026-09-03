@@ -30,9 +30,11 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
+import type { CommissionSourceType } from './commissionSourceType';
 import type { DecimalString } from './decimalString';
 
 export interface CommissionTierIn {
+  source_type?: CommissionSourceType;
   /**
    * @minimum 1
    * @maximum 10

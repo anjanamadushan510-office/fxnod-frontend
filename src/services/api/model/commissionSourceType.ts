@@ -30,31 +30,15 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
-import type { CommissionSourceType } from './commissionSourceType';
-import type { DecimalString } from './decimalString';
-import type { CommissionStatus } from './commissionStatus';
 
-export interface CommissionLedgerEntry {
-  id: string;
-  user_id: string;
-  source_user_id: string;
-  source_type: CommissionSourceType;
-  /** The thing that earned it — a trade id for trade_markup, a subscription purchase id for dbot_subscription. */
-  trade_id: string;
-  platform: string;
-  level: number;
-  accrued_markup_amount: DecimalString;
-  commission_percentage: DecimalString;
-  commission_amount: DecimalString;
-  currency: string;
-  deriv_settlement_period: string;
-  status: CommissionStatus;
-  accrued_at: string;
-  /**
-   * When a held commission becomes payable. Null for trade_markup, which waits for Deriv's monthly payout rather than for a clock.
-   * @nullable
-   */
-  payable_at?: string | null;
-  /** @nullable */
-  settled_at?: string | null;
-}
+/**
+ * What a commission was earned ON. It selects both the percentages that apply and how the row becomes payable: trade_markup settles when Deriv's monthly payout arrives, because until then the money does not exist; dbot_subscription settles on a clock after a hold, because the money is already FXNod's.
+ */
+export type CommissionSourceType = typeof CommissionSourceType[keyof typeof CommissionSourceType];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const CommissionSourceType = {
+  trade_markup: 'trade_markup',
+  dbot_subscription: 'dbot_subscription',
+} as const;
