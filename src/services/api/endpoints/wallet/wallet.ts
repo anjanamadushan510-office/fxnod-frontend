@@ -51,6 +51,8 @@ import type {
 
 import type {
   BalanceResponse,
+  BinancePayOrderCreateRequest,
+  BinancePayOrderCreateResponse,
   ChainDepositResponse,
   DepositAddressRequest,
   DepositAddressResponse,
@@ -418,6 +420,73 @@ export function useListChainDeposits<TData = Awaited<ReturnType<typeof listChain
 
 
 /**
+ * Records an intent to pay. Creates no balance — payment is confirmed only by a signed callback from Binance on /api/v1/webhooks/binancepay, never by the client reporting success.
+
+`prepay_id` and `checkout_url` are null until the Binance order API is wired up. Returns 503 while the integration is unconfigured.
+ * @summary Open a Binance Pay order
+ */
+export const createBinancePayOrder = (
+    binancePayOrderCreateRequest: BodyType<BinancePayOrderCreateRequest>,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<BinancePayOrderCreateResponse>(
+      {url: `/api/v1/wallet/deposit/binancepay`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: binancePayOrderCreateRequest, signal
+    },
+      options);
+    }
+  
+
+
+export const getCreateBinancePayOrderMutationOptions = <TError = ErrorType<Error | UnauthorizedResponse | ValidationErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBinancePayOrder>>, TError,{data: BodyType<BinancePayOrderCreateRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof createBinancePayOrder>>, TError,{data: BodyType<BinancePayOrderCreateRequest>}, TContext> => {
+
+const mutationKey = ['createBinancePayOrder'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createBinancePayOrder>>, {data: BodyType<BinancePayOrderCreateRequest>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createBinancePayOrder(data,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateBinancePayOrderMutationResult = NonNullable<Awaited<ReturnType<typeof createBinancePayOrder>>>
+    export type CreateBinancePayOrderMutationBody = BodyType<BinancePayOrderCreateRequest>
+    export type CreateBinancePayOrderMutationError = ErrorType<Error | UnauthorizedResponse | ValidationErrorResponse>
+
+    /**
+ * @summary Open a Binance Pay order
+ */
+export const useCreateBinancePayOrder = <TError = ErrorType<Error | UnauthorizedResponse | ValidationErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBinancePayOrder>>, TError,{data: BodyType<BinancePayOrderCreateRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof createBinancePayOrder>>,
+        TError,
+        {data: BodyType<BinancePayOrderCreateRequest>},
+        TContext
+      > => {
+
+      const mutationOptions = getCreateBinancePayOrderMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
  * Fallback for deposits the chain monitor did not detect. Creates a request for operator review — never a credit. `amount` is the user's unverified claim; what is actually paid out is decided at approval.
 
 Rejects a transaction hash the monitor has already seen, which would otherwise be a route to being credited twice for one transfer.

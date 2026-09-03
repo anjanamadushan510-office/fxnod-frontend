@@ -6,8 +6,8 @@ import QRCode from "qrcode";
 import { AlertTriangle, Check, Copy, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
-import { api } from "@/services/api";
 import {
+  useCreateBinancePayOrder,
   useCreateManualDeposit,
   useGetOrCreateDepositAddress,
   useListChainDeposits,
@@ -344,29 +344,39 @@ function describe(deposit: ChainDepositResponse): {
 
 function BinancePayDeposit({ onClose }: { onClose: () => void }) {
   const [amount, setAmount] = useState("100");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [unavailable, setUnavailable] = useState(false);
 
-  const submit = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const res = await api.post("/api/v1/wallet/deposit/binancepay", {
-        amount: Number(amount),
-        currency: "USDT",
-      });
-      if (res.data?.checkout_url) {
-        window.open(res.data.checkout_url, "_blank");
-        onClose();
-      } else {
-        setError("Failed to generate payment link.");
-      }
-    } catch (err: unknown) {
-      setError(messageFor(err));
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { mutate, isPending, error } = useCreateBinancePayOrder({
+    mutation: {
+      onSuccess: (order) => {
+        // Null until the Binance order API is wired up. Rather than open a
+        // blank tab, say so — the order is recorded either way.
+        if (order.checkout_url) {
+          window.open(order.checkout_url, "_blank");
+          onClose();
+        } else {
+          setUnavailable(true);
+        }
+      },
+      onError: (err) => {
+        // 503 is the backend saying the integration is switched off. That is
+        // a state to explain, not an error to show as a failure.
+        if (statusOf(err) === 503) setUnavailable(true);
+      },
+    },
+  });
+
+  if (unavailable) {
+    return (
+      <div className="animate-fade-in rounded-lg border border-line bg-body p-4">
+        <p className="text-sm leading-relaxed text-ink-2">
+          Binance Pay deposits are not switched on yet. Use the{" "}
+          <strong className="text-ink">Crypto</strong> tab to deposit USDT
+          directly — it credits automatically once the network confirms.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="animate-fade-in">
@@ -381,18 +391,15 @@ function BinancePayDeposit({ onClose }: { onClose: () => void }) {
         min="10"
         step="10"
       />
-      {error && <p className="mb-4 text-sm text-red-500">{error}</p>}
+      {error && <p className="mb-4 text-sm text-red-500">{messageFor(error)}</p>}
       <Button
         variant="gold"
         className="w-full"
-        onClick={submit}
-        disabled={loading || !amount || Number(amount) <= 0}
+        onClick={() => mutate({ data: { amount, currency: "USDT" } })}
+        disabled={isPending || !amount || Number(amount) <= 0}
       >
-        {loading ? "Processing…" : "Pay with Binance"}
+        {isPending ? "Processing…" : "Pay with Binance"}
       </Button>
-      <p className="mt-4 text-center text-xs text-ink-3">
-        Automated Binance Pay deposits will be available soon.
-      </p>
     </div>
   );
 }
@@ -474,15 +481,22 @@ function ManualDepositClaim() {
   );
 }
 
+function statusOf(err: unknown): number | undefined {
+  return (err as { response?: { status?: number } })?.response?.status;
+}
+
 /** Turn an Axios failure into something worth showing a user. */
 function messageFor(err: unknown): string {
-  const response = (err as { response?: { status?: number; data?: { detail?: string } } })
-    .response;
+  const response = (err as { response?: { status?: number; data?: { detail?: unknown } } })
+    ?.response;
   if (response?.status === 401) {
     return "Please log in to your account to deposit funds.";
   }
   // The API's own 409 text explains duplicates and already-detected deposits
-  // better than anything this component could guess.
-  if (response?.data?.detail) return response.data.detail;
+  // better than anything this component could guess. A 422 detail is an array
+  // of field errors, which is not a sentence — fall through to the generic
+  // message rather than rendering "[object Object]".
+  const detail = response?.data?.detail;
+  if (typeof detail === "string") return detail;
   return "Something went wrong. Please try again.";
 }

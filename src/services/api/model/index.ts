@@ -34,6 +34,11 @@ library, not a float.
 export * from './accessToken';
 export * from './authorizeResponse';
 export * from './balanceResponse';
+export * from './binancePayOrderCreateRequest';
+export * from './binancePayOrderCreateResponse';
+export * from './binancePayWebhookPayload';
+export * from './binancePayWebhookResponse';
+export * from './binancePayWebhookResponseReturnCode';
 export * from './botContractTemplate';
 export * from './botContractTemplateDurationUnit';
 export * from './botIndicator';
