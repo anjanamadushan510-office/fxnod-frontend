@@ -1,3 +1,4 @@
+import { SiteFooter } from "@/components/layout/SiteFooter";
 import { TopNav } from "@/components/layout/TopNav";
 
 /**
@@ -14,6 +15,7 @@ export default function DashboardLayout({
     <div className="min-h-screen bg-[#f8f6f0]">
       <TopNav />
       {children}
+      <SiteFooter />
     </div>
   );
 }

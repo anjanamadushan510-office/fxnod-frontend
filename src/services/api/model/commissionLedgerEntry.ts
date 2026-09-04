@@ -38,6 +38,17 @@ export interface CommissionLedgerEntry {
   id: string;
   user_id: string;
   source_user_id: string;
+  /**
+   * Who generated it, as a person rather than a UUID. Null when this service has not cached their profile yet.
+   * @nullable
+   */
+  source_display_name?: string | null;
+  /**
+   * Full at level 1, masked below it.
+   * @nullable
+   */
+  source_email?: string | null;
+  source_email_masked?: boolean;
   source_type: CommissionSourceType;
   /** The thing that earned it — a trade id for trade_markup, a subscription purchase id for dbot_subscription. */
   trade_id: string;

@@ -30,33 +30,10 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
-import type { CommissionStatus } from './commissionStatus';
+import type { EarningsAmounts } from './earningsAmounts';
 
-export type GetCommissionHistoryParams = {
-status?: CommissionStatus;
-/**
- * YYYY-MM month bucket.
- * @pattern ^\d{4}-\d{2}$
- */
-period?: string;
-/**
- * Narrow to one product. Filtering here rather than in the client means a partner can page through "just my dBot rows" without the browser holding the whole ledger to sift it.
- * @maxLength 32
- */
-source_type?: string;
-/**
- * 1 = own referral, 2 = master share.
- * @minimum 1
- * @maximum 10
- */
-level?: number;
-/**
- * @minimum 1
- * @maximum 500
- */
-limit?: number;
-/**
- * @minimum 0
- */
-offset?: number;
-};
+export interface LevelEarnings {
+  /** 1 = someone the partner invited. 2 = that person's invitee, which is the "master affiliate" share. 3 = trade markup only. */
+  level: number;
+  amounts: EarningsAmounts;
+}

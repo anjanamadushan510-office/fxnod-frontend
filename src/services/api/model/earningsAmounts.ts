@@ -30,33 +30,14 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
-import type { CommissionStatus } from './commissionStatus';
+import type { DecimalString } from './decimalString';
 
-export type GetCommissionHistoryParams = {
-status?: CommissionStatus;
-/**
- * YYYY-MM month bucket.
- * @pattern ^\d{4}-\d{2}$
- */
-period?: string;
-/**
- * Narrow to one product. Filtering here rather than in the client means a partner can page through "just my dBot rows" without the browser holding the whole ledger to sift it.
- * @maxLength 32
- */
-source_type?: string;
-/**
- * 1 = own referral, 2 = master share.
- * @minimum 1
- * @maximum 10
- */
-level?: number;
-/**
- * @minimum 1
- * @maximum 500
- */
-limit?: number;
-/**
- * @minimum 0
- */
-offset?: number;
-};
+export interface EarningsAmounts {
+  accrued: DecimalString;
+  settled: DecimalString;
+  cancelled: DecimalString;
+  /** A SUBSET of `accrued`, not a total beside it — the money is still accrued, a person is looking at it first. Adding this to accrued counts it twice. */
+  pending_review: DecimalString;
+  /** How many ledger rows are behind these figures. */
+  count: number;
+}
