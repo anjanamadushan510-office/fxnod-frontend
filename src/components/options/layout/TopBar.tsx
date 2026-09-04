@@ -6,6 +6,7 @@ import { AppsGridIcon } from "@/components/ui/Icons";
 import { cn } from "@/lib/cn";
 import { AuthModal } from "../auth/AuthModal";
 import { ConnectDerivButton } from "../deriv/ConnectDerivButton";
+import { DerivDisconnectButton } from "../deriv/DerivDisconnectButton";
 import { AnchoredPopover } from "../order/fields/AnchoredPopover";
 import { AccountSelector, type OptionsAccountMode } from "./AccountSelector";
 import { ContractTypeTabs } from "./ContractTypeTabs";
@@ -91,6 +92,9 @@ export function TopBar({
         {authed ? (
           <>
             <ConnectDerivButton />
+            {/* Its own control, not a menu item: ending a session with a broker
+                that can place trades should be as easy as starting one. */}
+            <DerivDisconnectButton />
             <AccountSelector
               mode={accountMode}
               balance={accountBalance}

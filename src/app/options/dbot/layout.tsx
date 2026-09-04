@@ -28,7 +28,6 @@ export default function DBotLayout({ children }: { children: React.ReactNode }) 
       className="flex h-screen flex-col overflow-hidden bg-opt-bg font-sans text-opt-ink"
     >
       <BotTopBar
-        loginId={deriv.accountId ?? (deriv.isLoading ? "…" : "Not connected")}
         balance={balance}
         currency={currency}
         isVirtual={deriv.isVirtual}

@@ -10,9 +10,17 @@ import {
   getDerivListAccountsQueryKey,
   useDerivListAccounts,
   useDerivSelectAccount,
-  useDerivUnlink,
 } from "@/services/api/endpoints/trading/trading";
 import type { DerivLinkedAccount } from "@/services/api/model";
+
+/**
+ * Where Deriv creates real accounts. FXNod cannot open one — it is the
+ * broker's own onboarding, with the broker's own checks — so the honest
+ * thing is to say so and hand over rather than fail quietly.
+ *
+ * One constant because it is Deriv's URL, not ours, and it will move.
+ */
+const DERIV_OPEN_REAL_ACCOUNT_URL = "https://app.deriv.com/";
 
 /**
  * The linked-account control: which Deriv account is being traded, how to
@@ -41,7 +49,6 @@ export function DerivAccountMenu() {
   // and this is on the trading screen's critical path.
   const accountsQuery = useDerivListAccounts({ query: { enabled: open } });
   const selectMutation = useDerivSelectAccount();
-  const unlinkMutation = useDerivUnlink();
 
   useEffect(() => {
     if (!open) return;
@@ -100,24 +107,13 @@ export function DerivAccountMenu() {
     }
   }
 
-  async function disconnect() {
-    const ok = window.confirm(
-      "Disconnect Deriv? Running bots will stop, and you will need to " +
-        "reconnect before trading again.",
-    );
-    if (!ok) return;
-    try {
-      await unlinkMutation.mutateAsync();
-      await refreshEverything();
-      setOpen(false);
-      toast.success("Deriv disconnected");
-    } catch {
-      toast.error("Could not disconnect. Please try again.");
-    }
-  }
-
   const accounts = accountsQuery.data?.accounts ?? [];
-  const busy = selectMutation.isPending || unlinkMutation.isPending;
+  const busy = selectMutation.isPending;
+  // Deriv gives every user a demo account; a real one is opened separately and
+  // has its own checks. Someone who never did that has nothing to switch to,
+  // and an empty list with no explanation reads as a broken menu.
+  const hasRealAccount = accounts.some((a) => !a.is_virtual);
+  const loaded = !accountsQuery.isPending && !accountsQuery.isError;
 
   return (
     <div ref={rootRef} className="relative flex-shrink-0">
@@ -193,18 +189,25 @@ export function DerivAccountMenu() {
             </button>
           ))}
 
-          <button
-            type="button"
-            role="menuitem"
-            disabled={busy}
-            onClick={disconnect}
-            className={cn(
-              "w-full px-3 py-2.5 text-left text-[12px] font-semibold",
-              "text-opt-fall transition-colors hover:bg-opt-bg-sunk disabled:opacity-50",
-            )}
-          >
-            Disconnect Deriv
-          </button>
+          {loaded && !hasRealAccount && (
+            <a
+              href={DERIV_OPEN_REAL_ACCOUNT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              role="menuitem"
+              className="block px-3 py-2.5 transition-colors hover:bg-opt-bg-sunk"
+            >
+              <span className="block text-[12px] font-semibold text-opt-ink">
+                Open a real account
+              </span>
+              <span className="block text-[10.5px] leading-snug text-opt-ink-3">
+                {/* Said plainly. "No real account" with no next step is the
+                    same dead end as an empty list. */}
+                You only have a demo account. Real accounts are opened at
+                Deriv — come back and reconnect once yours is ready.
+              </span>
+            </a>
+          )}
         </div>
       )}
     </div>

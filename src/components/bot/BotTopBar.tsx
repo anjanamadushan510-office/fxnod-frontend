@@ -3,7 +3,9 @@
 import type { Route } from "next";
 import Link from "next/link";
 import { cn } from "@/lib/cn";
-import { CaretDownIcon, UserIcon } from "@/components/ui/Icons";
+import { CaretDownIcon } from "@/components/ui/Icons";
+import { ConnectDerivButton } from "@/components/options/deriv/ConnectDerivButton";
+import { DerivDisconnectButton } from "@/components/options/deriv/DerivDisconnectButton";
 import { BotMenu, type BotMenuItem } from "./BotMenu";
 
 /**
@@ -27,7 +29,6 @@ const MENU_ITEMS: BotMenuItem[] = [
 ];
 
 interface BotTopBarProps {
-  loginId: string;
   balance: number;
   currency: string;
   /** Demo balances are labelled — mistaking one for real money is expensive. */
@@ -35,7 +36,6 @@ interface BotTopBarProps {
 }
 
 export function BotTopBar({
-  loginId,
   balance,
   currency,
   isVirtual = false,
@@ -56,20 +56,11 @@ export function BotTopBar({
       </Link>
 
       <div className="ml-auto flex items-center gap-3 max-lg:gap-2">
-        <div className="flex items-center gap-2.5 max-lg:hidden">
-          <span
-            aria-hidden="true"
-            className="grid h-9 w-9 place-items-center rounded-full bg-opt-bg-sunk text-opt-ink-3"
-          >
-            <UserIcon className="h-4 w-4" />
-          </span>
-          <span className="flex flex-col leading-tight">
-            <span className="text-[10px] text-opt-ink-3">Login ID</span>
-            <span className="text-[12px] font-semibold tabular-nums text-opt-ink">
-              {loginId}
-            </span>
-          </span>
-        </div>
+        {/* dBot showed the login id as plain text, so it had neither the
+            account switcher nor a way out of Deriv — dTrader had both. Same
+            control on both screens now. */}
+        <ConnectDerivButton />
+        <DerivDisconnectButton />
 
         <button
           type="button"
