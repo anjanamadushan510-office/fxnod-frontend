@@ -244,6 +244,10 @@ function PlanCard({
   const affordable = balance >= price;
   const lifetime = plan.duration_days === null;
 
+  let originalPrice = null;
+  if (plan.duration_days === 180) originalPrice = 150.00;
+  if (plan.duration_days === 365) originalPrice = 300.00;
+
   return (
     <div
       className={cn(
@@ -260,9 +264,16 @@ function PlanCard({
         </p>
       </div>
 
-      <p className="m-0 text-[22px] font-extrabold tabular-nums leading-none text-opt-ink">
-        ${price.toFixed(2)}
-      </p>
+      <div className="flex flex-col">
+        {originalPrice && (
+          <p className="m-0 text-[12px] font-semibold text-opt-ink-3/70 line-through decoration-red-500/50 decoration-2">
+            ${originalPrice.toFixed(2)}
+          </p>
+        )}
+        <p className="m-0 text-[22px] font-extrabold tabular-nums leading-none text-opt-ink">
+          ${price.toFixed(2)}
+        </p>
+      </div>
 
       <button
         type="button"
