@@ -248,6 +248,12 @@ function PlanCard({
   if (plan.duration_days === 180) originalPrice = 150.00;
   if (plan.duration_days === 365) originalPrice = 300.00;
 
+  // The plan says what it is charged in, and the wallet is debited in the same
+  // thing. Hardcoding "$" here made the card read "$25.00" directly under a
+  // balance reading "100.00 USDT" — the same currency, named two ways, on one
+  // screen about money.
+  const unit = plan.currency;
+
   return (
     <div
       className={cn(
@@ -267,11 +273,11 @@ function PlanCard({
       <div className="flex flex-col">
         {originalPrice && (
           <p className="m-0 text-[12px] font-semibold text-opt-ink-3/70 line-through decoration-red-500/50 decoration-2">
-            ${originalPrice.toFixed(2)}
+            {originalPrice.toFixed(2)} {unit}
           </p>
         )}
         <p className="m-0 text-[22px] font-extrabold tabular-nums leading-none text-opt-ink">
-          ${price.toFixed(2)}
+          {price.toFixed(2)} <span className="text-[13px] font-bold">{unit}</span>
         </p>
       </div>
 
