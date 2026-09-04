@@ -4,7 +4,7 @@ import { useDerivStatus } from "@/hooks/useDerivStatus";
 import { useStartDerivOAuth } from "@/hooks/useStartDerivOAuth";
 import { cn } from "@/lib/cn";
 
-	import { DemoBadge, RealBadge } from "@/app/deriv/callback/CallbackInner";
+	import { DerivAccountMenu } from "./DerivAccountMenu";
 
 	/**
 	 * Top-bar control for Deriv account linking (authenticated users).
@@ -15,19 +15,13 @@ import { cn } from "@/lib/cn";
 	 *    the login modal's "Continue with Deriv" button).
 	 */
 	export function ConnectDerivButton() {
-	  const { linked, accountId, isVirtual, isLoading } = useDerivStatus();
+	  const { linked, isLoading } = useDerivStatus();
 	  const { start, redirecting } = useStartDerivOAuth();
 
-	  if (linked) {
-	    return (
-	      <div
-	        className="flex flex-shrink-0 items-center gap-2 px-3 py-1.5"
-	        title={`Linked Deriv account ${accountId ?? ""}`}
-	      >
-	        {isVirtual ? <DemoBadge /> : <RealBadge currency="USD" />}
-	        <span className="font-mono text-[12px] font-semibold text-opt-ink-2">{accountId}</span>
-	      </div>
-	    );
+	if (linked) {
+	    // A linked account used to render as a static label: no way to switch
+	    // between demo and real, and no way to sign out of Deriv at all.
+	    return <DerivAccountMenu />;
 	  }
 
   return (

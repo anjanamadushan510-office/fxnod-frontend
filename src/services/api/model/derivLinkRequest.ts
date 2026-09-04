@@ -31,10 +31,13 @@ library, not a float.
  * OpenAPI spec version: 0.1.0
  */
 
+/**
+ * `currency` and `is_virtual` are accepted for compatibility with older clients and then IGNORED. Both are read from the row stored during the code exchange, from what Deriv itself reported. They used to be believed, which let an authenticated caller post a REAL account marked virtual — harmless while everything cost the same, and a free real-money bot once demo access became free.
+ */
 export interface DerivLinkRequest {
-  state: string;
+  state?: string;
   /** Deriv OAuth token for the account. */
-  token: string;
+  token?: string;
   /** Deriv loginid (e.g. CR123456). */
   deriv_account_id: string;
   currency?: string;

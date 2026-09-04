@@ -30,19 +30,12 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
-import type { SubscriptionProduct } from './subscriptionProduct';
-import type { DecimalString } from './decimalString';
 
-export interface SubscriptionPlan {
-  plan_id: string;
-  product: SubscriptionProduct;
-  name: string;
-  /**
-   * Null means the plan never expires.
-   * @nullable
-   */
-  duration_days: number | null;
-  price_usd: DecimalString;
-  /** What the wallet is actually debited in. The field is named `price_usd` because the figure IS dollars — USDT is a dollar stablecoin and FXNod treats them 1:1 — but the price list and the receipt must say the same word, and they did not. */
+export interface DerivLinkedAccount {
+  deriv_account_id: string;
   currency: string;
+  /** As DERIV reported it when the account was linked. Never taken from a client — it decides whether a bot run needs a paid subscription. */
+  is_virtual: boolean;
+  /** Whether trades currently go to this account. */
+  is_selected: boolean;
 }

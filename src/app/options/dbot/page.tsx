@@ -7,6 +7,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/cn";
 import { BotChart } from "@/components/bot/BotChart";
 import { BotPicker } from "@/components/bot/BotPicker";
+import { SubscriptionGateModal } from "@/components/bot/SubscriptionGateModal";
 import { BotTabs, type DraftTab } from "@/components/bot/BotTabs";
 import { HistoryTable } from "@/components/bot/HistoryTable";
 import { SessionStats } from "@/components/bot/SessionStats";
@@ -290,6 +291,10 @@ export default function DBotPage() {
   // ── Actions ───────────────────────────────────────────────────────────────
   const [errors, setErrors] = useState<string[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
+  // Set when the server refuses a REAL-money run for want of a subscription.
+  // Demo never reaches this, which is the point: the paywall appears at the
+  // moment the answer changes, not in front of the whole product.
+  const [gateReason, setGateReason] = useState<string | null>(null);
   const startMutation = useStartBotRun();
   const stopMutation = useStopBotRun();
   const busy = startMutation.isPending || stopMutation.isPending;
@@ -339,6 +344,14 @@ export default function DBotPage() {
       if (newRun) setActiveId(newRun.run_id);
       await runsQuery.refetch();
     } catch (err) {
+      const reason = subscriptionRefusal(err);
+      if (reason) {
+        // A paywall is not an error message. Showing "forbidden:
+        // no_subscription" in a red banner tells someone they did something
+        // wrong, when what they need is the way forward.
+        setGateReason(reason);
+        return;
+      }
       setErrors([apiMessage(err)]);
     }
   }
@@ -510,6 +523,12 @@ export default function DBotPage() {
         </main>
       </div>
       )}
+
+      <SubscriptionGateModal
+        open={gateReason !== null}
+        reason={gateReason ?? undefined}
+        onClose={() => setGateReason(null)}
+      />
     </>
   );
 }
@@ -618,6 +637,28 @@ function ChartWarmingUp() {
       </p>
     </div>
   );
+}
+
+/**
+ * Is this refusal about a missing subscription, rather than a real error?
+ *
+ * The engine returns its reason codes verbatim, so this matches on them rather
+ * than on the status: a 403 also covers "no Deriv account linked" and "real
+ * money needs risk_acknowledged", and neither of those is answered by a
+ * pricing page.
+ */
+function subscriptionRefusal(err: unknown): string | null {
+  const detail = (err as { response?: { data?: { detail?: string } } })?.response
+    ?.data?.detail;
+  if (!detail) return null;
+  for (const reason of [
+    "no_subscription",
+    "subscription_expired",
+    "subscription_cancelled",
+  ]) {
+    if (detail.includes(reason)) return reason;
+  }
+  return null;
 }
 
 /**
