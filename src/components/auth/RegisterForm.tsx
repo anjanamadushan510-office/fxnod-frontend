@@ -28,8 +28,24 @@ export function RegisterForm() {
 
   // Read after mount, never during render: sessionStorage does not exist on the
   // server, and this page is prerendered.
+  //
+  // Priority: ?ref= in the current URL always wins over a sessionStorage value
+  // from a previous page in the session. This matters when the referrer copies
+  // their own invite link, opens it in the same browser tab they are logged in
+  // on, and forwards it — the URL ref must not be silently dropped.
   const [referralCode, setReferralCode] = useState<string | null>(null);
-  useEffect(() => setReferralCode(readReferralCode()), []);
+  useEffect(() => {
+    const fromUrl = new URLSearchParams(window.location.search).get("ref");
+    const normalized = fromUrl ? fromUrl.trim().toUpperCase() : null;
+    const valid = normalized && /^[A-Z0-9]{4,32}$/.test(normalized) ? normalized : null;
+    if (valid) {
+      // URL ref takes precedence — store it so it survives a page refresh too
+      try { window.sessionStorage.setItem("fxnod.referral_code", valid); } catch { /* ignore */ }
+      setReferralCode(valid);
+    } else {
+      setReferralCode(readReferralCode());
+    }
+  }, []);
 
   const registerMut = useRegister({
     mutation: {
