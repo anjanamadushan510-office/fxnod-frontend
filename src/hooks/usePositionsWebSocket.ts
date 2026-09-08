@@ -7,6 +7,7 @@ import { useOpenPositions } from "@/stores/useOpenPositions";
 import { useAccountBalance } from "@/stores/useAccountBalance";
 import { useQueryClient } from "@tanstack/react-query";
 import { getGetTradeHistoryQueryKey } from "@/services/api/endpoints/trading/trading";
+import { useDerivStatus } from "@/hooks/useDerivStatus";
 
 export type PositionsSocketStatus =
   | "idle"
@@ -40,6 +41,8 @@ export function usePositionsWebSocket(enabled = true): PositionsSocketStatus {
   const reconnectRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const attemptsRef = useRef(0);
   const cancelledRef = useRef(false);
+
+  const { accountId, isLoading } = useDerivStatus();
 
   // Held in a ref so the reconnect timer always calls the latest closure.
   const connectRef = useRef<() => void>(() => {});
@@ -104,8 +107,8 @@ export function usePositionsWebSocket(enabled = true): PositionsSocketStatus {
   };
 
   useEffect(() => {
-    if (!enabled) {
-      setStatus("idle");
+    if (!enabled || isLoading) {
+      if (!enabled) setStatus("idle");
       return;
     }
     cancelledRef.current = false;
@@ -118,7 +121,7 @@ export function usePositionsWebSocket(enabled = true): PositionsSocketStatus {
       wsRef.current?.close();
       wsRef.current = null;
     };
-  }, [enabled]);
+  }, [enabled, accountId, isLoading]);
 
   return status;
 }
