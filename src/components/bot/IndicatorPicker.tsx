@@ -7,6 +7,7 @@ import type { BotIndicator, BotIndicatorKind } from "@/services/api/model";
 import { INDICATORS, indicatorMeta } from "./botMeta";
 
 interface IndicatorPickerProps {
+  strategyId: string;
   value: BotIndicator[];
   onChange: (next: BotIndicator[]) => void;
   disabled?: boolean;
@@ -21,6 +22,7 @@ interface IndicatorPickerProps {
  * POSTed — no hidden defaults live here.
  */
 export function IndicatorPicker({
+  strategyId,
   value,
   onChange,
   disabled = false,
@@ -35,9 +37,12 @@ export function IndicatorPicker({
     // Period is sent explicitly rather than left blank so the run records what
     // it actually used — a run whose audit trail says "RSI" with no period
     // cannot be replayed.
-    const next: BotIndicator = meta.defaultPeriod
-      ? { kind, period: meta.defaultPeriod }
-      : { kind };
+    const next: BotIndicator = { kind };
+    if (meta.defaultPeriod !== undefined) next.period = meta.defaultPeriod;
+    if (meta.hasBounds) {
+      if (meta.defaultOversold !== undefined) next.oversold = meta.defaultOversold;
+      if (meta.defaultOverbought !== undefined) next.overbought = meta.defaultOverbought;
+    }
     onChange([...value, next]);
     setOpen(false);
   }
@@ -48,6 +53,10 @@ export function IndicatorPicker({
 
   function setPeriod(kind: BotIndicatorKind, period: number) {
     onChange(value.map((i) => (i.kind === kind ? { ...i, period } : i)));
+  }
+
+  function setBounds(kind: BotIndicatorKind, oversold: number, overbought: number) {
+    onChange(value.map((i) => (i.kind === kind ? { ...i, oversold, overbought } : i)));
   }
 
   return (
@@ -83,7 +92,7 @@ export function IndicatorPicker({
                     )}
                   </span>
                   <span className="truncate text-[10px] text-opt-ink-3">
-                    {meta.hint}
+                    {typeof meta.hint === "function" ? meta.hint(strategyId) : meta.hint}
                   </span>
                 </span>
 
@@ -100,11 +109,50 @@ export function IndicatorPicker({
                       setPeriod(indicator.kind, Number.isFinite(n) ? n : meta.defaultPeriod!);
                     }}
                     className={cn(
-                      "h-7 w-14 shrink-0 rounded-[var(--opt-radius-sm)] border border-opt-line",
+                      "h-7 w-12 shrink-0 rounded-[var(--opt-radius-sm)] border border-opt-line",
                       "bg-opt-bg px-1.5 text-right text-[11px] tabular-nums text-opt-ink",
                       "outline-none disabled:opacity-55",
                     )}
                   />
+                )}
+
+                {meta.hasBounds && (
+                  <div className="flex shrink-0 items-center gap-1">
+                    <span className="text-[10px] text-opt-ink-3 font-medium">Min</span>
+                    <input
+                      type="number"
+                      aria-label={`${meta.label} min range`}
+                      value={indicator.oversold ?? meta.defaultOversold}
+                      disabled={disabled}
+                      onChange={(e) => {
+                        const n = Number.parseInt(e.target.value, 10);
+                        const overbought = indicator.overbought ?? meta.defaultOverbought!;
+                        setBounds(indicator.kind, Number.isFinite(n) ? n : meta.defaultOversold!, overbought);
+                      }}
+                      className={cn(
+                        "h-7 w-12 rounded-[var(--opt-radius-sm)] border border-opt-line",
+                        "bg-opt-bg px-1.5 text-right text-[11px] tabular-nums text-opt-ink",
+                        "outline-none disabled:opacity-55",
+                      )}
+                    />
+                    <span className="text-[10px] text-opt-ink-3 font-medium pl-1">Max</span>
+                    <input
+                      type="number"
+                      aria-label={`${meta.label} max range`}
+                      value={indicator.overbought ?? meta.defaultOverbought}
+                      disabled={disabled}
+                      onChange={(e) => {
+                        const n = Number.parseInt(e.target.value, 10);
+                        const oversold = indicator.oversold ?? meta.defaultOversold!;
+                        setBounds(indicator.kind, oversold, Number.isFinite(n) ? n : meta.defaultOverbought!);
+                      }}
+                      className={cn(
+                        "h-7 w-12 rounded-[var(--opt-radius-sm)] border border-opt-line",
+                        "bg-opt-bg px-1.5 text-right text-[11px] tabular-nums text-opt-ink",
+                        "outline-none disabled:opacity-55",
+                      )}
+                    />
+                  </div>
                 )}
 
                 <button
@@ -166,7 +214,7 @@ export function IndicatorPicker({
                   )}
                 </span>
                 <span className="text-[10px] leading-snug text-opt-ink-3">
-                  {meta.hint}
+                  {typeof meta.hint === "function" ? meta.hint(strategyId) : meta.hint}
                 </span>
               </button>
             ))}

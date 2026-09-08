@@ -334,6 +334,7 @@ export function TradeConfiguration({
       <Divider />
 
       <IndicatorPicker
+        strategyId={strategyId}
         value={state.indicators}
         onChange={(indicators: BotIndicator[]) => {
           // Dropping the last directional indicator makes Auto unreachable, so

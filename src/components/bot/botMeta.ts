@@ -87,14 +87,29 @@ export interface IndicatorMeta {
   kind: BotIndicatorKind;
   label: string;
   /** Rendered under the name to explain what adding it does. */
-  hint: string;
+  hint: string | ((strategyId: string) => string);
   directional: boolean;
   /** Default period shown in the picker; the backend applies the same value. */
   defaultPeriod?: number;
+  /** Whether this indicator supports configuring upper and lower bounds (e.g. RSI). */
+  hasBounds?: boolean;
+  defaultOversold?: number;
+  defaultOverbought?: number;
 }
 
 export const INDICATORS: IndicatorMeta[] = [
-  { kind: "rsi", label: "RSI", hint: "Oversold argues up, overbought argues down", directional: true, defaultPeriod: 14 },
+  { 
+    kind: "rsi", 
+    label: "RSI", 
+    hint: (strategyId) => strategyId === "accumulator" 
+      ? "Trades only while RSI stays within the configured Min-Max range" 
+      : "Oversold argues up, overbought argues down", 
+    directional: true, 
+    defaultPeriod: 14,
+    hasBounds: true,
+    defaultOversold: 30,
+    defaultOverbought: 70
+  },
   { kind: "bb", label: "Bollinger Bands", hint: "Below the lower band argues up, above the upper argues down", directional: true, defaultPeriod: 20 },
   { kind: "stoch", label: "Stochastic", hint: "Same read as RSI, over the recent high/low range", directional: true, defaultPeriod: 14 },
   { kind: "macd", label: "MACD", hint: "Histogram above zero argues up, below argues down", directional: true },
