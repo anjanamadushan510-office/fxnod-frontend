@@ -49,6 +49,7 @@ export function DerivAccountMenu() {
   // and this is on the trading screen's critical path.
   const accountsQuery = useDerivListAccounts({ query: { enabled: open } });
   const selectMutation = useDerivSelectAccount();
+  const [pendingAccount, setPendingAccount] = useState<DerivLinkedAccount | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -77,26 +78,14 @@ export function DerivAccountMenu() {
     await queryClient.invalidateQueries();
   }, [queryClient]);
 
-  async function switchTo(account: DerivLinkedAccount) {
-    if (account.is_selected) {
-      setOpen(false);
-      return;
-    }
-    // Moving ONTO real money is the one direction worth a confirmation. Going
-    // the other way is always safe, so it is never interrupted.
-    if (!account.is_virtual) {
-      const ok = window.confirm(
-        `Switch to ${account.deriv_account_id}? This is a real-money account — ` +
-          `trades and bots will use real funds.`,
-      );
-      if (!ok) return;
-    }
+  async function executeSwitch(account: DerivLinkedAccount) {
     try {
       await selectMutation.mutateAsync({
         data: { deriv_account_id: account.deriv_account_id },
       });
       await refreshEverything();
       setOpen(false);
+      setPendingAccount(null);
       toast.success(
         account.is_virtual
           ? `Switched to demo (${account.deriv_account_id})`
@@ -105,6 +94,20 @@ export function DerivAccountMenu() {
     } catch {
       toast.error("Could not switch account. Please try again.");
     }
+  }
+
+  async function switchTo(account: DerivLinkedAccount) {
+    if (account.is_selected) {
+      setOpen(false);
+      return;
+    }
+    // Moving ONTO real money is the one direction worth a confirmation. Going
+    // the other way is always safe, so it is never interrupted.
+    if (!account.is_virtual) {
+      setPendingAccount(account);
+      return;
+    }
+    await executeSwitch(account);
   }
 
   const accounts = accountsQuery.data?.accounts ?? [];
@@ -116,101 +119,132 @@ export function DerivAccountMenu() {
   const loaded = !accountsQuery.isPending && !accountsQuery.isError;
 
   return (
-    <div ref={rootRef} className="relative flex-shrink-0">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-haspopup="menu"
-        aria-expanded={open}
-        className={cn(
-          "flex items-center gap-2 rounded-[10px] px-3 py-1.5 transition-colors",
-          "hover:bg-opt-bg-sunk",
-        )}
-        title={`Deriv account ${accountId ?? ""}`}
-      >
-        <AccountBadge isVirtual={isVirtual} />
-        <span className="font-mono text-[12px] font-semibold text-opt-ink-2">
-          {accountId}
-        </span>
-        <CaretDownIcon className="h-3 w-3 text-opt-ink-3" />
-      </button>
-
-      {open && (
-        <div
-          role="menu"
+    <>
+      <div ref={rootRef} className="relative flex-shrink-0">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-haspopup="menu"
+          aria-expanded={open}
           className={cn(
-            "absolute right-0 top-[calc(100%+6px)] z-50 w-72 overflow-hidden",
-            "rounded-[var(--opt-radius)] border border-opt-line bg-opt-bg-elev shadow-lg",
+            "flex items-center gap-2 rounded-[10px] px-3 py-1.5 transition-colors",
+            "hover:bg-opt-bg-sunk",
           )}
+          title={`Deriv account ${accountId ?? ""}`}
         >
-          <p className="m-0 border-b border-opt-line px-3 py-2 text-[10px] font-bold uppercase tracking-wide text-opt-ink-3">
-            Deriv accounts
-          </p>
+          <AccountBadge isVirtual={isVirtual} />
+          <span className="font-mono text-[12px] font-semibold text-opt-ink-2">
+            {accountId}
+          </span>
+          <CaretDownIcon className="h-3 w-3 text-opt-ink-3" />
+        </button>
 
-          {accountsQuery.isPending && (
-            <p className="m-0 px-3 py-4 text-center text-[11px] text-opt-ink-3">
-              Loading…
+        {open && (
+          <div
+            role="menu"
+            className={cn(
+              "absolute right-0 top-[calc(100%+6px)] z-50 w-72 overflow-hidden",
+              "rounded-[var(--opt-radius)] border border-opt-line bg-opt-bg-elev shadow-lg",
+            )}
+          >
+            <p className="m-0 border-b border-opt-line px-3 py-2 text-[10px] font-bold uppercase tracking-wide text-opt-ink-3">
+              Deriv accounts
             </p>
-          )}
 
-          {accountsQuery.isError && (
-            <p className="m-0 px-3 py-4 text-center text-[11px] text-opt-fall">
-              Could not load your accounts.
+            {accountsQuery.isPending && (
+              <p className="m-0 px-3 py-4 text-center text-[11px] text-opt-ink-3">
+                Loading…
+              </p>
+            )}
+
+            {accountsQuery.isError && (
+              <p className="m-0 px-3 py-4 text-center text-[11px] text-opt-fall">
+                Could not load your accounts.
+              </p>
+            )}
+
+            {accounts.map((account) => (
+              <button
+                key={account.deriv_account_id}
+                type="button"
+                role="menuitem"
+                disabled={busy}
+                onClick={() => switchTo(account)}
+                className={cn(
+                  "flex w-full items-center gap-2 border-b border-opt-line px-3 py-2.5 text-left",
+                  "transition-colors hover:bg-opt-bg-sunk disabled:opacity-50",
+                  account.is_selected && "bg-opt-bg-sunk",
+                )}
+              >
+                <AccountBadge isVirtual={account.is_virtual} />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-mono text-[12px] font-semibold text-opt-ink">
+                    {account.deriv_account_id}
+                  </span>
+                  <span className="block text-[10px] text-opt-ink-3">
+                    {account.currency}
+                  </span>
+                </span>
+                {account.is_selected && (
+                  <span className="text-[10px] font-bold text-opt-rise">
+                    Active
+                  </span>
+                )}
+              </button>
+            ))}
+
+            {loaded && !hasRealAccount && (
+              <a
+                href={DERIV_OPEN_REAL_ACCOUNT_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                role="menuitem"
+                className="block px-3 py-2.5 transition-colors hover:bg-opt-bg-sunk"
+              >
+                <span className="block text-[12px] font-semibold text-opt-ink">
+                  Open a real account
+                </span>
+                <span className="block text-[10.5px] leading-snug text-opt-ink-3">
+                  {/* Said plainly. "No real account" with no next step is the
+                      same dead end as an empty list. */}
+                  You only have a demo account. Real accounts are opened at
+                  Deriv — come back and reconnect once yours is ready.
+                </span>
+              </a>
+            )}
+          </div>
+        )}
+      </div>
+
+      {pendingAccount && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-xl bg-opt-bg-elev p-6 shadow-xl border border-opt-line animate-fade-in">
+            <h3 className="mb-2 text-lg font-bold text-opt-ink">Switch to Real Money?</h3>
+            <p className="mb-6 text-[13px] leading-relaxed text-opt-ink-2">
+              You are switching to <strong className="text-opt-ink">{pendingAccount.deriv_account_id}</strong>.
+              This is a real-money account — trades and bots will use real funds.
             </p>
-          )}
-
-          {accounts.map((account) => (
-            <button
-              key={account.deriv_account_id}
-              type="button"
-              role="menuitem"
-              disabled={busy}
-              onClick={() => switchTo(account)}
-              className={cn(
-                "flex w-full items-center gap-2 border-b border-opt-line px-3 py-2.5 text-left",
-                "transition-colors hover:bg-opt-bg-sunk disabled:opacity-50",
-                account.is_selected && "bg-opt-bg-sunk",
-              )}
-            >
-              <AccountBadge isVirtual={account.is_virtual} />
-              <span className="min-w-0 flex-1">
-                <span className="block truncate font-mono text-[12px] font-semibold text-opt-ink">
-                  {account.deriv_account_id}
-                </span>
-                <span className="block text-[10px] text-opt-ink-3">
-                  {account.currency}
-                </span>
-              </span>
-              {account.is_selected && (
-                <span className="text-[10px] font-bold text-opt-rise">
-                  Active
-                </span>
-              )}
-            </button>
-          ))}
-
-          {loaded && !hasRealAccount && (
-            <a
-              href={DERIV_OPEN_REAL_ACCOUNT_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              role="menuitem"
-              className="block px-3 py-2.5 transition-colors hover:bg-opt-bg-sunk"
-            >
-              <span className="block text-[12px] font-semibold text-opt-ink">
-                Open a real account
-              </span>
-              <span className="block text-[10.5px] leading-snug text-opt-ink-3">
-                {/* Said plainly. "No real account" with no next step is the
-                    same dead end as an empty list. */}
-                You only have a demo account. Real accounts are opened at
-                Deriv — come back and reconnect once yours is ready.
-              </span>
-            </a>
-          )}
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setPendingAccount(null)}
+                className="rounded-lg border border-opt-line px-4 py-2 text-[13px] font-semibold text-opt-ink transition-colors hover:bg-opt-bg-sunk"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => executeSwitch(pendingAccount)}
+                disabled={busy}
+                className="rounded-lg bg-opt-fall px-4 py-2 text-[13px] font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+              >
+                {busy ? "Switching..." : "Yes, switch to real"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
 
