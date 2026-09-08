@@ -1,4 +1,4 @@
-﻿/**
+/**
  * LOGIC-004: Active symbols resolver.
  *
  * Fetches Deriv active_symbols via a short-lived one-shot WebSocket,
@@ -12,7 +12,7 @@
  *   4. Static fallback
  */
 
-import { derivWsUrl } from "./derivSymbols";
+import { derivV3Url } from "./derivSymbols";
 import { symbolMatchesStrategy } from "./contractTypes";
 import { getCached, getStaleCached, setCached } from "./marketCache";
 import { MARKETS } from "@/components/options/market/catalog";
@@ -83,7 +83,7 @@ function fetchActiveSymbolsRaw(): Promise<DerivActiveSymbol[]> {
       if (!settled) { settled = true; ws.close(); reject(new Error("active_symbols: timeout")); }
     }, FETCH_TIMEOUT_MS);
 
-    const ws = new WebSocket(derivWsUrl());
+    const ws = new WebSocket(derivV3Url());
 
     ws.onopen = () => {
       ws.send(JSON.stringify({ active_symbols: "brief", product_type: "basic" }));

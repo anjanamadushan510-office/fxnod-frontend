@@ -25,6 +25,12 @@ export function derivWsUrl(): string {
   })}`;
 }
 
+/** V3 WS endpoint (requires app_id, used for active_symbols etc). */
+export function derivV3Url(): string {
+  const appId = process.env.NEXT_PUBLIC_DERIV_APP_ID ?? "1089";
+  return `${DERIV_WS_BASE}?app_id=${appId}`;
+}
+
 // ─── Symbol mapping (catalog id → Deriv symbol) ──────────────────────────────
 // Best-effort. Markets Deriv doesn't list (e.g. SOL/USD) are intentionally
 // absent — the feed surfaces "unsupported" rather than subscribing to junk.
