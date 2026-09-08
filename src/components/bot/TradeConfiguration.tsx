@@ -10,9 +10,9 @@ import {
   GROWTH_RATES,
   MULTIPLIER_STEPS,
   formShapeFor,
-  marketsForStrategy,
   defaultMarketForStrategy,
 } from "./botMeta";
+import { useMarketsForStrategy } from "@/hooks/useMarketsForStrategy";
 import { IndicatorPicker, hasDirectionalIndicator } from "./IndicatorPicker";
 import type { BotFormState, Direction } from "./formState";
 import { PresetBar } from "./PresetBar";
@@ -49,16 +49,16 @@ export function TradeConfiguration({
 }: TradeConfigurationProps) {
   const shape = formShapeFor(strategyId);
   const autoAvailable = hasDirectionalIndicator(state.indicators);
-  const allowedMarkets = marketsForStrategy(strategyId);
+  const { markets: allowedMarkets, loading: marketsLoading } = useMarketsForStrategy(strategyId);
 
-  // When the strategy changes, if the current marketId is no longer valid
-  // for the new strategy, reset it to the first valid market for that strategy.
+  // When the strategy changes (or fresh markets load), if the current marketId
+  // is no longer in the allowed list, reset to the first valid market.
   useEffect(() => {
-    if (!allowedMarkets.includes(state.marketId)) {
+    if (!marketsLoading && allowedMarkets.length > 0 && !allowedMarkets.includes(state.marketId)) {
       onChange({ marketId: defaultMarketForStrategy(strategyId) });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [strategyId]);
+  }, [strategyId, marketsLoading]);
 
   return (
     <section className="flex flex-col gap-3.5">
@@ -73,7 +73,7 @@ export function TradeConfiguration({
         Trade Configuration
       </h2>
 
-      <Field label="Market">
+      <Field label={marketsLoading ? "Market (loading…)" : "Market"}>
         <SelectRow
           value={state.marketId}
           disabled={disabled}

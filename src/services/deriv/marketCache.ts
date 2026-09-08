@@ -5,14 +5,14 @@
  * full page reload.  A Map keyed by strategyId stores the list of catalog
  * market IDs plus the timestamp of the last successful API fetch.
  *
- * TTL is 5 minutes — markets don't change faster than that in practice, and
+ * TTL is 5 minutes â€” markets don't change faster than that in practice, and
  * Deriv's active_symbols response is itself cached server-side for minutes.
  */
 
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 interface CacheEntry {
-  /** Resolved catalog IDs, e.g. ["vol_100_1s", "vol_75_1s", …] */
+  /** Resolved catalog IDs, e.g. ["vol_100_1s", "vol_75_1s", â€¦] */
   markets: string[];
   /** Source so callers can show a subtle indicator if desired. */
   source: "api" | "fallback";
