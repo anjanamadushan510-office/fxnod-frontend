@@ -125,3 +125,52 @@ export const BOT_MARKET_IDS = [
   "jump_10",
   "jump_25",
 ] as const;
+
+/**
+ * Which market IDs are valid for each strategy.
+ *
+ * - accumulator & multiplier  → Deriv only supports volatility indices for these contract types.
+ * - rise_fall, higher_lower, touch_no_touch → volatility + forex + crypto + commodities.
+ * - matches_differs, even_odd, over_under  → digit contracts only work on volatility indices.
+ */
+export const STRATEGY_MARKET_IDS: Record<string, readonly string[]> = {
+  accumulator: ["vol_100_1s", "vol_75_1s", "vol_50_1s", "vol_25_1s"],
+  multiplier:  ["vol_100_1s", "vol_75_1s", "vol_50_1s", "vol_25_1s"],
+  rise_fall: [
+    "vol_100_1s", "vol_75_1s", "vol_50_1s", "vol_25_1s",
+    "eur_usd", "gbp_usd", "usd_jpy",
+    "btc_usd", "eth_usd",
+    "xau_usd", "xag_usd",
+  ],
+  higher_lower: [
+    "vol_100_1s", "vol_75_1s", "vol_50_1s", "vol_25_1s",
+    "eur_usd", "gbp_usd", "usd_jpy",
+    "btc_usd", "eth_usd",
+    "xau_usd", "xag_usd",
+  ],
+  touch_no_touch: [
+    "vol_100_1s", "vol_75_1s", "vol_50_1s", "vol_25_1s",
+    "eur_usd", "gbp_usd", "usd_jpy",
+  ],
+  matches_differs: ["vol_100_1s", "vol_75_1s", "vol_50_1s", "vol_25_1s"],
+  even_odd:        ["vol_100_1s", "vol_75_1s", "vol_50_1s", "vol_25_1s"],
+  over_under:      ["vol_100_1s", "vol_75_1s", "vol_50_1s", "vol_25_1s"],
+};
+
+/**
+ * Returns the allowed market IDs for a given strategy.
+ * Falls back to the full BOT_MARKET_IDS list if the strategy is unknown.
+ */
+export function marketsForStrategy(strategyId: string): readonly string[] {
+  return STRATEGY_MARKET_IDS[strategyId] ?? BOT_MARKET_IDS;
+}
+
+/**
+ * Returns the best default market ID for a given strategy.
+ * For accumulator / multiplier this is vol_75_1s (the most liquid);
+ * for directional strategies that also support forex, it stays on vol_75_1s.
+ */
+export function defaultMarketForStrategy(strategyId: string): string {
+  return marketsForStrategy(strategyId)[0] ?? "vol_75_1s";
+}
+

@@ -1,15 +1,17 @@
 "use client";
 
+import { useEffect } from "react";
 import { cn } from "@/lib/cn";
 import { ArrowDownIcon, ArrowUpIcon, CaretDownIcon, InfoIcon } from "@/components/ui/Icons";
 import { findMarket } from "@/components/options/market/catalog";
 import type { BotIndicator } from "@/services/api/model";
 import {
-  BOT_MARKET_IDS,
   DURATION_UNITS,
   GROWTH_RATES,
   MULTIPLIER_STEPS,
   formShapeFor,
+  marketsForStrategy,
+  defaultMarketForStrategy,
 } from "./botMeta";
 import { IndicatorPicker, hasDirectionalIndicator } from "./IndicatorPicker";
 import type { BotFormState, Direction } from "./formState";
@@ -47,6 +49,16 @@ export function TradeConfiguration({
 }: TradeConfigurationProps) {
   const shape = formShapeFor(strategyId);
   const autoAvailable = hasDirectionalIndicator(state.indicators);
+  const allowedMarkets = marketsForStrategy(strategyId);
+
+  // When the strategy changes, if the current marketId is no longer valid
+  // for the new strategy, reset it to the first valid market for that strategy.
+  useEffect(() => {
+    if (!allowedMarkets.includes(state.marketId)) {
+      onChange({ marketId: defaultMarketForStrategy(strategyId) });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [strategyId]);
 
   return (
     <section className="flex flex-col gap-3.5">
@@ -66,7 +78,7 @@ export function TradeConfiguration({
           value={state.marketId}
           disabled={disabled}
           onChange={(marketId) => onChange({ marketId })}
-          options={BOT_MARKET_IDS.map((id) => ({
+          options={allowedMarkets.map((id) => ({
             value: id,
             label: findMarket(id)?.name ?? id,
           }))}
