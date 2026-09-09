@@ -3,6 +3,10 @@
  *
  * Maps each application strategy (bot trade type) to the exact Deriv API
  * contract_type array needed to filter active_symbols directly.
+ *
+ * Note: dTrader uses plural strategy IDs ("accumulators", "multipliers")
+ * while dBot uses singular strategy IDs ("accumulator", "multiplier").
+ * Both are mapped here so the same activeSymbols service works for both.
  */
 
 export interface TradeTypeConfig {
@@ -16,6 +20,7 @@ export interface TradeTypeConfig {
 }
 
 export const TRADE_TYPE_CONFIG: Record<string, TradeTypeConfig> = {
+  // ── dTrader strategy IDs (plural form) ───────────────────────────────────
   accumulators: {
     label: "Accumulators",
     contractTypes: ["ACCU"],
@@ -32,6 +37,8 @@ export const TRADE_TYPE_CONFIG: Record<string, TradeTypeConfig> = {
     label: "Vanillas",
     contractTypes: ["VANILLALONGCALL", "VANILLALONGPUT"],
   },
+
+  // ── Shared strategy IDs (used by both dTrader and dBot) ──────────────────
   rise_fall: {
     label: "Rise/Fall",
     contractTypes: ["CALL", "PUT"],
@@ -55,5 +62,15 @@ export const TRADE_TYPE_CONFIG: Record<string, TradeTypeConfig> = {
   over_under: {
     label: "Over/Under",
     contractTypes: ["DIGITOVER", "DIGITUNDER"],
+  },
+
+  // ── dBot strategy IDs (singular form — backend uses singular) ─────────────
+  accumulator: {
+    label: "Accumulator",
+    contractTypes: ["ACCU"],
+  },
+  multiplier: {
+    label: "Multiplier",
+    contractTypes: ["MULTUP", "MULTDOWN"],
   },
 };

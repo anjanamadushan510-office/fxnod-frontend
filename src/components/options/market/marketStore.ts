@@ -93,17 +93,53 @@ export const useMarketStore = create<MarketStoreState>((set, get) => ({
       "favorites", "derived", "forex", "stock_indices", "cryptocurrencies", "commodities"
     ];
     
-    const categories = Array.from(categoriesMap.values()).sort((a, b) => {
+    const newCategories = Array.from(categoriesMap.values()).sort((a, b) => {
       const indexA = categoryOrder.indexOf(a.id);
       const indexB = categoryOrder.indexOf(b.id);
       return (indexA === -1 ? 99 : indexA) - (indexB === -1 ? 99 : indexB);
     });
 
-    set({ markets: marketsMap, allMarkets, categories, isLoaded: true });
+    // MERGE into existing store instead of overwriting — important for dBot which
+    // loads one strategy's markets at a time, but all must remain findable
+    // for findMarket() calls (e.g. showing market name in the dropdown).
+    set((prev) => ({
+      markets: { ...prev.markets, ...marketsMap },
+      allMarkets: mergeMarketArrays(prev.allMarkets, allMarkets),
+      categories: mergeCategories(prev.categories, newCategories),
+      isLoaded: true,
+    }));
   },
 }));
 
 // --- Helpers ---
+
+function mergeMarketArrays(existing: Market[], incoming: Market[]): Market[] {
+  const map = new Map(existing.map(m => [m.id, m]));
+  incoming.forEach(m => map.set(m.id, m));
+  return Array.from(map.values());
+}
+
+function mergeCategories(existing: MarketCategory[], incoming: MarketCategory[]): MarketCategory[] {
+  const map = new Map(existing.map(c => [c.id, c]));
+  incoming.forEach(incCat => {
+    const existingCat = map.get(incCat.id);
+    if (existingCat) {
+      // Merge groups
+      incCat.groups.forEach(incGroup => {
+        const existingGroup = existingCat.groups.find(g => g.id === incGroup.id);
+        if (existingGroup) {
+          const combinedIds = Array.from(new Set([...existingGroup.marketIds, ...incGroup.marketIds]));
+          existingGroup.marketIds = combinedIds;
+        } else {
+          existingCat.groups.push(incGroup);
+        }
+      });
+    } else {
+      map.set(incCat.id, incCat);
+    }
+  });
+  return Array.from(map.values());
+}
 
 function mapMarketCategory(derivMarket: string): MarketCategoryId {
   switch (derivMarket) {
