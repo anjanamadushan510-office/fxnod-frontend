@@ -103,7 +103,7 @@ function OptionsPageInner() {
 
   // Trigger market catalog fetch for the current trade type.
   // This populates the global marketStore so findMarket() will eventually succeed.
-  useMarketsForStrategy(tradeType);
+  const { markets: allowedMarketIds } = useMarketsForStrategy(tradeType);
 
   // Safely fallback while the store is empty/loading.
   const market = findMarket(symbol);
@@ -172,6 +172,7 @@ function OptionsPageInner() {
             marketName={marketName}
             seedPrice={seedPrice}
             showStatsStrip={tradeType === "accumulators"}
+            allowedMarketIds={allowedMarketIds}
             onSelectMarket={setSymbol}
           />
         }

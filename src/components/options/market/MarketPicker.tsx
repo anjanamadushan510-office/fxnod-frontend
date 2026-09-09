@@ -16,6 +16,7 @@ import { MarketSearchBox } from "./MarketSearchBox";
 
 interface MarketPickerProps {
   activeMarketId: string;
+  allowedMarketIds: string[];
   onSelectMarket: (id: string) => void;
   onClose: () => void;
 }
@@ -35,6 +36,7 @@ interface MarketPickerProps {
  */
 export function MarketPicker({
   activeMarketId,
+  allowedMarketIds,
   onSelectMarket,
   onClose,
 }: MarketPickerProps) {
@@ -90,14 +92,14 @@ export function MarketPicker({
           id: cat.id,
           label: cat.label,
           marketIds: allMarkets.filter(
-            (m) => m.category === cat.id && m.name.toLowerCase().includes(q),
+            (m) => allowedMarketIds.includes(m.id) && m.category === cat.id && m.name.toLowerCase().includes(q),
           ).map((m) => m.id),
         }))
         .filter((g) => g.marketIds.length > 0);
     }
 
     if (activeCat === "favorites") {
-      const ids = [...favoriteIds];
+      const ids = [...favoriteIds].filter(id => allowedMarketIds.includes(id));
       return ids.length
         ? [{ id: "favorites", label: "Favorites", marketIds: ids }]
         : [];
@@ -105,19 +107,24 @@ export function MarketPicker({
 
     const cat = categories.find((c) => c.id === activeCat);
     if (!cat) return [];
-    if (!activeSub) return cat.groups;
+    if (!activeSub) {
+      return cat.groups
+        .map((g) => ({ ...g, marketIds: g.marketIds.filter(id => allowedMarketIds.includes(id)) }))
+        .filter(g => g.marketIds.length > 0);
+    }
 
     // Restrict groups to ones whose markets belong to the active sub-category.
     return cat.groups
       .map((g) => ({
         ...g,
         marketIds: g.marketIds.filter((id) => {
+          if (!allowedMarketIds.includes(id)) return false;
           const m = allMarkets.find((mm) => mm.id === id);
           return m?.subCategory === activeSub;
         }),
       }))
       .filter((g) => g.marketIds.length > 0);
-  }, [debouncedQuery, activeCat, activeSub, favoriteIds, categories, allMarkets]);
+  }, [debouncedQuery, activeCat, activeSub, favoriteIds, categories, allMarkets, allowedMarketIds]);
 
   return (
     <div
@@ -142,6 +149,7 @@ export function MarketPicker({
         <MarketCategoryRail
           activeCategoryId={activeCat}
           activeSubCategoryId={activeSub}
+          allowedMarketIds={allowedMarketIds}
           onSelect={(id, sub) => {
             setActiveCat(id);
             setActiveSub(sub);

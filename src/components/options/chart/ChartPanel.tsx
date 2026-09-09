@@ -30,6 +30,8 @@ interface ChartPanelProps {
   seedPrice: number;
   /** Render the Accumulators stats strip between chart and footer. */
   showStatsStrip?: boolean;
+  /** Market IDs allowed for the current trade type. */
+  allowedMarketIds: string[];
   /** User picked a different market in the picker. */
   onSelectMarket: (id: string) => void;
 }
@@ -48,6 +50,7 @@ export function ChartPanel({
   marketName,
   seedPrice,
   showStatsStrip = false,
+  allowedMarketIds,
   onSelectMarket,
 }: ChartPanelProps) {
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -156,6 +159,7 @@ export function ChartPanel({
         {pickerOpen && (
           <MarketPicker
             activeMarketId={marketId}
+            allowedMarketIds={allowedMarketIds}
             onSelectMarket={(id) => {
               onSelectMarket(id);
               setPickerOpen(false);

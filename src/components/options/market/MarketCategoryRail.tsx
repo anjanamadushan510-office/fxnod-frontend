@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   BarsIcon,
   ChevronIcon,
@@ -19,6 +19,7 @@ import { useMarketStore } from "./marketStore";
 interface MarketCategoryRailProps {
   activeCategoryId: MarketCategoryId;
   activeSubCategoryId?: MarketSubCategoryId;
+  allowedMarketIds: string[];
   onSelect: (id: MarketCategoryId, sub?: MarketSubCategoryId) => void;
 }
 
@@ -43,6 +44,7 @@ const ICONS: Record<MarketCategoryId, React.ReactNode> = {
 export function MarketCategoryRail({
   activeCategoryId,
   activeSubCategoryId,
+  allowedMarketIds,
   onSelect,
 }: MarketCategoryRailProps) {
   const [openIds, setOpenIds] = useState<Set<MarketCategoryId>>(
@@ -59,6 +61,27 @@ export function MarketCategoryRail({
   };
 
   const categories = useMarketStore(s => s.categories);
+  const allMarkets = useMarketStore(s => s.allMarkets);
+
+  // Filter categories down to only those that contain at least one allowed market
+  const validCategories = useMemo(() => {
+    return categories.map(cat => {
+      // Which markets in allMarkets are allowed and belong to this category?
+      const validMarketsInCat = allMarkets.filter(m => allowedMarketIds.includes(m.id) && m.category === cat.id);
+      if (validMarketsInCat.length === 0) return null; // this category has NO allowed markets
+
+      if (!cat.subCategories) return cat;
+
+      // Filter subcategories similarly
+      const validSubCats = cat.subCategories.filter(sub => {
+        return validMarketsInCat.some(m => m.subCategory === sub.id);
+      });
+
+      if (validSubCats.length === 0) return null;
+
+      return { ...cat, subCategories: validSubCats };
+    }).filter(c => c !== null) as NonNullable<typeof categories[number]>[];
+  }, [categories, allMarkets, allowedMarketIds]);
 
   return (
     <div className="flex flex-col gap-0.5 overflow-y-auto border-r border-opt-line bg-opt-bg-sunk p-2">
@@ -66,7 +89,7 @@ export function MarketCategoryRail({
         Markets
       </div>
 
-      {categories.map((cat) => {
+      {validCategories.map((cat) => {
         const isActive = cat.id === activeCategoryId && !activeSubCategoryId;
         const hasSubs = (cat.subCategories?.length ?? 0) > 0;
         const isOpen = openIds.has(cat.id);
