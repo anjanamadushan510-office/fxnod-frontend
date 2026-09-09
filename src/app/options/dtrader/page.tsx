@@ -21,6 +21,7 @@ import type { OptionsAccountMode } from "@/components/options/layout/AccountSele
 import { useChartIndicators } from "@/stores/useChartIndicators";
 import { INDICATOR_LIST } from "@/components/options/chart/IndicatorsModal";
 import type { TradeTypeId } from "@/components/options/chart/chartSettings";
+import { useMarketsForStrategy } from "@/hooks/useMarketsForStrategy";
 
 /**
  * Gate the positions WS behind a flag until the Go `/ws/positions` stream is
@@ -100,9 +101,15 @@ function OptionsPageInner() {
 
   const accountBalance = useAccountBalance((s) => s.balance);
 
-  // `parseSymbol` already guarantees a catalog hit, so `market` is defined —
-  // the `!` is just to satisfy the type without a redundant runtime branch.
-  const market = findMarket(symbol)!;
+  // Trigger market catalog fetch for the current trade type.
+  // This populates the global marketStore so findMarket() will eventually succeed.
+  useMarketsForStrategy(tradeType);
+
+  // Safely fallback while the store is empty/loading.
+  const market = findMarket(symbol);
+  const marketId = market?.id ?? symbol;
+  const marketName = market?.name ?? symbol;
+  const seedPrice = market?.seedPrice ?? 100.0;
 
   const { indicators, removeIndicator } = useChartIndicators();
   const [showWarning, setShowWarning] = useState(false);
@@ -161,14 +168,14 @@ function OptionsPageInner() {
         }
         main={
           <ChartPanel
-            marketId={market.id}
-            marketName={market.name}
-            seedPrice={market.seedPrice}
+            marketId={marketId}
+            marketName={marketName}
+            seedPrice={seedPrice}
             showStatsStrip={tradeType === "accumulators"}
             onSelectMarket={setSymbol}
           />
         }
-        order={<OrderPanel contractType={tradeType} symbol={market.id} />}
+        order={<OrderPanel contractType={tradeType} symbol={marketId} />}
       />
       {/* Contract Details modal — self-portals into the options subtree (§10) */}
       <ContractDetailsModal />
