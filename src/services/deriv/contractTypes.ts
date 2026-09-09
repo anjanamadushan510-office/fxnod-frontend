@@ -82,6 +82,7 @@ export const TRADE_TYPE_CONFIG: Record<string, TradeTypeConfig> = {
     label: "Accumulators",
     allowedMarkets: [
       { market: "synthetic_index", submarket: "random_index" },
+      { market: "synthetic_index", submarket: "crash_index" },
     ],
   },
 
