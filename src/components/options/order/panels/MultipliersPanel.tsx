@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePanelBuy } from "@/hooks/usePanelBuy";
+import { useContractsFor } from "@/hooks/useContractsFor";
 import { buildProposalRequest } from "../buildProposalRequest";
 import { TradeConfirmed } from "../TradeConfirmed";
 import { HowToTradeLink } from "../HowToTradeLink";
@@ -30,6 +31,21 @@ export function MultipliersPanel({ symbol }: MultipliersPanelProps) {
     stopLoss: null,
     takeProfit: null,
   });
+
+  const { params, loading } = useContractsFor(symbol);
+
+  const liveMultipliers = params.multiplierRange.length > 0
+    ? params.multiplierRange
+    : [40, 100, 200, 300, 400];
+
+  useEffect(() => {
+    if (!loading && liveMultipliers.length > 0) {
+      if (!liveMultipliers.includes(multiplier)) {
+        setMultiplier(liveMultipliers[0]);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [symbol, loading, liveMultipliers]);
 
   const request =
     stake > 0
@@ -60,7 +76,12 @@ export function MultipliersPanel({ symbol }: MultipliersPanelProps) {
     <div className="flex h-full flex-col gap-3 p-4">
       <HowToTradeLink contractLabel="Multipliers" />
       <UpDownToggle value={side} onChange={setSide} />
-      <MultiplierField value={multiplier} onChange={setMultiplier} />
+      <MultiplierField
+        value={multiplier}
+        onChange={setMultiplier}
+        options={liveMultipliers}
+        loading={loading}
+      />
       <StakeField value={stake} onChange={setStake} min={1} max={2000} />
       <RiskManagementField
         summary={summariseRisk(risk)}

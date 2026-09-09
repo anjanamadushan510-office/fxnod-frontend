@@ -11,19 +11,21 @@ interface MultiplierFieldProps {
   /** Currently-selected multiplier (e.g. 400 → renders "x400"). */
   value: number;
   onChange: (next: number) => void;
+  options: number[];
+  loading?: boolean;
 }
 
 /**
  * Multipliers ticket field — shows the chosen leverage and opens a floating
  * {@link MultiplierPicker} (x40–x400) on click (Deriv §6.3).
  */
-export function MultiplierField({ value, onChange }: MultiplierFieldProps) {
+export function MultiplierField({ value, onChange, options, loading }: MultiplierFieldProps) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
   return (
     <Field
-      label="Multiplier"
+      label={loading ? "Multiplier (loading…)" : "Multiplier"}
       active={open}
       trailing={<InfoDot label="Multiplier info" />}
     >
@@ -45,6 +47,7 @@ export function MultiplierField({ value, onChange }: MultiplierFieldProps) {
         <AnchoredPopover anchorRef={triggerRef} onClose={() => setOpen(false)}>
           <MultiplierPicker
             value={value}
+            options={options}
             onSelect={(n) => {
               onChange(n);
               setOpen(false);
