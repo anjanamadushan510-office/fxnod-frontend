@@ -143,12 +143,12 @@ function getCategoryLabel(id: MarketCategoryId): string {
 
 function getGroupLabel(submarket: string): string {
   switch (submarket) {
-    case "volatility_indices": return "Continuous indices";
-    case "crash_boom": return "Crash/Boom";
-    case "jump_indices": return "Jump indices";
-    case "daily_reset_indices": return "Daily reset indices";
-    case "step_indices": return "Step indices";
-    case "range_break_indices": return "Range break indices";
+    case "random_index": return "Continuous indices";
+    case "crash_index": return "Crash/Boom";
+    case "jump_index": return "Jump indices";
+    case "random_daily": return "Daily reset indices";
+    case "step_index": return "Step indices";
+    case "range_index": return "Range break indices";
     
     case "major_pairs": return "Major pairs";
     case "minor_pairs": return "Minor pairs";

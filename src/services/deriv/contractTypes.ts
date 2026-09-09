@@ -72,8 +72,8 @@ export interface TradeTypeConfig {
  *
  * Key rules:
  *   • Accumulators, Multipliers, Turbos, Digit contracts
- *     (Matches/Differs, Even/Odd, Over/Under) → volatility_indices only.
- *   • Vanillas → volatility_indices + all forex.
+ *     (Matches/Differs, Even/Odd, Over/Under) → random_index only.
+ *   • Vanillas → random_index + all forex.
  *   • Rise/Fall → all synthetics + forex + crypto + commodities.
  *   • Higher/Lower, Touch/No Touch → synthetics + forex (+commodities for H/L).
  */
@@ -81,7 +81,7 @@ export const TRADE_TYPE_CONFIG: Record<string, TradeTypeConfig> = {
   accumulator: {
     label: "Accumulators",
     allowedMarkets: [
-      { market: "synthetic_index", submarket: "volatility_indices" },
+      { market: "synthetic_index", submarket: "random_index" },
     ],
   },
 
@@ -99,14 +99,14 @@ export const TRADE_TYPE_CONFIG: Record<string, TradeTypeConfig> = {
   turbos: {
     label: "Turbos",
     allowedMarkets: [
-      { market: "synthetic_index", submarket: "volatility_indices" },
+      { market: "synthetic_index", submarket: "random_index" },
     ],
   },
 
   vanillas: {
     label: "Vanillas",
     allowedMarkets: [
-      { market: "synthetic_index", submarket: "volatility_indices" },
+      { market: "synthetic_index", submarket: "random_index" },
       { market: "forex" }, // all forex submarkets
     ],
   },
@@ -141,21 +141,21 @@ export const TRADE_TYPE_CONFIG: Record<string, TradeTypeConfig> = {
   matches_differs: {
     label: "Matches/Differs",
     allowedMarkets: [
-      { market: "synthetic_index", submarket: "volatility_indices" },
+      { market: "synthetic_index", submarket: "random_index" },
     ],
   },
 
   even_odd: {
     label: "Even/Odd",
     allowedMarkets: [
-      { market: "synthetic_index", submarket: "volatility_indices" },
+      { market: "synthetic_index", submarket: "random_index" },
     ],
   },
 
   over_under: {
     label: "Over/Under",
     allowedMarkets: [
-      { market: "synthetic_index", submarket: "volatility_indices" },
+      { market: "synthetic_index", submarket: "random_index" },
     ],
   },
 };
