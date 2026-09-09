@@ -12,6 +12,7 @@ import {
   defaultMarketForStrategy,
 } from "./botMeta";
 import { useMarketsForStrategy } from "@/hooks/useMarketsForStrategy";
+import { useContractsFor } from "@/hooks/useContractsFor";
 import { IndicatorPicker, hasDirectionalIndicator } from "./IndicatorPicker";
 import type { BotFormState, Direction } from "./formState";
 import { PresetBar } from "./PresetBar";
@@ -51,6 +52,19 @@ export function TradeConfiguration({
   const autoAvailable = hasDirectionalIndicator(state.indicators);
   const { markets: allowedMarkets, loading: marketsLoading } = useMarketsForStrategy(strategyId);
 
+  // LOGIC-002: Fetch market-specific parameters from Deriv contracts_for API
+  const { params: contractParams, loading: paramsLoading } = useContractsFor(state.marketId);
+
+  // Live multipliers from API; fall back to static list if API returns nothing.
+  const liveMultipliers = contractParams.multiplierRange.length > 0
+    ? contractParams.multiplierRange
+    : Array.from(MULTIPLIER_STEPS);
+
+  // Live growth rates from API (as integers 1–5); fall back to static.
+  const liveGrowthRates = contractParams.growthRateRange.length > 0
+    ? contractParams.growthRateRange
+    : Array.from(GROWTH_RATES);
+
   // When the strategy changes (or fresh markets load), if the current marketId
   // is no longer in the allowed list, reset to the first valid market.
   useEffect(() => {
@@ -59,6 +73,17 @@ export function TradeConfiguration({
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [strategyId, marketsLoading]);
+
+  // When multiplier options change (market switch), snap the selected value to
+  // the nearest valid multiplier so the form is never in an invalid state.
+  useEffect(() => {
+    if (!paramsLoading && liveMultipliers.length > 0 && shape.multiplier) {
+      if (!liveMultipliers.includes(state.multiplier)) {
+        onChange({ multiplier: liveMultipliers[0] });
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.marketId, paramsLoading]);
 
   return (
     <section className="flex flex-col gap-3.5">
@@ -118,11 +143,15 @@ export function TradeConfiguration({
       )}
 
       {shape.growthRate && (
-        <Field label="Growth Rate">
+        <Field
+          label="Growth Rate"
+          hint={paramsLoading ? "loading…" : contractParams.growthRateRange.length > 0 ? "live" : undefined}
+          hintStyle={contractParams.growthRateRange.length > 0 ? "live" : undefined}
+        >
           <ChipRow
-            options={GROWTH_RATES.map((g) => ({ value: g, label: `${g}%` }))}
+            options={liveGrowthRates.map((g) => ({ value: g, label: `${g}%` }))}
             value={state.growthRate}
-            disabled={disabled}
+            disabled={disabled || paramsLoading}
             onChange={(growthRate) => onChange({ growthRate })}
             columns={5}
           />
@@ -130,11 +159,15 @@ export function TradeConfiguration({
       )}
 
       {shape.multiplier && (
-        <Field label="Multiplier">
+        <Field
+          label="Multiplier"
+          hint={paramsLoading ? "loading…" : contractParams.multiplierRange.length > 0 ? "live" : undefined}
+          hintStyle={contractParams.multiplierRange.length > 0 ? "live" : undefined}
+        >
           <ChipRow
-            options={MULTIPLIER_STEPS.map((m) => ({ value: m, label: `×${m}` }))}
+            options={liveMultipliers.map((m) => ({ value: m, label: `×${m}` }))}
             value={state.multiplier}
-            disabled={disabled}
+            disabled={disabled || paramsLoading}
             onChange={(multiplier) => onChange({ multiplier })}
             columns={4}
           />
@@ -361,11 +394,13 @@ function Divider() {
 function Field({
   label,
   hint,
+  hintStyle,
   required,
   children,
 }: {
   label: string;
   hint?: string | false;
+  hintStyle?: "live" | "default";
   required?: boolean;
   children: React.ReactNode;
 }) {
@@ -374,7 +409,13 @@ function Field({
       <span className="flex items-center gap-1.5 text-[11px] font-semibold text-opt-ink-2">
         {label}
         {required && <span className="text-opt-fall">*</span>}
-        {hint && <span className="font-normal text-opt-ink-3">{hint}</span>}
+        {hint && hintStyle === "live" ? (
+          <span className="rounded bg-emerald-500/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-emerald-400">
+            {hint}
+          </span>
+        ) : hint ? (
+          <span className="font-normal text-opt-ink-3">{hint}</span>
+        ) : null}
       </span>
       {children}
     </div>
