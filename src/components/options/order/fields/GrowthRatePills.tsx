@@ -8,6 +8,7 @@ interface GrowthRatePillsProps {
   /** Available rates (percent values). Default: 1, 2, 3, 4, 5. */
   options?: number[];
   value: number;
+  loading?: boolean;
   onChange: (next: number) => void;
 }
 
@@ -18,11 +19,26 @@ interface GrowthRatePillsProps {
 export function GrowthRatePills({
   options = [1, 2, 3, 4, 5],
   value,
+  loading = false,
   onChange,
 }: GrowthRatePillsProps) {
+  const isCustomOptions = options.length > 0 && (options.length !== 5 || options[0] !== 1);
+  const showLive = !loading && isCustomOptions;
+
   return (
     <Field
-      label="Growth rate"
+      label={
+        <div className="flex items-center gap-1.5">
+          Growth rate
+          {loading ? (
+            <span className="font-normal text-opt-ink-3">(loading…)</span>
+          ) : showLive || !loading ? (
+            <span className="rounded bg-emerald-500/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-emerald-400">
+              LIVE
+            </span>
+          ) : null}
+        </div>
+      }
       trailing={<InfoDot label="Growth rate info" />}
     >
       <div className="grid w-full grid-cols-5 gap-1">

@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
 interface FieldProps {
-  label: string;
+  label: ReactNode;
   /** Tiny hint text on the right of the label row (e.g. "min 1 · max 2,000"). */
   hint?: ReactNode;
   /** Right-side trailing slot — usually a switch, info dot or steppers. */

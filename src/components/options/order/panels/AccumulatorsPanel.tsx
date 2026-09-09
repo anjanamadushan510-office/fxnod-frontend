@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { usePanelBuy } from "@/hooks/usePanelBuy";
+import { useContractsFor } from "@/hooks/useContractsFor";
 import { useAccumulatorPreview } from "@/stores/useAccumulatorPreview";
 import { buildProposalRequest } from "../buildProposalRequest";
 import { TradeConfirmed } from "../TradeConfirmed";
@@ -20,6 +21,21 @@ export function AccumulatorsPanel({ symbol }: AccumulatorsPanelProps) {
   const [growthRate, setGrowthRate] = useState<number>(1); // §6.2 default 1%
   const [stake, setStake] = useState<number>(10);
   const [takeProfit, setTakeProfit] = useState<number | null>(null);
+
+  const { params, loading } = useContractsFor(symbol);
+
+  const liveGrowthRates = params.growthRateRange.length > 0
+    ? params.growthRateRange
+    : [1, 2, 3, 4, 5];
+
+  useEffect(() => {
+    if (!loading && liveGrowthRates.length > 0) {
+      if (!liveGrowthRates.includes(growthRate)) {
+        setGrowthRate(liveGrowthRates[0]);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [symbol, loading, liveGrowthRates]);
 
   const request =
     stake > 0
@@ -84,7 +100,12 @@ export function AccumulatorsPanel({ symbol }: AccumulatorsPanelProps) {
   return (
     <div className="flex h-full flex-col gap-3 p-4">
       <HowToTradeLink contractLabel="Accumulators" />
-      <GrowthRatePills value={growthRate} onChange={setGrowthRate} />
+      <GrowthRatePills
+        value={growthRate}
+        options={liveGrowthRates}
+        loading={loading}
+        onChange={setGrowthRate}
+      />
       <StakeField value={stake} onChange={setStake} min={1} max={2000} />
       <TakeProfitField
         value={takeProfit}
