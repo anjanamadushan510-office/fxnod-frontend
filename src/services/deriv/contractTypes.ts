@@ -78,14 +78,14 @@ export interface TradeTypeConfig {
  *   • Higher/Lower, Touch/No Touch → synthetics + forex (+commodities for H/L).
  */
 export const TRADE_TYPE_CONFIG: Record<string, TradeTypeConfig> = {
-  accumulator: {
+  accumulators: {
     label: "Accumulators",
     allowedMarkets: [
       { market: "synthetic_index", submarket: "random_index" },
     ],
   },
 
-  multiplier: {
+  multipliers: {
     label: "Multipliers",
     allowedMarkets: [
       { market: "synthetic_index" },

@@ -36,8 +36,8 @@ interface ActiveSymbolsResponse {
 // ─── Static fallback (demoted from botMeta.ts) ───────────────────────────────
 
 export const FALLBACK_MARKETS: Record<string, string[]> = {
-  accumulator:    ["1HZ100V", "1HZ75V", "1HZ50V", "1HZ25V"],
-  multiplier:     ["1HZ100V", "1HZ75V", "1HZ50V", "1HZ25V"],
+  accumulators:    ["1HZ100V", "1HZ75V", "1HZ50V", "1HZ25V"],
+  multipliers:     ["1HZ100V", "1HZ75V", "1HZ50V", "1HZ25V"],
   turbos:         ["1HZ100V", "1HZ75V", "1HZ50V", "1HZ25V"],
   vanillas:       ["1HZ100V", "1HZ75V", "1HZ50V", "1HZ25V", "frxEURUSD", "frxGBPUSD", "frxUSDJPY"],
   rise_fall: [
