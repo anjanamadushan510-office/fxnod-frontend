@@ -83,7 +83,7 @@ export function TopBar({
       )}
 
       {/* Trading methods — scroll independently, never push the right cluster */}
-      <div className="flex-1 min-w-0 overflow-x-auto whitespace-nowrap [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex-1 min-w-0 overflow-x-auto whitespace-nowrap pb-1 [scrollbar-width:thin]">
         <ContractTypeTabs value={contractType} onChange={onContractTypeChange} />
       </div>
 
