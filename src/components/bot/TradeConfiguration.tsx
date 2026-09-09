@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { cn } from "@/lib/cn";
 import { ArrowDownIcon, ArrowUpIcon, CaretDownIcon, InfoIcon } from "@/components/ui/Icons";
-import { findMarket } from "@/components/options/market/catalog";
 import type { BotIndicator } from "@/services/api/model";
 import {
   DURATION_UNITS,
@@ -16,6 +15,7 @@ import { useMarketsForStrategy } from "@/hooks/useMarketsForStrategy";
 import { IndicatorPicker, hasDirectionalIndicator } from "./IndicatorPicker";
 import type { BotFormState, Direction } from "./formState";
 import { PresetBar } from "./PresetBar";
+import { BotMarketPicker } from "./BotMarketPicker";
 
 interface TradeConfigurationProps {
   strategyId: string;
@@ -74,14 +74,12 @@ export function TradeConfiguration({
       </h2>
 
       <Field label={marketsLoading ? "Market (loading…)" : "Market"}>
-        <SelectRow
+        <BotMarketPicker
           value={state.marketId}
           disabled={disabled}
+          loading={marketsLoading}
+          allowedMarkets={allowedMarkets}
           onChange={(marketId) => onChange({ marketId })}
-          options={allowedMarkets.map((id) => ({
-            value: id,
-            label: findMarket(id)?.name ?? id,
-          }))}
         />
       </Field>
 
