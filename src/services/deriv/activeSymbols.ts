@@ -12,7 +12,7 @@
  *   4. Static fallback
  */
 
-import { derivV3Url } from "./derivSymbols";
+import { derivWsUrl } from "./derivSymbols";
 import { symbolMatchesStrategy } from "./contractTypes";
 import { getCached, getStaleCached, setCached } from "./marketCache";
 import { useMarketStore } from "@/components/options/market/marketStore";
@@ -68,10 +68,10 @@ function fetchActiveSymbolsRaw(): Promise<DerivActiveSymbol[]> {
       if (!settled) { settled = true; ws.close(); reject(new Error("active_symbols: timeout")); }
     }, FETCH_TIMEOUT_MS);
 
-    const ws = new WebSocket(derivV3Url());
+    const ws = new WebSocket(derivWsUrl());
 
     ws.onopen = () => {
-      ws.send(JSON.stringify({ active_symbols: "brief", product_type: "basic" }));
+      ws.send(JSON.stringify({ active_symbols: "brief" }));
     };
 
     ws.onmessage = (event: MessageEvent) => {
@@ -85,7 +85,15 @@ function fetchActiveSymbolsRaw(): Promise<DerivActiveSymbol[]> {
         }
         if (msg.active_symbols) {
           settled = true; clearTimeout(timeout); ws.close();
-          resolve(msg.active_symbols);
+          const mapped = msg.active_symbols.map((s: any) => ({
+            symbol: s.underlying_symbol || s.symbol,
+            display_name: s.underlying_symbol_name || s.display_name,
+            market: s.market,
+            submarket: s.submarket,
+            exchange_is_open: s.exchange_is_open,
+            is_trading_suspended: s.is_trading_suspended,
+          }));
+          resolve(mapped);
         }
       } catch { /* malformed frame — wait */ }
     };
