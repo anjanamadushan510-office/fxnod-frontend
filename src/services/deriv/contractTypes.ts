@@ -88,7 +88,11 @@ export const TRADE_TYPE_CONFIG: Record<string, TradeTypeConfig> = {
   multiplier: {
     label: "Multipliers",
     allowedMarkets: [
-      { market: "synthetic_index", submarket: "volatility_indices" },
+      { market: "synthetic_index" },
+      { market: "forex" },
+      { market: "cryptocurrency" },
+      { market: "commodities" },
+      { market: "basket_index" },
     ],
   },
 

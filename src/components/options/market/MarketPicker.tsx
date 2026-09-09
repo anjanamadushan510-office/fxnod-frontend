@@ -5,12 +5,11 @@ import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useFavoriteMarkets } from "@/hooks/useFavoriteMarkets";
 import { cn } from "@/lib/cn";
 import {
-  ALL_MARKETS,
-  CATEGORIES,
   type MarketCategoryId,
   type MarketGroup as TGroup,
   type MarketSubCategoryId,
 } from "./catalog";
+import { useMarketStore } from "./marketStore";
 import { MarketCategoryRail } from "./MarketCategoryRail";
 import { MarketGroup } from "./MarketGroup";
 import { MarketSearchBox } from "./MarketSearchBox";
@@ -50,6 +49,9 @@ export function MarketPicker({
   // Keystrokes stay instant; the filter pass runs once typing pauses.
   const debouncedQuery = useDebouncedValue(query, 200);
 
+  const categories = useMarketStore(s => s.categories);
+  const allMarkets = useMarketStore(s => s.allMarkets);
+
   // Outside click + Escape.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -83,11 +85,11 @@ export function MarketPicker({
     if (q) {
       // Search mode: filter across ALL categories, grouped under category
       // headers (§5). Favorites isn't a real market category.
-      return CATEGORIES.filter((c) => c.id !== "favorites")
+      return categories.filter((c) => c.id !== "favorites")
         .map((cat) => ({
           id: cat.id,
           label: cat.label,
-          marketIds: ALL_MARKETS.filter(
+          marketIds: allMarkets.filter(
             (m) => m.category === cat.id && m.name.toLowerCase().includes(q),
           ).map((m) => m.id),
         }))
@@ -101,7 +103,7 @@ export function MarketPicker({
         : [];
     }
 
-    const cat = CATEGORIES.find((c) => c.id === activeCat);
+    const cat = categories.find((c) => c.id === activeCat);
     if (!cat) return [];
     if (!activeSub) return cat.groups;
 
@@ -110,12 +112,12 @@ export function MarketPicker({
       .map((g) => ({
         ...g,
         marketIds: g.marketIds.filter((id) => {
-          const m = ALL_MARKETS.find((mm) => mm.id === id);
+          const m = allMarkets.find((mm) => mm.id === id);
           return m?.subCategory === activeSub;
         }),
       }))
       .filter((g) => g.marketIds.length > 0);
-  }, [debouncedQuery, activeCat, activeSub, favoriteIds]);
+  }, [debouncedQuery, activeCat, activeSub, favoriteIds, categories, allMarkets]);
 
   return (
     <div

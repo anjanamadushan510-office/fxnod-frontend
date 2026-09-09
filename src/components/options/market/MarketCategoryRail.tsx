@@ -11,10 +11,10 @@ import {
 } from "@/components/ui/Icons";
 import { cn } from "@/lib/cn";
 import {
-  CATEGORIES,
   type MarketCategoryId,
   type MarketSubCategoryId,
 } from "./catalog";
+import { useMarketStore } from "./marketStore";
 
 interface MarketCategoryRailProps {
   activeCategoryId: MarketCategoryId;
@@ -58,13 +58,15 @@ export function MarketCategoryRail({
     });
   };
 
+  const categories = useMarketStore(s => s.categories);
+
   return (
     <div className="flex flex-col gap-0.5 overflow-y-auto border-r border-opt-line bg-opt-bg-sunk p-2">
       <div className="px-2 py-1 text-[15px] font-semibold text-opt-ink">
         Markets
       </div>
 
-      {CATEGORIES.map((cat) => {
+      {categories.map((cat) => {
         const isActive = cat.id === activeCategoryId && !activeSubCategoryId;
         const hasSubs = (cat.subCategories?.length ?? 0) > 0;
         const isOpen = openIds.has(cat.id);

@@ -31,23 +31,66 @@ export function derivV3Url(): string {
   return `${DERIV_WS_BASE}?app_id=${appId}`;
 }
 
-// ─── Symbol mapping (catalog id → Deriv symbol) ──────────────────────────────
-// Best-effort. Markets Deriv doesn't list (e.g. SOL/USD) are intentionally
-// absent — the feed surfaces "unsupported" rather than subscribing to junk.
+// ─── Symbol mapping (legacy catalog id → Deriv symbol) ───────────────────────
+// Maps old hardcoded catalog IDs to their true Deriv symbols to prevent saved
+// user presets from breaking. For new markets, the catalog ID is the Deriv symbol.
 const CATALOG_TO_DERIV: Record<string, string> = {
   // Derived → Synthetics
   vol_100_1s: "1HZ100V",
+  vol_90_1s: "1HZ90V",
   vol_75_1s: "1HZ75V",
   vol_50_1s: "1HZ50V",
+  vol_30_1s: "1HZ30V",
   vol_25_1s: "1HZ25V",
+  vol_15_1s: "1HZ15V",
+  vol_10_1s: "1HZ10V",
+
+  vol_100: "R_100",
+  vol_75: "R_75",
+  vol_50: "R_50",
+  vol_25: "R_25",
+  vol_10: "R_10",
+
+  step_100: "STEP100",
+  step_200: "STEP200",
+  step_300: "STEP300",
+  step_400: "STEP400",
+  step_500: "STEP500",
+
   boom_1000: "BOOM1000",
+  boom_900: "BOOM900",
+  boom_600: "BOOM600",
   boom_500: "BOOM500",
+  boom_300: "BOOM300N",
+  boom_150: "BOOM150",
+  boom_50: "BOOM50",
+
   crash_1000: "CRASH1000",
+  crash_900: "CRASH900",
+  crash_600: "CRASH600",
   crash_500: "CRASH500",
-  jump_10: "JD10",
+  crash_300: "CRASH300N",
+  crash_150: "CRASH150",
+  crash_50: "CRASH50",
+
+  jump_100: "JD100",
+  jump_75: "JD75",
+  jump_50: "JD50",
   jump_25: "JD25",
+  jump_10: "JD10",
+
+  range_break_100: "RANGEBREAK100",
+  range_break_200: "RANGEBREAK200",
+
   bull_market: "RDBULL",
   bear_market: "RDBEAR",
+
+  // Derived → Baskets
+  basket_aud: "WLDAUD",
+  basket_eur: "WLDEUR",
+  basket_gbp: "WLDGBP",
+  basket_usd: "WLDUSD",
+  basket_xau: "WLDXAU",
 
   // Cryptocurrencies
   btc_usd: "cryBTCUSD",
@@ -67,9 +110,10 @@ const CATALOG_TO_DERIV: Record<string, string> = {
   ndx: "OTC_NDX",
 };
 
-/** Catalog id → Deriv symbol, or undefined if Deriv doesn't carry it. */
+/** Resolves a legacy catalog ID to a Deriv symbol, or returns the input if already a Deriv symbol. */
 export function toDerivSymbol(catalogId: string): string | undefined {
-  return CATALOG_TO_DERIV[catalogId];
+  if (!catalogId) return undefined;
+  return CATALOG_TO_DERIV[catalogId] || catalogId;
 }
 
 // Reverse index so the URL can carry Deriv-style codes (e.g. ?symbol=1HZ100V)
@@ -81,11 +125,18 @@ const DERIV_TO_CATALOG: Record<string, string> = Object.fromEntries(
   ]),
 );
 
-/** Deriv symbol (e.g. "1HZ100V") → catalog id, or undefined if unknown. */
+/** 
+ * Deriv symbol (e.g. "1HZ100V") → catalog id. 
+ * Since catalog IDs are now exactly Deriv symbols, this is mostly an identity pass-through,
+ * but resolves known ones back to legacy IDs if they were stored that way.
+ */
 export function fromDerivSymbol(
   code: string | null | undefined,
 ): string | undefined {
-  return code ? DERIV_TO_CATALOG[code] : undefined;
+  if (!code) return undefined;
+  // If we want to fully drop legacy IDs from memory, just return `code`.
+  // Returning `code` directly preserves the API's name as the canonical ID.
+  return code;
 }
 
 // ─── Interval → candle granularity (seconds) ─────────────────────────────────

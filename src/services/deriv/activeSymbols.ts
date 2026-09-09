@@ -15,7 +15,7 @@
 import { derivV3Url } from "./derivSymbols";
 import { symbolMatchesStrategy } from "./contractTypes";
 import { getCached, getStaleCached, setCached } from "./marketCache";
-import { MARKETS } from "@/components/options/market/catalog";
+import { useMarketStore } from "@/components/options/market/marketStore";
 
 // ─── Deriv wire types ────────────────────────────────────────────────────────
 
@@ -36,39 +36,24 @@ interface ActiveSymbolsResponse {
 // ─── Static fallback (demoted from botMeta.ts) ───────────────────────────────
 
 export const FALLBACK_MARKETS: Record<string, string[]> = {
-  accumulator:    ["vol_100_1s", "vol_75_1s", "vol_50_1s", "vol_25_1s"],
-  multiplier:     ["vol_100_1s", "vol_75_1s", "vol_50_1s", "vol_25_1s"],
-  turbos:         ["vol_100_1s", "vol_75_1s", "vol_50_1s", "vol_25_1s"],
-  vanillas:       ["vol_100_1s", "vol_75_1s", "vol_50_1s", "vol_25_1s", "eur_usd", "gbp_usd", "usd_jpy"],
+  accumulator:    ["1HZ100V", "1HZ75V", "1HZ50V", "1HZ25V"],
+  multiplier:     ["1HZ100V", "1HZ75V", "1HZ50V", "1HZ25V"],
+  turbos:         ["1HZ100V", "1HZ75V", "1HZ50V", "1HZ25V"],
+  vanillas:       ["1HZ100V", "1HZ75V", "1HZ50V", "1HZ25V", "frxEURUSD", "frxGBPUSD", "frxUSDJPY"],
   rise_fall: [
-    "vol_100_1s", "vol_75_1s", "vol_50_1s", "vol_25_1s",
-    "boom_1000", "boom_500", "crash_1000", "crash_500",
-    "eur_usd", "gbp_usd", "usd_jpy", "btc_usd", "eth_usd", "xau_usd", "xag_usd",
+    "1HZ100V", "1HZ75V", "1HZ50V", "1HZ25V",
+    "BOOM1000", "BOOM500", "CRASH1000", "CRASH500",
+    "frxEURUSD", "frxGBPUSD", "frxUSDJPY", "cryBTCUSD", "cryETHUSD", "frxXAUUSD", "frxXAGUSD",
   ],
-  higher_lower:    ["vol_100_1s", "vol_75_1s", "vol_50_1s", "vol_25_1s", "eur_usd", "gbp_usd", "usd_jpy", "xau_usd", "xag_usd"],
-  touch_no_touch:  ["vol_100_1s", "vol_75_1s", "vol_50_1s", "vol_25_1s", "eur_usd", "gbp_usd", "usd_jpy"],
-  matches_differs: ["vol_100_1s", "vol_75_1s", "vol_50_1s", "vol_25_1s"],
-  even_odd:        ["vol_100_1s", "vol_75_1s", "vol_50_1s", "vol_25_1s"],
-  over_under:      ["vol_100_1s", "vol_75_1s", "vol_50_1s", "vol_25_1s"],
+  higher_lower:    ["1HZ100V", "1HZ75V", "1HZ50V", "1HZ25V", "frxEURUSD", "frxGBPUSD", "frxUSDJPY", "frxXAUUSD", "frxXAGUSD"],
+  touch_no_touch:  ["1HZ100V", "1HZ75V", "1HZ50V", "1HZ25V", "frxEURUSD", "frxGBPUSD", "frxUSDJPY"],
+  matches_differs: ["1HZ100V", "1HZ75V", "1HZ50V", "1HZ25V"],
+  even_odd:        ["1HZ100V", "1HZ75V", "1HZ50V", "1HZ25V"],
+  over_under:      ["1HZ100V", "1HZ75V", "1HZ50V", "1HZ25V"],
 };
 
 export function getFallbackMarkets(strategyId: string): string[] {
-  return FALLBACK_MARKETS[strategyId] ?? ["vol_100_1s", "vol_75_1s", "vol_50_1s", "vol_25_1s"];
-}
-
-// ─── Reverse lookup: Deriv symbol code → catalog ID ─────────────────────────
-
-const derivToCatalog: Record<string, string> = {};
-let reverseMapReady = false;
-
-async function ensureReverseMap() {
-  if (reverseMapReady) return;
-  const { toDerivSymbol } = await import("./derivSymbols");
-  for (const id of Object.keys(MARKETS)) {
-    const code = toDerivSymbol(id);
-    if (code) derivToCatalog[code] = id;
-  }
-  reverseMapReady = true;
+  return FALLBACK_MARKETS[strategyId] ?? ["1HZ100V", "1HZ75V", "1HZ50V", "1HZ25V"];
 }
 
 // ─── One-shot WebSocket fetch ─────────────────────────────────────────────────
@@ -147,8 +132,10 @@ export async function getMarketsForStrategy(strategyId: string): Promise<MarketR
 
   // 2. API fetch
   try {
-    await ensureReverseMap();
     const symbols = await getActiveSymbols();
+
+    // Populate the global UI market store with raw symbols
+    useMarketStore.getState().setMarketsFromDeriv(symbols as any);
 
     const matched: string[] = [];
     const seen = new Set<string>();
@@ -157,7 +144,8 @@ export async function getMarketsForStrategy(strategyId: string): Promise<MarketR
       const suspended = sym.is_trading_suspended === 1 || sym.is_trading_suspended === true;
       if (suspended) continue;
       if (!symbolMatchesStrategy(sym.market, sym.submarket, strategyId)) continue;
-      const catalogId = derivToCatalog[sym.symbol];
+      
+      const catalogId = sym.symbol;
       if (!catalogId || seen.has(catalogId)) continue;
       seen.add(catalogId);
       matched.push(catalogId);

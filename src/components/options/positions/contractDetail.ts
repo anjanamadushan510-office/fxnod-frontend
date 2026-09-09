@@ -9,7 +9,7 @@
  */
 import type { Position } from "@/hooks/useMockPositions";
 import { fromDerivSymbol } from "@/services/deriv/derivSymbols";
-import { MARKETS } from "@/components/options/market/catalog";
+import { findMarket } from "@/components/options/market/catalog";
 
 export interface ContractTick {
   /** Epoch seconds (UTCTimestamp). */
@@ -409,7 +409,7 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
 		}
 
     const catalogId = fromDerivSymbol(h.symbol);
-    const marketName = catalogId && MARKETS[catalogId] ? MARKETS[catalogId].name : h.symbol;
+    const marketName = catalogId ? findMarket(catalogId)?.name || h.symbol : h.symbol;
 
     return {
       id: h.id,
