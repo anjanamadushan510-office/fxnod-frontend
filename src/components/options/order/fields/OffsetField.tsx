@@ -68,8 +68,8 @@ export function OffsetField({
             <CaretDownIcon className="h-3.5 w-3.5 text-opt-ink-3" />
           </button>
           {open && (
-            <AnchoredPopover anchorRef={triggerRef} onClose={() => setOpen(false)}>
-              <div className="flex max-h-[250px] w-full flex-col overflow-y-auto overscroll-contain bg-opt-pane p-1">
+            <AnchoredPopover anchorRef={triggerRef} onClose={() => setOpen(false)} matchWidth>
+              <div className="flex max-h-[250px] w-full flex-col overflow-y-auto overscroll-contain rounded-xl border border-opt-line bg-opt-bg-elev p-1 shadow-[0_20px_50px_rgba(0,0,0,0.16),0_2px_6px_rgba(0,0,0,0.06)]">
                 {options.map((opt) => (
                   <button
                     key={opt}

@@ -17,6 +17,8 @@ interface AnchoredPopoverProps {
   children: ReactNode;
   /** Gap (px) between the anchor's bottom edge and the popover. */
   gap?: number;
+  /** If true, the popover container will be forced to the exact pixel width of the anchor. */
+  matchWidth?: boolean;
 }
 
 /**
@@ -33,9 +35,10 @@ export function AnchoredPopover({
   onClose,
   children,
   gap = 6,
+  matchWidth = false,
 }: AnchoredPopoverProps) {
   const popRef = useRef<HTMLDivElement>(null);
-  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  const [pos, setPos] = useState<{ top: number; left: number; width?: number } | null>(null);
   const [target, setTarget] = useState<Element | null>(null);
 
   // Resolve the portal target on the client only.
@@ -50,7 +53,7 @@ export function AnchoredPopover({
     if (!anchor) return;
     const update = () => {
       const r = anchor.getBoundingClientRect();
-      setPos({ top: r.bottom + gap, left: r.left });
+      setPos({ top: r.bottom + gap, left: r.left, width: r.width });
     };
     update();
     window.addEventListener("scroll", update, true);
@@ -89,7 +92,13 @@ export function AnchoredPopover({
   return createPortal(
     <div
       ref={popRef}
-      style={{ position: "fixed", top: pos.top, left: pos.left, zIndex: 60 }}
+      style={{ 
+        position: "fixed", 
+        top: pos.top, 
+        left: pos.left, 
+        width: matchWidth ? pos.width : undefined,
+        zIndex: 60 
+      }}
     >
       {children}
     </div>,
