@@ -46,7 +46,7 @@ export function DurationPicker({ value, onSelect, onValidationError, allowTicks 
   let availableTypes = allowTicks ? TYPES : TYPES.filter(t => t.unit !== 'ticks');
   availableTypes = allowSeconds ? availableTypes : availableTypes.filter(t => t.unit !== 's');
   
-  if (tradeType === "touch_no_touch") {
+  if (tradeType === "touch_no_touch" || tradeType === "higher_lower" || tradeType === "turbos") {
     availableTypes = availableTypes.map(t => 
       t.unit === "ticks" ? { ...t, presets: [5, 6, 7, 8, 9, 10] } : t
     );
@@ -60,7 +60,7 @@ export function DurationPicker({ value, onSelect, onValidationError, allowTicks 
     if (isEnd) return;
     const n = Math.floor(Number(manual));
     
-    if (tradeType === "touch_no_touch" && active.unit === "ticks") {
+    if ((tradeType === "touch_no_touch" || tradeType === "higher_lower" || tradeType === "turbos") && active.unit === "ticks") {
       if (n < 5 || n > 10) {
         reportError("Please enter a duration between 5 to 10 ticks.");
         return;
