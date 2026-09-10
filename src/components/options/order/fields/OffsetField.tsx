@@ -80,7 +80,7 @@ export function OffsetField({
                     className={cn(
                       "flex h-9 w-full items-center justify-center rounded px-3 text-[13px] font-semibold transition-colors tabular-nums",
                       opt === value
-                        ? "bg-opt-ink text-opt-pane"
+                        ? "bg-opt-ink text-opt-bg"
                         : "text-opt-ink hover:bg-opt-hover",
                     )}
                   >
