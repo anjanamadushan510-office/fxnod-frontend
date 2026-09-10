@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { usePanelBuy } from "@/hooks/usePanelBuy";
+import { useContractsFor } from "@/hooks/useContractsFor";
 import { buildProposalRequest } from "../buildProposalRequest";
 import { TradeConfirmed } from "../TradeConfirmed";
 import { HowToTradeLink } from "../HowToTradeLink";
@@ -22,6 +23,43 @@ export function VanillasPanel({ symbol }: VanillasPanelProps) {
   const [duration, setDuration] = useDefaultDuration({ amount: 1, unit: 'min' });
   const [strike, setStrike] = useState<number>(0);
   const [stake, setStake] = useState<number>(10);
+
+  const { params } = useContractsFor(symbol);
+
+  // Deriv's API separates contracts by `expiry_type` ('intraday' vs 'daily').
+  // A duration of 'd' means daily. Everything else (h, min, s, ticks) is intraday.
+  const expiryType = duration.unit === 'd' ? 'daily' : 'intraday';
+
+  const barrierChoices = useMemo(() => {
+    // Look through available contracts for Vanillas that match the current expiry type.
+    const vanillaContract = params.available.find(
+      c => c.contract_category === 'vanilla' && c.expiry_type === expiryType
+    );
+    
+    if (vanillaContract?.barrier_choices) {
+      // barrier_choices are strings like "+1.50" or "820.00", parse them to numbers.
+      return vanillaContract.barrier_choices.map(Number).filter(Number.isFinite);
+    }
+    return undefined;
+  }, [params.available, expiryType]);
+
+  // When dynamic barriers load or duration changes, snap the current strike to a valid option.
+  useEffect(() => {
+    if (barrierChoices && barrierChoices.length > 0) {
+      if (!barrierChoices.includes(strike)) {
+        // Find the closest barrier or default to the middle one (usually 0 for relative).
+        // Since Deriv often centers relative offsets around 0, let's pick 0 if available, or closest.
+        if (barrierChoices.includes(0)) {
+          setStrike(0);
+        } else {
+          const closest = barrierChoices.reduce((prev, curr) => 
+            Math.abs(curr - strike) < Math.abs(prev - strike) ? curr : prev
+          );
+          setStrike(closest);
+        }
+      }
+    }
+  }, [barrierChoices, strike]);
 
   // Sync strike price to chart preview line
   useEffect(() => {
@@ -79,6 +117,7 @@ export function VanillasPanel({ symbol }: VanillasPanelProps) {
         onChange={setStrike}
         withInfo
         infoLabel="Strike price info"
+        options={barrierChoices}
       />
       <StakeField value={stake} onChange={setStake} min={1} max={2000} />
       <div className="py-1">

@@ -31,6 +31,7 @@ export interface ContractForEntry {
   expiry_type?: string;
   sentiment?: string;
   underlying_symbol?: string;
+  barrier_choices?: string[];
 }
 
 export interface MarketContractParams {
@@ -46,6 +47,8 @@ export interface MarketContractParams {
   cancellationRange: string[];
   /** Whether the symbol supports tick durations */
   supportsTicks: boolean;
+  /** The raw list of available contracts for advanced filtering (e.g. by duration/expiry) */
+  available: ContractForEntry[];
 }
 
 // ─── Cache ────────────────────────────────────────────────────────────────────
@@ -159,6 +162,7 @@ function parseContractsFor(available: ContractForEntry[]): MarketContractParams 
     defaultStake,
     cancellationRange,
     supportsTicks,
+    available,
   };
 }
 
@@ -171,6 +175,7 @@ export const EMPTY_PARAMS: MarketContractParams = {
   defaultStake: undefined,
   cancellationRange: [],
   supportsTicks: true,
+  available: [],
 };
 
 /**
