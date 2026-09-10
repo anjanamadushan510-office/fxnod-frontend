@@ -168,8 +168,8 @@ export function usePanelBuy(request: ProposalRequest | null): PanelBuyResult {
     payoutLabel,
     errorMsg,
     proposal,
-    payoutChoices,
-    barrierChoices,
+    payoutChoices: proposal?.payout_choices ?? payoutChoices,
+    barrierChoices: proposal?.barrier_choices ?? barrierChoices,
     handleBuy,
     handleNewTrade,
   };
