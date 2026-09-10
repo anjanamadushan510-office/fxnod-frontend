@@ -140,7 +140,7 @@ export function OffsetField({
                 <div className="mb-2 flex items-center justify-between text-[11px]">
                   <span className="text-opt-ink-3">Current spot</span>
                   <span className="font-semibold text-opt-ink tabular-nums">
-                    {livePrice?.toFixed(decimals + 2) ?? "—"}
+                    {livePrice?.toFixed(decimals) ?? "—"}
                   </span>
                 </div>
                 
