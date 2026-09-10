@@ -71,7 +71,7 @@ function seed(): Position[] {
   return [
     {
       id: "pos_1",
-      marketId: "vol_100_1s",
+      marketId: "1HZ100V",
       marketName: "Volatility 100 (1s) Index",
       contractType: "turbos",
       side: "up",

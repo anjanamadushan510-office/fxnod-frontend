@@ -65,7 +65,7 @@ export const INTERVALS: { id: IntervalId; label: string }[] = [
 export const DEFAULT_CHART_TYPE: ChartTypeId = "area";
 export const DEFAULT_INTERVAL: IntervalId = "1t";
 /** Default market shown when `?symbol=` is absent or unknown. */
-export const DEFAULT_SYMBOL = "vol_100_1s";
+export const DEFAULT_SYMBOL = "1HZ100V";
 /** Default contract type when `?trade_type=` is absent or unknown. */
 export const DEFAULT_TRADE_TYPE: TradeTypeId = "rise_fall";
 

@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { cn } from "@/lib/cn";
 import { ArrowDownIcon, ArrowUpIcon, CaretDownIcon, InfoIcon } from "@/components/ui/Icons";
 import type { BotIndicator } from "@/services/api/model";
+import { toDerivSymbol } from "@/services/deriv/derivSymbols";
 import {
   DURATION_UNITS,
   GROWTH_RATES,
@@ -65,14 +66,18 @@ export function TradeConfiguration({
     ? contractParams.growthRateRange
     : Array.from(GROWTH_RATES);
 
-  // When the strategy changes (or fresh markets load), if the current marketId
-  // is no longer in the allowed list, reset to the first valid market.
   useEffect(() => {
     if (!marketsLoading && allowedMarkets.length > 0 && !allowedMarkets.includes(state.marketId)) {
-      onChange({ marketId: defaultMarketForStrategy(strategyId) });
+      // If the user loaded an old preset with a legacy ID (e.g., "vol_100_1s"), upgrade it to the live symbol.
+      const upgradedSymbol = toDerivSymbol(state.marketId);
+      if (upgradedSymbol && allowedMarkets.includes(upgradedSymbol)) {
+        onChange({ marketId: upgradedSymbol });
+      } else {
+        onChange({ marketId: allowedMarkets[0] });
+      }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [strategyId, marketsLoading]);
+  }, [strategyId, marketsLoading, state.marketId]);
 
   // When multiplier options change (market switch), snap the selected value to
   // the nearest valid multiplier so the form is never in an invalid state.

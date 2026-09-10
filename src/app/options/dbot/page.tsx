@@ -14,7 +14,6 @@ import { SessionStats } from "@/components/bot/SessionStats";
 import { SplitHandle } from "@/components/bot/SplitHandle";
 import { TradeConfiguration } from "@/components/bot/TradeConfiguration";
 import { useResizable } from "@/components/bot/useResizable";
-import { BOT_MARKET_IDS } from "@/components/bot/botMeta";
 import {
   buildStartRequest,
   defaultFormState,
@@ -622,10 +621,7 @@ function mapStatus(status: string): BotSession["status"] {
  * symbol was recorded in Deriv's vocabulary.
  */
 function derivToMarketId(derivSymbol: string): string {
-  for (const id of BOT_MARKET_IDS) {
-    if (toDerivSymbol(id) === derivSymbol) return id;
-  }
-  return BOT_MARKET_IDS[0];
+  return derivSymbol;
 }
 
 function ChartWarmingUp() {

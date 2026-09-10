@@ -1,4 +1,5 @@
 import type { BotIndicatorKind } from "@/services/api/model";
+import { getFallbackMarkets } from "@/services/deriv/activeSymbols";
 
 /**
  * Per-bot presentation metadata.
@@ -127,51 +128,10 @@ export function indicatorMeta(kind: BotIndicatorKind): IndicatorMeta {
   };
 }
 
-/** Markets bots run on — the continuously-quoted synthetics. */
-export const BOT_MARKET_IDS = [
-  "vol_100_1s",
-  "vol_75_1s",
-  "vol_50_1s",
-  "vol_25_1s",
-  "boom_1000",
-  "boom_500",
-  "crash_1000",
-  "crash_500",
-  "jump_10",
-  "jump_25",
-] as const;
-
-/**
- * Which market IDs are valid for each strategy — kept as a static fallback.
- * The primary source of truth is now the Deriv active_symbols API
- * (see services/deriv/activeSymbols.ts).
- *
- * This list is used ONLY when:
- *   1. The API has not yet responded (initial render)
- *   2. The API fails and there is no stale cache
- */
-// (not exported — use useMarketsForStrategy hook or getMarketsForStrategy service)
-const _STRATEGY_MARKET_IDS: Record<string, readonly string[]> = {
-  accumulator: ["vol_100_1s", "vol_75_1s", "vol_50_1s", "vol_25_1s"],
-  multiplier:  ["vol_100_1s", "vol_75_1s", "vol_50_1s", "vol_25_1s"],
-  turbos:      ["vol_100_1s", "vol_75_1s", "vol_50_1s", "vol_25_1s"],
-  vanillas:    ["vol_100_1s", "vol_75_1s", "vol_50_1s", "vol_25_1s", "eur_usd", "gbp_usd", "usd_jpy"],
-  rise_fall: [
-    "vol_100_1s", "vol_75_1s", "vol_50_1s", "vol_25_1s",
-    "boom_1000", "boom_500", "crash_1000", "crash_500",
-    "eur_usd", "gbp_usd", "usd_jpy", "btc_usd", "eth_usd", "xau_usd", "xag_usd",
-  ],
-  higher_lower:    ["vol_100_1s", "vol_75_1s", "vol_50_1s", "vol_25_1s", "eur_usd", "gbp_usd", "usd_jpy", "xau_usd", "xag_usd"],
-  touch_no_touch:  ["vol_100_1s", "vol_75_1s", "vol_50_1s", "vol_25_1s", "eur_usd", "gbp_usd", "usd_jpy"],
-  matches_differs: ["vol_100_1s", "vol_75_1s", "vol_50_1s", "vol_25_1s"],
-  even_odd:        ["vol_100_1s", "vol_75_1s", "vol_50_1s", "vol_25_1s"],
-  over_under:      ["vol_100_1s", "vol_75_1s", "vol_50_1s", "vol_25_1s"],
-};
-
 /**
  * Returns the best default market ID for a given strategy.
  * Used when resetting the market picker after a strategy switch.
  */
 export function defaultMarketForStrategy(strategyId: string): string {
-  return (_STRATEGY_MARKET_IDS[strategyId]?.[0] ?? BOT_MARKET_IDS[0]) as string;
+  return getFallbackMarkets(strategyId)[0] ?? "1HZ100V";
 }

@@ -48,7 +48,7 @@ export interface BotFormState {
 
 export function defaultFormState(): BotFormState {
   return {
-    marketId: "vol_75_1s",
+    marketId: "1HZ100V",
     currency: "USD",
     direction: "up",
 
