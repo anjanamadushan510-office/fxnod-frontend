@@ -22,6 +22,12 @@ interface UseProposalStreamResult {
    * when a proposal exists; fall back to this otherwise.
    */
   payoutChoices: string[] | undefined;
+  /**
+   * Barrier choices, held separately because they can arrive without a
+   * proposal (notably after a proposal error). Prefer proposal.barrier_choices
+   * when a proposal exists; fall back to this otherwise.
+   */
+  barrierChoices: string[] | undefined;
   loading: boolean;
   error: string | null;
   confirm: () => Promise<ConfirmResponse>;
@@ -33,6 +39,7 @@ export function useProposalStream(
 ): UseProposalStreamResult {
   const [proposal, setProposal] = useState<ProposalStreamFrame | null>(null);
   const [payoutChoices, setPayoutChoices] = useState<string[] | undefined>();
+  const [barrierChoices, setBarrierChoices] = useState<string[] | undefined>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const authStatus = useAuthStore((s) => s.status);
@@ -103,8 +110,9 @@ export function useProposalStream(
             // field undefined behind a type that promises a string, which
             // surfaced downstream as "Payout NaN undefined".
             setPayoutChoices(data.payout_choices as string[]);
+            setBarrierChoices(data.barrier_choices as string[]);
             setProposal((prev) =>
-              prev ? { ...prev, payout_choices: data.payout_choices } : prev,
+              prev ? { ...prev, payout_choices: data.payout_choices, barrier_choices: data.barrier_choices } : prev,
             );
           } else if (data.type === "error") {
             setError(data.message || "Unknown error");
@@ -160,7 +168,7 @@ export function useProposalStream(
     }
   };
 
-  return { proposal, payoutChoices, loading, error, confirm };
+  return { proposal, payoutChoices, barrierChoices, loading, error, confirm };
 }
 
 function statusOf(e: unknown): number | undefined {

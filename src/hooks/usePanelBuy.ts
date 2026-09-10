@@ -32,6 +32,8 @@ export interface PanelBuyResult {
   proposal: ProposalStreamFrame | null;
   /** Choices that arrived without a proposal — see useProposalStream. */
   payoutChoices: string[] | undefined;
+  /** Barrier choices that arrived from the stream. */
+  barrierChoices: string[] | undefined;
   handleBuy: () => void;
   handleNewTrade: () => void;
 }
@@ -63,6 +65,7 @@ export function usePanelBuy(request: ProposalRequest | null): PanelBuyResult {
   const {
     proposal,
     payoutChoices,
+    barrierChoices,
     loading: quoting,
     error: quoteError,
   } = useProposalStream(
@@ -166,6 +169,7 @@ export function usePanelBuy(request: ProposalRequest | null): PanelBuyResult {
     errorMsg,
     proposal,
     payoutChoices,
+    barrierChoices,
     handleBuy,
     handleNewTrade,
   };

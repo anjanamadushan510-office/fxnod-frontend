@@ -30,7 +30,25 @@ export function VanillasPanel({ symbol }: VanillasPanelProps) {
   // A duration of 'd' means daily. Everything else (h, min, s, ticks) is intraday.
   const expiryType = duration.unit === 'd' ? 'daily' : 'intraday';
 
+  const request =
+    stake > 0
+      ? buildProposalRequest({
+          contractType: "vanillas",
+          symbol,
+          stake,
+          side,
+          duration: { amount: duration.amount, unit: duration.unit },
+          barrier: strike,
+        })
+      : null;
+
+  const { buyPhase, lastTrade, canBuy, errorMsg, handleBuy, handleNewTrade, proposal, barrierChoices: dynamicBarriers } = usePanelBuy(request);
+
   const barrierChoices = useMemo(() => {
+    if (dynamicBarriers && dynamicBarriers.length > 0) {
+      return dynamicBarriers.map(Number).filter(Number.isFinite);
+    }
+
     // Look through available contracts for Vanillas that match the current expiry type.
     const vanillaContract = params.available.find(
       c => c.contract_category === 'vanilla' && c.expiry_type === expiryType
@@ -41,7 +59,7 @@ export function VanillasPanel({ symbol }: VanillasPanelProps) {
       return vanillaContract.barrier_choices.map(Number).filter(Number.isFinite);
     }
     return undefined;
-  }, [params.available, expiryType]);
+  }, [params.available, expiryType, dynamicBarriers]);
 
   // When dynamic barriers load or duration changes, snap the current strike to a valid option.
   useEffect(() => {
@@ -67,19 +85,7 @@ export function VanillasPanel({ symbol }: VanillasPanelProps) {
     return () => useBarrierPreview.getState().setBarrier(null);
   }, [strike]);
 
-  const request =
-    stake > 0
-      ? buildProposalRequest({
-          contractType: "vanillas",
-          symbol,
-          stake,
-          side,
-          duration: { amount: duration.amount, unit: duration.unit },
-          barrier: strike,
-        })
-      : null;
 
-  const { buyPhase, lastTrade, canBuy, errorMsg, handleBuy, handleNewTrade, proposal } = usePanelBuy(request);
 
   useEffect(() => {
     if (errorMsg && errorMsg.includes("Barriers available are")) {
