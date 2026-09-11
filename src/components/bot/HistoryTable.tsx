@@ -2,7 +2,9 @@
 
 import { cn } from "@/lib/cn";
 import { ArrowDownIcon, ArrowUpIcon } from "@/components/ui/Icons";
+import { useState } from "react";
 import type { BotTrade } from "./types";
+import { TradeDetailsModal } from "./TradeDetailsModal";
 
 export function HistoryTable({
   trades,
@@ -13,6 +15,8 @@ export function HistoryTable({
   trades: BotTrade[];
   emptyMessage?: string;
 }) {
+  const [selectedTrade, setSelectedTrade] = useState<BotTrade | null>(null);
+
   if (trades.length === 0) {
     return (
       <div className="grid flex-1 place-items-center px-5 py-12 text-center">
@@ -39,7 +43,8 @@ export function HistoryTable({
           {trades.map((trade) => (
             <tr
               key={trade.id}
-              className="border-b border-opt-line/60 last:border-b-0 hover:bg-opt-bg-sunk"
+              onClick={() => setSelectedTrade(trade)}
+              className="cursor-pointer border-b border-opt-line/60 last:border-b-0 hover:bg-opt-bg-sunk transition-colors"
             >
               <Td className="tabular-nums text-opt-ink-2">{trade.time}</Td>
               <Td>
@@ -58,6 +63,12 @@ export function HistoryTable({
           ))}
         </tbody>
       </table>
+
+      <TradeDetailsModal
+        open={selectedTrade !== null}
+        trade={selectedTrade}
+        onClose={() => setSelectedTrade(null)}
+      />
     </div>
   );
 }

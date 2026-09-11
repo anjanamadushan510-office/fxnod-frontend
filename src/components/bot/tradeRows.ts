@@ -15,8 +15,11 @@ export function toTradeRows(trades: BotRunTrade[]): BotTrade[] {
     direction: t.side === "fall" ? "down" : "up",
     stake: Number.parseFloat(t.stake_amount) || 0,
     result: t.outcome === "won" ? "won" : t.outcome === "lost" ? "lost" : "open",
-    // null, not 0, while unsettled — the table renders "--" rather than a
-    // break-even figure the contract has not produced.
     pnl: t.profit_loss === undefined ? null : Number.parseFloat(t.profit_loss),
+    symbol: t.symbol,
+    contractType: t.contract_type,
+    currency: t.currency,
+    createdAt: t.created_at,
+    derivContractId: t.deriv_contract_id,
   }));
 }

@@ -33,8 +33,12 @@ export interface BotTrade {
   direction: TradeDirection;
   stake: number;
   result: TradeResult;
-  /** Null while the contract is still open. */
   pnl: number | null;
+  symbol: string;
+  contractType: string;
+  currency: string;
+  createdAt: string;
+  derivContractId: string;
 }
 
 /** Live totals for the current run. Maps onto the bot_runs aggregate columns. */
