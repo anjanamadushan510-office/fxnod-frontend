@@ -41,8 +41,7 @@ export interface BotFormState {
   martingaleEnabled: boolean;
   martingaleMultiplier: string;
   martingaleMaxSteps: string;
-
-
+}
 
 export function defaultFormState(): BotFormState {
   return {
