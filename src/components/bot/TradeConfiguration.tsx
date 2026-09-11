@@ -113,8 +113,8 @@ export function TradeConfiguration({
 
       <Field label="Scan Type" hint="How to process the selected markets">
         <Toggle2
-          a="Parallel"
-          b="Linear"
+          a="Concurrent"
+          b="Sequential"
           value={state.scanType === "PARALLEL" ? "a" : "b"}
           disabled={disabled}
           onChange={(v) => onChange({ scanType: v === "a" ? "PARALLEL" : "LINEAR" })}
