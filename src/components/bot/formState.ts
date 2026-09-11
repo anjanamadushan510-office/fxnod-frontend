@@ -1,12 +1,10 @@
-import type {
-  BotIndicator,
-  StartBotRunRequest,
-} from "@/services/api/model";
+import type { StartBotRunRequest } from "@/services/api/model";
 import { findMarket } from "@/components/options/market/catalog";
 import { toDerivSymbol } from "@/services/deriv/derivSymbols";
 import { formShapeFor } from "./botMeta";
 
 export type Direction = "up" | "down" | "auto";
+export type ScanType = "LINEAR" | "PARALLEL";
 
 /**
  * The configuration form's state.
@@ -17,7 +15,8 @@ export type Direction = "up" | "down" | "auto";
  * stake through a float for no reason.
  */
 export interface BotFormState {
-  marketId: string;
+  symbols: string[];
+  scanType: ScanType;
   currency: string;
   direction: Direction;
 
@@ -43,12 +42,12 @@ export interface BotFormState {
   martingaleMultiplier: string;
   martingaleMaxSteps: string;
 
-  indicators: BotIndicator[];
-}
+
 
 export function defaultFormState(): BotFormState {
   return {
-    marketId: "1HZ100V",
+    symbols: [],
+    scanType: "PARALLEL",
     currency: "USD",
     direction: "up",
 
@@ -76,7 +75,6 @@ export function defaultFormState(): BotFormState {
     martingaleMultiplier: "2",
     martingaleMaxSteps: "3",
 
-    indicators: [],
   };
 }
 
@@ -114,13 +112,18 @@ export function buildStartRequest(
   const shape = formShapeFor(strategyId);
   const errors: string[] = [];
 
-  const market = findMarket(state.marketId);
-  if (!market) {
-    errors.push("Pick a market.");
+  if (state.symbols.length === 0) {
+    errors.push("Pick at least one market.");
   }
-  const symbol = market ? toDerivSymbol(market.id) : undefined;
-  if (market && !symbol) {
-    errors.push(`${market.name} is not available for bots.`);
+  
+  // Verify all symbols exist
+  for (const sym of state.symbols) {
+    const market = findMarket(sym);
+    if (!market) {
+      errors.push(`Invalid market selected: ${sym}`);
+    } else if (!toDerivSymbol(market.id)) {
+      errors.push(`${market.name} is not available for bots.`);
+    }
   }
 
   if (!isPositiveDecimal(state.stake)) {
@@ -141,7 +144,7 @@ export function buildStartRequest(
     }
   }
 
-  if (errors.length > 0 || !symbol) {
+  if (errors.length > 0 || state.symbols.length === 0) {
     return { errors };
   }
 
@@ -149,7 +152,7 @@ export function buildStartRequest(
     strategy_id: strategyId,
     contract_template: {
       contract_type: contractType,
-      symbol,
+      symbol: state.symbols as any, // Forcefully overridden per user request
       currency: state.currency,
       ...(shape.duration
         ? { duration: optionalInt(state.duration), duration_unit: state.durationUnit as never }
@@ -167,7 +170,7 @@ export function buildStartRequest(
       ...(shape.digit && !state.autoDigit ? { digit: state.digit } : {}),
     },
     strategy_parameters: buildStrategyParameters(strategyId, state),
-    indicators: state.indicators,
+    indicators: [],
     risk_limits: {
       stake_per_trade: state.stake.trim(),
       session_stop_loss: state.sessionStopLoss.trim(),
@@ -183,6 +186,8 @@ export function buildStartRequest(
         : undefined,
       max_trades: optionalInt(state.maxTrades),
     },
+    // @ts-ignore: Adding scan_type forcefully to payload per user request
+    scan_type: state.scanType,
   };
 
   return { request, errors: [] };
@@ -240,7 +245,8 @@ function isPositiveDecimal(raw: string): boolean {
  */
 export function toPresetConfig(state: BotFormState): Record<string, unknown> {
   return {
-    marketId: state.marketId,
+    symbols: state.symbols,
+    scanType: state.scanType,
     currency: state.currency,
     direction: state.direction,
     growthRate: state.growthRate,
@@ -261,7 +267,6 @@ export function toPresetConfig(state: BotFormState): Record<string, unknown> {
     martingaleEnabled: state.martingaleEnabled,
     martingaleMultiplier: state.martingaleMultiplier,
     martingaleMaxSteps: state.martingaleMaxSteps,
-    indicators: state.indicators,
   };
 }
 
@@ -276,7 +281,8 @@ export function fromPresetConfig(raw: unknown): BotFormState {
   const cfg = raw as Record<string, unknown>;
 
   return {
-    marketId: typeof cfg.marketId === "string" ? cfg.marketId : defaults.marketId,
+    symbols: Array.isArray(cfg.symbols) ? (cfg.symbols as string[]) : defaults.symbols,
+    scanType: cfg.scanType === "LINEAR" || cfg.scanType === "PARALLEL" ? cfg.scanType : defaults.scanType,
     currency: typeof cfg.currency === "string" ? cfg.currency : defaults.currency,
     direction:
       cfg.direction === "up" || cfg.direction === "down" || cfg.direction === "auto"
@@ -314,7 +320,6 @@ export function fromPresetConfig(raw: unknown): BotFormState {
       typeof cfg.martingaleMaxSteps === "string"
         ? cfg.martingaleMaxSteps
         : defaults.martingaleMaxSteps,
-    indicators: Array.isArray(cfg.indicators) ? (cfg.indicators as BotIndicator[]) : defaults.indicators,
   };
 }
 

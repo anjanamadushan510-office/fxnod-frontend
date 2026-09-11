@@ -84,7 +84,7 @@ export function useProposalStream(
         reconnectAttempts = 0;
         setError(null);
         ws.send(JSON.stringify(requestRef.current));
-        
+
         pingInterval = setInterval(() => {
           if (ws.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({ type: "ping" }));
@@ -131,7 +131,7 @@ export function useProposalStream(
           reconnectAttempts++;
         }
       };
-      
+
       ws.onerror = () => {
         if (!isCleanedUp) {
           setError("Stream connection error");

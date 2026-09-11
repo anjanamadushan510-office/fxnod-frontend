@@ -14,8 +14,7 @@ import {
 } from "./botMeta";
 import { useMarketsForStrategy } from "@/hooks/useMarketsForStrategy";
 import { useContractsFor } from "@/hooks/useContractsFor";
-import { IndicatorPicker, hasDirectionalIndicator } from "./IndicatorPicker";
-import type { BotFormState, Direction } from "./formState";
+import type { BotFormState, Direction, ScanType } from "./formState";
 import { PresetBar } from "./PresetBar";
 import { BotMarketPicker } from "./BotMarketPicker";
 
@@ -50,11 +49,12 @@ export function TradeConfiguration({
   maxSessionLoss,
 }: TradeConfigurationProps) {
   const shape = formShapeFor(strategyId);
-  const autoAvailable = hasDirectionalIndicator(state.indicators);
+  const autoAvailable = false; // Auto direction required indicators, which are now removed
   const { markets: allowedMarkets, loading: marketsLoading } = useMarketsForStrategy(strategyId);
 
   // LOGIC-002: Fetch market-specific parameters from Deriv contracts_for API
-  const { params: contractParams, loading: paramsLoading } = useContractsFor(state.marketId);
+  const firstMarketId = state.symbols && state.symbols.length > 0 ? state.symbols[0] : "";
+  const { params: contractParams, loading: paramsLoading } = useContractsFor(firstMarketId);
 
   // Live multipliers from API; fall back to static list if API returns nothing.
   const liveMultipliers = contractParams.multiplierRange.length > 0
@@ -67,17 +67,15 @@ export function TradeConfiguration({
     : Array.from(GROWTH_RATES);
 
   useEffect(() => {
-    if (!marketsLoading && allowedMarkets.length > 0 && !allowedMarkets.includes(state.marketId)) {
-      // If the user loaded an old preset with a legacy ID (e.g., "vol_100_1s"), upgrade it to the live symbol.
-      const upgradedSymbol = toDerivSymbol(state.marketId);
-      if (upgradedSymbol && allowedMarkets.includes(upgradedSymbol)) {
-        onChange({ marketId: upgradedSymbol });
-      } else {
-        onChange({ marketId: allowedMarkets[0] });
+    if (!marketsLoading && allowedMarkets.length > 0 && state.symbols) {
+      // Ensure all selected symbols are valid
+      const invalidSymbols = state.symbols.filter(s => !allowedMarkets.includes(s));
+      if (invalidSymbols.length > 0) {
+        onChange({ symbols: [allowedMarkets[0]] });
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [strategyId, marketsLoading, state.marketId]);
+  }, [strategyId, marketsLoading, state.symbols]);
 
   // When multiplier options change (market switch), snap the selected value to
   // the nearest valid multiplier so the form is never in an invalid state.
@@ -88,7 +86,7 @@ export function TradeConfiguration({
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.marketId, paramsLoading]);
+  }, [state.symbols, paramsLoading]);
 
   return (
     <section className="flex flex-col gap-3.5">
@@ -103,13 +101,23 @@ export function TradeConfiguration({
         Trade Configuration
       </h2>
 
-      <Field label={marketsLoading ? "Market (loading…)" : "Market"}>
+      <Field label={marketsLoading ? "Markets (loading…)" : "Markets"}>
         <BotMarketPicker
-          value={state.marketId}
+          values={state.symbols}
           disabled={disabled}
           loading={marketsLoading}
           allowedMarkets={allowedMarkets}
-          onChange={(marketId) => onChange({ marketId })}
+          onChange={(symbols) => onChange({ symbols })}
+        />
+      </Field>
+
+      <Field label="Scan Type" hint="How to process the selected markets">
+        <Toggle2
+          a="Parallel"
+          b="Linear"
+          value={state.scanType === "PARALLEL" ? "a" : "b"}
+          disabled={disabled}
+          onChange={(v) => onChange({ scanType: v === "a" ? "PARALLEL" : "LINEAR" })}
         />
       </Field>
 
@@ -369,20 +377,7 @@ export function TradeConfiguration({
 
       <Divider />
 
-      <IndicatorPicker
-        strategyId={strategyId}
-        value={state.indicators}
-        onChange={(indicators: BotIndicator[]) => {
-          // Dropping the last directional indicator makes Auto unreachable, so
-          // fall back rather than leaving a direction the API will reject.
-          const patch: Partial<BotFormState> = { indicators };
-          if (state.direction === "auto" && !hasDirectionalIndicator(indicators)) {
-            patch.direction = "up";
-          }
-          onChange(patch);
-        }}
-        disabled={disabled}
-      />
+
     </section>
   );
 }

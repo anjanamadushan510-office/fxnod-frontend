@@ -7,8 +7,8 @@ import type { Market } from "@/components/options/market/catalog";
 import { SearchIcon } from "@/components/ui/Icons";
 
 interface BotMarketPickerProps {
-  value: string;
-  onChange: (marketId: string) => void;
+  values: string[];
+  onChange: (marketIds: string[]) => void;
   allowedMarkets: string[];
   disabled?: boolean;
   loading?: boolean;
@@ -26,7 +26,7 @@ const CATEGORY_ORDER = [
  * Shows category tabs + grouped markets in a dropdown panel.
  */
 export function BotMarketPicker({
-  value,
+  values,
   onChange,
   allowedMarkets,
   disabled = false,
@@ -81,7 +81,10 @@ export function BotMarketPicker({
   }, [filteredAll, activeCategory, search]);
 
   // Selected market info
-  const selectedMarket = allMarkets.find((m) => m.id === value);
+  const selectedMarkets = useMemo(
+    () => allMarkets.filter((m) => values.includes(m.id)),
+    [allMarkets, values]
+  );
 
   // Close on outside click
   useEffect(() => {
@@ -95,10 +98,25 @@ export function BotMarketPicker({
     return () => document.removeEventListener("mousedown", handleClick);
   }, [open]);
 
-  function handleSelect(id: string) {
-    onChange(id);
-    setOpen(false);
-    setSearch("");
+  function handleToggle(id: string) {
+    if (values.includes(id)) {
+      onChange(values.filter((v) => v !== id));
+    } else {
+      onChange([...values, id]);
+    }
+  }
+
+  function handleSelectAllInCategory() {
+    const currentCategoryIds = Array.from(displayMarkets.values())
+      .flatMap((g) => g.markets.map((m) => m.id));
+    
+    const allSelected = currentCategoryIds.every((id) => values.includes(id));
+    if (allSelected) {
+      onChange(values.filter((v) => !currentCategoryIds.includes(v)));
+    } else {
+      const newValues = new Set([...values, ...currentCategoryIds]);
+      onChange(Array.from(newValues));
+    }
   }
 
   return (
@@ -117,11 +135,21 @@ export function BotMarketPicker({
         )}
       >
         <div className="flex items-center gap-2 truncate">
-          <MarketIcon market={selectedMarket} size="sm" />
+          {selectedMarkets.length === 1 ? (
+            <MarketIcon market={selectedMarkets[0]} size="sm" />
+          ) : (
+            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-opt-rise-soft text-[9px] font-bold text-opt-rise">
+              {selectedMarkets.length}
+            </div>
+          )}
           <span className="truncate">
             {loading
               ? "Loading markets…"
-              : selectedMarket?.name ?? value ?? "Select market"}
+              : selectedMarkets.length === 0
+              ? "Select markets"
+              : selectedMarkets.length === 1
+              ? selectedMarkets[0].name
+              : `${selectedMarkets.length} markets selected`}
           </span>
         </div>
         <svg
@@ -190,6 +218,19 @@ export function BotMarketPicker({
             </div>
           )}
 
+          {/* Select all toggle */}
+          {displayMarkets.size > 0 && (
+            <div className="flex border-b border-opt-line px-3 py-2">
+              <button
+                type="button"
+                onClick={handleSelectAllInCategory}
+                className="text-[11px] font-medium text-opt-rise hover:text-opt-rise-strong"
+              >
+                Toggle all in view
+              </button>
+            </div>
+          )}
+
           {/* Market groups list */}
           <div className="max-h-[340px] overflow-y-auto">
             {displayMarkets.size === 0 ? (
@@ -210,19 +251,35 @@ export function BotMarketPicker({
                     <button
                       key={market.id}
                       type="button"
-                      onClick={() => handleSelect(market.id)}
+                      onClick={() => handleToggle(market.id)}
                       className={cn(
                         "flex w-full items-center gap-3 px-3 py-2.5",
                         "transition-colors hover:bg-opt-bg-elev-2",
-                        market.id === value && "bg-opt-rise-soft"
+                        values.includes(market.id) && "bg-opt-rise-soft/50"
                       )}
                     >
+                      {/* Checkbox */}
+                      <div
+                        className={cn(
+                          "flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors",
+                          values.includes(market.id)
+                            ? "border-opt-rise bg-opt-rise text-white"
+                            : "border-opt-line-strong bg-transparent"
+                        )}
+                      >
+                        {values.includes(market.id) && (
+                          <svg className="h-3 w-3" viewBox="0 0 12 12" fill="none">
+                            <path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        )}
+                      </div>
+
                       <MarketIcon market={market} size="md" />
                       <div className="flex flex-1 flex-col items-start gap-0.5 text-left">
                         <span
                           className={cn(
                             "text-[12px] font-medium leading-tight",
-                            market.id === value ? "text-opt-rise" : "text-opt-ink"
+                            values.includes(market.id) ? "text-opt-rise" : "text-opt-ink"
                           )}
                         >
                           {market.name}
@@ -233,11 +290,6 @@ export function BotMarketPicker({
                           </span>
                         )}
                       </div>
-                      {market.id === value && (
-                        <svg className="h-3.5 w-3.5 shrink-0 text-opt-rise" viewBox="0 0 12 12" fill="currentColor">
-                          <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      )}
                     </button>
                   ))}
                 </div>

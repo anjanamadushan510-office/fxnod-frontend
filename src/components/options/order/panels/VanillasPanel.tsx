@@ -49,26 +49,17 @@ export function VanillasPanel({ symbol }: VanillasPanelProps) {
       return dynamicBarriers.map(Number).filter(Number.isFinite);
     }
 
-    const durationStr = `${duration.amount}${duration.unit === 'min' ? 'm' : duration.unit === 'ticks' ? 't' : duration.unit}`;
-
-    // Look for exact match for the selected duration
-    let vanillaContract = params.available.find(
-      c => c.contract_category === 'vanilla' && c.expiry_type === expiryType && c.min_contract_duration === durationStr
+    // Look through available contracts for Vanillas that match the current expiry type.
+    const vanillaContract = params.available.find(
+      c => c.contract_category === 'vanilla' && c.expiry_type === expiryType
     );
-
-    // If no exact match, fallback to the first vanilla contract matching the expiry type
-    if (!vanillaContract) {
-      vanillaContract = params.available.find(
-        c => c.contract_category === 'vanilla' && c.expiry_type === expiryType
-      );
-    }
     
     if (vanillaContract?.barrier_choices) {
       // barrier_choices are strings like "+1.50" or "820.00", parse them to numbers.
       return vanillaContract.barrier_choices.map(Number).filter(Number.isFinite);
     }
     return undefined;
-  }, [params.available, expiryType, duration, dynamicBarriers]);
+  }, [params.available, expiryType, dynamicBarriers]);
 
   // When dynamic barriers load or duration changes, snap the current strike to a valid option.
   useEffect(() => {

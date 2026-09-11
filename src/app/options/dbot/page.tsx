@@ -5,7 +5,6 @@ import type { Route } from "next";
 import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/cn";
-import { BotChart } from "@/components/bot/BotChart";
 import { BotPicker } from "@/components/bot/BotPicker";
 import { SubscriptionGateModal } from "@/components/bot/SubscriptionGateModal";
 import { BotTabs, type DraftTab } from "@/components/bot/BotTabs";
@@ -19,7 +18,6 @@ import {
   defaultFormState,
   type BotFormState,
 } from "@/components/bot/formState";
-import { useBotCandles } from "@/components/bot/useBotCandles";
 import { toTradeRows } from "@/components/bot/tradeRows";
 import type { BotSession } from "@/components/bot/types";
 import { useDerivStatus } from "@/hooks/useDerivStatus";
@@ -263,14 +261,6 @@ export default function DBotPage() {
   );
   const trades = tradesQuery.data?.trades ?? [];
 
-  // ── Chart ─────────────────────────────────────────────────────────────────
-  const chartMarketId = activeRun
-    ? derivToMarketId(activeRun.symbol)
-    : form.marketId;
-  // Not while the picker is up: a market subscription opened for a chart nobody
-  // is looking at still costs a Deriv subscription slot.
-  const { candles, ready: chartReady } = useBotCandles(chartMarketId, !picking);
-
   // ── Layout ────────────────────────────────────────────────────────────────
   const railSplit = useResizable({
     initial: 22,
@@ -279,13 +269,7 @@ export default function DBotPage() {
     storageKey: "fxnod.dbot.rail",
     label: "Resize the configuration panel",
   });
-  const workSplit = useResizable({
-    initial: 42,
-    min: 20,
-    max: 75,
-    storageKey: "fxnod.dbot.work",
-    label: "Resize the trade list",
-  });
+
 
   // ── Actions ───────────────────────────────────────────────────────────────
   const [errors, setErrors] = useState<string[]>([]);
@@ -458,28 +442,13 @@ export default function DBotPage() {
             activeRuns={activeRuns.length}
           />
 
-          {/* Trade list | chart, also draggable. */}
-          <div
-            ref={workSplit.containerRef}
-            className="flex min-h-0 flex-1 overflow-hidden rounded-[var(--opt-radius)] border border-opt-line bg-opt-bg-elev"
-          >
-            <div
-              style={{ width: `${workSplit.size}%` }}
-              className="flex min-w-0 flex-col overflow-hidden"
-            >
-              <SectionHeader
-                title={activeRun ? "Trades" : "Trades"}
-                hint={activeRun ? undefined : "Start the bot to see its trades"}
-              />
-              <HistoryTable trades={toTradeRows(trades)} />
-            </div>
-
-            <SplitHandle split={workSplit} />
-
-            <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-              <SectionHeader title="Chart" hint={chartMarketId} />
-              {chartReady ? <BotChart candles={candles} /> : <ChartWarmingUp />}
-            </div>
+          {/* Trade list */}
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[var(--opt-radius)] border border-opt-line bg-opt-bg-elev">
+            <SectionHeader
+              title="Trades"
+              hint={activeRun ? undefined : "Start the bot to see its trades"}
+            />
+            <HistoryTable trades={toTradeRows(trades)} />
           </div>
 
           <div className="flex shrink-0 flex-wrap items-center justify-between gap-3">
@@ -616,24 +585,7 @@ function mapStatus(status: string): BotSession["status"] {
   }
 }
 
-/**
- * Maps a Deriv symbol back to a catalog id so the chart can follow a run whose
- * symbol was recorded in Deriv's vocabulary.
- */
-function derivToMarketId(derivSymbol: string): string {
-  return derivSymbol;
-}
 
-function ChartWarmingUp() {
-  return (
-    <div className="grid flex-1 place-items-center px-5 py-12">
-      <p className="m-0 max-w-[30ch] text-center text-[11px] leading-relaxed text-opt-ink-3">
-        Loading price history… the chart needs about 20 minutes of candles before
-        the indicators can be drawn.
-      </p>
-    </div>
-  );
-}
 
 /**
  * Is this refusal about a missing subscription, rather than a real error?
