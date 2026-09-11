@@ -151,7 +151,7 @@ export function buildStartRequest(
     strategy_id: strategyId,
     contract_template: {
       contract_type: contractType,
-      symbol: state.symbols as any, // Forcefully overridden per user request
+      symbols: state.symbols,
       currency: state.currency,
       ...(shape.duration
         ? { duration: optionalInt(state.duration), duration_unit: state.durationUnit as never }
@@ -185,7 +185,6 @@ export function buildStartRequest(
         : undefined,
       max_trades: optionalInt(state.maxTrades),
     },
-    // @ts-ignore: Adding scan_type forcefully to payload per user request
     scan_type: state.scanType,
   };
 

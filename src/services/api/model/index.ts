@@ -178,6 +178,7 @@ export * from './sellResponse';
 export * from './settlementResult';
 export * from './sourceEarnings';
 export * from './startBotRunRequest';
+export * from './startBotRunRequestScanType';
 export * from './startBotRunRequestStrategyParameters';
 export * from './startBotRunResponse';
 export * from './subscription';

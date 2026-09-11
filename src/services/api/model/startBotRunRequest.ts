@@ -34,6 +34,7 @@ import type { BotContractTemplate } from './botContractTemplate';
 import type { StartBotRunRequestStrategyParameters } from './startBotRunRequestStrategyParameters';
 import type { BotIndicator } from './botIndicator';
 import type { BotRiskLimits } from './botRiskLimits';
+import type { StartBotRunRequestScanType } from './startBotRunRequestScanType';
 
 export interface StartBotRunRequest {
   strategy_id: string;
@@ -47,4 +48,5 @@ export interface StartBotRunRequest {
   /** Required on a REAL-money account. Recorded with a timestamp; the schema itself refuses a real-money run without it.
  */
   risk_acknowledged?: boolean;
+  scan_type?: StartBotRunRequestScanType;
 }

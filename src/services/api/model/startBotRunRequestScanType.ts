@@ -30,30 +30,12 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
-import type { BotContractTemplateDurationUnit } from './botContractTemplateDurationUnit';
 
-/**
- * The shape of every contract this run buys. Snapshotted immutably on the run as the record of what the user authorised.
+export type StartBotRunRequestScanType = typeof StartBotRunRequestScanType[keyof typeof StartBotRunRequestScanType];
 
- */
-export interface BotContractTemplate {
-  /** FXNod frontend contract type. */
-  contract_type: string;
-  symbols: string[];
-  currency?: string;
-  duration?: number;
-  duration_unit?: BotContractTemplateDurationUnit;
-  barrier?: string;
-  /**
-   * @minimum 0
-   * @maximum 9
-   */
-  digit?: number;
-  /**
-   * @minimum 1
-   * @maximum 5
-   */
-  growth_rate?: number;
-  multiplier?: number;
-  payout_per_point?: number;
-}
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const StartBotRunRequestScanType = {
+  LINEAR: 'LINEAR',
+  PARALLEL: 'PARALLEL',
+} as const;
