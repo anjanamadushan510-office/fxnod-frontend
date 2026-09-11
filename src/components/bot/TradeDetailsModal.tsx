@@ -63,6 +63,9 @@ export function TradeDetailsModal({
           </div>
 
           <div className="grid grid-cols-2 gap-y-5 gap-x-4 flex-1 content-start">
+            <DetailBlock label="Market">
+              {market?.name ?? trade.symbol}
+            </DetailBlock>
             <DetailBlock label="Contract ID">
               {trade.derivContractId}
             </DetailBlock>
