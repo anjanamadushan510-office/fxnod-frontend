@@ -105,6 +105,8 @@ function framePatch(frame: PositionFrame, existing?: Position): Partial<Position
   } else if (frame.tickStream) {
     patch.tickStream = frame.tickStream;
   }
+  if (frame.ticks_total != null) patch.ticksTotal = frame.ticks_total;
+  
   const value = toNum(frame.bid_price);
   if (value !== undefined) patch.contractValue = value;
   const entry = toNum(frame.entry_spot);
@@ -148,6 +150,7 @@ function frameToPosition(frame: PositionFrame): Position {
     expiryTime: frame.expiry_time,
     startTime: frame.start_time,
     isTick: frame.ticks_total != null || frame.ticks_elapsed != null,
+    ticksTotal: frame.ticks_total,
     buy_transaction_id: frame.buy_transaction_id,
     sell_transaction_id: frame.sell_transaction_id,
     display_number_of_contracts: frame.display_number_of_contracts,

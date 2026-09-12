@@ -219,6 +219,12 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
     const markers: SeriesMarker<Time>[] = [];
     liveTicksRef.current.forEach((t, i) => {
       const isFirst = i === 0;
+      
+      // Cap the marker numbering to the contract's tick duration
+      if (openContract?.ticksTotal && i > openContract.ticksTotal) {
+        return;
+      }
+      
       markers.push({
         time: t.time as Time,
         position: "aboveBar",

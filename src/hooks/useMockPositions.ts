@@ -33,6 +33,8 @@ export interface Position {
   startTime?: number;
   /** True if the contract duration is in ticks. */
   isTick?: boolean;
+  /** Total number of ticks for tick-based contracts. */
+  ticksTotal?: number;
   /** Live tick stream from the backend. */
   tickStream?: any[];
   buy_transaction_id?: number;
