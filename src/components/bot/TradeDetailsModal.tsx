@@ -283,6 +283,11 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
     },
     onTick: (tick: FeedTick) => {
       if (seriesRef.current) {
+        if (openContract?.ticksTotal) {
+          const maxPoints = openContract.ticksTotal + 1;
+          if (liveTicksRef.current.length >= maxPoints) return;
+        }
+
         seriesRef.current.update({ time: tick.time as Time, value: tick.value });
         
         const startBoundary = new Date(trade.createdAt).getTime() / 1000;
