@@ -264,28 +264,25 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
         sortedTicks.forEach((t, i) => {
           const isFirst = i === 0;
           const isLast = i === sortedTicks.length - 1;
-          const tickNum = i + 1;
-          
-          // Time Boundary: Start
+
           if (isFirst) {
             markers.push({
               time: t.epoch as Time,
               position: "belowBar",
               color: "#3B82F6",
-              shape: "arrowUp",
+              shape: "circle",
               text: "Start",
-              size: 2,
+              size: 1,
             });
+            return;
           }
 
-          // Tick Circle Marker
+          const tickNum = i;
           let color = "#9CA3AF"; // Gray default
-          let size = 1;
           
           // Outcome Highlight for the final tick
           if (isLast) {
-            color = trade.result === "won" ? "#10B981" : "#EF4444";
-            size = 2; // Make distinct
+            color = trade.result === "won" ? "#10B981" : trade.result === "lost" ? "#EF4444" : "#1F2937";
           }
           
           markers.push({
@@ -294,20 +291,8 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
             color: color,
             shape: "circle",
             text: `${tickNum}`,
-            size: size,
+            size: 1,
           });
-
-          // Time Boundary: Exit
-          if (isLast) {
-            markers.push({
-              time: t.epoch as Time,
-              position: "belowBar",
-              color: color,
-              shape: "arrowUp",
-              text: trade.result === "won" ? "Won" : trade.result === "lost" ? "Lost" : "Exit",
-              size: 2,
-            });
-          }
         });
         
         if (!markersPluginRef.current) {
