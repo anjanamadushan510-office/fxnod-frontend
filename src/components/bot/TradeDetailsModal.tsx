@@ -262,8 +262,8 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
         const markers: SeriesMarker<Time>[] = [];
         
         sortedTicks.forEach((t, i) => {
-          const isFirst = i === 0;
           const isLast = i === sortedTicks.length - 1;
+          const tickNum = i + 1;
           
           let color = "#9CA3AF"; // Gray default
           
@@ -277,7 +277,7 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
             position: "aboveBar",
             color: color,
             shape: "circle",
-            text: isFirst ? "" : `${i}`,
+            text: `${tickNum}`,
             size: 1,
           });
         });
