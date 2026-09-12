@@ -262,22 +262,9 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
         const markers: SeriesMarker<Time>[] = [];
         
         sortedTicks.forEach((t, i) => {
-          const isFirst = i === 0;
           const isLast = i === sortedTicks.length - 1;
-
-          if (isFirst) {
-            markers.push({
-              time: t.epoch as Time,
-              position: "belowBar",
-              color: "#3B82F6",
-              shape: "circle",
-              text: "Start",
-              size: 1,
-            });
-            return;
-          }
-
-          const tickNum = i;
+          const tickNum = i + 1;
+          
           let color = "#9CA3AF"; // Gray default
           
           // Outcome Highlight for the final tick
