@@ -212,18 +212,56 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
   // 3. Stream Data (Only for open trades)
   const isLive = trade.result === "open";
   
+  const liveTicksRef = useRef<FeedTick[]>([]);
+
+  const updateLiveMarkers = () => {
+    if (!seriesRef.current || liveTicksRef.current.length === 0) return;
+    const markers: SeriesMarker<Time>[] = [];
+    liveTicksRef.current.forEach((t, i) => {
+      const isFirst = i === 0;
+      markers.push({
+        time: t.time as Time,
+        position: "aboveBar",
+        color: "#9CA3AF",
+        shape: "circle",
+        text: isFirst ? "" : `${i}`,
+        size: 1,
+      });
+    });
+    
+    if (!markersPluginRef.current) {
+      markersPluginRef.current = createSeriesMarkers(seriesRef.current, markers);
+    } else {
+      markersPluginRef.current.setMarkers(markers);
+    }
+  };
+
   useDerivChartFeed({
     derivSymbol: trade.symbol,
     style: "ticks",
     enabled: isLive,
     onSeedTicks: (ticks: FeedTick[]) => {
       if (seriesRef.current && ticks.length > 0) {
+        // Data Trimming & Focus
+        const startBoundary = new Date(trade.createdAt).getTime() / 1000;
+        const lookbackLimit = startBoundary - 10; // Keep 10 seconds of context before entry
+        
+        const trimmedTicks = ticks.filter(t => (t.time as number) >= lookbackLimit);
+        
+        // Strictly track contract ticks for numbering
+        liveTicksRef.current = trimmedTicks.filter(t => (t.time as number) >= startBoundary);
+
         seriesRef.current.setData(
-          ticks.map((t) => ({ time: t.time as Time, value: t.value }))
+          trimmedTicks.map((t) => ({ time: t.time as Time, value: t.value }))
         );
         
-        // Force the price line to show by updating the reference (a known lightweight-charts trick)
-        // when data is first seeded, price lines might need re-attaching
+        // Auto-Zoom timeframe
+        if (chartRef.current) {
+          chartRef.current.timeScale().fitContent();
+        }
+        
+        updateLiveMarkers();
+        
         if (entryPrice !== undefined && priceLineRef.current) {
           seriesRef.current.removePriceLine(priceLineRef.current);
           priceLineRef.current = seriesRef.current.createPriceLine({
@@ -240,6 +278,12 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
     onTick: (tick: FeedTick) => {
       if (seriesRef.current) {
         seriesRef.current.update({ time: tick.time as Time, value: tick.value });
+        
+        const startBoundary = new Date(trade.createdAt).getTime() / 1000;
+        if ((tick.time as number) >= startBoundary) {
+          liveTicksRef.current.push(tick);
+          updateLiveMarkers();
+        }
       }
     },
   });
