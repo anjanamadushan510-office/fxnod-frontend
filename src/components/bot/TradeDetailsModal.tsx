@@ -141,7 +141,7 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<ReturnType<typeof createChart>>();
   const seriesRef = useRef<ISeriesApi<"Line">>();
-  const markersPluginRef = useRef<ReturnType<typeof createSeriesMarkers>>();
+  const markersPluginRef = useRef<ReturnType<typeof createSeriesMarkers<Time>>>();
   const entryLineRef = useRef<ISeriesApi<"Line">>();
 
   const openContract = useOpenContract(trade.result === "open" ? trade.derivContractId : undefined);
