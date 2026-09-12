@@ -21,5 +21,6 @@ export function toTradeRows(trades: BotRunTrade[]): BotTrade[] {
     currency: t.currency,
     createdAt: t.created_at,
     derivContractId: t.deriv_contract_id,
+    entryPrice: t.entry_spot !== undefined ? Number.parseFloat(t.entry_spot) : undefined,
   }));
 }

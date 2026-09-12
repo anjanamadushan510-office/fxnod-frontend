@@ -55,4 +55,6 @@ export interface BotRunTrade {
  */
   sequence?: number;
   created_at: string;
+  entry_spot?: DecimalString;
+  exit_spot?: DecimalString;
 }

@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { createChart, ISeriesApi, Time, LineSeries } from "lightweight-charts";
 import { useDerivChartFeed, type FeedTick } from "@/hooks/useDerivChartFeed";
+import { useOpenContract } from "@/hooks/useOpenContract";
 import type { BotTrade } from "./types";
 import { cn } from "@/lib/cn";
 import { findMarket } from "@/components/options/market/catalog";
@@ -42,7 +43,7 @@ export function TradeDetailsModal({
             </span>
           </div>
           <div className="flex-1 relative">
-            <LiveTradeChart symbol={trade.symbol} />
+            <LiveTradeChart trade={trade} />
           </div>
         </div>
 
@@ -136,10 +137,14 @@ function DetailBlock({ label, children }: { label: string; children: React.React
   );
 }
 
-function LiveTradeChart({ symbol }: { symbol: string }) {
+function LiveTradeChart({ trade }: { trade: BotTrade }) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<ReturnType<typeof createChart>>();
   const seriesRef = useRef<ISeriesApi<"Line">>();
+  const entryLineRef = useRef<ISeriesApi<"Line">>();
+
+  const openContract = useOpenContract(trade.result === "open" ? trade.derivContractId : undefined);
+  const entryPrice = trade.entryPrice ?? openContract?.entrySpot;
 
   // 1. Initialize Chart
   useEffect(() => {
@@ -177,9 +182,35 @@ function LiveTradeChart({ symbol }: { symbol: string }) {
     };
   }, []);
 
-  // 2. Stream Data
+  // 2. Add or update PriceLine when entryPrice changes
+  const priceLineRef = useRef<any>(null);
+  useEffect(() => {
+    if (!seriesRef.current || entryPrice === undefined) return;
+    
+    if (priceLineRef.current) {
+      seriesRef.current.removePriceLine(priceLineRef.current);
+    }
+    
+    priceLineRef.current = seriesRef.current.createPriceLine({
+      price: entryPrice,
+      color: "#10B981",
+      lineWidth: 2,
+      lineStyle: 2, // Dashed
+      axisLabelVisible: true,
+      title: "Entry",
+    });
+    
+    return () => {
+      if (seriesRef.current && priceLineRef.current) {
+        seriesRef.current.removePriceLine(priceLineRef.current);
+        priceLineRef.current = null;
+      }
+    };
+  }, [entryPrice]);
+
+  // 3. Stream Data
   useDerivChartFeed({
-    derivSymbol: symbol,
+    derivSymbol: trade.symbol,
     style: "ticks",
     enabled: true,
     onSeedTicks: (ticks: FeedTick[]) => {
