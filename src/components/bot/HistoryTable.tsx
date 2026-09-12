@@ -5,6 +5,7 @@ import { ArrowDownIcon, ArrowUpIcon } from "@/components/ui/Icons";
 import { useState } from "react";
 import type { BotTrade } from "./types";
 import { TradeDetailsModal } from "./TradeDetailsModal";
+import { findMarket } from "@/components/options/market/catalog";
 
 export function HistoryTable({
   trades,
@@ -33,6 +34,7 @@ export function HistoryTable({
         <thead className="sticky top-0 z-10 bg-opt-bg-elev">
           <tr className="border-b border-opt-line text-left">
             <Th>Time</Th>
+            <Th>Market</Th>
             <Th>Direction</Th>
             <Th align="right">Stake</Th>
             <Th>Result</Th>
@@ -47,6 +49,9 @@ export function HistoryTable({
               className="cursor-pointer border-b border-opt-line/60 last:border-b-0 hover:bg-opt-bg-sunk transition-colors"
             >
               <Td className="tabular-nums text-opt-ink-2">{trade.time}</Td>
+              <Td className="text-opt-ink-2">
+                {findMarket(trade.symbol)?.name ?? trade.symbol}
+              </Td>
               <Td>
                 <DirectionCell direction={trade.direction} />
               </Td>
