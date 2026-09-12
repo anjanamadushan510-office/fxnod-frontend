@@ -163,8 +163,6 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
       timeScale: {
         timeVisible: true,
         secondsVisible: true,
-        barSpacing: 50,
-        rightOffset: 10,
       },
       autoSize: true,
     });
