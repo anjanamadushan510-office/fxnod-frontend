@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { createChart, ISeriesApi, Time, LineSeries, SeriesMarker } from "lightweight-charts";
+import { createChart, ISeriesApi, Time, LineSeries, SeriesMarker, createSeriesMarkers } from "lightweight-charts";
 import { useDerivChartFeed, type FeedTick } from "@/hooks/useDerivChartFeed";
 import { useOpenContract } from "@/hooks/useOpenContract";
 import type { BotTrade } from "./types";
@@ -141,6 +141,7 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<ReturnType<typeof createChart>>();
   const seriesRef = useRef<ISeriesApi<"Line">>();
+  const markersPluginRef = useRef<ReturnType<typeof createSeriesMarkers>>();
   const entryLineRef = useRef<ISeriesApi<"Line">>();
 
   const openContract = useOpenContract(trade.result === "open" ? trade.derivContractId : undefined);
@@ -309,7 +310,11 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
           }
         });
         
-        seriesRef.current.setMarkers(markers);
+        if (!markersPluginRef.current) {
+          markersPluginRef.current = createSeriesMarkers(seriesRef.current, markers);
+        } else {
+          markersPluginRef.current.setMarkers(markers);
+        }
         
         // If the chart renders historical data, we should fit the content
         if (chartRef.current) {
