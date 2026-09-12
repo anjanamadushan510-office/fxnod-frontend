@@ -208,16 +208,32 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
     };
   }, [entryPrice]);
 
-  // 3. Stream Data
+  // 3. Stream Data (Only for open trades)
+  const isLive = trade.result === "open";
+  
   useDerivChartFeed({
     derivSymbol: trade.symbol,
     style: "ticks",
-    enabled: true,
+    enabled: isLive,
     onSeedTicks: (ticks: FeedTick[]) => {
       if (seriesRef.current && ticks.length > 0) {
         seriesRef.current.setData(
           ticks.map((t) => ({ time: t.time as Time, value: t.value }))
         );
+        
+        // Force the price line to show by updating the reference (a known lightweight-charts trick)
+        // when data is first seeded, price lines might need re-attaching
+        if (entryPrice !== undefined && priceLineRef.current) {
+          seriesRef.current.removePriceLine(priceLineRef.current);
+          priceLineRef.current = seriesRef.current.createPriceLine({
+            price: entryPrice,
+            color: "#10B981",
+            lineWidth: 2,
+            lineStyle: 2,
+            axisLabelVisible: true,
+            title: "Entry",
+          });
+        }
       }
     },
     onTick: (tick: FeedTick) => {
@@ -226,6 +242,28 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
       }
     },
   });
+
+  // 4. Historical Data (For settled trades)
+  useEffect(() => {
+    if (!isLive && seriesRef.current && trade.tickStream && trade.tickStream.length > 0) {
+      // The tickStream array contains objects like { epoch: number, tick: number }
+      // Sort to ensure chronological order as required by lightweight-charts
+      const sortedTicks = [...trade.tickStream]
+        .filter(t => typeof t.epoch === "number" && typeof t.tick === "number")
+        .sort((a, b) => a.epoch - b.epoch);
+        
+      if (sortedTicks.length > 0) {
+        seriesRef.current.setData(
+          sortedTicks.map(t => ({ time: t.epoch as Time, value: t.tick }))
+        );
+        
+        // If the chart renders historical data, we should fit the content
+        if (chartRef.current) {
+          chartRef.current.timeScale().fitContent();
+        }
+      }
+    }
+  }, [isLive, trade.tickStream]);
 
   return <div ref={chartContainerRef} className="absolute inset-0" />;
 }

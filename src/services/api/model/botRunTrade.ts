@@ -57,4 +57,5 @@ export interface BotRunTrade {
   created_at: string;
   entry_spot?: DecimalString;
   exit_spot?: DecimalString;
+  tick_stream?: any[];
 }

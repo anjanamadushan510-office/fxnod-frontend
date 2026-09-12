@@ -40,6 +40,7 @@ export interface BotTrade {
   createdAt: string;
   derivContractId: string;
   entryPrice?: number;
+  tickStream?: any[];
 }
 
 /** Live totals for the current run. Maps onto the bot_runs aggregate columns. */
