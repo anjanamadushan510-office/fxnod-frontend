@@ -17,59 +17,45 @@ interface BotIndicatorConfigProps {
  * useChartIndicators global store.
  */
 export function BotIndicatorConfig({ symbols }: BotIndicatorConfigProps) {
-  const { indicators, addIndicator, removeIndicator } = useChartIndicators();
+  const { addIndicator, clearIndicators } = useChartIndicators();
+  
+  // Strictly local state: DBot indicators start empty and only update explicitly.
+  const [botIndicators, setBotIndicators] = useState<IndicatorType[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   
-  // We use the first selected symbol as the representative "source of truth" 
-  // for what indicators the Bot strategy has configured globally.
-  const primarySymbol = symbols[0];
-  const activeIndicators = primarySymbol 
-    ? indicators.filter(ind => ind.symbol === primarySymbol)
-    : [];
-
-  // Reactively synchronize indicators to newly selected markets
+  // Sync strictly One-Way (DBot Local -> Global) whenever symbols or botIndicators change.
   useEffect(() => {
-    if (!primarySymbol || activeIndicators.length === 0) return;
-
-    symbols.forEach((symbol) => {
-      // Skip the primary symbol since it's our source of truth
-      if (symbol === primarySymbol) return;
-
-      const currentSymbolInds = indicators.filter((i) => i.symbol === symbol);
+    if (symbols.length === 0) return;
+    
+    symbols.forEach(symbol => {
+      // Wipe any old DTrader indicators for this symbol
+      clearIndicators(symbol);
       
-      activeIndicators.forEach((activeInd) => {
-        const alreadyExists = currentSymbolInds.some((i) => i.type === activeInd.type);
-        if (!alreadyExists && currentSymbolInds.length < 5) {
-          addIndicator(symbol, activeInd.type);
-        }
+      // Apply ONLY the bot-configured indicators
+      botIndicators.forEach(type => {
+        addIndicator(symbol, type);
       });
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [symbols, primarySymbol]);
+  }, [symbols, botIndicators]);
 
   const handleAdd = (type: IndicatorType) => {
-    // Add the indicator to ALL currently selected markets
-    symbols.forEach(symbol => {
-      // Respect the 5-indicator limit per market
-      const symbolInds = indicators.filter(i => i.symbol === symbol);
-      if (symbolInds.length < 5) {
-        addIndicator(symbol, type);
+    setBotIndicators(prev => {
+      if (prev.length < 5 && !prev.includes(type)) {
+        return [...prev, type];
       }
+      return prev;
     });
     setIsAdding(false);
   };
 
   const handleRemove = (type: IndicatorType) => {
-    // Find and remove all instances of this indicator type across ALL selected markets
-    const toRemove = indicators.filter(
-      ind => ind.type === type && symbols.includes(ind.symbol)
-    );
-    toRemove.forEach(ind => removeIndicator(ind.id));
+    setBotIndicators(prev => prev.filter(t => t !== type));
   };
 
-  if (!primarySymbol) return null;
+  const isAtLimit = botIndicators.length >= 5;
 
-  const isAtLimit = activeIndicators.length >= 5;
+  if (symbols.length === 0) return null;
 
   return (
     <div className="flex flex-col gap-3">
@@ -92,24 +78,24 @@ export function BotIndicatorConfig({ symbols }: BotIndicatorConfigProps) {
       </div>
 
       <div className="flex flex-col gap-2">
-        {activeIndicators.length === 0 && !isAdding ? (
+        {botIndicators.length === 0 && !isAdding ? (
           <div className="rounded border border-opt-line border-dashed p-3 text-center text-[11px] text-opt-ink-3">
             No indicators configured for this bot.
           </div>
         ) : (
-          activeIndicators.map(ind => {
-            const meta = INDICATOR_LIST.find(i => i.id === ind.type);
+          botIndicators.map(type => {
+            const meta = INDICATOR_LIST.find(i => i.id === type);
             return (
-              <div key={ind.id} className="flex items-center justify-between rounded border border-opt-line bg-opt-bg-elev p-2 transition-colors hover:bg-opt-bg-sunk">
+              <div key={type} className="flex items-center justify-between rounded border border-opt-line bg-opt-bg-elev p-2 transition-colors hover:bg-opt-bg-sunk">
                 <div className="flex items-center gap-2">
                   {meta?.Icon && <meta.Icon className="h-4 w-4 opacity-80" />}
                   <span className="text-[12px] font-medium text-opt-ink">
-                    {meta?.name || ind.type}
+                    {meta?.name || type}
                   </span>
                 </div>
                 <button 
                   type="button"
-                  onClick={() => handleRemove(ind.type)}
+                  onClick={() => handleRemove(type)}
                   className="rounded p-1 text-opt-ink-3 transition-colors hover:bg-white/10 hover:text-opt-ink"
                   title="Remove from all markets"
                 >
@@ -125,7 +111,7 @@ export function BotIndicatorConfig({ symbols }: BotIndicatorConfigProps) {
         <div className="mt-2 flex max-h-64 flex-col gap-1 overflow-y-auto rounded-lg border border-opt-line bg-opt-bg-sunk p-2 shadow-inner">
           {INDICATOR_LIST.map((ind) => {
             // Check if this type is already added
-            const isAdded = activeIndicators.some(active => active.type === ind.id);
+            const isAdded = botIndicators.includes(ind.id as IndicatorType);
             if (isAdded) return null; // Hide already added indicators
 
             return (
