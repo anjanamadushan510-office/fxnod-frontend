@@ -12,6 +12,7 @@ import { HistoryTable } from "@/components/bot/HistoryTable";
 import { SessionStats } from "@/components/bot/SessionStats";
 import { SplitHandle } from "@/components/bot/SplitHandle";
 import { TradeConfiguration } from "@/components/bot/TradeConfiguration";
+import { SelectedMarketsSidebar } from "@/components/bot/SelectedMarketsSidebar";
 import { useResizable } from "@/components/bot/useResizable";
 import {
   buildStartRequest,
@@ -489,6 +490,8 @@ export default function DBotPage() {
             )}
           </div>
         </main>
+        
+        <SelectedMarketsSidebar symbols={form.symbols} />
       </div>
       )}
 
