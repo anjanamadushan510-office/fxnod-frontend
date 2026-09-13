@@ -319,11 +319,11 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
         
         sortedTicks.forEach((t, i) => {
           const isLast = i === sortedTicks.length - 1;
-          const tickNum = i + 1;
+          const isFirst = i === 0;
           
           let color = "#9CA3AF"; // Gray default
           
-          // Outcome Highlight for the final tick
+          // Outcome Highlight for the final tick, regardless of array length
           if (isLast) {
             color = trade.result === "won" ? "#10B981" : trade.result === "lost" ? "#EF4444" : "#1F2937";
           }
@@ -333,7 +333,7 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
             position: "aboveBar",
             color: color,
             shape: "circle",
-            text: `${tickNum}`,
+            text: isFirst ? "" : `${i}`,
             size: 1,
           });
         });
