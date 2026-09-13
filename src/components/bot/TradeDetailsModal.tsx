@@ -310,16 +310,18 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
         .sort((a, b) => a.epoch - b.epoch);
         
       if (sortedTicks.length > 0) {
+        const tickCount = openContract?.ticksTotal || (trade as any).tick_count || (trade as any).tickCount || 5;
+        const displayTicks = sortedTicks.slice(0, tickCount);
+
         seriesRef.current.setData(
-          sortedTicks.map(t => ({ time: t.epoch as Time, value: t.tick }))
+          displayTicks.map(t => ({ time: t.epoch as Time, value: t.tick }))
         );
         
         // Add Tick Markers and Time Boundaries
         const markers: SeriesMarker<Time>[] = [];
         
-        sortedTicks.forEach((t, i) => {
-          const isLast = i === sortedTicks.length - 1;
-          const isFirst = i === 0;
+        displayTicks.forEach((t, i) => {
+          const isLast = i === displayTicks.length - 1;
           
           let color = "#9CA3AF"; // Gray default
           
@@ -333,7 +335,7 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
             position: "aboveBar",
             color: color,
             shape: "circle",
-            text: isFirst ? "" : `${i}`,
+            text: `${i + 1}`,
             size: 1,
           });
         });
