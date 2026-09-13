@@ -171,6 +171,8 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
       color: "#2A2A2A",
       lineWidth: 2,
       crosshairMarkerRadius: 4,
+      lastValueVisible: false,
+      priceLineVisible: false,
     });
 
     chartRef.current = chart;
