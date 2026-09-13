@@ -41,6 +41,8 @@ export interface BotFormState {
   martingaleEnabled: boolean;
   martingaleMultiplier: string;
   martingaleMaxSteps: string;
+
+  configuredBotIndicators: string[];
 }
 
 export function defaultFormState(): BotFormState {
@@ -74,6 +76,7 @@ export function defaultFormState(): BotFormState {
     martingaleMultiplier: "2",
     martingaleMaxSteps: "3",
 
+    configuredBotIndicators: [],
   };
 }
 
@@ -169,7 +172,18 @@ export function buildStartRequest(
       ...(shape.digit && !state.autoDigit ? { digit: state.digit } : {}),
     },
     strategy_parameters: buildStrategyParameters(strategyId, state),
-    indicators: [],
+    indicators: state.configuredBotIndicators
+      .map(id => {
+        switch (id) {
+          case "RSI": return { kind: "rsi" };
+          case "MACD": return { kind: "macd" };
+          case "bollinger": return { kind: "bb" };
+          case "stochastic": return { kind: "stoch" };
+          case "ma": return { kind: "sma" };
+          default: return null;
+        }
+      })
+      .filter(Boolean) as any[],
     risk_limits: {
       stake_per_trade: state.stake.trim(),
       session_stop_loss: state.sessionStopLoss.trim(),

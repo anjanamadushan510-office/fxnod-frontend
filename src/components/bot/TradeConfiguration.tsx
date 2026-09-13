@@ -379,7 +379,11 @@ export function TradeConfiguration({
 
       <Divider />
 
-      <BotIndicatorConfig symbols={state.symbols} />
+      <BotIndicatorConfig 
+        symbols={state.symbols}
+        configuredIndicators={state.configuredBotIndicators || []}
+        onChange={(inds) => onChange({ configuredBotIndicators: inds })}
+      />
 
     </section>
   );

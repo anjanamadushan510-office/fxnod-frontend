@@ -6,6 +6,8 @@ import { cn } from "@/lib/cn";
 
 interface BotIndicatorConfigProps {
   symbols: string[];
+  configuredIndicators: string[];
+  onChange: (indicators: string[]) => void;
 }
 
 /**
@@ -16,14 +18,12 @@ interface BotIndicatorConfigProps {
  * is added/removed, it is synchronized across ALL selected markets in the 
  * useChartIndicators global store.
  */
-export function BotIndicatorConfig({ symbols }: BotIndicatorConfigProps) {
+export function BotIndicatorConfig({ symbols, configuredIndicators, onChange }: BotIndicatorConfigProps) {
   const { addIndicator, clearIndicators } = useChartIndicators();
   
-  // Strictly local state: DBot indicators start empty and only update explicitly.
-  const [botIndicators, setBotIndicators] = useState<IndicatorType[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   
-  // Sync strictly One-Way (DBot Local -> Global) whenever symbols or botIndicators change.
+  // Sync strictly One-Way (DBot Local -> Global) whenever symbols or configuredIndicators change.
   useEffect(() => {
     if (symbols.length === 0) return;
     
@@ -32,28 +32,25 @@ export function BotIndicatorConfig({ symbols }: BotIndicatorConfigProps) {
       clearIndicators(symbol);
       
       // Apply ONLY the bot-configured indicators
-      botIndicators.forEach(type => {
-        addIndicator(symbol, type);
+      configuredIndicators.forEach(type => {
+        addIndicator(symbol, type as IndicatorType);
       });
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [symbols, botIndicators]);
+  }, [symbols, configuredIndicators]);
 
   const handleAdd = (type: IndicatorType) => {
-    setBotIndicators(prev => {
-      if (prev.length < 5 && !prev.includes(type)) {
-        return [...prev, type];
-      }
-      return prev;
-    });
+    if (configuredIndicators.length < 5 && !configuredIndicators.includes(type)) {
+      onChange([...configuredIndicators, type]);
+    }
     setIsAdding(false);
   };
 
   const handleRemove = (type: IndicatorType) => {
-    setBotIndicators(prev => prev.filter(t => t !== type));
+    onChange(configuredIndicators.filter(t => t !== type));
   };
 
-  const isAtLimit = botIndicators.length >= 5;
+  const isAtLimit = configuredIndicators.length >= 5;
 
   if (symbols.length === 0) return null;
 
@@ -78,12 +75,12 @@ export function BotIndicatorConfig({ symbols }: BotIndicatorConfigProps) {
       </div>
 
       <div className="flex flex-col gap-2">
-        {botIndicators.length === 0 && !isAdding ? (
+        {configuredIndicators.length === 0 && !isAdding ? (
           <div className="rounded border border-opt-line border-dashed p-3 text-center text-[11px] text-opt-ink-3">
             No indicators configured for this bot.
           </div>
         ) : (
-          botIndicators.map(type => {
+          configuredIndicators.map(type => {
             const meta = INDICATOR_LIST.find(i => i.id === type);
             return (
               <div key={type} className="flex items-center justify-between rounded border border-opt-line bg-opt-bg-elev p-2 transition-colors hover:bg-opt-bg-sunk">
@@ -111,7 +108,7 @@ export function BotIndicatorConfig({ symbols }: BotIndicatorConfigProps) {
         <div className="mt-2 flex max-h-64 flex-col gap-1 overflow-y-auto rounded-lg border border-opt-line bg-opt-bg-sunk p-2 shadow-inner">
           {INDICATOR_LIST.map((ind) => {
             // Check if this type is already added
-            const isAdded = botIndicators.includes(ind.id as IndicatorType);
+            const isAdded = configuredIndicators.includes(ind.id);
             if (isAdded) return null; // Hide already added indicators
 
             return (
