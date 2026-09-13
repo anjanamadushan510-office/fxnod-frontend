@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Route } from "next";
 import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query";
+import { LineChart } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { BotPicker } from "@/components/bot/BotPicker";
 import { SubscriptionGateModal } from "@/components/bot/SubscriptionGateModal";
@@ -78,6 +79,7 @@ export default function DBotPage() {
   usePositionsWebSocket(authed);
   const accountCurrency = useAccountBalance((s) => s.currency);
 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const queryClient = useQueryClient();
   const strategiesQuery = useListBotStrategies();
   const limitsQuery = useGetBotLimits();
@@ -448,7 +450,16 @@ export default function DBotPage() {
             <SectionHeader
               title="Trades"
               hint={activeRun ? undefined : "Start the bot to see its trades"}
-            />
+            >
+              <button
+                type="button"
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className="flex items-center gap-1.5 rounded-[var(--opt-radius-sm)] bg-opt-bg-sunk px-2 py-1 text-[10px] font-semibold text-opt-ink transition-colors hover:bg-white/5"
+              >
+                <LineChart className="h-3 w-3" />
+                {isSidebarOpen ? "Hide Chart" : "Show Chart"}
+              </button>
+            </SectionHeader>
             <HistoryTable trades={toTradeRows(trades)} />
           </div>
 
@@ -491,7 +502,9 @@ export default function DBotPage() {
           </div>
         </main>
         
-        <SelectedMarketsSidebar symbols={form.symbols} />
+        {isSidebarOpen && (
+          <SelectedMarketsSidebar symbols={form.symbols} />
+        )}
       </div>
       )}
 
@@ -512,13 +525,16 @@ function isActive(run: BotRun): boolean {
   return ACTIVE_STATUSES.has(run.status);
 }
 
-function SectionHeader({ title, hint }: { title: string; hint?: string }) {
+function SectionHeader({ title, hint, children }: { title: string; hint?: string; children?: React.ReactNode }) {
   return (
-    <div className="flex shrink-0 items-center gap-2 border-b border-opt-line px-3 py-1.5">
-      <span className="text-[11px] font-bold uppercase tracking-wide text-opt-ink-2">
-        {title}
-      </span>
-      {hint && <span className="truncate text-[10px] text-opt-ink-3">{hint}</span>}
+    <div className="flex shrink-0 items-center justify-between border-b border-opt-line px-3 py-1.5">
+      <div className="flex items-center gap-2">
+        <span className="text-[11px] font-bold uppercase tracking-wide text-opt-ink-2">
+          {title}
+        </span>
+        {hint && <span className="truncate text-[10px] text-opt-ink-3">{hint}</span>}
+      </div>
+      {children}
     </div>
   );
 }
