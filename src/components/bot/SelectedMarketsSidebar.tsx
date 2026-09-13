@@ -45,7 +45,7 @@ export function SelectedMarketsSidebar({ symbols }: SelectedMarketsSidebarProps)
           className="fixed inset-0 z-[60] grid place-items-center bg-black/40 p-4"
           role="dialog"
         >
-          <div className="flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-xl bg-opt-bg-elev shadow-2xl">
+          <div className="flex h-[95vh] w-[95vw] max-w-none flex-col overflow-hidden rounded-xl bg-opt-bg-elev shadow-2xl">
             <div className="flex items-center justify-between border-b border-white/5 bg-opt-bg-sunk px-6 py-4">
               <h2 className="text-lg font-bold text-opt-ink">
                 {findMarket(selectedSymbolForChart)?.name || selectedSymbolForChart} — Live Chart
@@ -59,7 +59,7 @@ export function SelectedMarketsSidebar({ symbols }: SelectedMarketsSidebarProps)
               </button>
             </div>
             
-            <div className="relative h-[500px] w-full p-4">
+            <div className="relative flex-1 min-h-0 w-full p-4">
               <LiveChart 
                 chartType="area" 
                 interval="1t" 
