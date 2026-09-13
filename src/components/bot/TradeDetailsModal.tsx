@@ -202,8 +202,8 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
       
       markers.push({
         time: t.time as Time,
-        position: "aboveBar",
-        color: "#FFFFFF",
+        position: "inBar",
+        color: "#888888",
         shape: "circle",
         text: isFirst ? "" : `${i}`,
         size: 1,
@@ -286,7 +286,7 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
         displayTicks.forEach((t, i) => {
           const isLast = i === displayTicks.length - 1;
           
-          let color = "#FFFFFF"; // White background
+          let color = "#888888"; // Solid Gray
           
           // Outcome Highlight for the final tick, regardless of array length
           if (isLast) {
@@ -295,7 +295,7 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
           
           markers.push({
             time: t.epoch as Time,
-            position: "aboveBar",
+            position: "inBar",
             color: color,
             shape: "circle",
             text: `${i + 1}`,
