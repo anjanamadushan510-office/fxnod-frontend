@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, X } from "lucide-react";
 import { useChartIndicators, type IndicatorType } from "@/stores/useChartIndicators";
 import { INDICATOR_LIST } from "@/components/options/chart/IndicatorsModal";
@@ -26,6 +26,26 @@ export function BotIndicatorConfig({ symbols }: BotIndicatorConfigProps) {
   const activeIndicators = primarySymbol 
     ? indicators.filter(ind => ind.symbol === primarySymbol)
     : [];
+
+  // Reactively synchronize indicators to newly selected markets
+  useEffect(() => {
+    if (!primarySymbol || activeIndicators.length === 0) return;
+
+    symbols.forEach((symbol) => {
+      // Skip the primary symbol since it's our source of truth
+      if (symbol === primarySymbol) return;
+
+      const currentSymbolInds = indicators.filter((i) => i.symbol === symbol);
+      
+      activeIndicators.forEach((activeInd) => {
+        const alreadyExists = currentSymbolInds.some((i) => i.type === activeInd.type);
+        if (!alreadyExists && currentSymbolInds.length < 5) {
+          addIndicator(symbol, activeInd.type);
+        }
+      });
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [symbols, primarySymbol]);
 
   const handleAdd = (type: IndicatorType) => {
     // Add the indicator to ALL currently selected markets
