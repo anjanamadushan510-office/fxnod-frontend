@@ -17,6 +17,7 @@ import { useContractsFor } from "@/hooks/useContractsFor";
 import type { BotFormState, Direction, ScanType } from "./formState";
 import { PresetBar } from "./PresetBar";
 import { BotMarketPicker } from "./BotMarketPicker";
+import { BotIndicatorConfig } from "./BotIndicatorConfig";
 
 interface TradeConfigurationProps {
   strategyId: string;
@@ -110,6 +111,8 @@ export function TradeConfiguration({
           onChange={(symbols) => onChange({ symbols })}
         />
       </Field>
+
+      <BotIndicatorConfig symbols={state.symbols} />
 
       <Field label="Scan Type" hint="How to process the selected markets">
         <Toggle2
