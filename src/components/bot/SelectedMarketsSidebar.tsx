@@ -10,7 +10,7 @@ export function SelectedMarketsSidebar({ symbols }: SelectedMarketsSidebarProps)
   const [selectedSymbolForChart, setSelectedSymbolForChart] = useState<string | null>(null);
 
   return (
-    <div className="flex h-full w-72 flex-col border-l border-white/10 bg-opt-bg-elevated">
+    <div className="flex h-full w-72 flex-col border-l border-white/10 bg-opt-bg-elev">
       <div className="border-b border-white/10 p-4">
         <h3 className="text-[14px] font-bold text-opt-ink">Selected Markets</h3>
       </div>
@@ -45,7 +45,7 @@ export function SelectedMarketsSidebar({ symbols }: SelectedMarketsSidebarProps)
           className="fixed inset-0 z-[60] grid place-items-center bg-black/40 p-4"
           role="dialog"
         >
-          <div className="flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-xl bg-opt-bg-elevated shadow-2xl">
+          <div className="flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-xl bg-opt-bg-elev shadow-2xl">
             <div className="flex items-center justify-between border-b border-white/5 bg-opt-bg-sunk px-6 py-4">
               <h2 className="text-lg font-bold text-opt-ink">
                 {findMarket(selectedSymbolForChart)?.name || selectedSymbolForChart} — Live Chart
