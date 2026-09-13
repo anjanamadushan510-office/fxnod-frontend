@@ -39,14 +39,14 @@ export function BotIndicatorConfig({ symbols, configuredIndicators, onChange }: 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [symbols, configuredIndicators]);
 
-  const handleAdd = (type: IndicatorType) => {
+  const handleAdd = (type: string) => {
     if (configuredIndicators.length < 5 && !configuredIndicators.includes(type)) {
       onChange([...configuredIndicators, type]);
     }
     setIsAdding(false);
   };
 
-  const handleRemove = (type: IndicatorType) => {
+  const handleRemove = (type: string) => {
     onChange(configuredIndicators.filter(t => t !== type));
   };
 
@@ -106,7 +106,7 @@ export function BotIndicatorConfig({ symbols, configuredIndicators, onChange }: 
 
       {isAdding && (
         <div className="mt-2 flex max-h-64 flex-col gap-1 overflow-y-auto rounded-lg border border-opt-line bg-opt-bg-sunk p-2 shadow-inner">
-          {INDICATOR_LIST.map((ind) => {
+          {INDICATOR_LIST.filter(ind => ["ma", "MACD", "RSI", "bollinger", "stochastic"].includes(ind.id)).map((ind) => {
             // Check if this type is already added
             const isAdded = configuredIndicators.includes(ind.id);
             if (isAdded) return null; // Hide already added indicators

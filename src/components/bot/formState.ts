@@ -175,12 +175,18 @@ export function buildStartRequest(
     indicators: state.configuredBotIndicators
       .map(id => {
         switch (id) {
-          case "RSI": return { kind: "rsi" };
-          case "MACD": return { kind: "macd" };
-          case "bollinger": return { kind: "bb" };
-          case "stochastic": return { kind: "stoch" };
-          case "ma": return { kind: "sma" };
-          default: return null;
+          case "RSI":
+            return { kind: "rsi" as const, period: 14, overbought: 70, oversold: 30 };
+          case "MACD":
+            return { kind: "macd" as const, fast: 12, slow: 26, signal: 9 };
+          case "bollinger":
+            return { kind: "bb" as const, period: 20, std_devs: 2 };
+          case "stochastic":
+            return { kind: "stoch" as const, k_period: 14, smooth: 3, d_period: 3, overbought: 80, oversold: 20 };
+          case "ma":
+            return { kind: "sma" as const, period: 50 };
+          default:
+            return null;
         }
       })
       .filter(Boolean) as any[],
