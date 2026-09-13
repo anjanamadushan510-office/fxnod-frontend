@@ -61,7 +61,7 @@ export function SelectedMarketsSidebar({ symbols }: SelectedMarketsSidebarProps)
             
             <div className="relative h-[500px] w-full p-4">
               <LiveChart 
-                chartType="line" 
+                chartType="area" 
                 interval="1t" 
                 symbol={selectedSymbolForChart} 
               />
