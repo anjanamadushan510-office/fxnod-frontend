@@ -168,7 +168,7 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
     });
 
     const series = chart.addSeries(LineSeries, {
-      color: "#4F46E5",
+      color: "#2A2A2A",
       lineWidth: 2,
       crosshairMarkerRadius: 4,
     });
@@ -183,31 +183,6 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
     };
   }, []);
 
-  // 2. Add or update PriceLine when entryPrice changes
-  const priceLineRef = useRef<any>(null);
-  useEffect(() => {
-    if (!seriesRef.current || entryPrice === undefined) return;
-    
-    if (priceLineRef.current) {
-      seriesRef.current.removePriceLine(priceLineRef.current);
-    }
-    
-    priceLineRef.current = seriesRef.current.createPriceLine({
-      price: entryPrice,
-      color: "#10B981",
-      lineWidth: 2,
-      lineStyle: 2, // Dashed
-      axisLabelVisible: true,
-      title: "Entry",
-    });
-    
-    return () => {
-      if (seriesRef.current && priceLineRef.current) {
-        seriesRef.current.removePriceLine(priceLineRef.current);
-        priceLineRef.current = null;
-      }
-    };
-  }, [entryPrice]);
 
   // 3. Stream Data (Only for open trades)
   const isLive = trade.result === "open";
@@ -228,7 +203,7 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
       markers.push({
         time: t.time as Time,
         position: "aboveBar",
-        color: "#9CA3AF",
+        color: "#FFFFFF",
         shape: "circle",
         text: isFirst ? "" : `${i}`,
         size: 1,
@@ -267,18 +242,6 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
         }
         
         updateLiveMarkers();
-        
-        if (entryPrice !== undefined && priceLineRef.current) {
-          seriesRef.current.removePriceLine(priceLineRef.current);
-          priceLineRef.current = seriesRef.current.createPriceLine({
-            price: entryPrice,
-            color: "#10B981",
-            lineWidth: 2,
-            lineStyle: 2,
-            axisLabelVisible: true,
-            title: "Entry",
-          });
-        }
       }
     },
     onTick: (tick: FeedTick) => {
@@ -323,11 +286,11 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
         displayTicks.forEach((t, i) => {
           const isLast = i === displayTicks.length - 1;
           
-          let color = "#9CA3AF"; // Gray default
+          let color = "#FFFFFF"; // White background
           
           // Outcome Highlight for the final tick, regardless of array length
           if (isLast) {
-            color = trade.result === "won" ? "#10B981" : trade.result === "lost" ? "#EF4444" : "#1F2937";
+            color = "#000000"; // Solid Black
           }
           
           markers.push({
@@ -344,6 +307,20 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
           markersPluginRef.current = createSeriesMarkers(seriesRef.current, markers);
         } else {
           markersPluginRef.current.setMarkers(markers);
+        }
+        
+        // Final Exit Price Line (for the red/green label)
+        if (displayTicks.length > 0) {
+          const exitPrice = displayTicks[displayTicks.length - 1].tick;
+          const boxColor = trade.result === "won" ? "#10B981" : trade.result === "lost" ? "#EF4444" : "#1F2937";
+          seriesRef.current.createPriceLine({
+            price: exitPrice,
+            color: boxColor,
+            lineWidth: 1,
+            lineStyle: 4, // Dotted, so it's barely visible
+            axisLabelVisible: true,
+            title: "",
+          });
         }
         
         // If the chart renders historical data, we should fit the content
