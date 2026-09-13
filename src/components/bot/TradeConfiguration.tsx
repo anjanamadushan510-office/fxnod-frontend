@@ -112,7 +112,6 @@ export function TradeConfiguration({
         />
       </Field>
 
-      <BotIndicatorConfig symbols={state.symbols} />
 
       <Field label="Scan Type" hint="How to process the selected markets">
         <Toggle2
@@ -380,6 +379,7 @@ export function TradeConfiguration({
 
       <Divider />
 
+      <BotIndicatorConfig symbols={state.symbols} />
 
     </section>
   );
