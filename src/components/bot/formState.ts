@@ -332,6 +332,9 @@ export function fromPresetConfig(raw: unknown): BotFormState {
       typeof cfg.martingaleMaxSteps === "string"
         ? cfg.martingaleMaxSteps
         : defaults.martingaleMaxSteps,
+    configuredBotIndicators: Array.isArray(cfg.configuredBotIndicators)
+      ? (cfg.configuredBotIndicators as string[])
+      : defaults.configuredBotIndicators,
   };
 }
 
