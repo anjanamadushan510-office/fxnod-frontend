@@ -28,7 +28,7 @@ export function TopNav({ onMenu }: TopNavProps) {
   const { title, subtitle } = getRouteTitle(pathname || "/home");
 
   return (
-    <header className="sticky top-0 z-50 flex h-16 items-center justify-between border-b border-line bg-ink px-4 lg:px-8">
+    <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-[#24344F] bg-[#080C16] px-4 lg:px-8">
       {/* Left Side */}
       <div className="flex items-center gap-4">
         <button
