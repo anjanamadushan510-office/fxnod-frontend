@@ -104,14 +104,35 @@ function NotificationsDropdown() {
       title: "System Update",
       message: "Your trading account is fully verified and ready.",
       timestamp: "Just now",
-      url: "/settings",
+      url: "",
     },
     {
       id: "2",
       title: "dBot is live",
-      message: "Running on Deriv - markup API",
+      message: "Running on Deriv · markup API",
       timestamp: "Today 09:14",
       url: "/tools",
+    },
+    {
+      id: "3",
+      title: "dTrader ready",
+      message: "Volatility 75 · Deriv",
+      timestamp: "Today 08:02",
+      url: "/tools",
+    },
+    {
+      id: "4",
+      title: "Deriv connected",
+      message: "Token synced · last check 8s ago",
+      timestamp: "Today 08:02",
+      url: "",
+    },
+    {
+      id: "5",
+      title: "Partner payout",
+      message: "$42.10 settled to your wallet",
+      timestamp: "2 Sep",
+      url: "/partner/dashboard",
     },
   ]);
 
@@ -174,20 +195,38 @@ function NotificationsDropdown() {
             {!hasUnread ? (
               <div className="py-8 text-center text-sm text-zinc-500">No new notifications</div>
             ) : (
-              notifications.map((item) => (
-                <Link
-                  key={item.id}
-                  href={(item.url || "/") as any}
-                  onClick={() => setOpen(false)}
-                  className="flex items-start justify-between gap-3 px-5 py-3.5 hover:bg-zinc-800/20 transition-colors cursor-pointer"
-                >
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white truncate">{item.title}</p>
-                    <p className="text-xs text-zinc-500 mt-0.5 line-clamp-2">{item.message}</p>
-                  </div>
-                  <p className="text-[11px] text-zinc-500 shrink-0 whitespace-nowrap">{item.timestamp}</p>
-                </Link>
-              ))
+              notifications.map((item) => {
+                if (item.url) {
+                  return (
+                    <Link
+                      key={item.id}
+                      href={item.url as any}
+                      onClick={() => setOpen(false)}
+                      className="flex items-start justify-between gap-3 px-5 py-3.5 hover:bg-zinc-800/20 transition-colors cursor-pointer"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-white truncate">{item.title}</p>
+                        <p className="text-xs text-zinc-500 mt-0.5 line-clamp-2">{item.message}</p>
+                      </div>
+                      <p className="text-[11px] text-zinc-500 shrink-0 whitespace-nowrap">{item.timestamp}</p>
+                    </Link>
+                  );
+                } else {
+                  return (
+                    <div
+                      key={item.id}
+                      onClick={() => setOpen(false)}
+                      className="flex items-start justify-between gap-3 px-5 py-3.5 hover:bg-zinc-800/20 transition-colors cursor-pointer"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-white truncate">{item.title}</p>
+                        <p className="text-xs text-zinc-500 mt-0.5 line-clamp-2">{item.message}</p>
+                      </div>
+                      <p className="text-[11px] text-zinc-500 shrink-0 whitespace-nowrap">{item.timestamp}</p>
+                    </div>
+                  );
+                }
+              })
             )}
           </div>
         </div>
