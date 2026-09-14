@@ -172,7 +172,7 @@ function NotificationsDropdown() {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-[#101827] border border-[#24344F] rounded-2xl shadow-2xl z-50 overflow-hidden">
+        <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-[#101827] border border-[#24344F] rounded-2xl shadow-2xl z-50 overflow-hidden">
           <div className="px-5 py-4 border-b border-[#24344F] flex items-start justify-between gap-4">
             <div>
               <h3 className="font-display text-sm font-semibold text-white">Notifications</h3>
@@ -191,7 +191,7 @@ function NotificationsDropdown() {
             )}
           </div>
           
-          <div className="max-h-[400px] overflow-y-auto divide-y divide-[#24344F]">
+          <div className="max-h-[320px] overflow-y-auto divide-y divide-[#24344F]">
             {!hasUnread ? (
               <div className="py-8 text-center text-sm text-zinc-500">No new notifications</div>
             ) : (
@@ -202,7 +202,7 @@ function NotificationsDropdown() {
                       key={item.id}
                       href={item.url as any}
                       onClick={() => setOpen(false)}
-                      className="flex items-start justify-between gap-3 px-5 py-3.5 hover:bg-zinc-800/20 transition-colors cursor-pointer"
+                      className="flex items-start justify-between gap-3 px-5 py-3 hover:bg-zinc-800/20 transition-colors cursor-pointer"
                     >
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-white truncate">{item.title}</p>
@@ -216,7 +216,7 @@ function NotificationsDropdown() {
                     <div
                       key={item.id}
                       onClick={() => setOpen(false)}
-                      className="flex items-start justify-between gap-3 px-5 py-3.5 hover:bg-zinc-800/20 transition-colors cursor-pointer"
+                      className="flex items-start justify-between gap-3 px-5 py-3 hover:bg-zinc-800/20 transition-colors cursor-pointer"
                     >
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-white truncate">{item.title}</p>
