@@ -41,12 +41,12 @@ export function TopNav({ onMenu }: TopNavProps) {
         </button>
 
         <div className="flex flex-col">
-          <div className="text-[10px] font-medium uppercase tracking-[0.18em] text-zinc-500">
+          <h1 className="font-display text-lg font-semibold text-white leading-tight">
             {title}
-          </div>
-          <h1 className="text-sm font-semibold text-white">
-            {subtitle}
           </h1>
+          <div className="text-xs text-zinc-400">
+            {subtitle}
+          </div>
         </div>
       </div>
 
