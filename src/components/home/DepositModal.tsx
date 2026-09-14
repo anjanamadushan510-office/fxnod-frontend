@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import QRCode from "qrcode";
-import { AlertTriangle, Check, Copy, Loader2 } from "lucide-react";
+import { AlertTriangle, Check, Copy, Loader2, X } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
 import {
@@ -36,11 +36,18 @@ export function DepositModal({ onClose }: DepositModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-sm">
-      <div className="my-auto w-full max-w-md rounded-2xl border border-line bg-surface p-6 shadow-xl">
-        <h2 className="mb-2 text-xl font-bold text-ink">Deposit Funds</h2>
-        <p className="mb-6 text-sm text-ink-2">Top up your wallet balance.</p>
+      <div className="my-auto w-full max-w-md rounded-2xl border border-[#24344F] bg-[#101827] p-6 shadow-xl relative">
+        <button 
+          onClick={onClose} 
+          className="absolute top-4 right-4 text-zinc-400 hover:text-white transition-colors"
+          aria-label="Close"
+        >
+          <X className="h-5 w-5" />
+        </button>
+        <h2 className="mb-2 text-xl font-bold text-white">Deposit Funds</h2>
+        <p className="mb-6 text-sm text-zinc-400">Top up your wallet balance.</p>
 
-        <div className="mb-6 flex rounded-lg bg-body p-1">
+        <div className="mb-6 flex rounded-lg bg-[#080C16] p-1">
           <TabButton active={tab === "crypto"} onClick={() => setTab("crypto")}>
             Crypto
           </TabButton>
@@ -55,12 +62,6 @@ export function DepositModal({ onClose }: DepositModalProps) {
         {tab === "crypto" && <CryptoDeposit />}
         {tab === "binance" && <BinancePayDeposit onClose={onClose} />}
         {tab === "manual" && <ManualDepositClaim />}
-
-        <div className="mt-6">
-          <Button variant="ghost" className="w-full" onClick={onClose}>
-            Close
-          </Button>
-        </div>
       </div>
     </div>
   );
@@ -79,7 +80,7 @@ function TabButton({
     <button
       onClick={onClick}
       className={`flex-1 rounded-md py-2 text-xs font-semibold transition-all ${
-        active ? "bg-surface text-gold shadow-sm" : "text-ink-2 hover:text-ink"
+        active ? "bg-[#24344F] text-white shadow-sm" : "text-zinc-500 hover:text-zinc-300"
       }`}
     >
       {children}
@@ -104,8 +105,8 @@ function CryptoDeposit() {
 
   if (isPending || (!address && !error)) {
     return (
-      <div className="flex flex-col items-center gap-3 py-10 text-ink-2">
-        <Loader2 className="h-6 w-6 animate-spin text-gold" />
+      <div className="flex flex-col items-center gap-3 py-10 text-zinc-400">
+        <Loader2 className="h-6 w-6 animate-spin text-white" />
         <p className="text-sm">Preparing your deposit address…</p>
       </div>
     );
@@ -125,9 +126,9 @@ function CryptoDeposit() {
       {/* Sending on the wrong network is the single most common way a user
           loses a deposit, and it is unrecoverable. So this warning comes
           BEFORE the address, not as fine print under it. */}
-      <div className="mb-4 flex gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
-        <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-500" />
-        <p className="text-xs leading-relaxed text-ink">
+      <div className="mb-4 flex gap-2 rounded-lg border border-orange-500/20 bg-orange-500/10 p-3 text-sm text-orange-400">
+        <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-orange-400" />
+        <p className="leading-relaxed">
           Send <strong>USDT on the {CHAIN_LABEL} network only</strong>. Funds
           sent on any other network, or any other coin, cannot be recovered.
         </p>
@@ -135,7 +136,7 @@ function CryptoDeposit() {
 
       <AddressBlock address={address.address} />
 
-      <dl className="mb-4 space-y-1.5 rounded-lg bg-body p-3 text-xs">
+      <dl className="mb-4 space-y-1.5 rounded-lg bg-[#080C16] p-3 text-xs">
         <Row label="Network" value={CHAIN_LABEL} />
         <Row label="Minimum deposit" value={`${address.min_deposit} USDT`} />
         <Row
@@ -144,7 +145,7 @@ function CryptoDeposit() {
         />
       </dl>
 
-      <p className="mb-5 text-center text-xs leading-relaxed text-ink-3">
+      <p className="mb-5 text-center text-[11px] leading-relaxed text-zinc-500">
         This address is yours and stays the same — save it and reuse it. Your
         balance updates automatically once the network confirms your transfer.
       </p>
@@ -210,13 +211,13 @@ function AddressBlock({ address }: { address: string }) {
 
       <button
         onClick={copy}
-        className="group mb-4 flex w-full items-center justify-between gap-3 rounded-lg border border-line bg-body p-3 text-left transition-colors hover:border-gold"
+        className="group mb-4 flex w-full items-center justify-between gap-3 rounded-lg border border-[#24344F] bg-[#080C16] text-zinc-300 p-3 text-left transition-colors hover:border-white"
         aria-label="Copy deposit address"
       >
-        <span className="break-all font-mono text-sm font-bold text-gold">
+        <span className="break-all font-mono text-sm font-bold text-white">
           {address}
         </span>
-        <span className="flex-shrink-0 rounded-md bg-surface p-2 text-ink-3 transition-colors group-hover:text-gold">
+        <span className="flex-shrink-0 rounded-md bg-[#101827] p-2 text-zinc-400 transition-colors group-hover:text-white">
           {copied ? (
             <Check className="h-4 w-4 text-green-500" />
           ) : (
@@ -231,8 +232,8 @@ function AddressBlock({ address }: { address: string }) {
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between">
-      <dt className="text-ink-3">{label}</dt>
-      <dd className="font-semibold text-ink">{value}</dd>
+      <dt className="text-zinc-400">{label}</dt>
+      <dd className="font-semibold text-white">{value}</dd>
     </div>
   );
 }
@@ -262,21 +263,21 @@ function DepositActivity() {
   if (!deposits?.length) return null;
 
   return (
-    <div className="border-t border-line pt-4">
-      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-3">
+    <div className="border-t border-[#24344F] pt-4">
+      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">
         Recent deposits
       </h3>
       <ul className="space-y-2">
         {deposits.map((deposit) => (
           <li
             key={deposit.id}
-            className="flex items-center justify-between gap-3 rounded-lg bg-body px-3 py-2"
+            className="flex items-center justify-between gap-3 rounded-lg bg-[#080C16] px-3 py-2"
           >
             <div className="min-w-0">
-              <p className="text-sm font-bold text-ink">
+              <p className="text-sm font-bold text-white">
                 {deposit.amount} {deposit.currency}
               </p>
-              <p className="truncate font-mono text-[10px] text-ink-3">
+              <p className="truncate font-mono text-[10px] text-zinc-500">
                 {deposit.tx_hash}
               </p>
             </div>
@@ -294,7 +295,7 @@ function DepositStatusBadge({ deposit }: { deposit: ChainDepositResponse }) {
   return (
     <div className="flex-shrink-0 text-right">
       <span className={`text-xs font-semibold ${tone}`}>{label}</span>
-      {hint && <p className="mt-0.5 text-[10px] text-ink-3">{hint}</p>}
+      {hint && <p className="mt-0.5 text-[10px] text-zinc-500">{hint}</p>}
     </div>
   );
 }
@@ -322,7 +323,7 @@ function describe(deposit: ChainDepositResponse): {
     case "below_minimum":
       return {
         label: "Below minimum",
-        tone: "text-ink-3",
+        tone: "text-zinc-500",
         hint: "Too small to credit",
       };
     case "orphaned":
@@ -338,7 +339,7 @@ function describe(deposit: ChainDepositResponse): {
         hint: "Reverted on chain",
       };
     default:
-      return { label: "On hold", tone: "text-ink-3", hint: "Contact support" };
+      return { label: "On hold", tone: "text-zinc-500", hint: "Contact support" };
   }
 }
 
@@ -368,10 +369,10 @@ function BinancePayDeposit({ onClose }: { onClose: () => void }) {
 
   if (unavailable) {
     return (
-      <div className="animate-fade-in rounded-lg border border-line bg-body p-4">
-        <p className="text-sm leading-relaxed text-ink-2">
+      <div className="animate-fade-in rounded-lg border border-[#24344F] bg-[#080C16] p-4">
+        <p className="text-sm leading-relaxed text-zinc-400">
           Binance Pay deposits are not switched on yet. Use the{" "}
-          <strong className="text-ink">Crypto</strong> tab to deposit USDT
+          <strong className="text-white">Crypto</strong> tab to deposit USDT
           directly — it credits automatically once the network confirms.
         </p>
       </div>
@@ -380,21 +381,20 @@ function BinancePayDeposit({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="animate-fade-in">
-      <label className="mb-1 block text-sm font-semibold text-ink-2">
+      <label className="mb-1 block text-sm font-semibold text-zinc-400">
         Amount (USDT)
       </label>
       <input
         type="number"
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
-        className="mb-4 w-full rounded-xl border border-line bg-body px-4 py-3 text-lg font-bold text-ink focus:border-gold focus:outline-none"
+        className="mb-4 w-full rounded-xl border border-[#24344F] bg-[#080C16] px-4 py-3 text-lg font-bold text-white focus:border-white focus:outline-none"
         min="10"
         step="10"
       />
       {error && <p className="mb-4 text-sm text-red-500">{messageFor(error)}</p>}
       <Button
-        variant="gold"
-        className="w-full"
+        className="w-full bg-white text-black hover:bg-zinc-200"
         onClick={() => mutate({ data: { amount, currency: "USDT" } })}
         disabled={isPending || !amount || Number(amount) <= 0}
       >
@@ -434,13 +434,13 @@ function ManualDepositClaim() {
 
   return (
     <div className="animate-fade-in">
-      <p className="mb-4 text-sm leading-relaxed text-ink-2">
+      <p className="mb-4 text-sm leading-relaxed text-zinc-400">
         Already sent a deposit that has not appeared? Most transfers are
         detected automatically within minutes. If yours has not shown up, give
         us the transaction hash and we will look into it.
       </p>
 
-      <label className="mb-1 block text-sm font-semibold text-ink-2">
+      <label className="mb-1 block text-sm font-semibold text-zinc-400">
         Amount sent (USDT)
       </label>
       <input
@@ -448,11 +448,11 @@ function ManualDepositClaim() {
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
         placeholder="0.00"
-        className="mb-4 w-full rounded-xl border border-line bg-body px-4 py-3 text-lg font-bold text-ink focus:border-gold focus:outline-none"
+        className="mb-4 w-full rounded-xl border border-[#24344F] bg-[#080C16] px-4 py-3 text-lg font-bold text-white focus:border-white focus:outline-none"
         min="0"
       />
 
-      <label className="mb-1 block text-sm font-semibold text-ink-2">
+      <label className="mb-1 block text-sm font-semibold text-zinc-400">
         Transaction hash
       </label>
       <input
@@ -460,7 +460,7 @@ function ManualDepositClaim() {
         value={txHash}
         onChange={(e) => setTxHash(e.target.value)}
         placeholder="Paste the TxID from your wallet…"
-        className="mb-4 w-full rounded-xl border border-line bg-body px-4 py-3 font-mono text-sm text-ink focus:border-gold focus:outline-none"
+        className="mb-4 w-full rounded-xl border border-[#24344F] bg-[#080C16] px-4 py-3 font-mono text-sm text-white focus:border-white focus:outline-none"
       />
 
       {error && (
@@ -468,8 +468,7 @@ function ManualDepositClaim() {
       )}
 
       <Button
-        variant="gold"
-        className="w-full"
+        className="w-full bg-white text-black hover:bg-zinc-200"
         onClick={submit}
         disabled={
           isPending || txHash.trim().length < 10 || !amount || Number(amount) <= 0
