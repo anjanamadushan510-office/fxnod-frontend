@@ -191,7 +191,7 @@ function NotificationsDropdown() {
             )}
           </div>
           
-          <div className="max-h-[320px] overflow-y-auto divide-y divide-[#24344F]">
+          <div className="max-h-[320px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] divide-y divide-[#24344F]">
             {!hasUnread ? (
               <div className="py-8 text-center text-sm text-zinc-500">No new notifications</div>
             ) : (
