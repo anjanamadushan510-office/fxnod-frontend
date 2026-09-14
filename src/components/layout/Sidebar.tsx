@@ -164,12 +164,15 @@ export function Sidebar({
                 href={item.href as Route}
                 onClick={onClose}
                 className={cn(
-                  "nav-link flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors",
+                  "nav-link relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors",
                   isActive 
-                    ? "is-active bg-white/[0.06] text-white shadow-[inset_3px_0_0_0_#ffffff]" 
+                    ? "is-active bg-white/[0.06] text-white" 
                     : "text-zinc-400 hover:bg-white/[0.06] hover:text-white group"
                 )}
               >
+                {isActive && (
+                  <span className="absolute left-0 top-2 bottom-2 w-[2px] bg-white rounded-r" />
+                )}
                 {item.icon(isActive)}
                 {item.label}
               </Link>
@@ -188,12 +191,15 @@ export function Sidebar({
                 href={item.href as Route}
                 onClick={onClose}
                 className={cn(
-                  "nav-link flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors",
+                  "nav-link relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors",
                   isActive 
-                    ? "is-active bg-white/[0.06] text-white shadow-[inset_3px_0_0_0_#ffffff]" 
+                    ? "is-active bg-white/[0.06] text-white" 
                     : "text-zinc-400 hover:bg-white/[0.06] hover:text-white group"
                 )}
               >
+                {isActive && (
+                  <span className="absolute left-0 top-2 bottom-2 w-[2px] bg-white rounded-r" />
+                )}
                 {item.icon(isActive)}
                 <span className="flex-1">{item.label}</span>
                 {item.key === "wallet" && (
