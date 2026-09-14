@@ -10,11 +10,11 @@ import { cn } from "@/lib/cn";
 function getRouteTitle(pathname: string) {
   if (pathname.startsWith("/home")) return { title: "Dashboard", subtitle: "Overview" };
   if (pathname.startsWith("/tools")) return { title: "Terminal", subtitle: "Active Tools" };
-  if (pathname.startsWith("/subscriptions")) return { title: "Terminal", subtitle: "Subscriptions" };
+  if (pathname.startsWith("/mine")) return { title: "Terminal", subtitle: "Subscriptions" };
   if (pathname.startsWith("/venues")) return { title: "Terminal", subtitle: "Venues" };
   if (pathname.startsWith("/wallet")) return { title: "Account", subtitle: "Wallet & Funds" };
   if (pathname.startsWith("/transfer")) return { title: "Account", subtitle: "Transfer Funds" };
-  if (pathname.startsWith("/partner")) return { title: "Account", subtitle: "Partner Program" };
+  if (pathname.startsWith("/partners")) return { title: "Account", subtitle: "Partner Program" };
   if (pathname.startsWith("/settings")) return { title: "Account", subtitle: "Settings" };
   return { title: "Dashboard", subtitle: "Overview" };
 }
@@ -28,28 +28,30 @@ export function TopNav({ onMenu }: TopNavProps) {
   const { title, subtitle } = getRouteTitle(pathname || "/home");
 
   return (
-    <header className="sticky top-0 z-50 flex h-16 w-full items-center justify-between border-b border-line bg-ink px-4 sm:px-6">
+    <header className="sticky top-0 z-50 flex h-16 items-center justify-between border-b border-line bg-ink px-4 lg:px-8">
+      {/* Left Side */}
       <div className="flex items-center gap-4">
         <button
           type="button"
           onClick={onMenu}
           aria-label="Menu"
-          className="grid h-9 w-9 place-items-center rounded-lg border border-line bg-surface text-ink-3 transition-colors hover:bg-surface-2 lg:hidden"
+          className="grid h-9 w-9 place-items-center rounded-lg border border-line bg-surface text-zinc-400 transition-colors hover:bg-white/5 hover:text-white lg:hidden"
         >
           <MenuIcon className="h-4 w-4" />
         </button>
 
         <div className="flex flex-col">
-          <div className="text-[11px] font-semibold uppercase tracking-widest text-gold">
+          <div className="text-[10px] font-medium uppercase tracking-[0.18em] text-zinc-500">
             {title}
           </div>
-          <h1 className="text-sm font-semibold text-white sm:text-base">
+          <h1 className="text-sm font-semibold text-white">
             {subtitle}
           </h1>
         </div>
       </div>
 
-      <div className="flex items-center gap-3 sm:gap-6">
+      {/* Right Side */}
+      <div className="flex items-center gap-4">
         <LiveClock />
         <NotificationsDropdown />
       </div>
@@ -80,10 +82,12 @@ function LiveClock() {
   return (
     <div className="hidden items-center gap-2 rounded-full border border-line bg-surface px-3 py-1.5 sm:flex">
       <div className="relative flex h-2 w-2 items-center justify-center">
-        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-75"></span>
-        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-green-500"></span>
+        <span className="pulse-dot absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>
+        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-green-400"></span>
       </div>
-      <span className="text-xs font-medium text-ink-2">Live • {timeStr}</span>
+      <span className="text-[11px] font-medium tracking-wide text-zinc-400">
+        Live &bull; <span className="tabular-nums text-zinc-300">{timeStr}</span>
+      </span>
     </div>
   );
 }
@@ -117,20 +121,20 @@ function NotificationsDropdown() {
         onClick={() => setOpen((prev) => !prev)}
         className={cn(
           "relative grid h-9 w-9 place-items-center rounded-lg border border-line transition-colors",
-          open ? "bg-surface-2 text-white" : "bg-surface text-ink-3 hover:bg-surface-2"
+          open ? "bg-white/5 text-white" : "bg-surface text-zinc-400 hover:bg-white/5 hover:text-white"
         )}
       >
         <BellIcon className="h-4 w-4" />
         {hasUnread && (
-          <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-gold shadow-[0_0_0_2px_#080C16]" />
+          <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-gold shadow-[0_0_0_2px_var(--ink)]" />
         )}
       </button>
 
       {open && (
         <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-72 overflow-hidden rounded-xl border border-line bg-ink shadow-2xl">
           <div className="flex items-center justify-between border-b border-line bg-surface px-4 py-3">
-            <span className="text-xs font-semibold uppercase tracking-wider text-ink-2">
-              Recent Activity
+            <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-zinc-500">
+              Activity
             </span>
             {hasUnread && (
               <button
@@ -144,13 +148,13 @@ function NotificationsDropdown() {
               </button>
             )}
           </div>
-          <div className="flex flex-col p-2 max-h-60 overflow-y-auto">
+          <div className="flex max-h-60 flex-col overflow-y-auto p-2">
             {!hasUnread ? (
-              <div className="py-6 text-center text-xs text-ink-3">No new notifications</div>
+              <div className="py-6 text-center text-[11px] text-zinc-500">No new notifications</div>
             ) : (
-              <div className="flex flex-col gap-1 rounded-lg bg-surface px-3 py-2">
+              <div className="flex flex-col gap-1 rounded-lg bg-white/5 px-3 py-2">
                 <span className="text-xs font-medium text-white">System Update</span>
-                <span className="text-[11px] text-ink-3">Your trading account is fully verified and ready.</span>
+                <span className="text-[11px] text-zinc-400">Your trading account is fully verified and ready.</span>
               </div>
             )}
           </div>
