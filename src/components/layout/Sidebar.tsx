@@ -68,11 +68,11 @@ export function Sidebar({
       <aside
         id="sidebar"
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-line bg-ink transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static",
+          "fixed inset-y-0 left-0 z-40 flex h-full w-64 flex-col border-r border-[#24344F] bg-[#080C16] transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static",
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        <div className="flex h-16 items-center justify-between border-b border-line px-5">
+        <div className="flex h-16 items-center justify-between border-b border-[#24344F] px-5">
           <a href="/home" className="flex items-center">
             <img src="/assets/fxnod-logo.png" alt="FXNOD" className="h-8 w-auto" />
           </a>
@@ -102,8 +102,8 @@ export function Sidebar({
                 className={cn(
                   "nav-link flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors",
                   isActive 
-                    ? "is-active bg-white/5 text-white shadow-[inset_3px_0_0_0_var(--gold)]" 
-                    : "text-zinc-400 hover:bg-white/5 hover:text-zinc-200"
+                    ? "is-active bg-white/[0.06] text-white shadow-[inset_3px_0_0_0_#ffffff]" 
+                    : "text-zinc-400 hover:bg-white/[0.06] hover:text-white"
                 )}
               >
                 {item.icon}
@@ -126,8 +126,8 @@ export function Sidebar({
                 className={cn(
                   "nav-link flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors",
                   isActive 
-                    ? "is-active bg-white/5 text-white shadow-[inset_3px_0_0_0_var(--gold)]" 
-                    : "text-zinc-400 hover:bg-white/5 hover:text-zinc-200"
+                    ? "is-active bg-white/[0.06] text-white shadow-[inset_3px_0_0_0_#ffffff]" 
+                    : "text-zinc-400 hover:bg-white/[0.06] hover:text-white"
                 )}
               >
                 {item.icon}
@@ -142,9 +142,9 @@ export function Sidebar({
           })}
         </nav>
 
-        <div className="border-t border-line bg-ink px-4 py-4">
-          <Link href={"/settings" as Route} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-line bg-surface">
+        <div className="mt-auto border-t border-[#24344F] p-3">
+          <Link href={"/settings" as Route} className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-white/[0.06] transition-colors">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#24344F] bg-[#0d1322]">
               <img src="/assets/fxnod-mark.png" alt="FXNOD" className="h-6 w-6 object-contain" />
             </div>
             <div className="flex min-w-0 flex-col">
