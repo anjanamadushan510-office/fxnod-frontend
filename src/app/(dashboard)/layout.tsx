@@ -1,5 +1,4 @@
 import { DashboardShell } from "@/components/layout/DashboardShell";
-import { SiteFooter } from "@/components/layout/SiteFooter";
 
 export default function DashboardLayout({
   children,
@@ -9,7 +8,6 @@ export default function DashboardLayout({
   return (
     <DashboardShell>
       {children}
-      <SiteFooter />
     </DashboardShell>
   );
 }

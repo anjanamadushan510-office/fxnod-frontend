@@ -1,5 +1,4 @@
 import { DashboardShell } from "@/components/layout/DashboardShell";
-import { SiteFooter } from "@/components/layout/SiteFooter";
 
 export default function SubscriptionsLayout({
   children,
@@ -9,7 +8,6 @@ export default function SubscriptionsLayout({
   return (
     <DashboardShell>
       {children}
-      <SiteFooter />
     </DashboardShell>
   );
 }
