@@ -143,7 +143,7 @@ export function Sidebar({
         </nav>
 
         <div className="border-t border-line bg-ink px-4 py-4">
-          <Link href="/settings" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+          <Link href={"/settings" as Route} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-line bg-surface">
               <img src="/assets/fxnod-mark.png" alt="FXNOD" className="h-6 w-6 object-contain" />
             </div>
