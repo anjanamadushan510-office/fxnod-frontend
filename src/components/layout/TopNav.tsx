@@ -95,7 +95,24 @@ function LiveClock() {
 function NotificationsDropdown() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const [hasUnread, setHasUnread] = useState(true);
+  
+  // Mock state since there is no backend hook yet
+  const [notifications, setNotifications] = useState([
+    {
+      id: "1",
+      title: "System Update",
+      message: "Your trading account is fully verified and ready.",
+      timestamp: "Just now",
+    },
+    {
+      id: "2",
+      title: "dBot is live",
+      message: "Running on Deriv - markup API",
+      timestamp: "Today 09:14",
+    },
+  ]);
+
+  const hasUnread = notifications.length > 0;
 
   useEffect(() => {
     if (!open) return;
@@ -131,31 +148,38 @@ function NotificationsDropdown() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-72 overflow-hidden rounded-xl border border-[#24344F] bg-[#080C16] shadow-2xl">
-          <div className="flex items-center justify-between border-b border-[#24344F] bg-[#101827] px-4 py-3">
-            <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-zinc-500">
-              Activity
-            </span>
+        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-[#101827] border border-[#24344F] rounded-2xl shadow-2xl z-50 overflow-hidden">
+          <div className="px-5 py-4 border-b border-[#24344F] flex items-start justify-between gap-4">
+            <div>
+              <h3 className="font-display text-sm font-semibold text-white">Notifications</h3>
+              <p className="text-xs text-zinc-500 mt-0.5">Account activity</p>
+            </div>
             {hasUnread && (
               <button
                 onClick={() => {
-                  setHasUnread(false);
+                  setNotifications([]);
                   toast.success("Marked as read");
                 }}
-                className="text-[11px] font-medium text-gold hover:underline"
+                className="text-xs text-zinc-400 hover:text-white transition-colors"
               >
                 Mark read
               </button>
             )}
           </div>
-          <div className="flex max-h-60 flex-col overflow-y-auto p-2">
+          
+          <div className="max-h-[400px] overflow-y-auto divide-y divide-[#24344F]">
             {!hasUnread ? (
-              <div className="py-6 text-center text-[11px] text-zinc-500">No new notifications</div>
+              <div className="py-8 text-center text-sm text-zinc-500">No new notifications</div>
             ) : (
-              <div className="flex flex-col gap-1 rounded-lg bg-white/5 px-3 py-2">
-                <span className="text-xs font-medium text-white">System Update</span>
-                <span className="text-[11px] text-zinc-400">Your trading account is fully verified and ready.</span>
-              </div>
+              notifications.map((item) => (
+                <div key={item.id} className="flex items-start justify-between gap-3 px-5 py-3.5 hover:bg-zinc-800/20 transition-colors cursor-pointer">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-white truncate">{item.title}</p>
+                    <p className="text-xs text-zinc-500 mt-0.5 line-clamp-2">{item.message}</p>
+                  </div>
+                  <p className="text-[11px] text-zinc-500 shrink-0 whitespace-nowrap">{item.timestamp}</p>
+                </div>
+              ))
             )}
           </div>
         </div>
