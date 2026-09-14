@@ -55,7 +55,7 @@ export default function WalletPage() {
           ) : (
             transactions.map((tx) => {
               const amount = Math.abs(Number(tx.amount));
-              const isPositive = tx.direction === "in";
+              const isPositive = tx.direction === "credit";
               
               return (
                 <div key={tx.id} className="flex items-start justify-between gap-3 px-5 py-3.5 min-w-0 hover:bg-white/[0.02] transition-colors">
