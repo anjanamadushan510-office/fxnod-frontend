@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { MobileTabBar } from "@/components/layout/MobileTabBar";
-import { Sidebar, type SidebarKey } from "@/components/layout/Sidebar";
 import { Watermark } from "@/components/layout/Watermark";
 import { AccountsSection } from "@/components/home/AccountsSection";
 import { ExploreMarkets } from "@/components/home/ExploreMarkets";
@@ -12,29 +11,24 @@ import { TotalValueCard } from "@/components/home/TotalValueCard";
 import { DepositModal } from "@/components/home/DepositModal";
 
 export default function HomePage() {
-  const [active, setActive] = useState<SidebarKey>("home");
   const [showDepositModal, setShowDepositModal] = useState(false);
 
   return (
     <>
-      <div className="relative mx-auto grid max-w-[1320px] grid-cols-[240px_1fr] gap-9 px-8 pb-20 pt-7 max-lg:grid-cols-1 max-lg:gap-6 max-lg:px-4 max-lg:pb-[100px] max-lg:pt-[18px]">
-        <Sidebar active={active} onSelect={setActive} />
+      <div className="relative mx-auto flex max-w-[1080px] flex-col gap-9 px-4 pb-[100px] pt-[18px] lg:px-8 lg:pb-20 lg:pt-7">
+        <Watermark intensity={0.28} />
 
-        <main className="relative flex min-w-0 flex-col gap-8">
-          <Watermark intensity={0.28} />
-
-          {/* Every direct child sits above the watermark. */}
-          <div className="relative z-10 flex flex-col gap-8">
-            <TotalValueCard onDeposit={() => setShowDepositModal(true)} />
-            <AccountsSection />
-            <ExploreMarkets />
-            <Highlights />
-            <MobileBanner />
-          </div>
-        </main>
+        {/* Every direct child sits above the watermark. */}
+        <div className="relative z-10 flex flex-col gap-8">
+          <TotalValueCard onDeposit={() => setShowDepositModal(true)} />
+          <AccountsSection />
+          <ExploreMarkets />
+          <Highlights />
+          <MobileBanner />
+        </div>
       </div>
 
-      <MobileTabBar active={active} onSelect={setActive} />
+      <MobileTabBar active="home" onSelect={() => {}} />
       
       {showDepositModal && (
         <DepositModal onClose={() => setShowDepositModal(false)} />

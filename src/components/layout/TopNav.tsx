@@ -3,31 +3,21 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { toast } from "sonner";
-import { BellIcon, CaretDownIcon, MenuIcon } from "@/components/ui/Icons";
-import { useAuthStore } from "@/stores/authStore";
+import { BellIcon, MenuIcon } from "@/components/ui/Icons";
 import { cn } from "@/lib/cn";
 
-interface NavItem {
-  label: string;
-  href?: string;
-  /** Renders an Accounts-style dropdown instead of a link. */
-  dropdown?: boolean;
+// Helper for dynamic title
+function getRouteTitle(pathname: string) {
+  if (pathname.startsWith("/home")) return { title: "Dashboard", subtitle: "Overview" };
+  if (pathname.startsWith("/tools")) return { title: "Terminal", subtitle: "Active Tools" };
+  if (pathname.startsWith("/subscriptions")) return { title: "Terminal", subtitle: "Subscriptions" };
+  if (pathname.startsWith("/venues")) return { title: "Terminal", subtitle: "Venues" };
+  if (pathname.startsWith("/wallet")) return { title: "Account", subtitle: "Wallet & Funds" };
+  if (pathname.startsWith("/transfer")) return { title: "Account", subtitle: "Transfer Funds" };
+  if (pathname.startsWith("/partner")) return { title: "Account", subtitle: "Partner Program" };
+  if (pathname.startsWith("/settings")) return { title: "Account", subtitle: "Settings" };
+  return { title: "Dashboard", subtitle: "Overview" };
 }
-
-const NAV_ITEMS: NavItem[] = [
-  { label: "DASHBOARD", href: "/home" },
-  { label: "SUBSCRIPTIONS", href: "/subscriptions" },
-  { label: "PARTNER", href: "/partner/dashboard" },
-  { label: "TOOLS", href: "#" },
-  { label: "ACCOUNTS", dropdown: true },
-  { label: "LEARN", href: "#" },
-  { label: "SUPPORT", href: "#" },
-];
-
-const ACCOUNT_LINKS: { label: string; href: string }[] = [
-  { label: "Login", href: "/auth/login" },
-  { label: "Register", href: "/auth/register" },
-];
 
 interface TopNavProps {
   onMenu?: () => void;
@@ -35,106 +25,73 @@ interface TopNavProps {
 
 export function TopNav({ onMenu }: TopNavProps) {
   const pathname = usePathname();
+  const { title, subtitle } = getRouteTitle(pathname || "/home");
 
   return (
-    <header
-      className={cn(
-        "sticky top-0 z-50 flex h-[72px] items-center px-10",
-        "text-[#e9e3cb]",
-        "bg-[linear-gradient(180deg,var(--navy)_0%,var(--navy-2)_100%)]",
-        "shadow-nav border-b border-gold/20",
-        "max-lg:h-[60px] max-lg:px-[18px]",
-      )}
-    >
-      {/* Mobile menu trigger — hidden on lg+ */}
-      <button
-        type="button"
-        onClick={onMenu}
-        aria-label="Menu"
-        className={cn(
-          "mr-3 hidden h-9 w-9 place-items-center rounded-[10px]",
-          "border border-gold/25 bg-white/[0.03] text-[#e9e3cb]",
-          "transition-colors hover:border-gold/50 hover:bg-gold/[0.12]",
-          "max-lg:grid",
-        )}
-      >
-        <MenuIcon className="h-4 w-4" />
-      </button>
-
-      <div className="flex items-center gap-2.5 text-[26px] font-extrabold tracking-[0.18em] text-gold max-lg:text-[20px]">
-        <span
-          className="h-[9px] w-[9px] rotate-45 rounded-sm bg-gold"
-          style={{ boxShadow: "0 0 16px rgba(201,162,78,0.6)" }}
-        />
-        FXNOD
-      </div>
-
-      <nav className="ml-auto flex items-center gap-9 text-[13px] font-semibold tracking-[0.13em] max-lg:hidden">
-        {NAV_ITEMS.map((item) => {
-          const isActive = item.href && item.href !== "#" && pathname.startsWith(item.href);
-          
-          return item.dropdown ? (
-            <AccountsDropdown key={item.label} label={item.label} />
-          ) : (
-            <a
-              key={item.label}
-              href={item.href}
-              className={cn(
-                "relative py-1.5 transition-colors",
-                isActive
-                  ? "text-gold"
-                  : "text-[#e9e3cb]/65 hover:text-[#e9e3cb]",
-              )}
-            >
-              {item.label}
-              {isActive && (
-                <span
-                  aria-hidden
-                  className="absolute -bottom-[22px] left-1/2 h-[3px] w-8 -translate-x-1/2 rounded-t-sm bg-gold"
-                />
-              )}
-            </a>
-          );
-        })}
-      </nav>
-
-      <div className="ml-9 flex items-center gap-[18px] max-lg:ml-auto">
+    <header className="sticky top-0 z-50 flex h-16 w-full items-center justify-between border-b border-line bg-ink px-4 sm:px-6">
+      <div className="flex items-center gap-4">
         <button
           type="button"
-          aria-label="Notifications"
-          className={cn(
-            "grid h-9 w-9 place-items-center rounded-[10px]",
-            "border border-gold/25 bg-white/[0.03] text-[#e9e3cb]",
-            "transition-colors hover:border-gold/50 hover:bg-gold/[0.12]",
-          )}
+          onClick={onMenu}
+          aria-label="Menu"
+          className="grid h-9 w-9 place-items-center rounded-lg border border-line bg-surface text-ink-3 transition-colors hover:bg-surface-2 lg:hidden"
         >
-          <BellIcon className="h-4 w-4" />
+          <MenuIcon className="h-4 w-4" />
         </button>
+
+        <div className="flex flex-col">
+          <div className="text-[11px] font-semibold uppercase tracking-widest text-gold">
+            {title}
+          </div>
+          <h1 className="text-sm font-semibold text-white sm:text-base">
+            {subtitle}
+          </h1>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3 sm:gap-6">
+        <LiveClock />
+        <NotificationsDropdown />
       </div>
     </header>
   );
 }
 
-/**
- * "Accounts" navbar item rendered as a dropdown of auth entry points.
- *
- * Opens on hover (with a small close delay so the cursor can cross the gap into
- * the menu) and toggles on click; closes on click-outside or Escape. Styled to
- * match the navy/gold navbar theme and aligned beneath the other nav links.
- */
-function AccountsDropdown({ label }: { label: string }) {
+function LiveClock() {
+  const [timeStr, setTimeStr] = useState("");
+
+  useEffect(() => {
+    const updateTime = () => {
+      setTimeStr(
+        new Intl.DateTimeFormat("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false,
+          timeZoneName: "short",
+        }).format(new Date())
+      );
+    };
+    updateTime(); // Initial
+    const timer = setInterval(updateTime, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="hidden items-center gap-2 rounded-full border border-line bg-surface px-3 py-1.5 sm:flex">
+      <div className="relative flex h-2 w-2 items-center justify-center">
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-75"></span>
+        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-green-500"></span>
+      </div>
+      <span className="text-xs font-medium text-ink-2">Live • {timeStr}</span>
+    </div>
+  );
+}
+
+function NotificationsDropdown() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const isAuthenticated = useAuthStore((s) => s.status === "authenticated");
-  const logout = useAuthStore((s) => s.logout);
-
-  async function handleLogout() {
-    setOpen(false);
-    await logout();
-    toast.success("Signed out");
-  }
+  const [hasUnread, setHasUnread] = useState(true);
 
   useEffect(() => {
     if (!open) return;
@@ -152,84 +109,51 @@ function AccountsDropdown({ label }: { label: string }) {
     };
   }, [open]);
 
-  // Clear any pending close timer on unmount.
-  useEffect(() => () => {
-    if (closeTimer.current) clearTimeout(closeTimer.current);
-  }, []);
-
-  const openNow = () => {
-    if (closeTimer.current) clearTimeout(closeTimer.current);
-    setOpen(true);
-  };
-  const closeSoon = () => {
-    if (closeTimer.current) clearTimeout(closeTimer.current);
-    closeTimer.current = setTimeout(() => setOpen(false), 140);
-  };
-
   return (
-    <div
-      ref={ref}
-      className="relative"
-      onMouseEnter={openNow}
-      onMouseLeave={closeSoon}
-    >
+    <div className="relative" ref={ref}>
       <button
         type="button"
-        aria-haspopup="menu"
-        aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
+        aria-label="Notifications"
+        onClick={() => setOpen((prev) => !prev)}
         className={cn(
-          "flex items-center gap-1 py-1.5 tracking-[0.13em] transition-colors",
-          open ? "text-[#e9e3cb]" : "text-[#e9e3cb]/65 hover:text-[#e9e3cb]",
+          "relative grid h-9 w-9 place-items-center rounded-lg border border-line transition-colors",
+          open ? "bg-surface-2 text-white" : "bg-surface text-ink-3 hover:bg-surface-2"
         )}
       >
-        {label}
-        <CaretDownIcon
-          className={cn(
-            "h-3 w-3 transition-transform duration-150",
-            open && "rotate-180",
-          )}
-        />
+        <BellIcon className="h-4 w-4" />
+        {hasUnread && (
+          <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-gold shadow-[0_0_0_2px_#080C16]" />
+        )}
       </button>
 
       {open && (
-        <div
-          role="menu"
-          aria-label="Accounts"
-          className={cn(
-            "absolute left-0 top-[calc(100%+16px)] z-50 w-44 overflow-hidden rounded-xl py-1.5",
-            "border border-gold/25 bg-[var(--navy-2)]",
-            "shadow-[0_18px_44px_rgba(0,0,0,0.5)]",
-          )}
-        >
-          {isAuthenticated ? (
-            <button
-              type="button"
-              role="menuitem"
-              onClick={handleLogout}
-              className={cn(
-                "block w-full px-4 py-2 text-left text-[12.5px] font-semibold tracking-[0.08em]",
-                "text-[#e9e3cb]/80 transition-colors hover:bg-gold/[0.12] hover:text-gold",
-              )}
-            >
-              Logout
-            </button>
-          ) : (
-            ACCOUNT_LINKS.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                role="menuitem"
-                onClick={() => setOpen(false)}
-                className={cn(
-                  "block px-4 py-2 text-[12.5px] font-semibold tracking-[0.08em]",
-                  "text-[#e9e3cb]/80 transition-colors hover:bg-gold/[0.12] hover:text-gold",
-                )}
+        <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-72 overflow-hidden rounded-xl border border-line bg-ink shadow-2xl">
+          <div className="flex items-center justify-between border-b border-line bg-surface px-4 py-3">
+            <span className="text-xs font-semibold uppercase tracking-wider text-ink-2">
+              Recent Activity
+            </span>
+            {hasUnread && (
+              <button
+                onClick={() => {
+                  setHasUnread(false);
+                  toast.success("Marked as read");
+                }}
+                className="text-[11px] font-medium text-gold hover:underline"
               >
-                {link.label}
-              </a>
-            ))
-          )}
+                Mark read
+              </button>
+            )}
+          </div>
+          <div className="flex flex-col p-2 max-h-60 overflow-y-auto">
+            {!hasUnread ? (
+              <div className="py-6 text-center text-xs text-ink-3">No new notifications</div>
+            ) : (
+              <div className="flex flex-col gap-1 rounded-lg bg-surface px-3 py-2">
+                <span className="text-xs font-medium text-white">System Update</span>
+                <span className="text-[11px] text-ink-3">Your trading account is fully verified and ready.</span>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

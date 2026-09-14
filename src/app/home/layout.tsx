@@ -5,17 +5,12 @@
  * The Sidebar + MobileTabBar live inside the page itself so they can share
  * `active` state with the section components (Real/Demo, etc.).
  */
-import { TopNav } from "@/components/layout/TopNav";
+import { DashboardShell } from "@/components/layout/DashboardShell";
 
 export default function HomeLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <>
-      <TopNav />
-      {children}
-    </>
-  );
+  return <DashboardShell>{children}</DashboardShell>;
 }

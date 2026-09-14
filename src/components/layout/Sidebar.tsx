@@ -3,189 +3,155 @@
 import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
 import {
-  BellIcon,
-  BarsIcon,
-  ChatIcon,
-  ChevronIcon,
-  FolderIcon,
-  HelpIcon,
   HomeIcon,
+  FolderIcon,
   OptionsIcon,
-  WhatsAppIcon,
+  AppsGridIcon,
+  InfoIcon,
+  UserIcon,
 } from "@/components/ui/Icons";
 import { cn } from "@/lib/cn";
-
-/**
- * Sidebar keys still drive MobileTabBar + tests. Some keys map to routes
- * (home, options …), others are pure UI actions (chat, wa, help) that don't
- * change the URL — those use `onSelect` instead of `href`.
- */
-export type SidebarKey =
-  | "home"
-  | "cfds"
-  | "options"
-  | "portfolio"
-  | "chat"
-  | "wa"
-  | "help";
+import { useGetWalletBalance } from "@/services/api/endpoints/wallet/wallet";
+import { fmtUSD } from "@/lib/format";
 
 interface NavItem {
-  key: SidebarKey;
+  key: string;
   label: string;
-  icon: ReactNode;
-  href?: string;
+  icon: React.ReactNode;
+  href: string;
+  rightElement?: React.ReactNode;
 }
 
-const PRIMARY: NavItem[] = [
-  { key: "home", label: "Home", icon: <HomeIcon className="h-[18px] w-[18px]" />, href: "/home" },
-  { key: "cfds", label: "CFDs", icon: <BarsIcon className="h-[18px] w-[18px]" /> },
-  { key: "options", label: "Options", icon: <OptionsIcon className="h-[18px] w-[18px]" />, href: "/options" },
-  { key: "portfolio", label: "Portfolio", icon: <FolderIcon className="h-[18px] w-[18px]" /> },
-];
-
-const SUPPORT: NavItem[] = [
-  { key: "chat", label: "Live chat", icon: <ChatIcon className="h-[18px] w-[18px]" /> },
-  { key: "wa", label: "WhatsApp", icon: <WhatsAppIcon className="h-[18px] w-[18px]" /> },
-  { key: "help", label: "Help centre", icon: <HelpIcon className="h-[18px] w-[18px]" /> },
-];
-
 interface SidebarProps {
-  /** Fallback active key for items without an `href`. Pathname wins for routed items. */
-  active?: SidebarKey;
-  /** Called when a non-routed item is clicked. */
-  onSelect?: (key: SidebarKey) => void;
-  user?: { initials: string; name: string; email: string };
+  isOpen?: boolean;
+  onClose?: () => void;
+  user?: { name: string; email: string };
 }
 
 export function Sidebar({
-  active,
-  onSelect,
+  isOpen = false,
+  onClose,
   user = {
-    initials: "SD",
-    name: "Saman Deshapriya",
-    email: "popandpcff@gmail.com",
+    name: "Trader Account",
+    email: "demo@fxnod.io",
   },
 }: SidebarProps) {
-  const pathname = usePathname();
+  const pathname = usePathname() || "";
+  const { data: walletData } = useGetWalletBalance();
+  const balance = Number(walletData?.balance || 0);
 
-  const isActive = (item: NavItem) => {
-    if (item.href) return pathname?.startsWith(item.href) ?? false;
-    return active === item.key;
-  };
+  const TERMINAL_LINKS: NavItem[] = [
+    { key: "home", label: "Home", icon: <HomeIcon className="h-4 w-4" />, href: "/home" },
+    { key: "tools", label: "Tools", icon: <AppsGridIcon className="h-4 w-4" />, href: "/tools" },
+    { key: "subscriptions", label: "Subscriptions", icon: <FolderIcon className="h-4 w-4" />, href: "/subscriptions" },
+    { key: "venues", label: "Venues", icon: <InfoIcon className="h-4 w-4" />, href: "/venues" },
+  ];
+
+  const ACCOUNT_LINKS: NavItem[] = [
+    { 
+      key: "wallet", 
+      label: "Wallet", 
+      icon: <FolderIcon className="h-4 w-4" />, 
+      href: "/wallet",
+      rightElement: <span className="text-[11px] font-semibold text-white">{fmtUSD(balance)}</span>
+    },
+    { key: "transfer", label: "Transfer", icon: <OptionsIcon className="h-4 w-4" />, href: "/transfer" },
+    { key: "partners", label: "Partners", icon: <UserIcon className="h-4 w-4" />, href: "/partners" },
+    { key: "settings", label: "Settings", icon: <OptionsIcon className="h-4 w-4" />, href: "/settings" },
+  ];
 
   return (
-    <aside
-      className={cn(
-        "sticky top-[96px] flex h-[calc(100vh-116px)] flex-col gap-[18px] self-start pr-2",
-        "max-lg:hidden",
+    <>
+      {/* Mobile Backdrop */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm lg:hidden"
+          onClick={onClose}
+          aria-hidden="true"
+        />
       )}
-    >
-      <div className="flex items-center justify-between px-1.5 pt-1">
-        <span className="text-xs font-extrabold tracking-[0.14em] text-ink-2">
-          FXNOD
-        </span>
-        <button
-          type="button"
-          aria-label="Notifications"
-          className={cn(
-            "relative grid h-8 w-8 place-items-center rounded-full",
-            "border border-line bg-surface text-ink-2",
-          )}
-        >
-          <BellIcon className="h-3.5 w-3.5" />
-          <span
-            aria-hidden
-            className="absolute right-1.5 top-1.5 h-[7px] w-[7px] rounded-full bg-gold"
-            style={{ boxShadow: "0 0 0 2px var(--bg)" }}
-          />
-        </button>
-      </div>
 
-      <NavList items={PRIMARY} isActive={isActive} onSelect={onSelect} />
-
-      <div className="mx-2 h-px bg-line" />
-
-      <NavList items={SUPPORT} isActive={isActive} onSelect={onSelect} />
-
-      <div className="mt-auto flex items-center gap-2.5 border-t border-line p-2.5">
-        <div
-          className={cn(
-            "grid h-9 w-9 place-items-center rounded-full text-[13px] font-extrabold tracking-[0.04em]",
-            "text-[#0a1430]",
-            "bg-[linear-gradient(135deg,#d9b663,#a98639)]",
-          )}
-          style={{
-            boxShadow:
-              "0 1px 0 rgba(255,255,255,0.4) inset, 0 2px 6px rgba(169,134,57,0.4)",
-          }}
-        >
-          {user.initials}
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-line bg-ink transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static",
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        <div className="flex h-16 shrink-0 items-center border-b border-line px-6 lg:hidden">
+          <span className="text-[15px] font-extrabold tracking-widest text-gold">FXNOD</span>
         </div>
-        <div className="flex min-w-0 flex-1 flex-col">
-          <b className="text-[13px] font-bold text-ink">{user.name}</b>
-          <span className="overflow-hidden text-ellipsis whitespace-nowrap text-[11px] text-ink-3">
-            {user.email}
-          </span>
+
+        <div className="flex-1 overflow-y-auto px-4 py-6">
+          <div className="mb-6">
+            <h3 className="mb-2 px-3 text-[10px] font-bold uppercase tracking-widest text-ink-3">
+              Terminal
+            </h3>
+            <NavList items={TERMINAL_LINKS} pathname={pathname} onClose={onClose} />
+          </div>
+
+          <div>
+            <h3 className="mb-2 px-3 text-[10px] font-bold uppercase tracking-widest text-ink-3">
+              Account
+            </h3>
+            <NavList items={ACCOUNT_LINKS} pathname={pathname} onClose={onClose} />
+          </div>
         </div>
-        <ChevronIcon className="h-3.5 w-3.5 text-ink-3" />
-      </div>
-    </aside>
+
+        <div className="border-t border-line bg-surface px-4 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gold/20 bg-ink">
+              <img src="/assets/fxnod-mark.png" alt="FXNOD" className="h-5 w-5 object-contain" />
+            </div>
+            <div className="flex min-w-0 flex-col">
+              <span className="truncate text-xs font-semibold text-white">{user.name}</span>
+              <span className="truncate text-[11px] text-ink-3">{user.email}</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </>
   );
 }
 
 function NavList({
   items,
-  isActive,
-  onSelect,
+  pathname,
+  onClose,
 }: {
   items: NavItem[];
-  isActive: (item: NavItem) => boolean;
-  onSelect?: (key: SidebarKey) => void;
+  pathname: string;
+  onClose?: () => void;
 }) {
   return (
-    <div className="flex flex-col gap-0.5 px-1">
+    <nav className="flex flex-col gap-1">
       {items.map((item) => {
-        const active = isActive(item);
-        const cls = cn(
-          "flex items-center gap-3 rounded-lg px-2.5 py-[9px] text-left text-sm font-medium",
-          "transition-colors",
-          active
-            ? "bg-surface text-ink font-semibold shadow-[0_0_0_1px_var(--line),0_1px_2px_rgba(10,20,48,0.04)]"
-            : "text-ink-2 hover:bg-surface-2 hover:text-ink",
-        );
-        const iconWrap = (
-          <span
+        const isActive = pathname.startsWith(item.href);
+        return (
+          <Link
+            key={item.key}
+            href={item.href as Route}
+            onClick={onClose}
             className={cn(
-              "flex-none",
-              active ? "text-gold-3 dark:text-gold-2" : "text-ink-3",
+              "group relative flex items-center justify-between rounded-lg px-3 py-2 transition-colors",
+              isActive ? "bg-surface-2" : "hover:bg-surface-2"
             )}
           >
-            {item.icon}
-          </span>
-        );
-
-        if (item.href) {
-          return (
-            <Link key={item.key} href={item.href as Route} className={cls}>
-              {iconWrap}
-              {item.label}
-            </Link>
-          );
-        }
-        return (
-          <button
-            key={item.key}
-            type="button"
-            onClick={() => onSelect?.(item.key)}
-            className={cls}
-          >
-            {iconWrap}
-            {item.label}
-          </button>
+            {isActive && (
+              <span className="absolute left-0 top-1/2 h-4 w-[3px] -translate-y-1/2 rounded-r-sm bg-gold" />
+            )}
+            <div className="flex items-center gap-3">
+              <span className={cn("transition-colors", isActive ? "text-gold" : "text-ink-3 group-hover:text-ink-2")}>
+                {item.icon}
+              </span>
+              <span className={cn("text-sm font-medium transition-colors", isActive ? "text-white" : "text-ink-2 group-hover:text-white")}>
+                {item.label}
+              </span>
+            </div>
+            {item.rightElement && <div>{item.rightElement}</div>}
+          </Link>
         );
       })}
-    </div>
+    </nav>
   );
 }

@@ -1,5 +1,5 @@
+import { DashboardShell } from "@/components/layout/DashboardShell";
 import { SiteFooter } from "@/components/layout/SiteFooter";
-import { TopNav } from "@/components/layout/TopNav";
 
 export default function SubscriptionsLayout({
   children,
@@ -7,10 +7,9 @@ export default function SubscriptionsLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-[#f8f6f0]">
-      <TopNav />
+    <DashboardShell>
       {children}
       <SiteFooter />
-    </div>
+    </DashboardShell>
   );
 }
