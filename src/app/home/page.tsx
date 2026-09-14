@@ -1,32 +1,30 @@
 "use client";
 
 import { useState } from "react";
+import { DepositModal } from "@/components/home/DepositModal";
+import { DashboardMetrics } from "@/components/home/DashboardMetrics";
+import { DashboardQuickActions } from "@/components/home/DashboardQuickActions";
+import { DashboardActivity } from "@/components/home/DashboardActivity";
 import { MobileTabBar } from "@/components/layout/MobileTabBar";
 import { Watermark } from "@/components/layout/Watermark";
-import { AccountsSection } from "@/components/home/AccountsSection";
-import { ExploreMarkets } from "@/components/home/ExploreMarkets";
-import { Highlights } from "@/components/home/Highlights";
-import { MobileBanner } from "@/components/home/MobileBanner";
-import { TotalValueCard } from "@/components/home/TotalValueCard";
-import { DepositModal } from "@/components/home/DepositModal";
 
 export default function HomePage() {
   const [showDepositModal, setShowDepositModal] = useState(false);
 
   return (
     <>
-      <div className="relative mx-auto flex max-w-[1080px] flex-col gap-9 px-4 pb-[100px] pt-[18px] lg:px-8 lg:pb-20 lg:pt-7">
-        <Watermark intensity={0.28} />
-
-        {/* Every direct child sits above the watermark. */}
-        <div className="relative z-10 flex flex-col gap-8">
-          <TotalValueCard onDeposit={() => setShowDepositModal(true)} />
-          <AccountsSection />
-          <ExploreMarkets />
-          <Highlights />
-          <MobileBanner />
+      <section data-view="hub" className="relative p-4 lg:p-8 space-y-6 pb-24 lg:pb-8 max-w-[1280px] mx-auto min-h-full">
+        <Watermark intensity={0.15} />
+        
+        <div className="relative z-10 flex flex-col gap-6">
+          <DashboardMetrics 
+            onTopUp={() => setShowDepositModal(true)} 
+            onSend={() => {}} 
+          />
+          <DashboardQuickActions />
+          <DashboardActivity />
         </div>
-      </div>
+      </section>
 
       <MobileTabBar active="home" onSelect={() => {}} />
       
