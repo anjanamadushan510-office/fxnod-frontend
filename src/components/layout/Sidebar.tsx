@@ -151,7 +151,7 @@ export function Sidebar({
           </button>
         </div>
 
-        <nav className="flex-1 space-y-1 overflow-y-auto p-3">
+        <nav className="flex-1 space-y-2 overflow-y-auto p-3">
           <p className="px-3 pb-2 pt-3 text-[10px] font-medium uppercase tracking-[0.18em] text-zinc-600">
             Terminal
           </p>
@@ -164,7 +164,7 @@ export function Sidebar({
                 href={item.href as Route}
                 onClick={onClose}
                 className={cn(
-                  "nav-link relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors",
+                  "nav-link relative flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-medium transition-colors",
                   isActive 
                     ? "is-active bg-white/[0.06] text-white" 
                     : "text-zinc-400 hover:bg-white/[0.06] hover:text-white group"
@@ -191,7 +191,7 @@ export function Sidebar({
                 href={item.href as Route}
                 onClick={onClose}
                 className={cn(
-                  "nav-link relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors",
+                  "nav-link relative flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-medium transition-colors",
                   isActive 
                     ? "is-active bg-white/[0.06] text-white" 
                     : "text-zinc-400 hover:bg-white/[0.06] hover:text-white group"
