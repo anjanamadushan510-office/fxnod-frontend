@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { toast } from "sonner";
 import { BellIcon, MenuIcon } from "@/components/ui/Icons";
 import { cn } from "@/lib/cn";
@@ -103,12 +104,14 @@ function NotificationsDropdown() {
       title: "System Update",
       message: "Your trading account is fully verified and ready.",
       timestamp: "Just now",
+      url: "/settings",
     },
     {
       id: "2",
       title: "dBot is live",
       message: "Running on Deriv - markup API",
       timestamp: "Today 09:14",
+      url: "/tools",
     },
   ]);
 
@@ -172,13 +175,18 @@ function NotificationsDropdown() {
               <div className="py-8 text-center text-sm text-zinc-500">No new notifications</div>
             ) : (
               notifications.map((item) => (
-                <div key={item.id} className="flex items-start justify-between gap-3 px-5 py-3.5 hover:bg-zinc-800/20 transition-colors cursor-pointer">
+                <Link
+                  key={item.id}
+                  href={item.url || "/"}
+                  onClick={() => setOpen(false)}
+                  className="flex items-start justify-between gap-3 px-5 py-3.5 hover:bg-zinc-800/20 transition-colors cursor-pointer"
+                >
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-white truncate">{item.title}</p>
                     <p className="text-xs text-zinc-500 mt-0.5 line-clamp-2">{item.message}</p>
                   </div>
                   <p className="text-[11px] text-zinc-500 shrink-0 whitespace-nowrap">{item.timestamp}</p>
-                </div>
+                </Link>
               ))
             )}
           </div>
