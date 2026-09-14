@@ -12,7 +12,7 @@ export default function HomePage() {
 
   return (
     <>
-      <section data-view="hub" className="p-4 lg:p-8 space-y-6 pb-8">
+      <section data-view="hub" className="p-4 lg:p-8 space-y-4 pb-4">
         <DashboardMetrics 
           onTopUp={() => setShowDepositModal(true)} 
           onSend={() => {}} 
