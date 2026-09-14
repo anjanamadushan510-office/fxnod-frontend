@@ -11,7 +11,7 @@ import {
   OptionsIcon,
 } from "@/components/ui/Icons";
 import { cn } from "@/lib/cn";
-import type { SidebarKey } from "./Sidebar";
+export type SidebarKey = "home" | "cfds" | "options" | "portfolio" | "chat" | "wa" | "help";
 
 interface Tab {
   key: SidebarKey;
