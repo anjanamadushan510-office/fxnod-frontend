@@ -8,9 +8,9 @@ export function DashboardActivity() {
   return (
     <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
       {/* Subscriptions / Active Positions */}
-      <article className="xl:col-span-2 bg-panel border border-line rounded-2xl overflow-hidden min-w-0 flex flex-col">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-line gap-3">
-          <h2 className="font-display text-sm font-semibold">Active on your account</h2>
+      <article className="xl:col-span-2 bg-[#101827] border border-[#24344F] rounded-2xl overflow-hidden min-w-0 flex flex-col">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[#24344F] gap-3">
+          <h2 className="font-display text-sm font-semibold text-white">Active on your account</h2>
           <Link href="/subscriptions" className="text-xs text-zinc-400 hover:text-white transition-colors">
             Subscriptions &rarr;
           </Link>
@@ -26,9 +26,9 @@ export function DashboardActivity() {
                 <th className="px-5 py-3 font-medium text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-line text-zinc-300">
+            <tbody className="divide-y divide-[#24344F] text-zinc-300">
               <tr className="hover:bg-white/[0.02] transition-colors">
-                <td className="px-5 py-4 font-medium">dTrader Ticket #891</td>
+                <td className="px-5 py-4 font-medium text-white">dTrader Ticket #891</td>
                 <td className="px-5 py-4">
                   <div className="flex items-center gap-2">
                     <span className="relative flex h-2 w-2">
@@ -44,7 +44,7 @@ export function DashboardActivity() {
                 </td>
               </tr>
               <tr className="hover:bg-white/[0.02] transition-colors">
-                <td className="px-5 py-4 font-medium">dBot Master Algo</td>
+                <td className="px-5 py-4 font-medium text-white">dBot Master Algo</td>
                 <td className="px-5 py-4">
                   <div className="flex items-center gap-2">
                     <span className="relative flex h-2 w-2">
@@ -65,9 +65,9 @@ export function DashboardActivity() {
       </article>
 
       {/* Recent Wallet */}
-      <article className="bg-panel border border-line rounded-2xl p-5 flex flex-col">
+      <article className="bg-[#101827] border border-[#24344F] rounded-2xl p-5 flex flex-col">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-display text-sm font-semibold">Recent wallet</h2>
+          <h2 className="font-display text-sm font-semibold text-white">Recent wallet</h2>
           <Link href={"/wallet" as Route} className="text-xs text-zinc-400 hover:text-white transition-colors">
             Open &rarr;
           </Link>
