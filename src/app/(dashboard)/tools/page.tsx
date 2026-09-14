@@ -8,14 +8,16 @@ export default function ToolsPage() {
     {
       id: "dtrader",
       name: "dTrader",
-      description: "Rise/Fall contracts and more on Deriv's fast execution synthetic indices.",
+      subtitle: "Deriv · Trade",
+      description: "Trade synthetics and options on Deriv. Rise / Fall tickets from the FXNOD desk. Free — FXNOD earns a markup on the API.",
       icon: "/assets/fxnod-mark.png",
       href: "/options/dtrader",
     },
     {
       id: "dbot",
       name: "dBot",
-      description: "Automate your trading strategy without writing code. Drag, drop, and deploy.",
+      subtitle: "Deriv · Bot",
+      description: "Build a Deriv options bot in plain language. Ready-made starts if you are new — no Blockly. Free — FXNOD earns a markup on the API.",
       icon: "/assets/fxnod-mark.png",
       href: "/options/dbot",
     },
@@ -34,7 +36,7 @@ export default function ToolsPage() {
                 <img src={tool.icon} alt={tool.name} className="h-8 w-8 object-contain bg-[#080C16] rounded-full p-1 border border-[#24344F]" />
                 <div>
                   <h3 className="font-medium text-white">{tool.name}</h3>
-                  <p className="text-xs text-zinc-500">Live API Connected</p>
+                  <p className="text-xs text-zinc-500">{tool.subtitle}</p>
                 </div>
               </div>
               <div className="inline-flex items-center gap-1.5 text-xs text-green-400">
