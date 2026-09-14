@@ -164,10 +164,10 @@ export function RegisterForm() {
       </aside>
 
       <section
-        className="flex flex-col items-center justify-center px-4 sm:px-5 py-6 sm:py-8 overflow-y-auto"
+        className="flex flex-col items-center px-4 sm:px-5 py-4 overflow-y-auto"
         style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))", paddingTop: "max(1.5rem, env(safe-area-inset-top))" }}
       >
-        <div className="w-full max-w-[420px]">
+        <div className="w-full max-w-[420px] my-auto py-4">
           <Link href="/" className="lg:hidden inline-flex mb-6 sm:mb-8" aria-label="FXNOD home">
             <img src="/assets/fxnod-logo.png" alt="FXNOD" className="h-6 sm:h-7 w-auto" />
           </Link>
