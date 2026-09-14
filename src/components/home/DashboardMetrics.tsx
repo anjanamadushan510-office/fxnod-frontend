@@ -15,7 +15,7 @@ export function DashboardMetrics({ onTopUp, onSend }: DashboardMetricsProps) {
 
   return (
     <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
-      <article className="bg-[#101827] border border-[#24344F] rounded-2xl p-5">
+      <article className="bg-[#101827] border border-[#24344F] rounded-2xl p-6 lg:p-7">
         <div className="flex items-start justify-between mb-4">
           <p className="text-xs uppercase tracking-[0.14em] text-zinc-500">Wallet</p>
           <div className="flex items-center gap-3">
@@ -27,7 +27,7 @@ export function DashboardMetrics({ onTopUp, onSend }: DashboardMetricsProps) {
         <p className="mt-1 text-xs text-zinc-500">On Deriv <span className="tabular-nums text-zinc-400">$0.00</span></p>
       </article>
 
-      <article className="bg-[#101827] border border-[#24344F] rounded-2xl p-5 hover:bg-white/[0.02] cursor-pointer transition-colors">
+      <article className="bg-[#101827] border border-[#24344F] rounded-2xl p-6 lg:p-7 hover:bg-white/[0.02] cursor-pointer transition-colors">
         <div className="flex items-start justify-between mb-4">
           <p className="text-xs uppercase tracking-[0.14em] text-zinc-500">Active tools</p>
           <span className="text-[11px] text-zinc-400">On Deriv</span>
@@ -36,7 +36,7 @@ export function DashboardMetrics({ onTopUp, onSend }: DashboardMetricsProps) {
         <p className="mt-1 text-xs text-zinc-500">dTrader &middot; dBot</p>
       </article>
 
-      <article className="bg-[#101827] border border-[#24344F] rounded-2xl p-5 hover:bg-white/[0.02] cursor-pointer transition-colors">
+      <article className="bg-[#101827] border border-[#24344F] rounded-2xl p-6 lg:p-7 hover:bg-white/[0.02] cursor-pointer transition-colors">
         <div className="flex items-start justify-between mb-4">
           <p className="text-xs uppercase tracking-[0.14em] text-zinc-500">Venues</p>
           <span className="text-[11px] text-green-400">Live APIs</span>
@@ -45,7 +45,7 @@ export function DashboardMetrics({ onTopUp, onSend }: DashboardMetricsProps) {
         <p className="mt-1 text-xs text-zinc-500">Deriv &middot; Bybit &middot; Binance</p>
       </article>
 
-      <article className="bg-[#101827] border border-[#24344F] rounded-2xl p-5 hover:bg-white/[0.02] cursor-pointer transition-colors">
+      <article className="bg-[#101827] border border-[#24344F] rounded-2xl p-6 lg:p-7 hover:bg-white/[0.02] cursor-pointer transition-colors">
         <div className="flex items-start justify-between mb-4">
           <p className="text-xs uppercase tracking-[0.14em] text-zinc-500">Partner</p>
           <span className="text-[11px] text-zinc-400">This month</span>

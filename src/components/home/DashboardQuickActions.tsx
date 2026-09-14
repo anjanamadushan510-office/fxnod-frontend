@@ -9,7 +9,7 @@ export function DashboardQuickActions() {
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <article 
         onClick={() => router.push("/options/dtrader")}
-        className="bg-[#101827] border border-[#24344F] rounded-2xl p-5 hover:bg-white/[0.02] cursor-pointer transition-colors"
+        className="bg-[#101827] border border-[#24344F] rounded-2xl p-6 lg:p-7 hover:bg-white/[0.02] cursor-pointer transition-colors"
       >
         <p className="text-[11px] uppercase tracking-[0.14em] text-zinc-500 mb-3">dTrader</p>
         <h2 className="font-display text-lg font-semibold mb-2 text-white">Trade now</h2>
@@ -21,7 +21,7 @@ export function DashboardQuickActions() {
       
       <article 
         onClick={() => router.push("/options/dbot")}
-        className="bg-[#101827] border border-[#24344F] rounded-2xl p-5 hover:bg-white/[0.02] cursor-pointer transition-colors"
+        className="bg-[#101827] border border-[#24344F] rounded-2xl p-6 lg:p-7 hover:bg-white/[0.02] cursor-pointer transition-colors"
       >
         <p className="text-[11px] uppercase tracking-[0.14em] text-zinc-500 mb-3">dBot</p>
         <h2 className="font-display text-lg font-semibold mb-2 text-white">Run a bot</h2>

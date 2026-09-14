@@ -28,8 +28,8 @@ export function DashboardActivity() {
             </thead>
             <tbody className="divide-y divide-[#24344F] text-zinc-300">
               <tr className="hover:bg-white/[0.02] transition-colors">
-                <td className="px-5 py-4 font-medium text-white">dTrader Ticket #891</td>
-                <td className="px-5 py-4">
+                <td className="px-5 py-5 font-medium text-white">dTrader Ticket #891</td>
+                <td className="px-5 py-5">
                   <div className="flex items-center gap-2">
                     <span className="relative flex h-2 w-2">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -38,14 +38,14 @@ export function DashboardActivity() {
                     <span className="text-xs text-zinc-400">Running</span>
                   </div>
                 </td>
-                <td className="px-5 py-4 text-green-400 tabular-nums">{fmtUSD(12.50)}</td>
-                <td className="px-5 py-4 text-right">
+                <td className="px-5 py-5 text-green-400 tabular-nums">{fmtUSD(12.50)}</td>
+                <td className="px-5 py-5 text-right">
                   <Link href="/options/dtrader" className="text-xs text-gold hover:underline">Open</Link>
                 </td>
               </tr>
               <tr className="hover:bg-white/[0.02] transition-colors">
-                <td className="px-5 py-4 font-medium text-white">dBot Master Algo</td>
-                <td className="px-5 py-4">
+                <td className="px-5 py-5 font-medium text-white">dBot Master Algo</td>
+                <td className="px-5 py-5">
                   <div className="flex items-center gap-2">
                     <span className="relative flex h-2 w-2">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -54,8 +54,8 @@ export function DashboardActivity() {
                     <span className="text-xs text-zinc-400">Running</span>
                   </div>
                 </td>
-                <td className="px-5 py-4 text-zinc-400 tabular-nums">Free</td>
-                <td className="px-5 py-4 text-right">
+                <td className="px-5 py-5 text-zinc-400 tabular-nums">Free</td>
+                <td className="px-5 py-5 text-right">
                   <Link href="/options/dbot" className="text-xs text-gold hover:underline">Manage</Link>
                 </td>
               </tr>
@@ -73,10 +73,10 @@ export function DashboardActivity() {
           </Link>
         </div>
         
-        <div className="flex-1 flex flex-col gap-4 overflow-y-auto">
+        <div className="flex-1 flex flex-col gap-6 overflow-y-auto pt-2">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-zinc-200">Top up</p>
+              <p className="text-sm font-medium text-zinc-200 mb-1">Top up</p>
               <p className="text-xs text-zinc-500">Sep 12, 2026</p>
             </div>
             <span className="text-sm font-medium text-green-400 tabular-nums">+{fmtUSD(500.00)}</span>
@@ -84,7 +84,7 @@ export function DashboardActivity() {
           
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-zinc-200">Partner Payout</p>
+              <p className="text-sm font-medium text-zinc-200 mb-1">Partner Payout</p>
               <p className="text-xs text-zinc-500">Sep 01, 2026</p>
             </div>
             <span className="text-sm font-medium text-green-400 tabular-nums">+{fmtUSD(86.40)}</span>
@@ -92,7 +92,7 @@ export function DashboardActivity() {
           
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-zinc-200">Withdrawal</p>
+              <p className="text-sm font-medium text-zinc-200 mb-1">Withdrawal</p>
               <p className="text-xs text-zinc-500">Aug 28, 2026</p>
             </div>
             <span className="text-sm font-medium text-zinc-300 tabular-nums">-{fmtUSD(150.00)}</span>
