@@ -19,7 +19,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           email: user?.email || "demo@fxnod.io"
         }}
       />
-      <div className="flex min-w-0 flex-1 flex-col lg:ml-64">
+      <div className="flex min-w-0 flex-1 flex-col">
         <TopNav onMenu={() => setSidebarOpen(true)} />
         <main className="flex-1 overflow-x-hidden bg-[#080C16]">
           {children}

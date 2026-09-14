@@ -80,7 +80,7 @@ function LiveClock() {
   }, []);
 
   return (
-    <div className="hidden items-center gap-2 rounded-full border border-line bg-surface px-3 py-1.5 sm:flex">
+    <div className="hidden items-center gap-2 rounded-full border border-[#24344F] bg-[#101827] px-3 py-1.5 sm:flex">
       <div className="relative flex h-2 w-2 items-center justify-center">
         <span className="pulse-dot absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>
         <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-green-400"></span>
@@ -120,8 +120,8 @@ function NotificationsDropdown() {
         aria-label="Notifications"
         onClick={() => setOpen((prev) => !prev)}
         className={cn(
-          "relative grid h-9 w-9 place-items-center rounded-lg border border-line transition-colors",
-          open ? "bg-white/5 text-white" : "bg-surface text-zinc-400 hover:bg-white/5 hover:text-white"
+          "relative grid h-9 w-9 place-items-center rounded-lg border border-[#24344F] transition-colors",
+          open ? "bg-white/5 text-white" : "bg-[#101827] text-zinc-400 hover:bg-white/5 hover:text-white"
         )}
       >
         <BellIcon className="h-4 w-4" />
@@ -131,8 +131,8 @@ function NotificationsDropdown() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-72 overflow-hidden rounded-xl border border-line bg-ink shadow-2xl">
-          <div className="flex items-center justify-between border-b border-line bg-surface px-4 py-3">
+        <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-72 overflow-hidden rounded-xl border border-[#24344F] bg-[#080C16] shadow-2xl">
+          <div className="flex items-center justify-between border-b border-[#24344F] bg-[#101827] px-4 py-3">
             <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-zinc-500">
               Activity
             </span>

@@ -12,15 +12,13 @@ export default function HomePage() {
 
   return (
     <>
-      <section data-view="hub" className="p-4 lg:p-8 space-y-6 pb-24 lg:pb-8 max-w-[1280px] mx-auto min-h-full">
-        <div className="flex flex-col gap-6">
-          <DashboardMetrics 
-            onTopUp={() => setShowDepositModal(true)} 
-            onSend={() => {}} 
-          />
-          <DashboardQuickActions />
-          <DashboardActivity />
-        </div>
+      <section data-view="hub" className="p-4 lg:p-8 space-y-6 pb-8">
+        <DashboardMetrics 
+          onTopUp={() => setShowDepositModal(true)} 
+          onSend={() => {}} 
+        />
+        <DashboardQuickActions />
+        <DashboardActivity />
       </section>
 
       <MobileTabBar active="home" onSelect={() => {}} />
