@@ -1,9 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { useGetWalletBalance, useGetWalletTransactions } from "@/services/api/endpoints/wallet/wallet";
 import { fmtUSD } from "@/lib/format";
+import { DepositModal } from "@/components/home/DepositModal";
 
 export default function WalletPage() {
+  const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
+
   const { data: walletData } = useGetWalletBalance();
   const balance = Number(walletData?.balance || 0);
 
@@ -20,7 +24,7 @@ export default function WalletPage() {
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:ml-auto">
           <button className="h-9 px-4 rounded-lg border border-[#24344F] text-sm text-zinc-300 hover:text-white hover:bg-white/5 transition-colors w-full sm:w-auto">Send to Deriv</button>
-          <button className="h-9 px-4 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 transition-colors w-full sm:w-auto">Top up</button>
+          <button onClick={() => setIsDepositModalOpen(true)} className="h-9 px-4 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 transition-colors w-full sm:w-auto">Top up</button>
         </div>
       </div>
       
@@ -72,6 +76,8 @@ export default function WalletPage() {
           )}
         </div>
       </article>
+
+      {isDepositModalOpen && <DepositModal onClose={() => setIsDepositModalOpen(false)} />}
     </section>
   );
 }
