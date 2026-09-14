@@ -62,7 +62,7 @@ export function LoginForm() {
   const generalError = fieldErrors.detail || fieldErrors.email || fieldErrors.password || "";
 
   return (
-    <div className="min-h-[100dvh] grid lg:grid-cols-2 bg-[#080C16] text-white font-sans antialiased overflow-x-hidden">
+    <div className="h-[100dvh] overflow-hidden grid lg:grid-cols-2 bg-[#080C16] text-white font-sans antialiased">
       <aside className="relative hidden lg:block overflow-hidden m-3 rounded-2xl">
         <div className="absolute inset-0">
           <img
