@@ -10,11 +10,11 @@ import { cn } from "@/lib/cn";
 function getRouteTitle(pathname: string) {
   if (pathname.startsWith("/home")) return { title: "Dashboard", subtitle: "Overview" };
   if (pathname.startsWith("/tools")) return { title: "Terminal", subtitle: "Active Tools" };
-  if (pathname.startsWith("/mine")) return { title: "Terminal", subtitle: "Subscriptions" };
+  if (pathname.startsWith("/subscriptions")) return { title: "Terminal", subtitle: "Subscriptions" };
   if (pathname.startsWith("/venues")) return { title: "Terminal", subtitle: "Venues" };
   if (pathname.startsWith("/wallet")) return { title: "Account", subtitle: "Wallet & Funds" };
   if (pathname.startsWith("/transfer")) return { title: "Account", subtitle: "Transfer Funds" };
-  if (pathname.startsWith("/partners")) return { title: "Account", subtitle: "Partner Program" };
+  if (pathname.startsWith("/partner/dashboard")) return { title: "Account", subtitle: "Partner Program" };
   if (pathname.startsWith("/settings")) return { title: "Account", subtitle: "Settings" };
   return { title: "Dashboard", subtitle: "Overview" };
 }

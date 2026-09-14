@@ -43,14 +43,14 @@ export function Sidebar({
   const TERMINAL_LINKS: NavItem[] = [
     { key: "home", label: "Home", icon: <HomeIcon className="h-5 w-5" />, href: "/home" },
     { key: "tools", label: "Tools", icon: <AppsGridIcon className="h-5 w-5" />, href: "/tools" },
-    { key: "subscriptions", label: "Subscriptions", icon: <FolderIcon className="h-5 w-5" />, href: "/mine" },
+    { key: "subscriptions", label: "Subscriptions", icon: <FolderIcon className="h-5 w-5" />, href: "/subscriptions" },
     { key: "venues", label: "Venues", icon: <InfoIcon className="h-5 w-5" />, href: "/venues" },
   ];
 
   const ACCOUNT_LINKS: NavItem[] = [
     { key: "wallet", label: "Wallet", icon: <FolderIcon className="h-5 w-5" />, href: "/wallet" },
     { key: "transfer", label: "Transfer", icon: <OptionsIcon className="h-5 w-5" />, href: "/transfer" },
-    { key: "partners", label: "Partners", icon: <UserIcon className="h-5 w-5" />, href: "/partners" },
+    { key: "partners", label: "Partners", icon: <UserIcon className="h-5 w-5" />, href: "/partner/dashboard" },
     { key: "settings", label: "Settings", icon: <OptionsIcon className="h-5 w-5" />, href: "/settings" },
   ];
 
