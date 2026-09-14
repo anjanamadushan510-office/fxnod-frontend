@@ -172,10 +172,10 @@ export function RegisterForm() {
             <img src="/assets/fxnod-logo.png" alt="FXNOD" className="h-6 sm:h-7 w-auto" />
           </Link>
 
-          <div className="bg-[#101827] border border-[#24344F] rounded-2xl p-5 sm:p-8">
+          <div className="bg-[#101827] border border-[#24344F] rounded-2xl p-4 sm:p-6">
             <h1 id="auth-title" className="font-display text-[28px] font-semibold tracking-tight mb-6">Sign up</h1>
 
-            <form id="auth-form" className="space-y-4" noValidate onSubmit={onSubmit}>
+            <form id="auth-form" className="space-y-3" noValidate onSubmit={onSubmit}>
               <label className="block">
                 <span className="text-sm text-zinc-300">Full name</span>
                 <input
@@ -186,7 +186,7 @@ export function RegisterForm() {
                   placeholder="Ada Lovelace"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="mt-2 w-full h-12 px-3.5 rounded-xl bg-[#0B1220] border border-[#24344F] focus:border-[#C9A08C] focus:outline-none transition-colors"
+                  className="mt-2 w-full h-10 px-3.5 rounded-xl bg-[#0B1220] border border-[#24344F] focus:border-[#C9A08C] focus:outline-none transition-colors"
                 />
               </label>
               <label className="block">
@@ -199,7 +199,7 @@ export function RegisterForm() {
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="mt-2 w-full h-12 px-3.5 rounded-xl bg-[#0B1220] border border-[#24344F] focus:border-[#C9A08C] focus:outline-none transition-colors"
+                  className="mt-2 w-full h-10 px-3.5 rounded-xl bg-[#0B1220] border border-[#24344F] focus:border-[#C9A08C] focus:outline-none transition-colors"
                 />
               </label>
               <label className="block">
@@ -213,7 +213,7 @@ export function RegisterForm() {
                   placeholder="At least 8 characters"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="mt-2 w-full h-12 px-3.5 rounded-xl bg-[#0B1220] border border-[#24344F] focus:border-[#C9A08C] focus:outline-none transition-colors"
+                  className="mt-2 w-full h-10 px-3.5 rounded-xl bg-[#0B1220] border border-[#24344F] focus:border-[#C9A08C] focus:outline-none transition-colors"
                 />
               </label>
               <label className="block">
@@ -227,7 +227,7 @@ export function RegisterForm() {
                   placeholder="Re-enter your password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="mt-2 w-full h-12 px-3.5 rounded-xl bg-[#0B1220] border border-[#24344F] focus:border-[#C9A08C] focus:outline-none transition-colors"
+                  className="mt-2 w-full h-10 px-3.5 rounded-xl bg-[#0B1220] border border-[#24344F] focus:border-[#C9A08C] focus:outline-none transition-colors"
                 />
               </label>
               
@@ -239,13 +239,13 @@ export function RegisterForm() {
                 type="submit"
                 id="auth-submit"
                 disabled={registerMut.isPending}
-                className="w-full h-12 rounded-xl bg-white text-black text-sm font-medium hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-full h-10 rounded-xl bg-white text-black text-sm font-medium hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {registerMut.isPending ? "Creating account..." : "Create account"}
               </button>
             </form>
 
-            <div className="relative my-6">
+            <div className="relative my-4">
               <div className="h-px bg-[#24344F]"></div>
               <span className="absolute left-1/2 -translate-x-1/2 -top-2.5 px-3 bg-[#101827] text-[11px] uppercase tracking-wider text-zinc-500">
                 or
@@ -255,14 +255,14 @@ export function RegisterForm() {
             <div className="space-y-2.5">
               <button
                 type="button"
-                className="w-full h-12 rounded-xl text-sm font-medium flex items-center justify-center gap-2.5 bg-[#152238] border border-[#24344F] hover:bg-[#1A3358] transition-colors"
+                className="w-full h-10 rounded-xl text-sm font-medium flex items-center justify-center gap-2.5 bg-[#152238] border border-[#24344F] hover:bg-[#1A3358] transition-colors"
                 onClick={() => toast.info("Demo signup coming soon.")}
               >
                 Continue as demo
               </button>
               <button
                 type="button"
-                className="w-full h-12 rounded-xl text-sm font-medium flex items-center justify-center gap-2.5 bg-[#152238] border border-[#24344F] hover:bg-[#1A3358] transition-colors"
+                className="w-full h-10 rounded-xl text-sm font-medium flex items-center justify-center gap-2.5 bg-[#152238] border border-[#24344F] hover:bg-[#1A3358] transition-colors"
                 onClick={() => toast.info("Google signup coming soon.")}
               >
                 <svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
@@ -275,7 +275,7 @@ export function RegisterForm() {
               </button>
               <button
                 type="button"
-                className="w-full h-12 rounded-xl text-sm font-medium flex items-center justify-center gap-2.5 bg-[#152238] border border-[#24344F] hover:bg-[#1A3358] transition-colors"
+                className="w-full h-10 rounded-xl text-sm font-medium flex items-center justify-center gap-2.5 bg-[#152238] border border-[#24344F] hover:bg-[#1A3358] transition-colors"
                 onClick={() => toast.info("Apple signup coming soon.")}
               >
                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
