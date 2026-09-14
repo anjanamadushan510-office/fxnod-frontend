@@ -177,7 +177,7 @@ function NotificationsDropdown() {
               notifications.map((item) => (
                 <Link
                   key={item.id}
-                  href={item.url || "/"}
+                  href={(item.url || "/") as any}
                   onClick={() => setOpen(false)}
                   className="flex items-start justify-between gap-3 px-5 py-3.5 hover:bg-zinc-800/20 transition-colors cursor-pointer"
                 >
