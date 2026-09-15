@@ -17,8 +17,8 @@ export default function VenuesPage() {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto mt-12">
-        <article className="bg-[#101827] border border-[#24344F] rounded-2xl p-6 lg:p-8 hover:bg-white/[0.02] transition-colors relative overflow-hidden group">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
+        <article className="bg-[#101827] border border-[#24344F] rounded-2xl p-6 lg:p-7 hover:bg-white/[0.02] transition-colors relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-6">
             {derivStatus.linked ? (
               <span className="inline-flex items-center rounded-full bg-green-500/10 px-2 py-1 text-[10px] font-medium text-green-400 ring-1 ring-inset ring-green-500/20">
@@ -31,26 +31,34 @@ export default function VenuesPage() {
             )}
           </div>
           
-          <div className="flex items-center gap-4 mb-6">
+          <div className="flex items-center gap-4 mb-5">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-500/10 text-red-500 font-bold text-2xl">
               D
             </div>
             <div>
               <h3 className="font-display text-lg font-semibold text-white">Deriv</h3>
-              <p className="text-sm text-zinc-400">Synthetics &middot; Options &middot; Bots</p>
+              <p className="text-xs text-zinc-400 mt-1">Synthetics &middot; Options &middot; Bots</p>
             </div>
           </div>
 
-          <p className="text-sm text-zinc-400 mb-6 leading-relaxed">
+          <p className="text-sm text-zinc-400 mb-6 leading-relaxed line-clamp-2">
             Trade unique synthetic indices, digital options, and automated bots via the Deriv API.
           </p>
 
-          <Link
-            href={"/settings" as Route}
-            className="flex w-full justify-center rounded-xl bg-white/5 py-2.5 text-sm font-medium text-white hover:bg-white/10 transition-colors"
-          >
-            Manage Connection
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href={"/transfer" as Route}
+              className="flex-1 flex justify-center rounded-xl bg-white text-black py-2.5 text-sm font-semibold hover:bg-zinc-200 transition-colors"
+            >
+              Deposit
+            </Link>
+            <Link
+              href={"/tools" as Route}
+              className="flex-1 flex justify-center rounded-xl border border-[#24344F] bg-transparent text-white py-2.5 text-sm font-medium hover:bg-white/5 transition-colors"
+            >
+              Tools
+            </Link>
+          </div>
         </article>
       </div>
     </section>
