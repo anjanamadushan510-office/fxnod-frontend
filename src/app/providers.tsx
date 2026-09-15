@@ -53,7 +53,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="dark" disableTransitionOnChange>
+    <ThemeProvider attribute="data-theme" defaultTheme="dark" disableTransitionOnChange>
       <QueryClientProvider client={queryClient}>
         {children}
       {/* App-wide toast portal (trade results, Deriv linking, …). */}
