@@ -55,6 +55,10 @@ export default function TransferPage() {
       toast.error("Insufficient funds in FXNOD wallet.");
       return;
     }
+    if (!derivNickname.startsWith("CR")) {
+      toast.error("Transfers require a Real Wallet (CR account). Please connect your main CR account.");
+      return;
+    }
 
     transferMutation.mutate({
       amount: amount,
