@@ -28,7 +28,7 @@ export default function TransferPage() {
   const transferMutation = useMutation({
     mutationFn: (payload: TransferPayload) => 
       customInstance({
-        url: "/api/v1/transfer",
+        url: "/api/v1/deriv/transfer",
         method: "POST",
         data: payload
       }),
@@ -38,7 +38,9 @@ export default function TransferPage() {
       router.push("/wallet");
     },
     onError: (error: any) => {
-      const msg = error.response?.data?.detail || "Transfer failed. Please try again.";
+      console.error("Transfer error status:", error.response?.status);
+      console.error("Transfer error body:", error.response?.data);
+      const msg = error.response?.data?.detail || error.response?.data?.error || "Transfer failed. Please try again.";
       toast.error(msg);
     }
   });
