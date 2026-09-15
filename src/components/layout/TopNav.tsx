@@ -29,23 +29,23 @@ export function TopNav({ onMenu }: TopNavProps) {
   const { title, subtitle } = getRouteTitle(pathname || "/home");
 
   return (
-    <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-[#24344F] bg-[#080C16] px-4 lg:px-8">
+    <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-line bg-bg px-4 lg:px-8">
       {/* Left Side */}
       <div className="flex items-center gap-4">
         <button
           type="button"
           onClick={onMenu}
           aria-label="Menu"
-          className="grid h-9 w-9 place-items-center rounded-lg border border-line bg-surface text-zinc-400 transition-colors hover:bg-white/5 hover:text-white lg:hidden"
+          className="grid h-9 w-9 place-items-center rounded-lg border border-line bg-surface text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink lg:hidden"
         >
           <MenuIcon className="h-4 w-4" />
         </button>
 
         <div className="flex flex-col">
-          <h1 className="font-display text-lg font-semibold text-white leading-tight">
+          <h1 className="font-display text-lg font-semibold text-ink leading-tight">
             {title}
           </h1>
-          <div className="text-xs text-zinc-400">
+          <div className="text-xs text-ink-2">
             {subtitle}
           </div>
         </div>
@@ -81,13 +81,13 @@ function LiveClock() {
   }, []);
 
   return (
-    <div className="hidden items-center gap-2 rounded-full border border-[#24344F] bg-[#101827] px-3 py-1.5 sm:flex">
+    <div className="hidden items-center gap-2 rounded-full border border-line bg-surface px-3 py-1.5 sm:flex">
       <div className="relative flex h-2 w-2 items-center justify-center">
         <span className="pulse-dot absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>
         <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-green-400"></span>
       </div>
-      <span className="text-[11px] font-medium tracking-wide text-zinc-400">
-        Live &bull; <span className="tabular-nums text-zinc-300">{timeStr}</span>
+      <span className="text-[11px] font-medium tracking-wide text-ink-2">
+        Live &bull; <span className="tabular-nums text-ink-2">{timeStr}</span>
       </span>
     </div>
   );
@@ -161,8 +161,8 @@ function NotificationsDropdown() {
         aria-label="Notifications"
         onClick={() => setOpen((prev) => !prev)}
         className={cn(
-          "relative grid h-9 w-9 place-items-center rounded-lg border border-[#24344F] transition-colors",
-          open ? "bg-white/5 text-white" : "bg-[#101827] text-zinc-400 hover:bg-white/5 hover:text-white"
+          "relative grid h-9 w-9 place-items-center rounded-lg border border-line transition-colors",
+          open ? "bg-surface-2 text-ink" : "bg-surface text-ink-2 hover:bg-surface-2 hover:text-ink"
         )}
       >
         <BellIcon className="h-4 w-4" />
@@ -172,11 +172,11 @@ function NotificationsDropdown() {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-[#101827] border border-[#24344F] rounded-2xl shadow-2xl z-50 overflow-hidden">
-          <div className="px-5 py-4 border-b border-[#24344F] flex items-start justify-between gap-4">
+        <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-surface border border-line rounded-2xl shadow-2xl z-50 overflow-hidden">
+          <div className="px-5 py-4 border-b border-line flex items-start justify-between gap-4">
             <div>
-              <h3 className="font-display text-sm font-semibold text-white">Notifications</h3>
-              <p className="text-xs text-zinc-500 mt-0.5">Account activity</p>
+              <h3 className="font-display text-sm font-semibold text-ink">Notifications</h3>
+              <p className="text-xs text-ink-3 mt-0.5">Account activity</p>
             </div>
             {hasUnread && (
               <button
@@ -184,7 +184,7 @@ function NotificationsDropdown() {
                   setNotifications([]);
                   toast.success("Marked as read");
                 }}
-                className="text-xs text-zinc-400 hover:text-white transition-colors"
+                className="text-xs text-ink-2 hover:text-ink transition-colors"
               >
                 Mark read
               </button>
@@ -193,7 +193,7 @@ function NotificationsDropdown() {
           
           <div className="max-h-[320px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] divide-y divide-[#24344F]">
             {!hasUnread ? (
-              <div className="py-8 text-center text-sm text-zinc-500">No new notifications</div>
+              <div className="py-8 text-center text-sm text-ink-3">No new notifications</div>
             ) : (
               notifications.map((item) => {
                 if (item.url) {
@@ -202,13 +202,13 @@ function NotificationsDropdown() {
                       key={item.id}
                       href={item.url as any}
                       onClick={() => setOpen(false)}
-                      className="flex items-start justify-between gap-3 px-5 py-3 hover:bg-zinc-800/20 transition-colors cursor-pointer"
+                      className="flex items-start justify-between gap-3 px-5 py-3 hover:bg-surface-2 transition-colors cursor-pointer"
                     >
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-white truncate">{item.title}</p>
-                        <p className="text-xs text-zinc-500 mt-0.5 line-clamp-2">{item.message}</p>
+                        <p className="text-sm font-medium text-ink truncate">{item.title}</p>
+                        <p className="text-xs text-ink-3 mt-0.5 line-clamp-2">{item.message}</p>
                       </div>
-                      <p className="text-[11px] text-zinc-500 shrink-0 whitespace-nowrap">{item.timestamp}</p>
+                      <p className="text-[11px] text-ink-3 shrink-0 whitespace-nowrap">{item.timestamp}</p>
                     </Link>
                   );
                 } else {
@@ -216,13 +216,13 @@ function NotificationsDropdown() {
                     <div
                       key={item.id}
                       onClick={() => setOpen(false)}
-                      className="flex items-start justify-between gap-3 px-5 py-3 hover:bg-zinc-800/20 transition-colors cursor-pointer"
+                      className="flex items-start justify-between gap-3 px-5 py-3 hover:bg-surface-2 transition-colors cursor-pointer"
                     >
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-white truncate">{item.title}</p>
-                        <p className="text-xs text-zinc-500 mt-0.5 line-clamp-2">{item.message}</p>
+                        <p className="text-sm font-medium text-ink truncate">{item.title}</p>
+                        <p className="text-xs text-ink-3 mt-0.5 line-clamp-2">{item.message}</p>
                       </div>
-                      <p className="text-[11px] text-zinc-500 shrink-0 whitespace-nowrap">{item.timestamp}</p>
+                      <p className="text-[11px] text-ink-3 shrink-0 whitespace-nowrap">{item.timestamp}</p>
                     </div>
                   );
                 }

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Toaster } from "sonner";
+import { ThemeProvider } from "next-themes";
 
 import { captureReferralCode } from "@/lib/referral";
 import { useAuthStore } from "@/stores/authStore";
@@ -52,8 +53,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      {children}
+    <ThemeProvider attribute="class" defaultTheme="dark" disableTransitionOnChange>
+      <QueryClientProvider client={queryClient}>
+        {children}
       {/* App-wide toast portal (trade results, Deriv linking, …). */}
       <Toaster richColors position="top-center" closeButton />
       {/* Dev-only: the devtools entry self-excludes from production bundles,
@@ -62,5 +64,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-left" />
       )}
     </QueryClientProvider>
+    </ThemeProvider>
   );
 }

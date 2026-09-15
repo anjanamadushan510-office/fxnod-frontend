@@ -75,31 +75,31 @@ export default function TransferPage() {
     <section data-view="transfer" className="p-4 lg:p-8 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-6">
         <div>
-          <h1 className="font-display text-2xl font-bold text-white">Transfer</h1>
-          <p className="text-sm text-zinc-500 mt-1">Wallet · Deriv</p>
+          <h1 className="font-display text-2xl font-bold text-ink">Transfer</h1>
+          <p className="text-sm text-ink-3 mt-1">Wallet · Deriv</p>
         </div>
       </div>
       
       {/* Top Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <article className="bg-bg border border-line rounded-2xl p-6 min-w-0" style={{ backgroundColor: "#101827", borderColor: "#24344F" }}>
-          <p className="text-xs uppercase tracking-[0.14em] text-zinc-500 mb-3">FXNOD Wallet</p>
-          <p className="font-display text-3xl font-semibold tabular-nums text-white">{fmtUSD(balance)}</p>
-          <p className="mt-2 text-sm text-zinc-500">Available to send</p>
+          <p className="text-xs uppercase tracking-[0.14em] text-ink-3 mb-3">FXNOD Wallet</p>
+          <p className="font-display text-3xl font-semibold tabular-nums text-ink">{fmtUSD(balance)}</p>
+          <p className="mt-2 text-sm text-ink-3">Available to send</p>
         </article>
 
         <article className="bg-bg border border-line rounded-2xl p-6 min-w-0" style={{ backgroundColor: "#101827", borderColor: "#24344F" }}>
-          <p className="text-xs uppercase tracking-[0.14em] text-zinc-500 mb-3">On Deriv</p>
-          <p className="font-display text-3xl font-semibold tabular-nums text-white">{fmtUSD(0)}</p>
-          <p className="mt-2 text-sm text-zinc-500">Sent from this wallet</p>
+          <p className="text-xs uppercase tracking-[0.14em] text-ink-3 mb-3">On Deriv</p>
+          <p className="font-display text-3xl font-semibold tabular-nums text-ink">{fmtUSD(0)}</p>
+          <p className="mt-2 text-sm text-ink-3">Sent from this wallet</p>
         </article>
 
         <article className="bg-bg border border-line rounded-2xl p-6 min-w-0 flex flex-col justify-center" style={{ backgroundColor: "#101827", borderColor: "#24344F" }}>
-          <p className="text-xs uppercase tracking-[0.14em] text-zinc-500 mb-3">Destination</p>
+          <p className="text-xs uppercase tracking-[0.14em] text-ink-3 mb-3">Destination</p>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center text-red-500 font-bold text-lg">D</div>
             <div>
-              <p className="font-medium text-white">Deriv</p>
+              <p className="font-medium text-ink">Deriv</p>
               {derivNickname ? (
                 <p className="text-xs text-green-400">Connected · {derivNickname}</p>
               ) : (
@@ -115,23 +115,23 @@ export default function TransferPage() {
         {/* Main Form */}
         <div className="lg:col-span-2 space-y-6">
           <article className="bg-bg border border-line rounded-2xl p-6" style={{ backgroundColor: "#101827", borderColor: "#24344F" }}>
-            <h3 className="font-display text-sm font-semibold text-white mb-4">Select Venue</h3>
+            <h3 className="font-display text-sm font-semibold text-ink mb-4">Select Venue</h3>
             <div className="flex flex-wrap gap-3">
-              <button className="flex-1 min-w-[120px] py-3 px-4 rounded-xl border border-[#3A5075] bg-[#1A263D] text-white font-medium text-sm transition-colors text-center">
+              <button className="flex-1 min-w-[120px] py-3 px-4 rounded-xl border border-line-2 bg-surface-2 text-ink font-medium text-sm transition-colors text-center">
                 Deriv
               </button>
-              <button disabled className="flex-1 min-w-[120px] py-3 px-4 rounded-xl border border-[#24344F] bg-transparent text-zinc-600 font-medium text-sm cursor-not-allowed text-center">
+              <button disabled className="flex-1 min-w-[120px] py-3 px-4 rounded-xl border border-line bg-transparent text-ink-3 font-medium text-sm cursor-not-allowed text-center">
                 Binance
               </button>
-              <button disabled className="flex-1 min-w-[120px] py-3 px-4 rounded-xl border border-[#24344F] bg-transparent text-zinc-600 font-medium text-sm cursor-not-allowed text-center">
+              <button disabled className="flex-1 min-w-[120px] py-3 px-4 rounded-xl border border-line bg-transparent text-ink-3 font-medium text-sm cursor-not-allowed text-center">
                 Bybit
               </button>
             </div>
 
             <div className="mt-8">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-display text-sm font-semibold text-white">Amount</h3>
-                <span className="text-xs text-zinc-500">Min $10</span>
+                <h3 className="font-display text-sm font-semibold text-ink">Amount</h3>
+                <span className="text-xs text-ink-3">Min $10</span>
               </div>
               
               <div className="flex gap-3 mb-4">
@@ -141,8 +141,8 @@ export default function TransferPage() {
                     onClick={() => setAmount(preset)}
                     className={`flex-1 py-2 rounded-lg border text-sm font-medium transition-colors ${
                       amount === preset 
-                        ? "bg-white text-black border-white" 
-                        : "bg-transparent text-zinc-400 border-[#24344F] hover:border-zinc-500"
+                        ? "bg-white text-surface border-white" 
+                        : "bg-transparent text-ink-2 border-line hover:border-ink-2"
                     }`}
                   >
                     ${preset}
@@ -150,19 +150,19 @@ export default function TransferPage() {
                 ))}
                 <button
                   onClick={() => setAmount(balance)}
-                  className="flex-1 py-2 rounded-lg border border-[#24344F] bg-transparent text-zinc-400 text-sm font-medium hover:border-zinc-500 transition-colors"
+                  className="flex-1 py-2 rounded-lg border border-line bg-transparent text-ink-2 text-sm font-medium hover:border-ink-2 transition-colors"
                 >
                   Max
                 </button>
               </div>
 
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">$</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-2">$</span>
                 <input
                   type="number"
                   value={amount}
                   onChange={(e) => setAmount(Number(e.target.value))}
-                  className="w-full h-12 pl-8 pr-4 rounded-xl bg-ink border border-line text-white font-medium focus:outline-none focus:border-zinc-500 transition-colors"
+                  className="w-full h-12 pl-8 pr-4 rounded-xl bg-ink border border-line text-ink font-medium focus:outline-none focus:border-ink-2 transition-colors"
                   style={{ backgroundColor: "#0D1421", borderColor: "#24344F" }}
                 />
               </div>
@@ -171,7 +171,7 @@ export default function TransferPage() {
             <button
               onClick={handleTransfer}
               disabled={transferMutation.isPending || amount <= 0}
-              className="mt-8 w-full h-12 rounded-xl bg-white text-black font-semibold hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="mt-8 w-full h-12 rounded-xl bg-white text-surface font-semibold hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {transferMutation.isPending ? "Processing..." : `Send ${fmtUSD(amount)} to Deriv`}
             </button>
@@ -181,8 +181,8 @@ export default function TransferPage() {
         {/* Info Card */}
         <div className="space-y-6">
           <article className="bg-bg border border-line rounded-2xl p-6" style={{ backgroundColor: "#101827", borderColor: "#24344F" }}>
-            <p className="text-xs uppercase tracking-[0.14em] text-zinc-500 mb-4">How it works</p>
-            <ol className="text-sm text-zinc-400 space-y-4 list-decimal pl-4">
+            <p className="text-xs uppercase tracking-[0.14em] text-ink-3 mb-4">How it works</p>
+            <ol className="text-sm text-ink-2 space-y-4 list-decimal pl-4">
               <li>Enter the amount you wish to transfer.</li>
               <li>Funds are instantly deducted from your FXNOD Wallet.</li>
               <li>Your connected Deriv account is credited via the Payment Agent API.</li>

@@ -29,14 +29,14 @@ export default function ToolsPage() {
         {tools.map((tool) => (
           <article 
             key={tool.id} 
-            className="bg-[#101827] border border-[#24344F] rounded-2xl p-5 flex flex-col min-w-0 transition-colors hover:bg-white/[0.02]"
+            className="bg-surface border border-line rounded-2xl p-5 flex flex-col min-w-0 transition-colors hover:bg-surface-2"
           >
             <div className="flex items-center justify-between gap-3 mb-4">
               <div className="flex items-center gap-3">
-                <img src={tool.icon} alt={tool.name} className="h-8 w-8 object-contain bg-[#080C16] rounded-full p-1 border border-[#24344F]" />
+                <img src={tool.icon} alt={tool.name} className="h-8 w-8 object-contain bg-bg rounded-full p-1 border border-line" />
                 <div>
-                  <h3 className="font-medium text-white">{tool.name}</h3>
-                  <p className="text-xs text-zinc-500">{tool.subtitle}</p>
+                  <h3 className="font-medium text-ink">{tool.name}</h3>
+                  <p className="text-xs text-ink-3">{tool.subtitle}</p>
                 </div>
               </div>
               <div className="inline-flex items-center gap-1.5 text-xs text-green-400">
@@ -48,20 +48,20 @@ export default function ToolsPage() {
               </div>
             </div>
             
-            <p className="text-sm text-zinc-400 leading-relaxed mb-4 w-full">
+            <p className="text-sm text-ink-2 leading-relaxed mb-4 w-full">
               {tool.description}
             </p>
             
             <div className="mt-auto flex gap-2">
               <Link 
                 href={tool.href as Route} 
-                className="flex-1 flex justify-center items-center h-9 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 transition-colors"
+                className="flex-1 flex justify-center items-center h-9 rounded-lg bg-white text-surface text-sm font-medium hover:opacity-80 transition-opacity transition-colors"
               >
                 Open
               </Link>
               <button 
                 type="button"
-                className="h-9 px-3 rounded-lg border border-[#24344F] text-sm text-zinc-300 hover:text-white hover:bg-white/5 transition-colors"
+                className="h-9 px-3 rounded-lg border border-line text-sm text-ink-2 hover:text-ink hover:bg-surface-2 transition-colors"
               >
                 Deactivate
               </button>
