@@ -26,8 +26,8 @@ export default function TransferPage() {
   const { data: accountsData } = useDerivListAccounts();
   const linkedAccounts = accountsData?.accounts || [];
   
-  // Find the first CR account in the list of linked accounts
-  const crAccount = linkedAccounts.find((acc) => acc.deriv_account_id.startsWith("CR"));
+  // Find the first CR or ROT account in the list of linked accounts
+  const crAccount = linkedAccounts.find((acc) => acc.deriv_account_id.startsWith("CR") || acc.deriv_account_id.startsWith("ROT"));
   const derivNickname = crAccount?.deriv_account_id || "";
 
   const transferMutation = useMutation({
@@ -59,8 +59,8 @@ export default function TransferPage() {
       toast.error("Insufficient funds in FXNOD wallet.");
       return;
     }
-    if (!derivNickname || !derivNickname.startsWith("CR")) {
-      toast.error("Transfers require a Real Wallet (CR account). Please connect your main CR account.");
+    if (!derivNickname || !(derivNickname.startsWith("CR") || derivNickname.startsWith("ROT"))) {
+      toast.error("Transfers require a Real account (CR or ROT). Please connect your main real account.");
       return;
     }
 
