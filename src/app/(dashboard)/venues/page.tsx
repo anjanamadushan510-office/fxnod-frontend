@@ -9,15 +9,10 @@ export default function VenuesPage() {
   const derivStatus = useDerivStatus();
 
   return (
-    <section className="p-4 lg:p-8 space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-6">
-        <div>
-          <h1 className="font-display text-2xl font-bold text-ink">Venues</h1>
-          <p className="text-sm text-ink-3 mt-1">Live APIs</p>
-        </div>
-      </div>
+    <section className="p-4 lg:p-8">
+      <p className="mb-6 text-sm text-ink-2">Send wallet funds to Deriv. Binance and Bybit deposits come next.</p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 min-w-0">
         <article className="bg-surface border border-line rounded-2xl p-6 lg:p-7 hover:bg-surface-2 transition-colors relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-6">
             {derivStatus.linked ? (
@@ -32,7 +27,7 @@ export default function VenuesPage() {
           </div>
           
           <div className="flex items-center gap-4 mb-5">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-500/10 text-red-500 font-bold text-2xl">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-500/10 text-red-500 font-bold text-2xl shrink-0">
               D
             </div>
             <div>
@@ -48,13 +43,13 @@ export default function VenuesPage() {
           <div className="flex items-center gap-3">
             <Link
               href={"/transfer" as Route}
-              className="flex-1 flex justify-center rounded-xl bg-white text-surface py-2.5 text-sm font-semibold hover:opacity-80 transition-opacity transition-colors"
+              className="flex-1 flex justify-center items-center h-10 rounded-xl bg-ink text-surface text-sm font-semibold hover:opacity-80 transition-opacity"
             >
               Deposit
             </Link>
             <Link
               href={"/tools" as Route}
-              className="flex-1 flex justify-center rounded-xl border border-line bg-transparent text-ink py-2.5 text-sm font-medium hover:bg-surface-2 transition-colors"
+              className="flex-1 flex justify-center items-center h-10 rounded-xl border border-line bg-transparent text-ink text-sm font-medium hover:bg-surface-2 transition-colors"
             >
               Tools
             </Link>
