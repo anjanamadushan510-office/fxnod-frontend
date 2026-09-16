@@ -13,7 +13,7 @@ function getRouteTitle(pathname: string) {
   if (pathname.startsWith("/tools")) return { title: "Tools", subtitle: "Active Tools" };
   if (pathname.startsWith("/subscriptions")) return { title: "Subscriptions", subtitle: "Manage Subscriptions" };
   if (pathname.startsWith("/venues")) return { title: "Venues", subtitle: "Live APIs" };
-  if (pathname.startsWith("/wallet")) return { title: "Wallet", subtitle: "Wallet & Funds" };
+  if (pathname.startsWith("/wallet")) return { title: "Wallet", subtitle: "Top up, then pay for tools" };
   if (pathname.startsWith("/transfer")) return { title: "Transfer", subtitle: "Transfer Funds" };
   if (pathname.startsWith("/partner/dashboard")) return { title: "Partner", subtitle: "Partner Program" };
   if (pathname.startsWith("/settings")) return { title: "Settings", subtitle: "Account Settings" };
