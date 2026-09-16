@@ -27,7 +27,7 @@ export default function VenuesPage() {
           </div>
           
           <div className="flex items-center gap-4 mb-5">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-500/10 text-red-500 font-bold text-2xl shrink-0">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-line bg-surface-2 text-ink font-semibold text-lg">
               D
             </div>
             <div>
