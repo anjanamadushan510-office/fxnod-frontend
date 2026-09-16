@@ -285,8 +285,8 @@ export default function LandingPage() {
 
         <section className="px-5 sm:px-8 lg:px-12 pb-24">
           <div className="max-w-6xl mx-auto relative overflow-hidden rounded-3xl px-6 sm:px-16 py-16 sm:py-24 text-center border border-line">
-            <img src="/assets/og-image.jpg" alt="" className="absolute inset-0 w-full h-full object-cover opacity-50" />
-            <div className="absolute inset-0 bg-bg/70"></div>
+            <img src="/assets/og-image.jpg" alt="" className="absolute inset-0 w-full h-full object-cover opacity-25" />
+            <div className="absolute inset-0 bg-bg/80"></div>
             <div className="relative">
               <h2 className="font-display text-3xl sm:text-5xl font-semibold mb-4">Open the terminal.</h2>
               <p className="text-zinc-300 max-w-md mx-auto mb-8 leading-relaxed">Run FXNOD Bot, move funds to Deriv, and manage tools from one hub.</p>
