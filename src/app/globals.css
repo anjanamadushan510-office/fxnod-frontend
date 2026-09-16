@@ -7,14 +7,14 @@
    Switch theme by toggling `data-theme="dark"` on <html>.
    ============================================================================ */
 :root {
-  --bg: #f4f3ef;
+  --bg: #F9FAFB;
   --surface: #ffffff;
-  --surface-2: #fbfaf6;
+  --surface-2: #F3F4F6;
   --ink: #0a1430;
   --ink-2: #3a435c;
   --ink-3: #7b8298;
-  --line: #e7e4dc;
-  --line-2: #eeebe3;
+  --line: #E5E7EB;
+  --line-2: #F3F4F6;
   --navy: #0a1535;
   --navy-2: #091230;
   --navy-3: #13204a;

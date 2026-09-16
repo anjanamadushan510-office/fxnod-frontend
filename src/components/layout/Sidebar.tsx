@@ -132,13 +132,13 @@ export function Sidebar({
       <aside
         id="sidebar"
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex h-full w-64 flex-col border-r border-line bg-bg transition-transform duration-300 ease-in-out lg:translate-x-0 lg:sticky lg:top-0 lg:h-[100dvh]",
+          "fixed inset-y-0 left-0 z-40 flex h-full w-64 flex-col border-r border-line bg-surface transition-transform duration-300 ease-in-out lg:translate-x-0 lg:sticky lg:top-0 lg:h-[100dvh]",
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         <div className="flex h-16 items-center justify-between border-b border-line px-5">
-          <a href="/home" className="flex items-center">
-            <img src="/assets/fxnod-logo.png" alt="FXNOD" className="h-8 w-auto" />
+          <a href="/home" className="flex items-center text-ink">
+            <img src="/assets/fxnod-logo.png" alt="FXNOD" className="h-8 w-auto invert dark:invert-0" />
           </a>
           <button 
             className="text-ink-2 hover:text-ink lg:hidden" 
@@ -171,7 +171,7 @@ export function Sidebar({
                 )}
               >
                 {isActive && (
-                  <span className="absolute left-0 top-2 bottom-2 w-[2px] bg-white rounded-r" />
+                  <span className="absolute left-0 top-2 bottom-2 w-[2px] bg-ink rounded-r" />
                 )}
                 {item.icon(isActive)}
                 {item.label}
@@ -198,7 +198,7 @@ export function Sidebar({
                 )}
               >
                 {isActive && (
-                  <span className="absolute left-0 top-2 bottom-2 w-[2px] bg-white rounded-r" />
+                  <span className="absolute left-0 top-2 bottom-2 w-[2px] bg-ink rounded-r" />
                 )}
                 {item.icon(isActive)}
                 <span className="flex-1">{item.label}</span>
@@ -215,7 +215,7 @@ export function Sidebar({
         <div className="mt-auto border-t border-line p-3">
           <Link href={"/settings" as Route} className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-surface-2 transition-colors">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-line bg-surface">
-              <img src="/assets/fxnod-mark.png" alt="FXNOD" className="h-6 w-6 object-contain" />
+              <img src="/assets/fxnod-mark.png" alt="FXNOD" className="h-6 w-6 object-contain invert dark:invert-0" />
             </div>
             <div className="flex min-w-0 flex-col">
               <span className="truncate text-sm font-semibold text-ink">{user.name}</span>
