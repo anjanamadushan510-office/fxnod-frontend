@@ -4,13 +4,15 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useAuthStore } from "@/stores/authStore";
+import { UpdateEmailModal } from "@/components/settings/UpdateEmailModal";
 
 export default function SettingsPage() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const logout = useAuthStore((state) => state.logout);
+  const { user, logout } = useAuthStore();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isUpdateEmailModalOpen, setIsUpdateEmailModalOpen] = useState(false);
 
   useEffect(() => setMounted(true), []);
 
@@ -32,6 +34,31 @@ export default function SettingsPage() {
           Settings
         </h1>
         <p className="text-xs text-ink-3">Workspace defaults</p>
+      </div>
+
+      {/* Profile Card */}
+      <div className="bg-surface border border-line rounded-2xl p-6">
+        <h2 className="text-sm font-medium text-ink mb-4">Profile</h2>
+        
+        <div className="mb-3">
+          <p className="text-sm text-ink">Email Address</p>
+          <p className="text-xs text-ink-3">Used for sign-in and recovery</p>
+        </div>
+
+        <div className="flex items-center gap-3 max-w-sm">
+          <input 
+            type="text" 
+            disabled 
+            value={user?.email || ""} 
+            className="flex-1 bg-bg border border-line rounded-lg px-3 py-2 text-sm text-ink-2 disabled:opacity-70"
+          />
+          <button 
+            onClick={() => setIsUpdateEmailModalOpen(true)}
+            className="text-sm font-medium text-ink-2 hover:text-ink transition-colors px-2"
+          >
+            Change
+          </button>
+        </div>
       </div>
 
       {/* Appearance Card */}
@@ -75,6 +102,11 @@ export default function SettingsPage() {
           </button>
         </div>
       </div>
+
+      <UpdateEmailModal 
+        isOpen={isUpdateEmailModalOpen} 
+        onClose={() => setIsUpdateEmailModalOpen(false)} 
+      />
     </section>
   );
 }
