@@ -42,7 +42,7 @@ export function LoginForm() {
         setAccessToken(data.access_token);
         await bootstrap(); // GET /users/me → store user + status: authenticated
         toast.success("Welcome back");
-        router.push("/" as Route);
+        router.push("/home" as Route);
       },
       onError: (err) => {
         const parsed = parseApiError(err, "Login failed. Please try again.");
