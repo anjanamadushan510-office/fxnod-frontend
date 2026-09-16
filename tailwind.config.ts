@@ -27,6 +27,7 @@ const config: Config = {
         "gold-2": "var(--gold-2)",
         "gold-3": "var(--gold-3)",
         "gold-soft": "var(--gold-soft)",
+        accent: "#6EE7D8",
 
         // /options scope — only meaningful inside [data-app="options"].
         "opt-bg": "var(--opt-bg)",
@@ -44,7 +45,8 @@ const config: Config = {
         "opt-fall-soft": "var(--opt-fall-soft)",
       },
       fontFamily: {
-        sans: ["var(--font-manrope)", "system-ui", "sans-serif"],
+        sans: ["var(--font-inter)", "sans-serif"],
+        display: ["var(--font-outfit)", "sans-serif"],
         mono: ["var(--font-mono)", "ui-monospace", "monospace"],
       },
       boxShadow: {

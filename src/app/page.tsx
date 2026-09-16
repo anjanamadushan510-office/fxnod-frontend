@@ -36,7 +36,7 @@ export default function LandingPage() {
       <a className="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-ink focus:z-50" href="#main">Skip to content</a>
 
       <div className="landing-header">
-        <header className="site-header min-h-16 flex items-center justify-between gap-3 py-3 sm:py-0 sm:h-16 sm:px-8 lg:px-12 border-b border-line">
+        <header className="site-header w-full flex items-center justify-between gap-3 py-3 sm:py-0 sm:h-16 sm:px-8 lg:px-12 border-b border-line">
           <Link href="/" aria-label="FXNOD home" className="shrink-0">
             <img src="/assets/fxnod-logo.png" alt="FXNOD" className="h-6 sm:h-7 w-auto" width="140" height="28" />
           </Link>
@@ -48,7 +48,7 @@ export default function LandingPage() {
           </nav>
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <Link href={"/login" as Route} className="hidden md:inline-flex h-9 px-3 sm:px-4 items-center rounded-full text-sm text-zinc-300 hover:text-white transition">Log in</Link>
-            <Link href={"/login?mode=create" as Route} className="bg-[#6EE7D8] text-ink hidden md:inline-flex h-9 px-4 items-center rounded-full text-sm font-semibold hover:opacity-90 transition">Get started</Link>
+            <Link href={"/login?mode=create" as Route} className="bg-accent text-[#080C16] hidden md:inline-flex h-9 px-4 items-center rounded-full text-sm font-semibold hover:opacity-90 transition">Get started</Link>
             <button 
               type="button" 
               className="md:hidden p-2 text-zinc-400 hover:text-white"
@@ -71,7 +71,7 @@ export default function LandingPage() {
             <Link href={"/blog" as Route} onClick={() => setIsMobileMenuOpen(false)}>Guides</Link>
             <hr className="border-line" />
             <Link href={"/login" as Route} onClick={() => setIsMobileMenuOpen(false)}>Log in</Link>
-            <Link href={"/login?mode=create" as Route} className="text-[#6EE7D8] font-semibold" onClick={() => setIsMobileMenuOpen(false)}>Get started</Link>
+            <Link href={"/login?mode=create" as Route} className="text-accent font-semibold" onClick={() => setIsMobileMenuOpen(false)}>Get started</Link>
           </nav>
         )}
       </div>
@@ -82,7 +82,7 @@ export default function LandingPage() {
             <h1 className="font-display text-[2.15rem] sm:text-5xl lg:text-7xl font-semibold tracking-tight leading-[1.08] mb-6">Trade, fund, and run.<br className="hidden sm:block" /> All in one hub.</h1>
             <p className="text-base sm:text-xl text-zinc-400 max-w-2xl mx-auto leading-relaxed mb-8">Access the trading terminal built for Deriv, Bybit and Binance — with FXNOD Bot, a wallet, and venue tools in one place.</p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-12">
-              <Link href={"/login?mode=create" as Route} className="bg-[#6EE7D8] text-ink hover:opacity-90 transition h-12 px-8 inline-flex items-center justify-center rounded-full text-sm font-semibold w-full sm:w-auto">Get started</Link>
+              <Link href={"/login?mode=create" as Route} className="bg-accent text-[#080C16] hover:opacity-90 transition h-12 px-8 inline-flex items-center justify-center rounded-full text-sm font-semibold w-full sm:w-auto">Get started</Link>
               <Link href={"/login" as Route} className="h-12 px-8 inline-flex items-center justify-center rounded-full border border-line text-sm text-zinc-300 hover:text-white hover:border-zinc-500 transition w-full sm:w-auto">Log in</Link>
             </div>
           </div>
@@ -169,7 +169,7 @@ export default function LandingPage() {
               <p className="text-zinc-400 leading-relaxed mb-8">Start on Deriv — live for bots and wallet transfer. Bybit and Binance sit in the same hub.</p>
               <ul className="space-y-5">
                 <li>
-                  <p className="font-medium">Deriv <span className="text-[#6EE7D8] text-xs font-normal ml-2">Live</span></p>
+                  <p className="font-medium">Deriv <span className="text-accent text-xs font-normal ml-2">Live</span></p>
                   <p className="text-sm text-zinc-400 mt-1">Synthetics, options, FXNOD Bot, and deposits from the FXNOD Wallet.</p>
                 </li>
                 <li>
@@ -200,7 +200,7 @@ export default function LandingPage() {
                 <p className="text-sm text-zinc-400 leading-relaxed">No monthly fee. You trade on Deriv, Bybit or Binance through FXNOD. We earn on volume.</p>
               </article>
               <article className="rounded-3xl p-5 sm:p-8 border border-gold/25" style={{ background: "linear-gradient(160deg, #1A3358 0%, #101827 58%)" }}>
-                <p className="text-[11px] uppercase tracking-[0.14em] text-[#6EE7D8] mb-3">Monthly</p>
+                <p className="text-[11px] uppercase tracking-[0.14em] text-accent mb-3">Monthly</p>
                 <h3 className="font-display text-2xl font-semibold mb-3">Wallet subscription</h3>
                 <p className="text-sm text-zinc-300 leading-relaxed">Top up the FXNOD Wallet, subscribe, and use your own venue keys. No API markup.</p>
               </article>
@@ -215,7 +215,7 @@ export default function LandingPage() {
                 <p className="text-[11px] uppercase tracking-[0.18em] text-gold mb-3">Guides</p>
                 <h2 id="guides-heading" className="font-display text-3xl sm:text-4xl font-semibold">How the tools work.</h2>
               </div>
-              <Link href={"/blog" as Route} className="text-sm text-[#6EE7D8] hover:underline shrink-0">All guides</Link>
+              <Link href={"/blog" as Route} className="text-sm text-accent hover:underline shrink-0">All guides</Link>
             </div>
             <div id="home-posts" className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {posts.map((p) => (
@@ -272,7 +272,7 @@ export default function LandingPage() {
             <div className="relative">
               <h2 className="font-display text-3xl sm:text-5xl font-semibold mb-4">Open the terminal.</h2>
               <p className="text-zinc-300 max-w-md mx-auto mb-8 leading-relaxed">Run FXNOD Bot, move funds to Deriv, and manage tools from one hub.</p>
-              <Link href={"/login?mode=create" as Route} className="bg-[#6EE7D8] text-ink hover:opacity-90 transition inline-flex items-center justify-center h-12 px-8 rounded-full text-sm font-semibold">Get started</Link>
+              <Link href={"/login?mode=create" as Route} className="bg-accent text-[#080C16] hover:opacity-90 transition inline-flex items-center justify-center h-12 px-8 rounded-full text-sm font-semibold">Get started</Link>
             </div>
           </div>
         </section>
