@@ -27,25 +27,25 @@ export default function LandingPage() {
 
   const posts = [
     {
-      slug: "getting-started",
-      tag: "Guide",
-      date: "Oct 12",
-      title: "How to build your first bot on FXNOD",
-      excerpt: "A complete walkthrough of the strategy builder and connecting your Deriv account.",
+      slug: "fxnod-bot-strategies",
+      tag: "PRODUCT",
+      date: "11 SEP 2026",
+      title: "How FXNOD Bot runs strategies on Deriv",
+      excerpt: "Create as many Deriv strategies as you need — markets, rules, stake — then run them from one terminal.",
     },
     {
-      slug: "wallet-transfers",
-      tag: "Feature",
-      date: "Oct 05",
-      title: "Moving funds to Deriv with zero fees",
-      excerpt: "Learn how to instantly transfer your wallet balance to your connected Deriv account.",
+      slug: "send-wallet-funds",
+      tag: "WALLET",
+      date: "11 SEP 2026",
+      title: "Send FXNOD Wallet funds onto Deriv",
+      excerpt: "Top up once, then transfer a balance from FXNOD onto your connected Deriv account. Binance and Bybit come next.",
     },
     {
-      slug: "bybit-setup",
-      tag: "Guide",
-      date: "Sep 28",
-      title: "Setting up Bybit perpetuals on FXNOD",
-      excerpt: "Configure your API keys and launch your first grid bot on Bybit through the terminal.",
+      slug: "free-api-vs-monthly",
+      tag: "ACCESS",
+      date: "10 SEP 2026",
+      title: "Free API markup vs monthly wallet plans",
+      excerpt: "Use tools at no monthly fee and FXNOD earns on volume — or subscribe from your wallet and trade on your own keys.",
     }
   ];
 
