@@ -1,11 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import type { Route } from "next";
 
 export default function LandingPage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+    
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > lastScrollY && currentScrollY > 60) {
+        setIsVisible(false); // scrolling down
+      } else {
+        setIsVisible(true);  // scrolling up
+      }
+      lastScrollY = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const posts = [
     {
@@ -35,8 +53,8 @@ export default function LandingPage() {
     <div className="bg-bg text-ink font-sans antialiased min-h-screen">
       <a className="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-ink focus:z-50" href="#main">Skip to content</a>
 
-      <div className="landing-header">
-        <header className="site-header w-full flex items-center justify-between gap-3 py-3 sm:py-0 sm:h-16 sm:px-8 lg:px-12 border-b border-line">
+      <div className={`landing-header fixed top-0 left-0 right-0 w-full z-50 bg-bg transition-transform duration-300 ease-in-out ${isVisible ? "translate-y-0" : "-translate-y-full"}`}>
+        <header className="site-header w-full flex items-center justify-between gap-3 py-3 sm:py-0 sm:h-16 sm:px-8 lg:px-12">
           <Link href="/" aria-label="FXNOD home" className="shrink-0">
             <img src="/assets/fxnod-logo.png" alt="FXNOD" className="h-6 sm:h-7 w-auto" width="140" height="28" />
           </Link>
@@ -77,7 +95,7 @@ export default function LandingPage() {
       </div>
 
       <main id="main">
-        <section className="px-5 sm:px-8 lg:px-12 pt-28 sm:pt-40 pb-8">
+        <section className="px-5 sm:px-8 lg:px-12 pt-20 sm:pt-28 pb-8">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="font-display text-[2.15rem] sm:text-5xl lg:text-7xl font-semibold tracking-tight leading-[1.08] mb-6">Trade, fund, and run.<br className="hidden sm:block" /> All in one hub.</h1>
             <p className="text-base sm:text-xl text-zinc-400 max-w-2xl mx-auto leading-relaxed mb-8">Access the trading terminal built for Deriv, Bybit and Binance — with FXNOD Bot, a wallet, and venue tools in one place.</p>
