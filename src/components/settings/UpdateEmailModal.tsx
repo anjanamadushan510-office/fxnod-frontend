@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { toast } from "sonner";
 import { useAuthStore } from "@/stores/authStore";
@@ -20,7 +20,15 @@ export function UpdateEmailModal({ isOpen, onClose }: UpdateEmailModalProps) {
   const [newEmail, setNewEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [resendTimer, setResendTimer] = useState(0);
   const bootstrap = useAuthStore((state) => state.bootstrap);
+
+  useEffect(() => {
+    if (resendTimer > 0) {
+      const interval = setInterval(() => setResendTimer((t) => t - 1), 1000);
+      return () => clearInterval(interval);
+    }
+  }, [resendTimer]);
 
   if (!isOpen) return null;
 
@@ -29,6 +37,7 @@ export function UpdateEmailModal({ isOpen, onClose }: UpdateEmailModalProps) {
     setPassword("");
     setNewEmail("");
     setOtp("");
+    setResendTimer(0);
   };
 
   const handleClose = () => {
@@ -73,6 +82,21 @@ export function UpdateEmailModal({ isOpen, onClose }: UpdateEmailModalProps) {
       await requestEmailUpdate({ new_email: newEmail });
       toast.success("Verification code sent to " + newEmail);
       setStep("otp");
+      setResendTimer(60);
+    } catch (err) {
+      toast.error(extractError(err));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    if (resendTimer > 0) return;
+    setIsLoading(true);
+    try {
+      await requestEmailUpdate({ new_email: newEmail });
+      toast.success("Verification code resent to " + newEmail);
+      setResendTimer(60);
     } catch (err) {
       toast.error(extractError(err));
     } finally {
@@ -203,6 +227,17 @@ export function UpdateEmailModal({ isOpen, onClose }: UpdateEmailModalProps) {
               >
                 {isLoading ? "Confirming..." : "Confirm Email Update"}
               </button>
+              
+              <div className="mt-4 text-center">
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={resendTimer > 0 || isLoading}
+                  className="text-sm font-medium text-ink-2 hover:text-ink transition-colors disabled:opacity-50 disabled:hover:text-ink-2"
+                >
+                  {resendTimer > 0 ? `Resend in ${resendTimer}s` : "Didn't receive the code? Resend"}
+                </button>
+              </div>
             </form>
           )}
         </div>
