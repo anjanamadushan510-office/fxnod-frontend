@@ -33,7 +33,7 @@ export default function ToolsPage() {
           >
             <div className="flex items-center justify-between gap-3 mb-4">
               <div className="flex items-center gap-3">
-                <img src={tool.icon} alt={tool.name} className="h-8 w-8 object-contain bg-bg rounded-full p-1 border border-line" />
+                <img src={tool.icon} alt={tool.name} className="h-8 w-8 object-contain bg-bg rounded-full p-1 border border-line invert dark:invert-0" />
                 <div>
                   <h3 className="font-medium text-ink">{tool.name}</h3>
                   <p className="text-xs text-ink-3">{tool.subtitle}</p>
@@ -55,7 +55,7 @@ export default function ToolsPage() {
             <div className="mt-auto flex gap-2">
               <Link 
                 href={tool.href as Route} 
-                className="flex-1 flex justify-center items-center h-9 rounded-lg bg-white text-surface text-sm font-medium hover:opacity-80 transition-opacity transition-colors"
+                className="flex-1 flex justify-center items-center h-9 rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-80 transition-opacity"
               >
                 Open
               </Link>
