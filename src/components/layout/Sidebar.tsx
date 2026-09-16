@@ -213,7 +213,10 @@ export function Sidebar({
         </nav>
 
         <div className="mt-auto border-t border-line p-3">
-          <Link href={"/settings" as Route} className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-surface-2 transition-colors">
+          <Link 
+            href={"/settings" as Route} 
+            className="flex items-center gap-3 rounded-lg px-2 py-2 cursor-pointer hover:bg-surface-2 transition-colors"
+          >
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-line bg-surface">
               <img src="/assets/fxnod-mark.png" alt="FXNOD" className="h-6 w-6 object-contain invert dark:invert-0" />
             </div>
