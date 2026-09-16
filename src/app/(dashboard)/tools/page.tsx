@@ -33,7 +33,9 @@ export default function ToolsPage() {
           >
             <div className="flex items-center justify-between gap-3 mb-4">
               <div className="flex items-center gap-3">
-                <img src={tool.icon} alt={tool.name} className="h-8 w-8 object-contain bg-bg rounded-full p-1 border border-line invert dark:invert-0" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-2 border border-line shrink-0">
+                  <img src={tool.icon} alt={tool.name} className="h-5 w-5 object-contain invert dark:invert-0" />
+                </div>
                 <div>
                   <h3 className="font-medium text-ink">{tool.name}</h3>
                   <p className="text-xs text-ink-3">{tool.subtitle}</p>
