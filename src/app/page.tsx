@@ -237,7 +237,7 @@ export default function LandingPage() {
             </div>
             <div id="home-posts" className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {posts.map((p) => (
-                <Link key={p.slug} href={`/blog/${p.slug}` as Route} className="bg-panel border border-line rounded-2xl p-6 hover:border-zinc-600 transition block">
+                <Link key={p.slug} href={`/blog/${p.slug}` as Route} className="bg-panel border border-line rounded-2xl p-6 hover:border-zinc-600 transition flex flex-col min-h-[220px]">
                   <p className="text-[11px] uppercase tracking-wider text-gold mb-3">{p.tag} &middot; {p.date}</p>
                   <h3 className="font-display text-lg font-semibold mb-2">{p.title}</h3>
                   <p className="text-sm text-zinc-400 leading-relaxed">{p.excerpt}</p>
