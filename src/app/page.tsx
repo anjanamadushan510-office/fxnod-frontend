@@ -109,9 +109,9 @@ export default function LandingPage() {
         <section className="px-5 sm:px-8 lg:px-12 pb-16">
           <div className="max-w-6xl mx-auto relative overflow-hidden rounded-3xl min-h-[280px] sm:min-h-[420px] lg:min-h-[520px] border border-line">
             <img src="/assets/login-slide-1.jpg" alt="FXNOD brand photography — dark chrome rods in a black void" className="absolute inset-0 w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/20 to-ink/40"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/20 to-bg/40"></div>
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="h-36 w-36 sm:h-48 sm:w-48 rounded-full bg-ink/40 backdrop-blur-md border border-gold/20 flex items-center justify-center shadow-2xl">
+              <div className="h-36 w-36 sm:h-48 sm:w-48 rounded-full bg-bg/40 backdrop-blur-md border border-gold/20 flex items-center justify-center shadow-2xl">
                 <img src="/assets/fxnod-mark.png" alt="FXNOD mark" className="h-20 w-20 sm:h-28 sm:w-28 object-contain invert dark:invert-0" />
               </div>
             </div>
@@ -202,7 +202,7 @@ export default function LandingPage() {
             </div>
             <div className="relative overflow-hidden rounded-3xl border border-line min-h-[320px] lg:min-h-[440px]">
               <img src="/assets/login-slide-3.jpg" alt="Night financial district — FXNOD venues" className="absolute inset-0 w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-ink/40"></div>
+              <div className="absolute inset-0 bg-bg/40"></div>
             </div>
           </div>
         </section>
@@ -286,7 +286,7 @@ export default function LandingPage() {
         <section className="px-5 sm:px-8 lg:px-12 pb-24">
           <div className="max-w-6xl mx-auto relative overflow-hidden rounded-3xl px-6 sm:px-16 py-16 sm:py-24 text-center border border-line">
             <img src="/assets/og-image.jpg" alt="" className="absolute inset-0 w-full h-full object-cover opacity-50" />
-            <div className="absolute inset-0 bg-ink/70"></div>
+            <div className="absolute inset-0 bg-bg/70"></div>
             <div className="relative">
               <h2 className="font-display text-3xl sm:text-5xl font-semibold mb-4">Open the terminal.</h2>
               <p className="text-zinc-300 max-w-md mx-auto mb-8 leading-relaxed">Run FXNOD Bot, move funds to Deriv, and manage tools from one hub.</p>
