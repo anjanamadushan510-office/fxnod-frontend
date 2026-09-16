@@ -53,7 +53,7 @@ export default function LandingPage() {
     <div className="bg-bg text-ink font-sans antialiased min-h-screen">
       <a className="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-ink focus:z-50" href="#main">Skip to content</a>
 
-      <div className={`landing-header fixed top-0 left-0 right-0 w-full z-50 bg-bg transition-transform duration-300 ease-in-out ${isVisible ? "translate-y-0" : "-translate-y-full"}`}>
+      <div className={`landing-header fixed top-0 left-0 right-0 w-full z-50 bg-bg/50 backdrop-blur-md transition-transform duration-300 ease-in-out ${isVisible ? "translate-y-0" : "-translate-y-full"}`}>
         <header className="site-header w-full flex items-center justify-between gap-3 py-3 sm:py-0 sm:h-16 sm:px-8 lg:px-12">
           <Link href="/" aria-label="FXNOD home" className="shrink-0">
             <img src="/assets/fxnod-logo.png" alt="FXNOD" className="h-6 sm:h-7 w-auto" width="140" height="28" />
