@@ -28,8 +28,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${manrope.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
-      <body>
+    <html lang="en" className={`dark ${manrope.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
+      <body className="bg-bg text-ink antialiased">
         <Providers>{children}</Providers>
       </body>
     </html>

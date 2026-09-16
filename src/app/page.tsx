@@ -32,7 +32,7 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="bg-ink text-white font-sans antialiased min-h-screen">
+    <div className="bg-bg text-ink font-sans antialiased min-h-screen">
       <a className="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-ink focus:z-50" href="#main">Skip to content</a>
 
       <div className="landing-header">
