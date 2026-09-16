@@ -6,12 +6,7 @@ import { Cpu } from "lucide-react";
 
 export default function SubscriptionsPage() {
   return (
-    <section data-view="subscriptions" className="p-4 lg:p-8 space-y-6">
-      <div className="mb-6">
-        <h1 className="font-display text-2xl font-semibold text-ink">Your Subscriptions</h1>
-        <p className="mt-2 text-sm text-ink-2">Manage your platform add-ons and automated trading bots.</p>
-      </div>
-
+    <section data-view="subscriptions" className="p-4 lg:p-8">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-w-0">
         {/* dBot Subscriptions Card */}
         <article className="bg-surface border border-line hover:bg-surface-2 transition-colors rounded-2xl p-5 sm:p-6 flex flex-col min-w-0">
