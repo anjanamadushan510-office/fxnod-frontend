@@ -30,38 +30,7 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
-import type { DecimalString } from './decimalString';
-import type { BotRunTradeOutcome } from './botRunTradeOutcome';
-import type { BotRunTradeEntrySpot } from './botRunTradeEntrySpot';
-import type { BotRunTradeExitSpot } from './botRunTradeExitSpot';
-import type { BotRunTradeTickStreamItem } from './botRunTradeTickStreamItem';
 
-/**
- * One trade a bot placed, shaped for the run's history table.
- */
-export interface BotRunTrade {
-  trade_id: string;
-  deriv_contract_id: string;
-  symbol: string;
-  /** FXNod frontend contract type. */
-  contract_type: string;
-  /** "rise" / "fall"; absent for types without a direction. */
-  side?: string;
-  stake_amount: DecimalString;
-  currency: string;
-  /** Absent while the contract is still open. */
-  outcome?: BotRunTradeOutcome;
-  /** Realised P&L — payout minus stake. Absent while open: 0 would read as break-even rather than "not yet known".
- */
-  profit_loss?: DecimalString;
-  /** The run's order number for this trade, from the intent that produced it. Stable and gap-free, which a timestamp is not.
- */
-  sequence?: number;
-  created_at: string;
-  /** @nullable */
-  entry_spot?: BotRunTradeEntrySpot;
-  /** @nullable */
-  exit_spot?: BotRunTradeExitSpot;
-  /** @nullable */
-  tick_stream?: BotRunTradeTickStreamItem[] | null;
+export interface EmailUpdateRequest {
+  new_email: string;
 }
