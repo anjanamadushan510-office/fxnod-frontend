@@ -95,7 +95,7 @@ export default function LandingPage() {
       </div>
 
       <main id="main">
-        <section className="px-5 sm:px-8 lg:px-12 pt-20 sm:pt-28 pb-8">
+        <section className="px-5 sm:px-8 lg:px-12 pt-36 sm:pt-48 pb-8">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="font-display text-[2.15rem] sm:text-5xl lg:text-7xl font-semibold tracking-tight leading-[1.08] mb-6">Trade, fund, and run.<br className="hidden sm:block" /> All in one hub.</h1>
             <p className="text-base sm:text-xl text-zinc-400 max-w-2xl mx-auto leading-relaxed mb-8">Access the trading terminal built for Deriv, Bybit and Binance — with FXNOD Bot, a wallet, and venue tools in one place.</p>
