@@ -65,8 +65,8 @@ export default function LandingPage() {
             <Link href={"/blog" as Route} className="hover:text-white transition">Guides</Link>
           </nav>
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            <Link href={"/login" as Route} className="hidden md:inline-flex h-9 px-3 sm:px-4 items-center rounded-full text-sm text-zinc-300 hover:text-white transition">Log in</Link>
-            <Link href={"/login?mode=create" as Route} className="bg-accent text-[#080C16] hidden md:inline-flex h-9 px-4 items-center rounded-full text-sm font-semibold hover:opacity-90 transition">Get started</Link>
+            <Link href={"/auth/login" as Route} className="hidden md:inline-flex h-9 px-3 sm:px-4 items-center rounded-full text-sm text-zinc-300 hover:text-white transition">Log in</Link>
+            <Link href={"/auth/register" as Route} className="bg-accent text-[#080C16] hidden md:inline-flex h-9 px-4 items-center rounded-full text-sm font-semibold hover:opacity-90 transition">Get started</Link>
             <button 
               type="button" 
               className="md:hidden p-2 text-zinc-400 hover:text-white"
@@ -88,8 +88,8 @@ export default function LandingPage() {
             <a href="#access" onClick={() => setIsMobileMenuOpen(false)}>Access</a>
             <Link href={"/blog" as Route} onClick={() => setIsMobileMenuOpen(false)}>Guides</Link>
             <hr className="border-line" />
-            <Link href={"/login" as Route} onClick={() => setIsMobileMenuOpen(false)}>Log in</Link>
-            <Link href={"/login?mode=create" as Route} className="text-accent font-semibold" onClick={() => setIsMobileMenuOpen(false)}>Get started</Link>
+            <Link href={"/auth/login" as Route} onClick={() => setIsMobileMenuOpen(false)}>Log in</Link>
+            <Link href={"/auth/register" as Route} className="text-accent font-semibold" onClick={() => setIsMobileMenuOpen(false)}>Get started</Link>
           </nav>
         )}
       </div>
@@ -100,8 +100,8 @@ export default function LandingPage() {
             <h1 className="font-display text-[2.15rem] sm:text-5xl lg:text-7xl font-semibold tracking-tight leading-[1.08] mb-6">Trade, fund, and run.<br className="hidden sm:block" /> All in one hub.</h1>
             <p className="text-base sm:text-xl text-zinc-400 max-w-2xl mx-auto leading-relaxed mb-8">Access the trading terminal built for Deriv, Bybit and Binance — with FXNOD Bot, a wallet, and venue tools in one place.</p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-12">
-              <Link href={"/login?mode=create" as Route} className="bg-accent text-[#080C16] hover:opacity-90 transition h-12 px-8 inline-flex items-center justify-center rounded-full text-sm font-semibold w-full sm:w-auto">Get started</Link>
-              <Link href={"/login" as Route} className="h-12 px-8 inline-flex items-center justify-center rounded-full border border-line text-sm text-zinc-300 hover:text-white hover:border-zinc-500 transition w-full sm:w-auto">Log in</Link>
+              <Link href={"/auth/register" as Route} className="bg-accent text-[#080C16] hover:opacity-90 transition h-12 px-8 inline-flex items-center justify-center rounded-full text-sm font-semibold w-full sm:w-auto">Get started</Link>
+              <Link href={"/auth/login" as Route} className="h-12 px-8 inline-flex items-center justify-center rounded-full border border-line text-sm text-zinc-300 hover:text-white hover:border-zinc-500 transition w-full sm:w-auto">Log in</Link>
             </div>
           </div>
         </section>
@@ -148,7 +148,7 @@ export default function LandingPage() {
             <h2 className="font-display text-3xl sm:text-4xl font-semibold mb-3 max-w-2xl">Build from a single terminal, designed for the trader who runs their own book.</h2>
             <p className="text-zinc-400 max-w-xl mb-10 leading-relaxed">Bot, wallet, and venue tools — without hopping between platforms.</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Link href={"/login?mode=create" as Route} className="group bg-panel border border-line rounded-3xl overflow-hidden hover:border-zinc-600 transition block">
+              <Link href={"/auth/register" as Route} className="group bg-panel border border-line rounded-3xl overflow-hidden hover:border-zinc-600 transition block">
                 <div className="relative h-48 overflow-hidden">
                   <img src="/assets/login-slide-2.jpg" alt="" className="w-full h-full object-cover group-hover:scale-[1.03] transition duration-500" />
                 </div>
@@ -157,7 +157,7 @@ export default function LandingPage() {
                   <p className="text-sm text-zinc-400 leading-relaxed">Create as many Deriv strategies as you need. Markets, rules, stake — then run.</p>
                 </div>
               </Link>
-              <Link href={"/login?mode=create" as Route} className="group bg-panel border border-line rounded-3xl overflow-hidden hover:border-zinc-600 transition block">
+              <Link href={"/auth/register" as Route} className="group bg-panel border border-line rounded-3xl overflow-hidden hover:border-zinc-600 transition block">
                 <div className="relative h-48 overflow-hidden">
                   <img src="/assets/login-slide-1.jpg" alt="" className="w-full h-full object-cover group-hover:scale-[1.03] transition duration-500" />
                 </div>
@@ -166,7 +166,7 @@ export default function LandingPage() {
                   <p className="text-sm text-zinc-400 leading-relaxed">Top up, pay for monthly tools, or send a balance onto your Deriv account.</p>
                 </div>
               </Link>
-              <Link href={"/login?mode=create" as Route} className="group bg-panel border border-line rounded-3xl overflow-hidden hover:border-zinc-600 transition block">
+              <Link href={"/auth/register" as Route} className="group bg-panel border border-line rounded-3xl overflow-hidden hover:border-zinc-600 transition block">
                 <div className="relative h-48 overflow-hidden">
                   <img src="/assets/login-slide-3.jpg" alt="" className="w-full h-full object-cover group-hover:scale-[1.03] transition duration-500" />
                 </div>
@@ -290,7 +290,7 @@ export default function LandingPage() {
             <div className="relative">
               <h2 className="font-display text-3xl sm:text-5xl font-semibold mb-4">Open the terminal.</h2>
               <p className="text-zinc-300 max-w-md mx-auto mb-8 leading-relaxed">Run FXNOD Bot, move funds to Deriv, and manage tools from one hub.</p>
-              <Link href={"/login?mode=create" as Route} className="bg-accent text-[#080C16] hover:opacity-90 transition inline-flex items-center justify-center h-12 px-8 rounded-full text-sm font-semibold">Get started</Link>
+              <Link href={"/auth/register" as Route} className="bg-accent text-[#080C16] hover:opacity-90 transition inline-flex items-center justify-center h-12 px-8 rounded-full text-sm font-semibold">Get started</Link>
             </div>
           </div>
         </section>
@@ -314,14 +314,14 @@ export default function LandingPage() {
             <p className="text-xs uppercase tracking-wider text-zinc-500 mb-3">Company</p>
             <ul className="space-y-2 text-sm text-zinc-400">
               <li><Link href={"/blog" as Route} className="hover:text-white transition">Guides</Link></li>
-              <li><Link href={"/login" as Route} className="hover:text-white transition">Log in</Link></li>
+              <li><Link href={"/auth/login" as Route} className="hover:text-white transition">Log in</Link></li>
             </ul>
           </div>
           <div>
             <p className="text-xs uppercase tracking-wider text-zinc-500 mb-3">Account</p>
             <ul className="space-y-2 text-sm text-zinc-400">
-              <li><Link href={"/login?mode=create" as Route} className="hover:text-white transition">Sign up</Link></li>
-              <li><Link href={"/login" as Route} className="hover:text-white transition">Log in</Link></li>
+              <li><Link href={"/auth/register" as Route} className="hover:text-white transition">Sign up</Link></li>
+              <li><Link href={"/auth/login" as Route} className="hover:text-white transition">Log in</Link></li>
             </ul>
           </div>
         </div>
