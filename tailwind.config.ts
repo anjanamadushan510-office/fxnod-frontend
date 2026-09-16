@@ -13,6 +13,7 @@ const config: Config = {
       colors: {
         bg: "var(--bg)",
         surface: "var(--surface)",
+        panel: "var(--surface)",
         "surface-2": "var(--surface-2)",
         ink: "var(--ink)",
         "ink-2": "var(--ink-2)",
