@@ -50,7 +50,7 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="bg-bg text-ink font-sans antialiased min-h-screen">
+    <div data-theme="dark" className="bg-bg text-ink font-sans antialiased min-h-screen">
       <a className="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-ink focus:z-50" href="#main">Skip to content</a>
 
       <div className={`landing-header fixed top-0 left-0 right-0 w-full z-50 bg-bg/50 backdrop-blur-md transition-transform duration-300 ease-in-out ${isVisible ? "translate-y-0" : "-translate-y-full"}`}>
