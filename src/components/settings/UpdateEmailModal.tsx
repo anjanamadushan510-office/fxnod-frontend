@@ -38,7 +38,13 @@ export function UpdateEmailModal({ isOpen, onClose }: UpdateEmailModalProps) {
 
   const extractError = (err: unknown): string => {
     if (isAxiosError(err) && err.response?.data?.detail) {
-      return err.response.data.detail;
+      const detail = err.response.data.detail;
+      if (typeof detail === "string") {
+        return detail;
+      }
+      if (Array.isArray(detail) && detail.length > 0 && detail[0].msg) {
+        return detail[0].msg;
+      }
     }
     return "An unexpected error occurred.";
   };
