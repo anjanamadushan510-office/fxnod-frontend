@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { useGetWalletBalance } from "@/services/api/endpoints/wallet/wallet";
+import { useGetReferralStats } from "@/services/api/endpoints/referrals/referrals";
 import { fmtUSD } from "@/lib/format";
 import { cn } from "@/lib/cn";
 
@@ -12,6 +14,14 @@ interface DashboardMetricsProps {
 export function DashboardMetrics({ onTopUp, onSend }: DashboardMetricsProps) {
   const { data: walletData } = useGetWalletBalance();
   const balance = Number(walletData?.balance || 0);
+
+  // TODO: Connect to backend when /api/v1/venues endpoint is ready
+  const [venueCount, setVenueCount] = useState(3);
+
+  // Partner data via existing endpoint
+  const { data: referralStats } = useGetReferralStats();
+  const partnerEarnings = Number(referralStats?.settled_total || 0);
+  const partnerTeamSize = referralStats?.total_team_size || 0;
 
   return (
     <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
@@ -41,7 +51,7 @@ export function DashboardMetrics({ onTopUp, onSend }: DashboardMetricsProps) {
           <p className="text-xs uppercase tracking-[0.14em] text-ink-3">Venues</p>
           <span className="text-[11px] text-green-400">Live APIs</span>
         </div>
-        <p className="font-display text-3xl font-semibold tabular-nums text-ink">3</p>
+        <p className="font-display text-3xl font-semibold tabular-nums text-ink">{venueCount}</p>
         <p className="mt-1 text-xs text-ink-3">Deriv &middot; Bybit &middot; Binance</p>
       </article>
 
@@ -50,8 +60,8 @@ export function DashboardMetrics({ onTopUp, onSend }: DashboardMetricsProps) {
           <p className="text-xs uppercase tracking-[0.14em] text-ink-3">Partner</p>
           <span className="text-[11px] text-ink-2">This month</span>
         </div>
-        <p className="font-display text-3xl font-semibold tabular-nums text-ink">{fmtUSD(86.40)}</p>
-        <p className="mt-1 text-xs text-ink-3">12 referred traders</p>
+        <p className="font-display text-3xl font-semibold tabular-nums text-ink">{fmtUSD(partnerEarnings)}</p>
+        <p className="mt-1 text-xs text-ink-3">{partnerTeamSize} referred traders</p>
       </article>
     </div>
   );
