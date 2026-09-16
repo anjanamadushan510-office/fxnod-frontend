@@ -77,7 +77,7 @@ export default function PartnerDashboardPage() {
       
       <article className="bg-surface border border-line rounded-2xl p-5">
         <p className="text-xs uppercase tracking-[0.14em] text-ink-3 mb-3">Your link</p>
-        <div className="flex flex-col sm:flex-row gap-2">
+        <div className="flex flex-col sm:flex-row gap-4 items-center">
           <input 
             readOnly 
             value={link || "Preparing your link…"} 
@@ -87,7 +87,7 @@ export default function PartnerDashboardPage() {
             type="button"
             onClick={copy}
             disabled={!link}
-            className="h-10 px-4 rounded-lg bg-white text-surface text-sm font-medium hover:opacity-80 transition-opacity disabled:opacity-50 transition-colors"
+            className="h-10 px-6 w-full sm:w-auto rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
           >
             {copied ? "Copied" : "Copy"}
           </button>
