@@ -47,7 +47,7 @@ const PLATFORMS: Platform[] = [
     tagline: "Trade automatically",
     description:
       "Run an automated strategy with your own stake, take-profit and session limits. Stops itself when a limit is reached.",
-    href: "/options/dbot" as Route,
+    href: "/dbot" as Route,
     icon: <AppsGridIcon className="h-7 w-7" />,
     cta: "Open dBot",
   },

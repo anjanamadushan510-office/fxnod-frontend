@@ -73,6 +73,10 @@ export default function DBotDashboardPage() {
     () => (runsQuery.data?.runs ?? []).filter((r) => ACTIVE_STATUSES.has(r.status)),
     [runsQuery.data],
   );
+  const finishedRuns = useMemo(
+    () => (runsQuery.data?.runs ?? []).filter((r) => !ACTIVE_STATUSES.has(r.status)).slice(0, 10),
+    [runsQuery.data],
+  );
 
   // One currency across runs is the normal case; if it is not, a single total
   // would add dollars to something else, so none is shown.
@@ -113,9 +117,17 @@ export default function DBotDashboardPage() {
 
   return (
     <section className="p-4 lg:p-8 space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold text-ink">dBot</h1>
-        <p className="text-sm text-ink-2 mt-1">Build a bot in plain language</p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold text-ink">dBot</h1>
+          <p className="text-sm text-ink-2 mt-1">Build a bot in plain language</p>
+        </div>
+        <Link
+          href={"/dbot/subscription" as Route}
+          className="h-10 px-4 inline-flex items-center rounded-lg border border-line text-sm text-ink-2 hover:text-ink transition"
+        >
+          Subscription
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -190,7 +202,7 @@ export default function DBotDashboardPage() {
                 </dl>
                 <div className="flex gap-2">
                   <Link
-                    href={"/options/dbot" as Route}
+                    href={`/dbot/runs/${run.run_id}` as Route}
                     className="flex-1 inline-flex h-10 items-center justify-center rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 transition"
                   >
                     Watch
@@ -313,6 +325,45 @@ export default function DBotDashboardPage() {
           </div>
         )}
       </div>
+
+      {finishedRuns.length > 0 && (
+        <div className="space-y-4">
+          <SectionTitle title="Recent runs" subtitle="Finished sessions, newest first." />
+          <div className="bg-surface border border-line rounded-2xl divide-y divide-line overflow-hidden">
+            {finishedRuns.map((run) => (
+              <Link
+                key={run.run_id}
+                href={`/dbot/runs/${run.run_id}` as Route}
+                className="flex flex-wrap items-center gap-3 px-5 py-3 hover:bg-surface-2 transition-colors"
+              >
+                <span className="text-sm text-ink font-medium min-w-0 truncate">
+                  {strategyName(run.strategy_id)}
+                </span>
+                <AccountBadge isVirtual={run.is_virtual} />
+                <span className="text-xs text-ink-3 truncate">{run.symbols.map(marketName).join(", ")}</span>
+                <span className="text-xs text-ink-3 ml-auto">
+                  {new Date(run.created_at).toLocaleString()}
+                </span>
+                <span className="text-xs text-ink-3">
+                  {run.trades_won}W / {run.trades_lost}L
+                </span>
+                <span
+                  className={cn(
+                    "text-sm font-semibold tabular-nums min-w-[5rem] text-right",
+                    decimalSign(run.realized_pnl) < 0
+                      ? "text-red-400"
+                      : decimalSign(run.realized_pnl) > 0
+                        ? "text-emerald-400"
+                        : "text-ink-2",
+                  )}
+                >
+                  {formatMoney(run.realized_pnl)}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="mt-12">
         <h2 className="font-display text-xl font-semibold mb-1">Bot templates</h2>

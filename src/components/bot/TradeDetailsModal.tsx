@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { createChart, ISeriesApi, Time, LineSeries, SeriesMarker, createSeriesMarkers } from "lightweight-charts";
 import { useDerivChartFeed, type FeedTick } from "@/hooks/useDerivChartFeed";
 import { useOpenContract } from "@/hooks/useOpenContract";
-import type { BotTrade } from "./types";
+import type { BotTrade, PlottableTick } from "./types";
 import { cn } from "@/lib/cn";
 import { findMarket } from "@/components/options/market/catalog";
 
@@ -248,7 +248,9 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
     },
     onTick: (tick: FeedTick) => {
       if (seriesRef.current) {
-        const tickCount = openContract?.ticksTotal || (trade as any).tick_count || (trade as any).tickCount || 5;
+        // The contract reports how many ticks it runs for; five is Deriv's own
+        // default for tick contracts, used only before it has answered.
+        const tickCount = openContract?.ticksTotal || 5;
         const maxPoints = tickCount + 1;
         if (liveTicksRef.current.length >= maxPoints) {
           return;
@@ -271,11 +273,13 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
       // The tickStream array contains objects like { epoch: number, tick: number }
       // Sort to ensure chronological order as required by lightweight-charts
       const sortedTicks = [...trade.tickStream]
-        .filter(t => typeof t.epoch === "number" && typeof t.tick === "number")
+        .filter((t): t is PlottableTick => typeof t.epoch === "number" && typeof t.tick === "number")
         .sort((a, b) => a.epoch - b.epoch);
         
       if (sortedTicks.length > 0) {
-        const tickCount = openContract?.ticksTotal || (trade as any).tick_count || (trade as any).tickCount || 5;
+        // The contract reports how many ticks it runs for; five is Deriv's own
+        // default for tick contracts, used only before it has answered.
+        const tickCount = openContract?.ticksTotal || 5;
         const displayTicks = sortedTicks.slice(0, tickCount);
 
         seriesRef.current.setData(

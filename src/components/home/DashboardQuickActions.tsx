@@ -20,7 +20,7 @@ export function DashboardQuickActions() {
       </article>
       
       <article 
-        onClick={() => router.push("/options/dbot")}
+        onClick={() => router.push("/dbot")}
         className="bg-surface border border-line rounded-2xl p-6 lg:p-7 hover:bg-surface-2 cursor-pointer transition-colors"
       >
         <p className="text-[11px] uppercase tracking-[0.14em] text-ink-3 mb-3">dBot</p>

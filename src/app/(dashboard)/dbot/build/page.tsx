@@ -136,9 +136,7 @@ function BotBuilder() {
       <Shell>
         <Notice
           title="This bot uses a method the builder does not support"
-          body="Open it in the dBot workspace instead."
-          href="/options/dbot"
-          cta="Open workspace"
+          body="It was saved by an older version. Create a new bot, or remove this one."
         />
       </Shell>
     );
@@ -214,7 +212,7 @@ function BotBuilder() {
         );
       }
       await queryClient.invalidateQueries({ queryKey: getListBotRunsQueryKey() });
-      router.push("/options/dbot" as Route);
+      router.push((res.run ? `/dbot/runs/${res.run.run_id}` : "/dbot") as Route);
     } catch (err) {
       const reason = subscriptionRefusal(err);
       if (reason) {

@@ -41,6 +41,22 @@ const nextConfig = {
   // Opt-in via DEV_API_PROXY_TARGET, never on by default — an accidental proxy
   // to prod is how local experiments reach real data. Set it in .env.local
   // alongside NEXT_PUBLIC_API_URL=http://localhost:3000.
+  // dBot moved out of the options scope into the dashboard, where the rest of
+  // the account lives. These are the paths people already have open, bookmarked
+  // or linked from older emails; they are temporary (307) because the old
+  // routes may come back as a run view if the shape of the product changes.
+  async redirects() {
+    return [
+      { source: "/options/dbot", destination: "/dbot", permanent: false },
+      { source: "/options/dbot/history", destination: "/dbot", permanent: false },
+      {
+        source: "/options/dbot/subscription",
+        destination: "/dbot/subscription",
+        permanent: false,
+      },
+    ];
+  },
+
   async rewrites() {
     if (process.env.NODE_ENV === "production") return [];
     const target = process.env.DEV_API_PROXY_TARGET;

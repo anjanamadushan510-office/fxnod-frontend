@@ -70,7 +70,7 @@ export function SubscriptionGateModal({
 
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <Link
-            href={"/options/dbot/subscription" as Route}
+            href={"/dbot/subscription" as Route}
             className={cn(
               "inline-flex items-center rounded-[var(--opt-radius-sm)] px-5 py-2.5",
               "bg-opt-rise text-[13px] font-bold text-white",

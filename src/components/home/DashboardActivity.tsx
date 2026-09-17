@@ -56,7 +56,7 @@ export function DashboardActivity() {
                 </td>
                 <td className="px-5 py-5 text-ink-2 tabular-nums">Free</td>
                 <td className="px-5 py-5 text-right">
-                  <Link href="/options/dbot" className="text-xs text-gold hover:underline">Manage</Link>
+                  <Link href="/dbot" className="text-xs text-gold hover:underline">Manage</Link>
                 </td>
               </tr>
             </tbody>

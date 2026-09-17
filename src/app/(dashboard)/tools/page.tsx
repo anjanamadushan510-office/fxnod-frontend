@@ -19,7 +19,7 @@ export default function ToolsPage() {
       subtitle: "Deriv · Bot",
       description: "Build a Deriv options bot in plain language. Ready-made starts if you are new — no Blockly. Free — FXNOD earns a markup on the API.",
       icon: "/assets/fxnod-mark.png",
-      href: "/options/dbot",
+      href: "/dbot",
     },
   ];
 

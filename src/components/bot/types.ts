@@ -1,31 +1,30 @@
 /**
- * Shared types for the dBot UI.
+ * The shape the dBot UI reads a trade in.
  *
- * These mirror the backend's `auto_*` contract (bot_runs, strategies, run
- * trades) closely enough that wiring the real API later is a data-source swap,
- * not a rewrite of the components. Nothing here is generated yet — once the
- * `auto_*` endpoints land in openapi.yaml, prefer the Orval-generated types
- * over these and delete whatever they duplicate.
+ * `BotRunTrade` from the generated client is the wire type; this is the same
+ * trade after `toTradeRows` has parsed its amounts and formatted its time, so
+ * the table and the trade detail view cannot disagree about either.
  */
 
-/** A bot the user can pick. Mirrors the backend strategy Descriptor. */
-export interface BotDefinition {
-  id: string;
-  name: string;
-  tagline: string;
-  /** Frontend contract type this bot trades ("accumulators", "multipliers"). */
-  contractType: string;
-  /** Not yet implemented — rendered locked in the picker. */
-  comingSoon?: boolean;
+/**
+ * One sample of the tick stream Deriv returns with a settled contract. Both
+ * fields are optional because the API declares the items open-ended, and the
+ * chart drops any sample that is missing either.
+ */
+export interface BotTickSample {
+  epoch?: number;
+  tick?: number;
+  [key: string]: unknown;
 }
 
-export type BotStatus = "idle" | "running" | "paused" | "stopping";
+/** A sample complete enough to plot. */
+export type PlottableTick = BotTickSample & { epoch: number; tick: number };
 
 export type TradeDirection = "up" | "down";
 
 export type TradeResult = "won" | "lost" | "open";
 
-/** One row of the session's trade history. */
+/** One row of a run's trade list. */
 export interface BotTrade {
   id: string;
   /** HH:MM:SS in the user's locale. */
@@ -40,28 +39,5 @@ export interface BotTrade {
   createdAt: string;
   derivContractId: string;
   entryPrice?: number;
-  tickStream?: any[];
-}
-
-/** Live totals for the current run. Maps onto the bot_runs aggregate columns. */
-export interface BotSession {
-  status: BotStatus;
-  realizedPnl: number;
-  /** Realized P&L as a percentage of the session's committed capital. */
-  realizedPnlPct: number;
-  tradesTotal: number;
-  tradesWon: number;
-  tradesLost: number;
-  /** Progress toward the configured target profit, in account currency. */
-  targetProfitProgress: number;
-  targetProfitLimit: number;
-  /** Loss accumulated so far against the configured stop loss. */
-  stopLossProgress: number;
-  stopLossLimit: number;
-  currency: string;
-}
-
-export function winRate(session: BotSession): number {
-  const settled = session.tradesWon + session.tradesLost;
-  return settled === 0 ? 0 : (session.tradesWon / settled) * 100;
+  tickStream?: BotTickSample[];
 }
