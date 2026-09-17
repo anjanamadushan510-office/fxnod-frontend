@@ -444,6 +444,28 @@ function Step3Setup({ config, update }: { config: BotConfig, update: Function })
         </div>       
       )}
 
+      {config.method === "Differs" && (
+        <div className="mb-6">
+          <article className="rounded-xl p-5 border transition bg-white border-white text-black shadow-lg w-full md:w-[calc(50%-0.5rem)]">
+            <h3 className="font-display font-semibold mb-1">Differs</h3>
+            <p className="text-sm text-black/70">
+              Last digit is not your number
+            </p>
+          </article>
+        </div>
+      )}
+
+      {config.method === "Matches" && (
+        <div className="mb-6">
+          <article className="rounded-xl p-5 border transition bg-white border-white text-black shadow-lg w-full md:w-[calc(50%-0.5rem)]">
+            <h3 className="font-display font-semibold mb-1">Matches</h3>
+            <p className="text-sm text-black/70">
+              Last digit is exactly your number
+            </p>
+          </article>
+        </div>
+      )}
+
       {isDigitPicker && (
         <div className="w-full mb-6">
           <p className="text-xs text-zinc-500 mb-3 uppercase tracking-wider font-medium">Which last digit?</p>
@@ -471,6 +493,10 @@ function Step3Setup({ config, update }: { config: BotConfig, update: Function })
         <p className="text-sm text-zinc-300 leading-relaxed">
           {isOverUnder 
             ? "About 70% of ticks win on Over 2, but payout is smaller. The closer to 9, the higher the risk and reward."
+            : config.method === "Differs"
+            ? "About 90% of ticks win. A $1 win pays about $0.09 profit."
+            : config.method === "Matches"
+            ? "About 10% of ticks win. A $1 win pays about $8.09 profit."
             : "Close to a coin flip. A $1 win pays about $0.95 profit. Equals on Rise/Fall lose."}
         </p>
       </div>
