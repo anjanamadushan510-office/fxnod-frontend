@@ -97,9 +97,11 @@ export default function DBotDashboardPage() {
               You do not need Blockly or trading theory. Pick a ready bot, read the one-line summary, then practice. Or build your own in plain language. Import a file from this computer or phone if you already have one.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <button className="h-10 px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 w-full sm:w-auto">
-                  Create a bot
-              </button>
+              <Link href={"/dbot/build" as Route} className="w-full sm:w-auto">
+                <button className="w-full h-10 px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200">
+                    Create a bot
+                </button>
+              </Link>
               <button className="h-10 px-5 rounded-lg border border-line text-sm text-zinc-300 hover:text-white w-full sm:w-auto">
                   Import
               </button>
@@ -158,13 +160,15 @@ export default function DBotDashboardPage() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {botTemplates.map((tpl, i) => (
-                  <article key={i} className="bg-panel border border-line rounded-2xl p-5 surface-hover cursor-pointer transition flex flex-col">
-                      <div className="flex justify-between items-start mb-3 gap-2">
-                          <h3 className="font-display text-base font-semibold leading-snug">{tpl.title}</h3>
-                          <span className="text-[11px] text-zinc-500 shrink-0 mt-0.5">{tpl.badge}</span>
-                      </div>
-                      <p className="text-sm text-zinc-400 leading-relaxed mt-auto">{tpl.desc}</p>
-                  </article>
+                  <Link key={i} href={"/dbot/build" as Route} className="flex">
+                    <article className="w-full bg-panel border border-line rounded-2xl p-5 surface-hover cursor-pointer transition flex flex-col">
+                        <div className="flex justify-between items-start mb-3 gap-2">
+                            <h3 className="font-display text-base font-semibold leading-snug">{tpl.title}</h3>
+                            <span className="text-[11px] text-zinc-500 shrink-0 mt-0.5">{tpl.badge}</span>
+                        </div>
+                        <p className="text-sm text-zinc-400 leading-relaxed mt-auto">{tpl.desc}</p>
+                    </article>
+                  </Link>
               ))}
           </div>
       </div>
