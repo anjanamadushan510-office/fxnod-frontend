@@ -33,7 +33,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`dark ${inter.variable} ${outfit.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`dark ${inter.variable} ${outfit.variable} ${jetbrainsMono.variable} scroll-smooth scroll-pt-24`} suppressHydrationWarning>
       <body className="bg-bg text-ink antialiased">
         <Providers>{children}</Providers>
       </body>
