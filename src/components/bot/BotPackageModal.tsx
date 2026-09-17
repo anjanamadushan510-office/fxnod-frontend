@@ -44,6 +44,12 @@ interface BotPackageModalProps {
   onPresetCreated?: (presetId: string) => void;
   initialTab?: "export" | "licenses" | "import";
   disabled?: boolean;
+  /**
+   * Preset keys the form state does not carry — the bot builder's entry rule
+   * and staking mode. Exported with the package so a shared bot keeps the
+   * behaviour it was built with rather than falling back to defaults.
+   */
+  extraConfig?: Record<string, unknown>;
 }
 
 export function BotPackageModal({
@@ -55,6 +61,7 @@ export function BotPackageModal({
   onPresetCreated,
   initialTab = "export",
   disabled = false,
+  extraConfig,
 }: BotPackageModalProps) {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<"export" | "licenses" | "import">(initialTab);
@@ -110,6 +117,9 @@ export function BotPackageModal({
       onSuccess: (res) => {
         const restored = fromPresetConfig(res.config);
         onLoadConfig(restored);
+        // Known form keys are re-derived rather than copied, but the builder's
+        // own block rides along; it is validated again wherever it is read.
+        const builder = (res.config as { builder?: unknown }).builder;
 
         // Auto-save the imported bot to the user's saved presets!
         const presetName = res.name || `${strategyId} (Imported)`;
@@ -117,7 +127,7 @@ export function BotPackageModal({
           data: {
             name: presetName,
             strategy_id: res.strategy_id || strategyId,
-            config: toPresetConfig(restored),
+            config: { ...toPresetConfig(restored), ...(builder ? { builder } : {}) },
           },
         });
 
@@ -151,10 +161,17 @@ export function BotPackageModal({
   });
 
   const handleGeneratePassword = () => {
+    // This password is the only thing protecting the package, so it comes from
+    // the CSPRNG. Math.random is predictable from a handful of its outputs.
+    // Rejection sampling keeps every character equally likely.
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%&*";
+    const limit = 256 - (256 % chars.length);
     let gen = "";
-    for (let i = 0; i < 10; i++) {
-      gen += chars.charAt(Math.floor(Math.random() * chars.length));
+    while (gen.length < 14) {
+      const bytes = crypto.getRandomValues(new Uint8Array(32));
+      for (const b of bytes) {
+        if (b < limit && gen.length < 14) gen += chars[b % chars.length];
+      }
     }
     setPassword(gen);
   };
@@ -172,7 +189,7 @@ export function BotPackageModal({
         name,
         strategy_id: strategyId,
         password: password.trim(),
-        config: toPresetConfig(currentState),
+        config: { ...toPresetConfig(currentState), ...extraConfig },
       },
     });
   };
