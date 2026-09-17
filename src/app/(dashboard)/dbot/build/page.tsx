@@ -64,7 +64,7 @@ export default function BotBuilderPage() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#080C16] text-white flex flex-col p-4 lg:p-8">
+    <div className="w-full flex-1 flex flex-col justify-between bg-[#080C16] text-white p-4 lg:p-8 h-full">
       {/* Header */}
       <div className="w-full mb-6">
         <Link href={"/dbot" as Route} className="text-xs text-zinc-400 hover:text-white mb-4 block w-fit">
@@ -100,12 +100,12 @@ export default function BotBuilderPage() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 w-full pb-20">
+      <div className="flex-1 pb-24">
         {renderStep()}
       </div>
 
-      {/* Bottom Navigation */}
-      <div className="sticky bottom-0 z-20 mt-auto -mx-4 lg:-mx-8 px-4 lg:px-8 py-4 bg-[#080C16]/95 backdrop-blur border-t border-line flex items-center gap-3">
+      {/* Fixed/Locked Bottom Action Bar */}
+      <div className="sticky bottom-0 z-30 -mx-4 lg:-mx-8 px-4 lg:px-8 py-3.5 bg-[#080C16]/95 backdrop-blur-md border-t border-[#24344F] flex items-center justify-start gap-3 mt-auto">
         <button 
           onClick={() => setCurrentStep(prev => Math.max(1, prev - 1))}
           disabled={currentStep === 1}
