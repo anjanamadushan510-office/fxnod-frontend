@@ -44,27 +44,41 @@ export default function BotBuilderPage() {
   useEffect(() => {
     const template = sessionStorage.getItem("dbot-draft-template");
     if (template) {
+      let overrides: Partial<BotConfig> = { name: template };
+
       if (template === "Over / Under — switch") {
-        setBotConfig(prev => ({
-          ...prev,
+        overrides = {
+          ...overrides,
           method: "Over / Under",
           market: "Volatility 10",
           setup: { type: 'Under', number: 7 },
-          duration: 5,
           logic: "Flip after a loss",
-          name: template
-        }));
+        };
       } else if (template === "Even / Odd — first bot") {
-        setBotConfig(prev => ({
-          ...prev,
+        overrides = {
+          ...overrides,
           method: "Even / Odd",
           market: "Volatility 10",
           setup: { type: 'Even' },
-          duration: 5,
           logic: "Always this side",
-          name: template
-        }));
+        };
+      } else if (template === "Even / Odd — fade a streak") {
+        overrides = {
+          ...overrides,
+          method: "Even / Odd",
+          market: "Volatility 10",
+          setup: { type: 'Even' },
+          logic: "Wait for a streak, then fade",
+        };
+      } else if (template.includes("Even / Odd")) {
+        overrides = { ...overrides, method: "Even / Odd", setup: { type: 'Even' } };
+      } else if (template.includes("Rise / Fall")) {
+        overrides = { ...overrides, method: "Rise / Fall" };
+      } else if (template.includes("Differs")) {
+        overrides = { ...overrides, method: "Differs", setup: { type: 'Differs', number: 5 } };
       }
+
+      setBotConfig(prev => ({ ...prev, ...overrides }));
       sessionStorage.removeItem("dbot-draft-template");
     }
   }, []);
