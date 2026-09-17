@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useGetWalletBalance } from "@/services/api/endpoints/wallet/wallet";
 import { useGetReferralStats } from "@/services/api/endpoints/referrals/referrals";
+import { useDerivListAccounts } from "@/services/api/endpoints/trading/trading";
 import { fmtUSD } from "@/lib/format";
 import { cn } from "@/lib/cn";
 
@@ -15,8 +16,8 @@ export function DashboardMetrics({ onTopUp, onSend }: DashboardMetricsProps) {
   const { data: walletData } = useGetWalletBalance();
   const balance = Number(walletData?.balance || 0);
 
-  // TODO: Connect to backend when /api/v1/venues endpoint is ready
-  const [venueCount, setVenueCount] = useState(3);
+  const { data: derivAccountsData } = useDerivListAccounts();
+  const venueCount = (derivAccountsData?.accounts?.length ?? 0) > 0 ? 1 : 0;
 
   // Partner data via existing endpoint
   const { data: referralStats } = useGetReferralStats();
