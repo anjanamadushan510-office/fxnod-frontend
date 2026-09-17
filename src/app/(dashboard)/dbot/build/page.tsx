@@ -380,6 +380,23 @@ function StepDuration({ config, update }: { config: BotConfig, update: Function 
     { id: "Hours", desc: "Wall-clock hours." }
   ];
 
+  const getDurationOptions = (unit: string) => {
+    switch (unit) {
+      case "Seconds": return [15, 30, 45, 60, 90, 120, 180, 300];
+      case "Minutes": return [1, 2, 3, 5, 10, 15, 30, 60];
+      case "Hours": return [1, 2, 3, 4, 8, 12, 24];
+      default: return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // Ticks
+    }
+  };
+
+  const currentUnit = config.durationUnit || 'Ticks';
+  const durationOptions = getDurationOptions(currentUnit);
+
+  const handleUnitChange = (u: string) => {
+    update("durationUnit", u);
+    update("duration", getDurationOptions(u)[0]);
+  };
+
   return (
     <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-300">
       <h2 className="font-display text-xl font-semibold mb-1">Duration</h2>
@@ -390,28 +407,28 @@ function StepDuration({ config, update }: { config: BotConfig, update: Function 
         {units.map(u => (
           <article 
             key={u.id}
-            onClick={() => update("durationUnit", u.id)}
+            onClick={() => handleUnitChange(u.id)}
             className={`cursor-pointer rounded-xl p-5 border transition ${
-              config.durationUnit === u.id 
+              currentUnit === u.id 
                 ? 'bg-white border-white text-black shadow-lg' 
                 : 'bg-panel border-line text-white hover:border-zinc-500'
             }`}
           >
             <h3 className="font-display font-semibold mb-1">{u.id}</h3>
-            <p className={`text-xs ${config.durationUnit === u.id ? 'text-black/70' : 'text-zinc-500'}`}>
+            <p className={`text-xs ${currentUnit === u.id ? 'text-black/70' : 'text-zinc-500'}`}>
               {u.desc}
             </p>
           </article>
         ))}
       </div>
 
-      <p className="text-xs text-zinc-500 mb-3 uppercase tracking-wider font-medium">{config.durationUnit || 'Ticks'}</p>
+      <p className="text-xs text-zinc-500 mb-3 uppercase tracking-wider font-medium">{currentUnit}</p>
       <div className="flex flex-wrap gap-2 mb-8">
-        {[1,2,3,4,5,6,7,8,9,10].map(num => (
+        {durationOptions.map(num => (
           <button
             key={num}
             onClick={() => update("duration", num)}
-            className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-medium transition ${
+            className={`min-w-[2.75rem] h-11 px-3 rounded-lg flex items-center justify-center text-sm font-medium transition ${
               config.duration === num ? "bg-white text-black shadow-lg" : "bg-panel border border-line text-zinc-400 hover:border-zinc-500 hover:text-white"
             }`}
           >
@@ -423,7 +440,7 @@ function StepDuration({ config, update }: { config: BotConfig, update: Function 
       <div className="bg-panel border border-line rounded-2xl p-5 sm:p-6 mb-10">
         <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-600 font-medium mb-2">EACH CONTRACT</p>
         <p className="text-sm text-white font-medium">
-          {config.duration} {config.durationUnit?.toLowerCase() || 'ticks'}
+          {config.duration} {currentUnit.toLowerCase()}
         </p>
       </div>
     </div>
@@ -454,20 +471,54 @@ function StepIndicators({ config, update }: { config: BotConfig, update: Functio
       <h2 className="font-display text-xl font-semibold mb-1">Indicators</h2>
       <p className="text-sm text-zinc-500 mb-8">Optional. Add a signal the bot should wait for, or continue without one.</p>
       
-      <div className="bg-panel border border-line rounded-2xl p-8 mb-8 flex flex-col items-center justify-center text-center">
-        {(!config.indicators || config.indicators.length === 0) ? (
+      {(!config.indicators || config.indicators.length === 0) ? (
+        <div className="bg-panel border border-line rounded-2xl p-8 mb-8 flex flex-col items-center justify-center text-center">
           <p className="text-sm text-zinc-500">No indicators yet. The bot can still trade on every tick.</p>
-        ) : (
-          <div className="flex gap-2 flex-wrap justify-center">
-            {config.indicators.map(ind => (
-              <span key={ind} className="px-3 py-1.5 rounded-full bg-white text-black text-xs font-semibold flex items-center gap-2">
-                {ind}
-                <button onClick={() => toggleIndicator(ind)} className="text-black/50 hover:text-black">&times;</button>
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        <div className="space-y-4 mb-8">
+          {config.indicators.map(ind => (
+            <div key={ind} className="bg-panel border border-line rounded-2xl p-5">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="font-display font-semibold text-white">{ind}</h3>
+                  <p className="text-xs text-zinc-500 mt-1">
+                    {ind === "RSI" ? "RSI (14) Below 30" : `${ind} default settings`}
+                  </p>
+                </div>
+                <button onClick={() => toggleIndicator(ind)} className="text-xs text-zinc-500 hover:text-white transition">Remove</button>
+              </div>
+              
+              {ind === "RSI" ? (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs text-zinc-500 mb-1.5">Period</label>
+                    <input type="number" defaultValue="14" className="w-full h-10 px-3 rounded-lg bg-[#080C16] border border-line text-sm text-white focus:border-zinc-500 outline-none transition-colors" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-zinc-500 mb-1.5">Level</label>
+                    <input type="number" defaultValue="30" className="w-full h-10 px-3 rounded-lg bg-[#080C16] border border-line text-sm text-white focus:border-zinc-500 outline-none transition-colors" />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-xs text-zinc-500 mb-1.5">When to fire</label>
+                    <div className="flex bg-[#080C16] border border-line rounded-lg p-1 w-fit">
+                      <button className="px-4 py-1.5 rounded-md bg-white text-black text-sm font-medium">Below</button>
+                      <button className="px-4 py-1.5 rounded-md text-zinc-400 text-sm font-medium hover:text-white transition">Above</button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs text-zinc-500 mb-1.5">Period</label>
+                    <input type="number" defaultValue="14" className="w-full h-10 px-3 rounded-lg bg-[#080C16] border border-line text-sm text-white focus:border-zinc-500 outline-none transition-colors" />
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       <p className="text-xs text-zinc-500 mb-3 uppercase tracking-wider font-medium">Add indicator</p>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-10">
@@ -479,12 +530,12 @@ function StepIndicators({ config, update }: { config: BotConfig, update: Functio
               onClick={() => toggleIndicator(ind.id)}
               className={`cursor-pointer rounded-xl p-5 border transition ${
                 isActive 
-                  ? 'bg-white border-white text-black shadow-lg' 
+                  ? 'bg-panel border-white text-white'
                   : 'bg-panel border-line text-white hover:border-zinc-500'
               }`}
             >
               <h3 className="font-display font-semibold mb-1">{ind.id}</h3>
-              <p className={`text-xs ${isActive ? 'text-black/70' : 'text-zinc-500'}`}>
+              <p className="text-xs text-zinc-500">
                 {ind.desc}
               </p>
             </article>
