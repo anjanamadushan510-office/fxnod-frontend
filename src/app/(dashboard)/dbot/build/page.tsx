@@ -70,7 +70,7 @@ export default function BotBuilderPage() {
   };
 
   return (
-    <div className="min-h-screen bg-ink text-white flex flex-col p-4 lg:p-8">
+    <div className="min-h-full w-full bg-ink text-white flex flex-col p-4 lg:p-8">
       {/* Header */}
       <div className="max-w-5xl mx-auto w-full">
         <Link href={"/dbot" as Route} className="text-xs text-zinc-400 hover:text-white mb-6 block w-fit">
@@ -88,7 +88,7 @@ export default function BotBuilderPage() {
               className={`h-8 px-4 rounded-full border text-sm flex items-center gap-2 whitespace-nowrap transition ${
                 currentStep === step.id 
                   ? "border-white text-white bg-white/5" 
-                  : "border-line text-zinc-500 hover:text-white hover:border-zinc-700"
+                  : "border-line text-zinc-400 hover:text-white hover:border-zinc-500"
               }`}
             >
               <span>{step.id}</span>
