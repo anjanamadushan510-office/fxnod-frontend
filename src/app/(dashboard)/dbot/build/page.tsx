@@ -24,7 +24,7 @@ export default function BotBuilderPage() {
     market: "Volatility 10",
     setup: { type: 'Even' },
     duration: 5,
-    logic: "always",
+    logic: "Always this side",
     stake: "1.00",
     takeProfit: "5.00",
     stopLoss: "10.00",
@@ -337,30 +337,38 @@ function Step3Setup({ config, update }: { config: BotConfig, update: Function })
 
 function Step4Logic({ config, update }: { config: BotConfig, update: Function }) {
   const logicOptions = [
-    { id: "always", label: "Always this side", desc: `Always buys the selected side in Step 3.` },
-    { id: "copy_tick", label: "Copy the last tick", desc: "Buys Rise if the last tick was up, Fall if it was down." },
-    { id: "wait_fade", label: "Wait for a streak, then fade", desc: "Waits for 3 consecutive ticks in one direction, then buys the opposite." },
-    { id: "flip_loss", label: "Flip after a loss", desc: "Buys the opposite side on the next trade if the previous one was a loss." },
+    { id: "Always this side", name: "Always this side", desc: "Every contract uses the side you picked. The simplest rule." },
+    { id: "Flip after a loss", name: "Flip after a loss", desc: "If a trade loses, the next one takes the other side. Popular with digit bots." },
+    { id: "Copy the last tick", name: "Copy the last tick", desc: "If the last move was up / even, buy that same side again." },
+    { id: "Fade the last tick", name: "Fade the last tick", desc: "If the last move was up / even, buy the other side." },
+    { id: "Wait for a streak, then fade", name: "Wait for a streak, then fade", desc: "Wait until 3 ticks in a row match one side, then buy the other side." }
   ];
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
-      <h2 className="text-xl font-medium text-white mb-6">When to buy</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {logicOptions.map(logic => (
-          <article 
-            key={logic.id}
-            onClick={() => update("logic", logic.id)}
-            className={`cursor-pointer p-6 rounded-2xl border transition-all ${
-              config.logic === logic.id 
-                ? "bg-panel border-white shadow-lg" 
-                : "bg-panel border-line hover:border-zinc-700"
-            }`}
-          >
-            <h3 className="font-medium text-white mb-2">{logic.label}</h3>
-            <p className="text-sm text-zinc-400">{logic.desc}</p>
-          </article>
-        ))}
+    <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-300">
+      <h2 className="font-display text-xl font-semibold mb-1">When to buy</h2>
+      <p className="text-sm text-zinc-500 mb-6">This is the only "logic" you need. The bot uses it before every contract.</p>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-6">
+        {logicOptions.map((opt) => {
+          const isActive = config.logic === opt.id;
+          return (
+            <article 
+              key={opt.id}
+              onClick={() => update("logic", opt.id)}
+              className={`cursor-pointer rounded-xl p-5 border transition ${
+                isActive 
+                  ? 'bg-white border-white text-black shadow-lg' 
+                  : 'bg-panel border-line text-white hover:border-zinc-500'
+              }`}
+            >
+              <h3 className="font-display font-semibold mb-1">{opt.name}</h3>
+              <p className={`text-sm leading-relaxed ${isActive ? 'text-black/70' : 'text-zinc-400'}`}>
+                {opt.desc}
+              </p>
+            </article>
+          );
+        })}
       </div>
     </div>
   );
@@ -453,7 +461,7 @@ function Step6Review({ config, update }: { config: BotConfig, update: Function }
           <p className="text-sm text-zinc-300 leading-relaxed">
             This bot trades <strong className="text-white font-medium">{config.market}</strong> using the <strong className="text-white font-medium capitalize">{config.method.replace('_', ' ')}</strong> method. 
             It is set to execute <strong className="text-white font-medium">{config.setup?.type}</strong> contracts for a duration of <strong className="text-white font-medium">{config.duration} ticks</strong>. 
-            The entry logic uses "<strong className="text-white font-medium capitalize">{config.logic.replace('_', ' ')}</strong>".
+            The entry logic uses "<strong className="text-white font-medium">{config.logic}</strong>".
             Starting stake is <strong className="text-white font-medium">${config.stake}</strong>, applying a <strong className="text-white font-medium capitalize">{config.moneyStrategy.replace('_', ' ')}</strong> strategy after each trade, 
             running until it hits a profit of <strong className="text-white font-medium">${config.takeProfit}</strong> or a loss of <strong className="text-white font-medium">${config.stopLoss}</strong>.
           </p>
@@ -474,7 +482,7 @@ function Step6Review({ config, update }: { config: BotConfig, update: Function }
           </div>
           <div className="bg-panel border border-line rounded-xl p-4">
             <span className="text-xs text-zinc-500 block mb-1 uppercase tracking-wider font-medium">When to buy</span>
-            <span className="text-sm font-medium text-white capitalize">{config.logic.replace('_', ' ')}</span>
+            <span className="text-sm font-medium text-white">{config.logic}</span>
           </div>
           <div className="bg-panel border border-line rounded-xl p-4 sm:col-span-2">
             <span className="text-xs text-zinc-500 block mb-1 uppercase tracking-wider font-medium">Money</span>
