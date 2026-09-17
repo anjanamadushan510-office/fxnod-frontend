@@ -13,6 +13,17 @@ export default function DBotDashboardPage() {
     { name: "Test bot 3", trades: "0 trades", market: "Volatility 10 · Rise / Fall", rules: "Copy the last tick · Same stake · stake $1.00", pnl: "$0.00", isLoss: false },
   ];
 
+  const botTemplates = [
+    { title: "Even / Odd — first bot", badge: "Best start", desc: "Trades even vs odd on a calm index. Same stake. Stops at your profit or loss cap." },
+    { title: "Over / Under — switch", badge: "Popular", desc: "Starts Under 7. After a loss, switches to Over 2. Same stake. Digit traders use this a lot." },
+    { title: "Even / Odd — fade a streak", badge: "Simple", desc: "Waits for 3 even or 3 odd ticks, then bets the other side. Same stake." },
+    { title: "Differs — last digit", badge: "High win rate", desc: "Wins if the last digit is not 5. Wins often, pays a little. Same stake." },
+    { title: "Rise / Fall — follow ticks", badge: "Direction", desc: "Buys Rise if the last tick went up, Fall if it went down. 5-tick contracts." },
+    { title: "Rise / Fall — Martingale", badge: "Careful", desc: "Always Rise, doubles after a loss. One win recovers the streak — a long losing run can wipe the session." },
+    { title: "Touch — nearby target", badge: "Barrier", desc: "Wins if price touches a target 0.5% away within 8 ticks." },
+    { title: "Accumulator — grow in a band", badge: "Grow", desc: "Payout grows ~2% each tick while price stays in a 1% band. Stops if it hits the edge." }
+  ];
+
   return (
     <section className="p-4 lg:p-8 space-y-8">
       {/* Header */}
@@ -141,22 +152,21 @@ export default function DBotDashboardPage() {
       </div>
 
       {/* Bot Templates Section */}
-      <div className="space-y-4">
-        <div>
-          <h2 className="text-lg font-medium text-ink">Bot Templates</h2>
-          <p className="text-sm text-ink-3">Pre-built strategies to get started quickly.</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {["Martingale", "D'Alembert", "Oscar's Grind"].map((template) => (
-            <div key={template} className="bg-surface border border-line rounded-2xl p-5 hover:bg-surface-2 transition-colors cursor-pointer group">
-              <h3 className="font-medium text-ink mb-2">{template}</h3>
-              <p className="text-xs text-ink-3 mb-4">A standard {template.toLowerCase()} progression strategy for Volatility indices.</p>
-              <span className="text-xs font-medium text-white/50 group-hover:text-white transition-colors flex items-center gap-1">
-                Use Template &rarr;
-              </span>
-            </div>
-          ))}
-        </div>
+      <div className="mt-12">
+          <h2 className="font-display text-xl font-semibold mb-1">Bot Templates</h2>
+          <p className="text-sm text-zinc-500 mb-6">Each one is already filled in. You can change anything before you run.</p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {botTemplates.map((tpl, i) => (
+                  <article key={i} className="bg-panel border border-line rounded-2xl p-5 surface-hover cursor-pointer transition flex flex-col">
+                      <div className="flex justify-between items-start mb-3 gap-2">
+                          <h3 className="font-display text-base font-semibold leading-snug">{tpl.title}</h3>
+                          <span className="text-[11px] text-zinc-500 shrink-0 mt-0.5">{tpl.badge}</span>
+                      </div>
+                      <p className="text-sm text-zinc-400 leading-relaxed mt-auto">{tpl.desc}</p>
+                  </article>
+              ))}
+          </div>
       </div>
     </section>
   );
