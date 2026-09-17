@@ -10,10 +10,12 @@ type BotConfig = {
   method: string;
   market: string;
   setup: {
-    type: 'Even' | 'Odd' | 'Over' | 'Under' | string;
+    type: 'Even' | 'Odd' | 'Over' | 'Under' | 'Rise' | 'Fall' | 'Differs' | 'Matches' | string;
     number?: number;
   };
   duration: number;
+  durationUnit?: string;
+  indicators?: string[];
   logic: string;
   stake: string;
   takeProfit: string;
@@ -31,6 +33,8 @@ export default function BotBuilderPage() {
     market: "Volatility 10",
     setup: { type: 'Even' },
     duration: 5,
+    durationUnit: "Ticks",
+    indicators: [],
     logic: "Always this side",
     stake: "1.00",
     takeProfit: "5.00",
@@ -83,30 +87,58 @@ export default function BotBuilderPage() {
     }
   }, []);
 
-  const steps = [
+  const isDigitMethod = ["Over / Under", "Even / Odd", "Matches", "Differs"].includes(botConfig.method);
+  
+  const steps = isDigitMethod ? [
     { id: 1, label: "Method" },
     { id: 2, label: "Markets" },
     { id: 3, label: "Setup" },
     { id: 4, label: "When to buy" },
     { id: 5, label: "Money" },
     { id: 6, label: "Review" },
+  ] : [
+    { id: 1, label: "Method" },
+    { id: 2, label: "Markets" },
+    { id: 3, label: "Duration" },
+    { id: 4, label: "Indicators" },
+    { id: 5, label: "Setup" },
+    { id: 6, label: "When to buy" },
+    { id: 7, label: "Money" },
+    { id: 8, label: "Review" },
   ];
 
-  const updateConfig = (key: keyof BotConfig, value: string | number) => {
+  const totalSteps = steps.length;
+  if (currentStep > totalSteps) {
+    setCurrentStep(totalSteps);
+  }
+
+  const updateConfig = (key: keyof BotConfig, value: any) => {
     setBotConfig(prev => ({ ...prev, [key]: value }));
   };
 
-
-
   const renderStep = () => {
-    switch (currentStep) {
-      case 1: return <Step1Method config={botConfig} update={updateConfig} />;
-      case 2: return <Step2Markets config={botConfig} update={updateConfig} />;
-      case 3: return <Step3Setup config={botConfig} update={updateConfig} />;
-      case 4: return <Step4Logic config={botConfig} update={updateConfig} />;
-      case 5: return <Step5Money config={botConfig} update={updateConfig} />;
-      case 6: return <Step6Review config={botConfig} update={updateConfig} />;
-      default: return null;
+    if (isDigitMethod) {
+      switch (currentStep) {
+        case 1: return <Step1Method config={botConfig} update={updateConfig} />;
+        case 2: return <Step2Markets config={botConfig} update={updateConfig} />;
+        case 3: return <Step3Setup config={botConfig} update={updateConfig} />;
+        case 4: return <Step4Logic config={botConfig} update={updateConfig} />;
+        case 5: return <Step5Money config={botConfig} update={updateConfig} />;
+        case 6: return <Step6Review config={botConfig} update={updateConfig} />;
+        default: return null;
+      }
+    } else {
+      switch (currentStep) {
+        case 1: return <Step1Method config={botConfig} update={updateConfig} />;
+        case 2: return <Step2Markets config={botConfig} update={updateConfig} />;
+        case 3: return <StepDuration config={botConfig} update={updateConfig} />;
+        case 4: return <StepIndicators config={botConfig} update={updateConfig} />;
+        case 5: return <Step3Setup config={botConfig} update={updateConfig} />;
+        case 6: return <Step4Logic config={botConfig} update={updateConfig} />;
+        case 7: return <Step5Money config={botConfig} update={updateConfig} />;
+        case 8: return <Step6Review config={botConfig} update={updateConfig} />;
+        default: return null;
+      }
     }
   };
 
@@ -161,7 +193,7 @@ export default function BotBuilderPage() {
           Back
         </button>
         
-        {currentStep === 6 ? (
+        {currentStep === totalSteps ? (
           <Link href={"/dbot" as Route}>
             <button className="h-10 px-6 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 transition">
               Save bot
@@ -169,7 +201,7 @@ export default function BotBuilderPage() {
           </Link>
         ) : (
           <button 
-            onClick={() => setCurrentStep(prev => Math.min(6, prev + 1))}
+            onClick={() => setCurrentStep(prev => Math.min(totalSteps, prev + 1))}
             className="h-10 px-6 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 transition"
           >
             Continue
@@ -340,6 +372,129 @@ function Step2Markets({ config, update }: { config: BotConfig, update: Function 
   );
 }
 
+function StepDuration({ config, update }: { config: BotConfig, update: Function }) {
+  const units = [
+    { id: "Ticks", desc: "Each new price print." },
+    { id: "Seconds", desc: "Wall-clock seconds." },
+    { id: "Minutes", desc: "Wall-clock minutes." },
+    { id: "Hours", desc: "Wall-clock hours." }
+  ];
+
+  return (
+    <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-300">
+      <h2 className="font-display text-xl font-semibold mb-1">Duration</h2>
+      <p className="text-sm text-zinc-500 mb-8">How long should each {config.method} trade last?</p>
+      
+      <p className="text-xs text-zinc-500 mb-3 uppercase tracking-wider font-medium">Unit</p>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4 mb-8">
+        {units.map(u => (
+          <article 
+            key={u.id}
+            onClick={() => update("durationUnit", u.id)}
+            className={`cursor-pointer rounded-xl p-5 border transition ${
+              config.durationUnit === u.id 
+                ? 'bg-white border-white text-black shadow-lg' 
+                : 'bg-panel border-line text-white hover:border-zinc-500'
+            }`}
+          >
+            <h3 className="font-display font-semibold mb-1">{u.id}</h3>
+            <p className={`text-xs ${config.durationUnit === u.id ? 'text-black/70' : 'text-zinc-500'}`}>
+              {u.desc}
+            </p>
+          </article>
+        ))}
+      </div>
+
+      <p className="text-xs text-zinc-500 mb-3 uppercase tracking-wider font-medium">{config.durationUnit || 'Ticks'}</p>
+      <div className="flex flex-wrap gap-2 mb-8">
+        {[1,2,3,4,5,6,7,8,9,10].map(num => (
+          <button
+            key={num}
+            onClick={() => update("duration", num)}
+            className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-medium transition ${
+              config.duration === num ? "bg-white text-black shadow-lg" : "bg-panel border border-line text-zinc-400 hover:border-zinc-500 hover:text-white"
+            }`}
+          >
+            {num}
+          </button>
+        ))}
+      </div>
+
+      <div className="bg-panel border border-line rounded-2xl p-5 sm:p-6 mb-10">
+        <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-600 font-medium mb-2">EACH CONTRACT</p>
+        <p className="text-sm text-white font-medium">
+          {config.duration} {config.durationUnit?.toLowerCase() || 'ticks'}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function StepIndicators({ config, update }: { config: BotConfig, update: Function }) {
+  const indicators = [
+    { id: "RSI", desc: "How strongly price has been rising or falling." },
+    { id: "Simple MA", desc: "Average price over the last N ticks." },
+    { id: "Exponential MA", desc: "A faster average that follows recent ticks." },
+    { id: "MACD", desc: "Trend change when the MACD line crosses its signal." },
+    { id: "Bollinger Bands", desc: "Price relative to a volatility band." },
+    { id: "Stochastic", desc: "Whether the market looks oversold or overbought." }
+  ];
+
+  const toggleIndicator = (id: string) => {
+    const current = config.indicators || [];
+    if (current.includes(id)) {
+      update("indicators", current.filter(x => x !== id));
+    } else {
+      update("indicators", [...current, id]);
+    }
+  };
+
+  return (
+    <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-300">
+      <h2 className="font-display text-xl font-semibold mb-1">Indicators</h2>
+      <p className="text-sm text-zinc-500 mb-8">Optional. Add a signal the bot should wait for, or continue without one.</p>
+      
+      <div className="bg-panel border border-line rounded-2xl p-8 mb-8 flex flex-col items-center justify-center text-center">
+        {(!config.indicators || config.indicators.length === 0) ? (
+          <p className="text-sm text-zinc-500">No indicators yet. The bot can still trade on every tick.</p>
+        ) : (
+          <div className="flex gap-2 flex-wrap justify-center">
+            {config.indicators.map(ind => (
+              <span key={ind} className="px-3 py-1.5 rounded-full bg-white text-black text-xs font-semibold flex items-center gap-2">
+                {ind}
+                <button onClick={() => toggleIndicator(ind)} className="text-black/50 hover:text-black">&times;</button>
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <p className="text-xs text-zinc-500 mb-3 uppercase tracking-wider font-medium">Add indicator</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-10">
+        {indicators.map(ind => {
+          const isActive = (config.indicators || []).includes(ind.id);
+          return (
+            <article 
+              key={ind.id}
+              onClick={() => toggleIndicator(ind.id)}
+              className={`cursor-pointer rounded-xl p-5 border transition ${
+                isActive 
+                  ? 'bg-white border-white text-black shadow-lg' 
+                  : 'bg-panel border-line text-white hover:border-zinc-500'
+              }`}
+            >
+              <h3 className="font-display font-semibold mb-1">{ind.id}</h3>
+              <p className={`text-xs ${isActive ? 'text-black/70' : 'text-zinc-500'}`}>
+                {ind.desc}
+              </p>
+            </article>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function Step3Setup({ config, update }: { config: BotConfig, update: Function }) {
   const isOverUnder = config.method === "Over / Under";
   const isDigitPicker = isOverUnder || config.method === "Matches" || config.method === "Differs";
@@ -485,6 +640,15 @@ function Step3Setup({ config, update }: { config: BotConfig, update: Function })
               );
             })}
           </div>
+        </div>
+      )}
+
+      {(!isDigitPicker) && (
+        <div className="bg-panel border border-line rounded-2xl p-5 sm:p-6 mb-4 mt-6">
+          <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-600 font-medium mb-3">DURATION</p>
+          <p className="text-sm text-white font-medium">
+            {config.duration} {config.durationUnit?.toLowerCase() || 'ticks'}
+          </p>
         </div>
       )}
 
@@ -671,12 +835,21 @@ function Step6Review({ config, update }: { config: BotConfig, update: Function }
         <div className="bg-panel border border-line rounded-xl p-5">
           <h3 className="text-xs text-zinc-500 mb-2 uppercase tracking-wider font-medium">What this bot will do</h3>
           <p className="text-sm text-zinc-300 leading-relaxed">
-            On {config.market || 'Volatility 10'}, this bot buys {config.method || 'Over / Under'} for 1 tick.{" "}
-            {config.setup?.type === 'Over' || config.setup?.type === 'Under' 
-              ? `${config.setup.type} number ${config.setup.number ?? 7}. ` 
-              : config.setup?.type ? `${config.setup.type}. ` : ''}
-            Strategy uses {config.moneyStrategy || 'Same stake'} (${Number(config.stake || 1).toFixed(2)}). 
-            Stops at +${Number(config.takeProfit || 5).toFixed(2)} profit, -${Number(config.stopLoss || 10).toFixed(2)} loss, or after {config.maxTrades || 40} trades.
+            {(() => {
+              const isDigitMethod = ["Over / Under", "Even / Odd", "Matches", "Differs"].includes(config.method);
+              const durationStr = isDigitMethod ? "1 tick" : `${config.duration} ${config.durationUnit?.toLowerCase() || 'ticks'}`;
+              const indicatorStr = (!config.indicators || config.indicators.length === 0) ? '' : ` with ${config.indicators.join(", ")}`;
+              return (
+                <>
+                  On {config.market || 'Volatility 10'}, this bot buys {config.method || 'Over / Under'} for {durationStr}{indicatorStr}.{" "}
+                  {config.setup?.type === 'Over' || config.setup?.type === 'Under' 
+                    ? `${config.setup.type} number ${config.setup.number ?? 7}. ` 
+                    : config.setup?.type ? `${config.setup.type}. ` : ''}
+                  Strategy uses {config.moneyStrategy || 'Same stake'} (${Number(config.stake || 1).toFixed(2)}). 
+                  Stops at +${Number(config.takeProfit || 5).toFixed(2)} profit, -${Number(config.stopLoss || 10).toFixed(2)} loss, or after {config.maxTrades || 40} trades.
+                </>
+              );
+            })()}
           </p>
         </div>
 
@@ -693,7 +866,11 @@ function Step6Review({ config, update }: { config: BotConfig, update: Function }
           </div>
           <div className="bg-panel border border-line rounded-xl p-4">
             <span className="text-xs text-zinc-500 block mb-1 uppercase tracking-wider font-medium">Duration</span>
-            <span className="text-sm font-medium text-white">1 tick</span>
+            <span className="text-sm font-medium text-white">
+              {["Over / Under", "Even / Odd", "Matches", "Differs"].includes(config.method) 
+                ? "1 tick" 
+                : `${config.duration} ${config.durationUnit?.toLowerCase() || 'ticks'}`}
+            </span>
           </div>
           <div className="bg-panel border border-line rounded-xl p-4">
             <span className="text-xs text-zinc-500 block mb-1 uppercase tracking-wider font-medium">When to buy</span>
