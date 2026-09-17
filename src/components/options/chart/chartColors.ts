@@ -14,9 +14,9 @@
  * reason). Do NOT read these from CSS variables.
  */
 export const CHART_COLORS = {
-  ink: "#0a1430", // --opt-ink   — area line / primary stroke
-  inkFaint: "#7b8298", // --opt-ink-3 — axis text
-  line: "#e7e4dc", // --opt-line  — grid lines / scale borders
+  ink: "#6EE7D8", // Accent cyan — area line / primary stroke
+  inkFaint: "#9CA3AF", // Light gray — axis text
+  line: "#24344F", // Dark line — grid lines / scale borders
   rise: "#1eaf7b", // --opt-rise  — up / green
   fall: "#e0533d", // --opt-fall  — down / red
 } as const;
