@@ -45,17 +45,7 @@ export default function BotBuilderPage() {
     setBotConfig(prev => ({ ...prev, [key]: value }));
   };
 
-  const getStepTitle = () => {
-    switch (currentStep) {
-      case 1: return "Step 1 - trading method";
-      case 2: return "Step 2 - choose market";
-      case 3: return "Step 3 - setup trade";
-      case 4: return "Step 4 - when to buy";
-      case 5: return "Step 5 - money management";
-      case 6: return "Step 6 - review and save";
-      default: return "";
-    }
-  };
+
 
   const renderStep = () => {
     switch (currentStep) {
@@ -72,15 +62,13 @@ export default function BotBuilderPage() {
   return (
     <div className="w-full min-h-screen bg-[#080C16] text-white flex flex-col p-4 lg:p-8">
       {/* Header */}
-      <div className="max-w-5xl mx-auto w-full">
-        <Link href={"/dbot" as Route} className="text-xs text-zinc-400 hover:text-white mb-6 block w-fit">
+      <div className="max-w-5xl mx-auto w-full mb-6">
+        <Link href={"/dbot" as Route} className="text-xs text-zinc-400 hover:text-white mb-4 block w-fit">
           &larr; Bots
         </Link>
-        <h1 className="text-2xl font-semibold text-white mb-2">Create a bot</h1>
-        <p className="text-sm text-zinc-400 capitalize mb-6">{getStepTitle()}</p>
         
         {/* Stepper */}
-        <div className="flex gap-2 overflow-x-auto pb-2 mb-8 scrollbar-hide">
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
           {steps.map(step => (
             <button 
               key={step.id}
