@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { type Route } from "next";
 import { useRouter } from "next/navigation";
@@ -40,6 +40,34 @@ export default function BotBuilderPage() {
     moneyStrategy: "Same stake",
     name: "Even / Odd — first bot"
   });
+
+  useEffect(() => {
+    const template = sessionStorage.getItem("dbot-draft-template");
+    if (template) {
+      if (template === "Over / Under — switch") {
+        setBotConfig(prev => ({
+          ...prev,
+          method: "Over / Under",
+          market: "Volatility 10",
+          setup: { type: 'Under', number: 7 },
+          duration: 5,
+          logic: "Flip after a loss",
+          name: template
+        }));
+      } else if (template === "Even / Odd — first bot") {
+        setBotConfig(prev => ({
+          ...prev,
+          method: "Even / Odd",
+          market: "Volatility 10",
+          setup: { type: 'Even' },
+          duration: 5,
+          logic: "Always this side",
+          name: template
+        }));
+      }
+      sessionStorage.removeItem("dbot-draft-template");
+    }
+  }, []);
 
   const steps = [
     { id: 1, label: "Method" },

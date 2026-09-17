@@ -160,7 +160,14 @@ export default function DBotDashboardPage() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {botTemplates.map((tpl, i) => (
-                  <Link key={i} href={"/dbot/build" as Route} className="flex">
+                  <div 
+                    key={i} 
+                    onClick={() => {
+                      sessionStorage.setItem("dbot-draft-template", tpl.title);
+                      window.location.href = "/dbot/build";
+                    }}
+                    className="flex w-full"
+                  >
                     <article className="w-full bg-panel border border-line rounded-2xl p-5 surface-hover cursor-pointer transition flex flex-col">
                         <div className="flex justify-between items-start mb-3 gap-2">
                             <h3 className="font-display text-base font-semibold leading-snug">{tpl.title}</h3>
@@ -168,7 +175,7 @@ export default function DBotDashboardPage() {
                         </div>
                         <p className="text-sm text-zinc-400 leading-relaxed mt-auto">{tpl.desc}</p>
                     </article>
-                  </Link>
+                  </div>
               ))}
           </div>
       </div>
