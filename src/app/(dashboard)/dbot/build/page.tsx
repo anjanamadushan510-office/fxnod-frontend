@@ -331,23 +331,6 @@ function Step3Setup({ config, update }: { config: BotConfig, update: Function })
           Close to a coin flip. A $1 win pays about $0.95 profit. Equals on Rise/Fall lose.
         </p>
       </div>
-
-      <div>
-        <h2 className="font-display text-xl font-semibold mb-4">Trade duration (ticks)</h2>
-        <div className="flex flex-wrap gap-3">
-          {[1, 2, 3, 5, 8, 10].map(ticks => (
-            <button
-              key={ticks}
-              onClick={() => update("duration", ticks)}
-              className={`h-12 w-16 rounded-xl border font-medium transition-all ${
-                config.duration === ticks ? "bg-white border-white text-black" : "bg-panel border-line hover:border-zinc-500 text-zinc-300"
-              }`}
-            >
-              {ticks}
-            </button>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }
