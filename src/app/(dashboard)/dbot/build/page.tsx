@@ -1,954 +1,377 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { type Route } from "next";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { SubscriptionGateModal } from "@/components/bot/SubscriptionGateModal";
+import { useMarketStore } from "@/components/options/market/marketStore";
+import { findMethod } from "@/components/bot/builder/catalog";
+import {
+  buildDraftRunRequest,
+  draftFromPreset,
+  draftProblems,
+  newDraft,
+  stepsFor,
+  strategyIdFor,
+  toPresetRequest,
+  type BotDraft,
+  type StepKey,
+} from "@/components/bot/builder/draft";
+import { RunPanel } from "@/components/bot/builder/RunPanel";
+import {
+  DurationStep,
+  EntryRuleStep,
+  IndicatorsStep,
+  MarketsStep,
+  MethodStep,
+  MoneyStep,
+  ReviewStep,
+  SetupStep,
+} from "@/components/bot/builder/steps";
+import { findTemplate } from "@/components/bot/builder/templates";
+import { useMarketsForStrategy } from "@/hooks/useMarketsForStrategy";
+import { parseApiError } from "@/lib/apiError";
+import {
+  getListBotPresetsQueryKey,
+  getListBotRunsQueryKey,
+  useCreateBotPreset,
+  useDeleteBotPreset,
+  useGetBotLimits,
+  useGetBotPreset,
+  useListBotStrategies,
+  useStartBotRun,
+  useUpdateBotPreset,
+} from "@/services/api/endpoints/bots/bots";
 
-type BotConfig = {
-  method: string;
-  market: string;
-  setup: {
-    type: 'Even' | 'Odd' | 'Over' | 'Under' | 'Rise' | 'Fall' | 'Differs' | 'Matches' | string;
-    number?: number;
-  };
-  duration: number;
-  durationUnit?: string;
-  indicators?: string[];
-  logic: string;
-  stake: string;
-  takeProfit: string;
-  stopLoss: string;
-  maxTrades?: string;
-  maxStake?: string;
-  moneyStrategy: string;
-  name: string;
-};
-
+/**
+ * /dbot/build — create or edit a bot, step by step.
+ *
+ *   ?preset=<id>     edit a saved bot (opens on Review with &step=review)
+ *   ?template=<id>   start from a ready-made bot
+ *   (neither)        start blank
+ *
+ * A bot is saved to the user's account as a preset, the same record the dBot
+ * workspace reads, and runs through the same start endpoint — so nothing here
+ * can start a run the workspace could not.
+ */
 export default function BotBuilderPage() {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [botConfig, setBotConfig] = useState<BotConfig>({
-    method: "Rise / Fall",
-    market: "Volatility 10",
-    setup: { type: 'Even' },
-    duration: 5,
-    durationUnit: "Ticks",
-    indicators: [],
-    logic: "Always this side",
-    stake: "1.00",
-    takeProfit: "5.00",
-    stopLoss: "10.00",
-    maxTrades: "40",
-    maxStake: "8",
-    moneyStrategy: "Same stake",
-    name: "Even / Odd — first bot"
+  // useSearchParams needs a Suspense boundary, or the route cannot prerender.
+  return (
+    <Suspense fallback={null}>
+      <BotBuilder />
+    </Suspense>
+  );
+}
+
+function BotBuilder() {
+  const router = useRouter();
+  const params = useSearchParams();
+  const queryClient = useQueryClient();
+
+  const presetId = params.get("preset");
+  const templateId = params.get("template");
+
+  const strategiesQuery = useListBotStrategies();
+  const limitsQuery = useGetBotLimits();
+  const presetQuery = useGetBotPreset(presetId ?? "", {
+    query: { enabled: Boolean(presetId), retry: false },
   });
+  const strategies = useMemo(
+    () => strategiesQuery.data?.strategies ?? [],
+    [strategiesQuery.data],
+  );
+
+  const [draft, setDraft] = useState<BotDraft | null>(() => {
+    if (presetId) return null; // filled once the preset loads
+    return findTemplate(templateId ?? "")?.build() ?? newDraft();
+  });
+  // The preset this draft is saved as, and the strategy it was saved under —
+  // a preset's strategy cannot be changed in place.
+  const [saved, setSaved] = useState<{ id: string; strategyId: string } | null>(null);
+  const [step, setStep] = useState<StepKey>(
+    presetId && params.get("step") === "review" ? "review" : "method",
+  );
+  const [gateReason, setGateReason] = useState<string | null>(null);
 
   useEffect(() => {
-    const template = sessionStorage.getItem("dbot-draft-template");
-    if (template) {
-      let overrides: Partial<BotConfig> = { name: template };
-
-      if (template === "Over / Under — switch") {
-        overrides = {
-          ...overrides,
-          method: "Over / Under",
-          market: "Volatility 10",
-          setup: { type: 'Under', number: 7 },
-          logic: "Flip after a loss",
-        };
-      } else if (template === "Even / Odd — first bot") {
-        overrides = {
-          ...overrides,
-          method: "Even / Odd",
-          market: "Volatility 10",
-          setup: { type: 'Even' },
-          logic: "Always this side",
-        };
-      } else if (template === "Even / Odd — fade a streak") {
-        overrides = {
-          ...overrides,
-          method: "Even / Odd",
-          market: "Volatility 10",
-          setup: { type: 'Even' },
-          logic: "Wait for a streak, then fade",
-        };
-      } else if (template.includes("Even / Odd")) {
-        overrides = { ...overrides, method: "Even / Odd", setup: { type: 'Even' } };
-      } else if (template.includes("Rise / Fall")) {
-        overrides = { ...overrides, method: "Rise / Fall" };
-      } else if (template.includes("Differs")) {
-        overrides = { ...overrides, method: "Differs", setup: { type: 'Differs', number: 5 } };
-      }
-
-      setBotConfig(prev => ({ ...prev, ...overrides }));
-      sessionStorage.removeItem("dbot-draft-template");
+    if (!presetQuery.data || draft) return;
+    const restored = draftFromPreset(presetQuery.data);
+    if (restored) {
+      setDraft(restored);
+      setSaved({ id: presetQuery.data.id, strategyId: presetQuery.data.strategy_id });
     }
-  }, []);
+  }, [presetQuery.data, draft]);
 
-  const isDigitMethod = ["Over / Under", "Even / Odd", "Matches", "Differs"].includes(botConfig.method);
-  
-  const steps = isDigitMethod ? [
-    { id: 1, label: "Method" },
-    { id: 2, label: "Markets" },
-    { id: 3, label: "Setup" },
-    { id: 4, label: "When to buy" },
-    { id: 5, label: "Money" },
-    { id: 6, label: "Review" },
-  ] : [
-    { id: 1, label: "Method" },
-    { id: 2, label: "Markets" },
-    { id: 3, label: "Duration" },
-    { id: 4, label: "Indicators" },
-    { id: 5, label: "Setup" },
-    { id: 6, label: "When to buy" },
-    { id: 7, label: "Money" },
-    { id: 8, label: "Review" },
-  ];
+  const createPreset = useCreateBotPreset();
+  const updatePreset = useUpdateBotPreset();
+  const deletePreset = useDeleteBotPreset();
+  const startRun = useStartBotRun();
+  const saving = createPreset.isPending || updatePreset.isPending;
 
-  const totalSteps = steps.length;
-  if (currentStep > totalSteps) {
-    setCurrentStep(totalSteps);
+  // Loaded here rather than only on the Markets step: a saved bot opens straight
+  // on Review, and the start request checks every symbol against this store.
+  const markets = useMarketsForStrategy((draft && strategyIdFor(draft)) ?? "");
+  const allMarkets = useMarketStore((s) => s.allMarkets);
+  const marketNames = useMemo(() => {
+    const byId = new Map(allMarkets.map((m) => [m.id, m.name]));
+    return (draft?.form.symbols ?? []).map((id) => byId.get(id) ?? id);
+  }, [allMarkets, draft?.form.symbols]);
+
+  // ── Loading and failure states ──────────────────────────────────────────
+  if (presetId && presetQuery.isError) {
+    return (
+      <Shell>
+        <Notice
+          title="This bot could not be opened"
+          body="It may have been removed, or it belongs to another account."
+        />
+      </Shell>
+    );
+  }
+  if (presetId && presetQuery.data && !draftFromPreset(presetQuery.data)) {
+    return (
+      <Shell>
+        <Notice
+          title="This bot uses a method the builder does not support"
+          body="Open it in the dBot workspace instead."
+          href="/options/dbot"
+          cta="Open workspace"
+        />
+      </Shell>
+    );
+  }
+  if (!draft) {
+    return (
+      <Shell>
+        <p className="text-sm text-zinc-500">Loading bot…</p>
+      </Shell>
+    );
   }
 
-  const updateConfig = (key: keyof BotConfig, value: any) => {
-    setBotConfig(prev => ({ ...prev, [key]: value }));
-  };
+  const strategy = strategies.find((s) => s.strategy_id === strategyIdFor(draft));
+  const problems = strategiesQuery.isSuccess ? draftProblems(draft, strategies) : [];
+  const ready = strategiesQuery.isSuccess && !markets.loading && problems.length === 0;
 
-  const renderStep = () => {
-    if (isDigitMethod) {
-      switch (currentStep) {
-        case 1: return <Step1Method config={botConfig} update={updateConfig} />;
-        case 2: return <Step2Markets config={botConfig} update={updateConfig} />;
-        case 3: return <Step3Setup config={botConfig} update={updateConfig} />;
-        case 4: return <Step4Logic config={botConfig} update={updateConfig} />;
-        case 5: return <Step5Money config={botConfig} update={updateConfig} />;
-        case 6: return <Step6Review config={botConfig} update={updateConfig} />;
-        default: return null;
+  // ── Actions ─────────────────────────────────────────────────────────────
+
+  /** Saves the draft and returns the preset id, or null if it failed. */
+  async function save(current: BotDraft): Promise<string | null> {
+    const strategyId = strategyIdFor(current);
+    if (!strategyId) return null;
+    const body = toPresetRequest(current, strategyId);
+    try {
+      let id: string;
+      if (saved && saved.strategyId === strategyId) {
+        await updatePreset.mutateAsync({
+          presetId: saved.id,
+          data: { name: body.name, config: body.config },
+        });
+        id = saved.id;
+      } else {
+        const created = await createPreset.mutateAsync({ data: body });
+        id = created.id;
+        // Changing method moved the bot to another strategy. The new preset is
+        // saved first, so a failed delete leaves a duplicate, never a loss.
+        if (saved) await deletePreset.mutateAsync({ presetId: saved.id }).catch(() => undefined);
       }
-    } else {
-      switch (currentStep) {
-        case 1: return <Step1Method config={botConfig} update={updateConfig} />;
-        case 2: return <Step2Markets config={botConfig} update={updateConfig} />;
-        case 3: return <StepDuration config={botConfig} update={updateConfig} />;
-        case 4: return <StepIndicators config={botConfig} update={updateConfig} />;
-        case 5: return <Step3Setup config={botConfig} update={updateConfig} />;
-        case 6: return <Step4Logic config={botConfig} update={updateConfig} />;
-        case 7: return <Step5Money config={botConfig} update={updateConfig} />;
-        case 8: return <Step6Review config={botConfig} update={updateConfig} />;
-        default: return null;
-      }
+      setSaved({ id, strategyId });
+      await queryClient.invalidateQueries({ queryKey: getListBotPresetsQueryKey() });
+      return id;
+    } catch (err) {
+      toast.error(parseApiError(err, "Could not save the bot.").message);
+      return null;
     }
-  };
+  }
+
+  async function handleSave() {
+    if (await save(draft!)) {
+      toast.success("Bot saved");
+      router.push("/dbot" as Route);
+    }
+  }
+
+  async function handleRun(riskAcknowledged: boolean) {
+    const current = draft!;
+    const { request, errors } = buildDraftRunRequest(current, strategies, riskAcknowledged);
+    if (!request) {
+      toast.error(errors[0] ?? "This bot is not ready to run.");
+      return;
+    }
+    if (!(await save(current))) return;
+
+    try {
+      const res = await startRun.mutateAsync({ data: request });
+      const adjustments = res.limit_adjustments ?? [];
+      if (adjustments.length > 0) {
+        // The user would otherwise believe their own numbers were honoured.
+        toast.warning(
+          "The platform capped: " +
+            adjustments.map((a) => `${a.field} ${a.requested} → ${a.applied}`).join(", "),
+          { duration: 10_000 },
+        );
+      }
+      await queryClient.invalidateQueries({ queryKey: getListBotRunsQueryKey() });
+      router.push("/options/dbot" as Route);
+    } catch (err) {
+      const reason = subscriptionRefusal(err);
+      if (reason) {
+        setGateReason(reason);
+        return;
+      }
+      toast.error(parseApiError(err, "The bot could not be started.").message);
+    }
+  }
+
+  const methodChosen = Boolean(findMethod(draft.method)?.strategyId);
+  // Steps depend on the method: digit bots have no Duration or Indicators step.
+  const steps = stepsFor(draft);
+  const index = Math.max(0, steps.findIndex((s) => s.key === step));
+  const current = steps[index].key;
 
   return (
-    <div className="w-full flex-1 flex flex-col justify-between bg-[#080C16] text-white p-4 lg:p-8 h-full">
-      {/* Header */}
-      <div className="w-full mb-6">
-        <Link href={"/dbot" as Route} className="text-xs text-zinc-400 hover:text-white mb-4 block w-fit">
-          &larr; Bots
-        </Link>
-        
-        {/* Stepper */}
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-          {steps.map(step => {
-            const isActive = currentStep === step.id;
-            return (
-              <button 
-                key={step.id}
-                onClick={() => setCurrentStep(step.id)}
-                className={`h-8 px-4 rounded-full border text-sm flex items-center gap-2 whitespace-nowrap transition bg-transparent ${
-                  isActive 
-                    ? "border-white text-white" 
-                    : "border-line text-zinc-500 hover:text-white hover:border-zinc-500"
-                }`}
-              >
-                <span className={
-                  isActive 
+    <Shell>
+      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide mb-6" role="tablist">
+        {steps.map((s, i) => {
+          const active = current === s.key;
+          return (
+            <button
+              key={s.key}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              onClick={() => setStep(s.key)}
+              className={`h-8 px-4 rounded-full border text-sm flex items-center gap-2 whitespace-nowrap transition bg-transparent ${
+                active ? "border-white text-white" : "border-line text-zinc-500 hover:text-white hover:border-zinc-500"
+              }`}
+            >
+              <span
+                className={
+                  active
                     ? "bg-white text-black h-5 w-5 rounded-full flex items-center justify-center text-xs font-semibold"
-                    : "border border-line text-zinc-500 h-5 w-5 rounded-full flex items-center justify-center text-xs transition group-hover:border-zinc-500 group-hover:text-zinc-400"
-                }>
-                  {step.id}
-                </span>
-                {step.label}
-              </button>
-            );
-          })}
+                    : "border border-line text-zinc-500 h-5 w-5 rounded-full flex items-center justify-center text-xs"
+                }
+              >
+                {i + 1}
+              </span>
+              {s.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {strategiesQuery.isError && (
+        <div role="alert" className="mb-6 rounded-xl border border-red-500/40 bg-red-500/10 p-4 text-sm text-red-200">
+          Could not load the available bots. The trading engine may be unavailable — try again shortly.
         </div>
-      </div>
+      )}
 
-      {/* Main Content */}
       <div className="flex-1 pb-24">
-        {renderStep()}
+        {current === "method" && (
+          <MethodStep draft={draft} onChange={setDraft} strategies={strategies} loading={strategiesQuery.isPending} />
+        )}
+        {current === "markets" && <MarketsStep draft={draft} onChange={setDraft} />}
+        {current === "duration" && <DurationStep draft={draft} onChange={setDraft} />}
+        {current === "indicators" && <IndicatorsStep draft={draft} onChange={setDraft} strategy={strategy} />}
+        {current === "setup" && <SetupStep draft={draft} onChange={setDraft} strategy={strategy} />}
+        {current === "entry" && <EntryRuleStep draft={draft} onChange={setDraft} strategy={strategy} />}
+        {current === "money" && <MoneyStep draft={draft} onChange={setDraft} limits={limitsQuery.data} />}
+        {current === "review" && (
+          <ReviewStep draft={draft} onChange={setDraft} marketNames={marketNames} problems={problems}>
+            <RunPanel
+              ready={ready}
+              saving={saving}
+              starting={startRun.isPending}
+              saved={Boolean(saved)}
+              onSave={handleSave}
+              onRun={handleRun}
+            />
+          </ReviewStep>
+        )}
       </div>
 
-      {/* Fixed/Locked Bottom Action Bar */}
       <div className="sticky bottom-0 z-30 -mx-4 lg:-mx-8 px-4 lg:px-8 py-3.5 bg-[#080C16]/95 backdrop-blur-md border-t border-[#24344F] flex items-center justify-start gap-3 mt-auto">
-        <button 
-          onClick={() => setCurrentStep(prev => Math.max(1, prev - 1))}
-          disabled={currentStep === 1}
+        <button
+          type="button"
+          onClick={() => setStep(steps[Math.max(0, index - 1)].key)}
+          disabled={index === 0}
           className="h-10 px-6 rounded-lg bg-panel border border-line text-sm font-medium text-zinc-300 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
         >
           Back
         </button>
-        
-        {currentStep === totalSteps ? (
-          <Link href={"/dbot" as Route}>
-            <button className="h-10 px-6 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 transition">
-              Save bot
-            </button>
-          </Link>
-        ) : (
-          <button 
-            onClick={() => setCurrentStep(prev => Math.min(totalSteps, prev + 1))}
-            className="h-10 px-6 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 transition"
+        {index < steps.length - 1 && (
+          <button
+            type="button"
+            onClick={() => setStep(steps[index + 1].key)}
+            disabled={current === "method" && !methodChosen}
+            className="h-10 px-6 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 disabled:opacity-50 transition"
           >
             Continue
           </button>
         )}
       </div>
+
+      {/* The modal is styled for the options scope; give it that scope here. */}
+      <div data-app="options" data-opt-theme="dark" className="contents">
+        <SubscriptionGateModal
+          open={gateReason !== null}
+          reason={gateReason ?? undefined}
+          onClose={() => setGateReason(null)}
+        />
+      </div>
+    </Shell>
+  );
+}
+
+function Shell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="w-full flex-1 flex flex-col bg-[#080C16] text-white p-4 lg:p-8 h-full">
+      <Link href={"/dbot" as Route} className="text-xs text-zinc-400 hover:text-white mb-4 block w-fit">
+        &larr; Bots
+      </Link>
+      {children}
     </div>
   );
 }
 
-// ----------------------------------------------------------------------
-// STEP COMPONENTS
-// ----------------------------------------------------------------------
-
-function Step1Method({ config, update }: { config: BotConfig, update: Function }) {
-  const methodCategories = [
-    {
-      name: "PRICE DIRECTION",
-      methods: [
-        { id: "Rise / Fall", name: "Rise / Fall", desc: "Will the price finish higher or lower than it started?" },
-        { id: "Higher / Lower", name: "Higher / Lower", desc: "Will the price finish above or below a target you pick?" }
-      ]
-    },
-    {
-      name: "BARRIERS",
-      methods: [
-        { id: "Touch / No Touch", name: "Touch / No Touch", desc: "Will price touch a target at any moment before time is up?" },
-        { id: "Ends In / Ends Out", name: "Ends In / Ends Out", desc: "Will the price finish inside or outside two targets?" }
-      ]
-    },
-    {
-      name: "LAST DIGIT",
-      methods: [
-        { id: "Even / Odd", name: "Even / Odd", desc: "Will the last digit of the price be even (0,2,4,6,8) or odd (1,3,5,7,9)?" },
-        { id: "Over / Under", name: "Over / Under", desc: "Will the last digit be higher or lower than a number you pick?" },
-        { id: "Matches", name: "Matches", desc: "Will the last digit be exactly the number you pick? Harder — larger payout." },
-        { id: "Differs", name: "Differs", desc: "Will the last digit be anything except the number you pick? Easier — smaller payout." }
-      ]
-    },
-    {
-      name: "GROW / LEVERAGE",
-      methods: [
-        { id: "Accumulators", name: "Accumulators", desc: "Payout grows every tick the price stays inside a band. Stops if it hits the edge." },
-        { id: "Multipliers", name: "Multipliers", desc: "Ride the price with a multiplier. You cannot lose more than your stake." }
-      ]
-    },
-    {
-      name: "MORE OPTIONS",
-      methods: [
-        { id: "Asians", name: "Asians", desc: "Win if the average price over the contract is higher (Up) or lower (Down) than the start." },
-        { id: "Reset Call / Put", name: "Reset Call / Put", desc: "Like Rise/Fall, but if price hits a reset level the starting price is replaced." },
-        { id: "Only Ups / Only Downs", name: "Only Ups / Only Downs", desc: "Win if every tick in the contract moves only up, or only down." },
-        { id: "High Tick / Low Tick", name: "High Tick / Low Tick", desc: "Pick which tick in the series will be the highest or the lowest." },
-        { id: "Turbos", name: "Turbos", desc: "Stay on your side of a barrier. Knocked out if price crosses it." },
-        { id: "Vanillas", name: "Vanillas", desc: "Call or Put. Payout follows how far price finishes past the start." }
-      ]
-    }
-  ];
-
+function Notice({
+  title,
+  body,
+  href = "/dbot",
+  cta = "Back to bots",
+}: {
+  title: string;
+  body: string;
+  href?: string;
+  cta?: string;
+}) {
   return (
-    <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-300">
-      <h2 className="font-display text-xl font-semibold mb-1">Trading method</h2>
-      <p className="text-sm text-zinc-500 mb-8">Pick how this bot should trade. Markets come next.</p>
-      
-      {methodCategories.map((category, idx) => (
-        <div key={idx} className="mb-8 last:mb-0">
-          <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-600 font-medium mb-3">{category.name}</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-            {category.methods.map((method) => {
-              const isActive = config.method === method.id;
-              return (
-                <article 
-                  key={method.id}
-                  onClick={() => update("method", method.id)}
-                  className={`cursor-pointer rounded-xl p-5 border transition ${
-                    isActive 
-                      ? 'bg-white border-white text-black shadow-lg' 
-                      : 'bg-panel border-line text-white hover:border-zinc-500'
-                  }`}
-                >
-                  <h3 className="font-display font-semibold mb-1.5">{method.name}</h3>
-                  <p className={`text-sm leading-relaxed ${isActive ? 'text-black/70' : 'text-zinc-400'}`}>
-                    {method.desc}
-                  </p>
-                </article>
-              );
-            })}
-          </div>
-        </div>
-      ))}
+    <div className="bg-panel border border-line rounded-2xl p-8 text-center max-w-lg">
+      <h2 className="font-display text-lg font-semibold mb-2">{title}</h2>
+      <p className="text-sm text-zinc-400 mb-5">{body}</p>
+      <Link
+        href={href as Route}
+        className="inline-flex h-10 items-center px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200"
+      >
+        {cta}
+      </Link>
     </div>
   );
 }
 
-function Step2Markets({ config, update }: { config: BotConfig, update: Function }) {
-  const marketCategories = [
-    {
-      name: "BEST FOR FIRST BOTS",
-      markets: [
-        { id: "Volatility 10", name: "Volatility 10", desc: "Calm · 1 tick / 2s" },
-        { id: "Volatility 25", name: "Volatility 25", desc: "Gentle · 1 tick / 2s" }
-      ]
-    },
-    {
-      name: "MORE MOVEMENT",
-      markets: [
-        { id: "Volatility 50", name: "Volatility 50", desc: "Medium · 1 tick / 2s" },
-        { id: "Volatility 75", name: "Volatility 75", desc: "Active · 1 tick / 2s" },
-        { id: "Volatility 100", name: "Volatility 100", desc: "Fast · 1 tick / 2s" }
-      ]
-    },
-    {
-      name: "1-SECOND",
-      markets: [
-        { id: "Volatility 10 (1s)", name: "Volatility 10 (1s)", desc: "Calm · 1 tick / 1s" },
-        { id: "Volatility 25 (1s)", name: "Volatility 25 (1s)", desc: "Gentle · 1 tick / 1s" },
-        { id: "Volatility 75 (1s)", name: "Volatility 75 (1s)", desc: "Active · 1 tick / 1s" },
-        { id: "Volatility 100 (1s)", name: "Volatility 100 (1s)", desc: "Fast · 1 tick / 1s" }
-      ]
-    },
-    {
-      name: "SPIKES",
-      markets: [
-        { id: "Boom 500", name: "Boom 500", desc: "Sudden spikes up" },
-        { id: "Crash 500", name: "Crash 500", desc: "Sudden spikes down" }
-      ]
-    },
-    {
-      name: "STEP",
-      markets: [
-        { id: "Step Index", name: "Step Index", desc: "Fixed 0.1 steps" }
-      ]
-    }
-  ];
-
+/**
+ * A refusal the pricing page answers, as opposed to a real error. The engine
+ * returns its reason codes verbatim; a 403 also covers an unlinked account and
+ * a missing risk acknowledgement, which no subscription fixes.
+ */
+function subscriptionRefusal(err: unknown): string | null {
+  const detail = (err as { response?: { data?: { detail?: unknown } } })?.response?.data?.detail;
+  if (typeof detail !== "string") return null;
   return (
-    <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-300">
-      <h2 className="font-display text-xl font-semibold mb-1">Markets</h2>
-      <p className="text-sm text-zinc-500 mb-8">1 selected · tap to add or remove</p>
-      
-      {marketCategories.map((category, idx) => (
-        <div key={idx} className="mb-8 last:mb-0">
-          <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-600 font-medium mb-3">{category.name}</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-            {category.markets.map((market) => {
-              const isActive = config.market === market.id;
-              return (
-                <article 
-                  key={market.id}
-                  onClick={() => update("market", market.id)}
-                  className={`cursor-pointer rounded-xl p-5 border transition ${
-                    isActive 
-                      ? 'bg-white border-white text-black shadow-lg' 
-                      : 'bg-panel border-line text-white hover:border-zinc-500'
-                  }`}
-                >
-                  <h3 className="font-display font-semibold mb-1">{market.name}</h3>
-                  <p className={`text-xs ${isActive ? 'text-black/70' : 'text-zinc-500'}`}>
-                    {market.desc}
-                  </p>
-                </article>
-              );
-            })}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function StepDuration({ config, update }: { config: BotConfig, update: Function }) {
-  const units = [
-    { id: "Ticks", desc: "Each new price print." },
-    { id: "Seconds", desc: "Wall-clock seconds." },
-    { id: "Minutes", desc: "Wall-clock minutes." },
-    { id: "Hours", desc: "Wall-clock hours." }
-  ];
-
-  const getDurationOptions = (unit: string) => {
-    switch (unit) {
-      case "Seconds": return [15, 30, 45, 60, 90, 120, 180, 300];
-      case "Minutes": return [1, 2, 3, 5, 10, 15, 30, 60];
-      case "Hours": return [1, 2, 3, 4, 8, 12, 24];
-      default: return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // Ticks
-    }
-  };
-
-  const currentUnit = config.durationUnit || 'Ticks';
-  const durationOptions = getDurationOptions(currentUnit);
-
-  const handleUnitChange = (u: string) => {
-    update("durationUnit", u);
-    update("duration", getDurationOptions(u)[0]);
-  };
-
-  return (
-    <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-300">
-      <h2 className="font-display text-xl font-semibold mb-1">Duration</h2>
-      <p className="text-sm text-zinc-500 mb-8">How long should each {config.method} trade last?</p>
-      
-      <p className="text-xs text-zinc-500 mb-3 uppercase tracking-wider font-medium">Unit</p>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4 mb-8">
-        {units.map(u => (
-          <article 
-            key={u.id}
-            onClick={() => handleUnitChange(u.id)}
-            className={`cursor-pointer rounded-xl p-5 border transition ${
-              currentUnit === u.id 
-                ? 'bg-white border-white text-black shadow-lg' 
-                : 'bg-panel border-line text-white hover:border-zinc-500'
-            }`}
-          >
-            <h3 className="font-display font-semibold mb-1">{u.id}</h3>
-            <p className={`text-xs ${currentUnit === u.id ? 'text-black/70' : 'text-zinc-500'}`}>
-              {u.desc}
-            </p>
-          </article>
-        ))}
-      </div>
-
-      <p className="text-xs text-zinc-500 mb-3 uppercase tracking-wider font-medium">{currentUnit}</p>
-      <div className="flex flex-wrap gap-2 mb-8">
-        {durationOptions.map(num => (
-          <button
-            key={num}
-            onClick={() => update("duration", num)}
-            className={`min-w-[2.75rem] h-11 px-3 rounded-lg flex items-center justify-center text-sm font-medium transition ${
-              config.duration === num ? "bg-white text-black shadow-lg" : "bg-panel border border-line text-zinc-400 hover:border-zinc-500 hover:text-white"
-            }`}
-          >
-            {num}
-          </button>
-        ))}
-      </div>
-
-      <div className="bg-panel border border-line rounded-2xl p-5 sm:p-6 mb-10">
-        <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-600 font-medium mb-2">EACH CONTRACT</p>
-        <p className="text-sm text-white font-medium">
-          {config.duration} {currentUnit.toLowerCase()}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function StepIndicators({ config, update }: { config: BotConfig, update: Function }) {
-  const indicators = [
-    { id: "RSI", desc: "How strongly price has been rising or falling." },
-    { id: "Simple MA", desc: "Average price over the last N ticks." },
-    { id: "Exponential MA", desc: "A faster average that follows recent ticks." },
-    { id: "MACD", desc: "Trend change when the MACD line crosses its signal." },
-    { id: "Bollinger Bands", desc: "Price relative to a volatility band." },
-    { id: "Stochastic", desc: "Whether the market looks oversold or overbought." }
-  ];
-
-  const toggleIndicator = (id: string) => {
-    const current = config.indicators || [];
-    if (current.includes(id)) {
-      update("indicators", current.filter(x => x !== id));
-    } else {
-      update("indicators", [...current, id]);
-    }
-  };
-
-  return (
-    <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-300">
-      <h2 className="font-display text-xl font-semibold mb-1">Indicators</h2>
-      <p className="text-sm text-zinc-500 mb-8">Optional. Add a signal the bot should wait for, or continue without one.</p>
-      
-      {(!config.indicators || config.indicators.length === 0) ? (
-        <div className="bg-panel border border-line rounded-2xl p-8 mb-8 flex flex-col items-center justify-center text-center">
-          <p className="text-sm text-zinc-500">No indicators yet. The bot can still trade on every tick.</p>
-        </div>
-      ) : (
-        <div className="space-y-4 mb-8">
-          {config.indicators.map(ind => (
-            <div key={ind} className="bg-panel border border-line rounded-2xl p-5">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h3 className="font-display font-semibold text-white">{ind}</h3>
-                  <p className="text-xs text-zinc-500 mt-1">
-                    {ind === "RSI" ? "RSI (14) Below 30" : `${ind} default settings`}
-                  </p>
-                </div>
-                <button onClick={() => toggleIndicator(ind)} className="text-xs text-zinc-500 hover:text-white transition">Remove</button>
-              </div>
-              
-              {ind === "RSI" ? (
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs text-zinc-500 mb-1.5">Period</label>
-                    <input type="number" defaultValue="14" className="w-full h-10 px-3 rounded-lg bg-[#080C16] border border-line text-sm text-white focus:border-zinc-500 outline-none transition-colors" />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-zinc-500 mb-1.5">Level</label>
-                    <input type="number" defaultValue="30" className="w-full h-10 px-3 rounded-lg bg-[#080C16] border border-line text-sm text-white focus:border-zinc-500 outline-none transition-colors" />
-                  </div>
-                  <div className="col-span-2">
-                    <label className="block text-xs text-zinc-500 mb-1.5">When to fire</label>
-                    <div className="flex bg-[#080C16] border border-line rounded-lg p-1 w-fit">
-                      <button className="px-4 py-1.5 rounded-md bg-white text-black text-sm font-medium">Below</button>
-                      <button className="px-4 py-1.5 rounded-md text-zinc-400 text-sm font-medium hover:text-white transition">Above</button>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs text-zinc-500 mb-1.5">Period</label>
-                    <input type="number" defaultValue="14" className="w-full h-10 px-3 rounded-lg bg-[#080C16] border border-line text-sm text-white focus:border-zinc-500 outline-none transition-colors" />
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-
-      <p className="text-xs text-zinc-500 mb-3 uppercase tracking-wider font-medium">Add indicator</p>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-10">
-        {indicators.map(ind => {
-          const isActive = (config.indicators || []).includes(ind.id);
-          return (
-            <article 
-              key={ind.id}
-              onClick={() => toggleIndicator(ind.id)}
-              className={`cursor-pointer rounded-xl p-5 border transition ${
-                isActive 
-                  ? 'bg-panel border-white text-white'
-                  : 'bg-panel border-line text-white hover:border-zinc-500'
-              }`}
-            >
-              <h3 className="font-display font-semibold mb-1">{ind.id}</h3>
-              <p className="text-xs text-zinc-500">
-                {ind.desc}
-              </p>
-            </article>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function Step3Setup({ config, update }: { config: BotConfig, update: Function }) {
-  const isOverUnder = config.method === "Over / Under";
-  const isDigitPicker = isOverUnder || config.method === "Matches" || config.method === "Differs";
-
-  return (
-    <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-300">
-      <h2 className="font-display text-xl font-semibold mb-1">What should it buy?</h2>
-      <p className="text-sm text-zinc-500 mb-8">Digit contracts last 1 tick — the next price's last digit decides the trade.</p>
-      
-      {isOverUnder && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-6">
-          <article 
-            onClick={() => update("setup", { ...config.setup, type: 'Over' })}
-            className={`cursor-pointer rounded-xl p-5 border transition ${
-              config.setup?.type === 'Over' 
-                ? 'bg-white border-white text-black shadow-lg' 
-                : 'bg-panel border-line text-white hover:border-zinc-500'
-            }`}
-          >
-            <h3 className="font-display font-semibold mb-1">Over</h3>
-            <p className={`text-sm ${config.setup?.type === 'Over' ? 'text-black/70' : 'text-zinc-500'}`}>
-              Digit is strictly higher
-            </p>
-          </article>
-          <article 
-            onClick={() => update("setup", { ...config.setup, type: 'Under' })}
-            className={`cursor-pointer rounded-xl p-5 border transition ${
-              config.setup?.type === 'Under' 
-                ? 'bg-white border-white text-black shadow-lg' 
-                : 'bg-panel border-line text-white hover:border-zinc-500'
-            }`}
-          >
-            <h3 className="font-display font-semibold mb-1">Under</h3>
-            <p className={`text-sm ${config.setup?.type === 'Under' ? 'text-black/70' : 'text-zinc-500'}`}>
-              Digit is strictly lower
-            </p>
-          </article>
-        </div>
-      )}
-
-      {config.method === "Even / Odd" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-6">
-          <article 
-            onClick={() => update("setup", { ...config.setup, type: 'Even' })}
-            className={`cursor-pointer rounded-xl p-5 border transition ${
-              config.setup?.type === 'Even' 
-                ? 'bg-white border-white text-black shadow-lg' 
-                : 'bg-panel border-line text-white hover:border-zinc-500'
-            }`}
-          >
-            <h3 className="font-display font-semibold mb-1">Even</h3>
-            <p className={`text-sm ${config.setup?.type === 'Even' ? 'text-black/70' : 'text-zinc-500'}`}>
-              0, 2, 4, 6 or 8
-            </p>
-          </article>
-
-          <article 
-            onClick={() => update("setup", { ...config.setup, type: 'Odd' })}
-            className={`cursor-pointer rounded-xl p-5 border transition ${
-              config.setup?.type === 'Odd' 
-                ? 'bg-white border-white text-black shadow-lg' 
-                : 'bg-panel border-line text-white hover:border-zinc-500'
-            }`}
-          >
-            <h3 className="font-display font-semibold mb-1">Odd</h3>
-            <p className={`text-sm ${config.setup?.type === 'Odd' ? 'text-black/70' : 'text-zinc-500'}`}>
-              1, 3, 5, 7 or 9
-            </p>
-          </article>
-        </div>
-      )}
-
-      {!isOverUnder && config.method !== "Even / Odd" && !isDigitPicker && (
-         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-6">
-          <article 
-            onClick={() => update("setup", { ...config.setup, type: 'Rise' })}
-            className={`cursor-pointer rounded-xl p-5 border transition ${
-              config.setup?.type === 'Rise' 
-                ? 'bg-white border-white text-black shadow-lg' 
-                : 'bg-panel border-line text-white hover:border-zinc-500'
-            }`}
-          >
-            <h3 className="font-display font-semibold mb-1">Rise</h3>
-            <p className={`text-sm ${config.setup?.type === 'Rise' ? 'text-black/70' : 'text-zinc-500'}`}>
-              Price goes up
-            </p>
-          </article>
-
-          <article 
-            onClick={() => update("setup", { ...config.setup, type: 'Fall' })}
-            className={`cursor-pointer rounded-xl p-5 border transition ${
-              config.setup?.type === 'Fall' 
-                ? 'bg-white border-white text-black shadow-lg' 
-                : 'bg-panel border-line text-white hover:border-zinc-500'
-            }`}
-          >
-            <h3 className="font-display font-semibold mb-1">Fall</h3>
-            <p className={`text-sm ${config.setup?.type === 'Fall' ? 'text-black/70' : 'text-zinc-500'}`}>
-              Price goes down
-            </p>
-          </article>
-        </div>       
-      )}
-
-      {config.method === "Differs" && (
-        <div className="mb-6">
-          <article className="rounded-xl p-5 border transition bg-white border-white text-black shadow-lg w-full md:w-[calc(50%-0.5rem)]">
-            <h3 className="font-display font-semibold mb-1">Differs</h3>
-            <p className="text-sm text-black/70">
-              Last digit is not your number
-            </p>
-          </article>
-        </div>
-      )}
-
-      {config.method === "Matches" && (
-        <div className="mb-6">
-          <article className="rounded-xl p-5 border transition bg-white border-white text-black shadow-lg w-full md:w-[calc(50%-0.5rem)]">
-            <h3 className="font-display font-semibold mb-1">Matches</h3>
-            <p className="text-sm text-black/70">
-              Last digit is exactly your number
-            </p>
-          </article>
-        </div>
-      )}
-
-      {isDigitPicker && (
-        <div className="w-full mb-6">
-          <p className="text-xs text-zinc-500 mb-3 uppercase tracking-wider font-medium">Which last digit?</p>
-          <div className="flex flex-wrap gap-2">
-            {[0,1,2,3,4,5,6,7,8,9].map(num => {
-              const isActive = config.setup?.number === num;
-              return (
-                <button
-                  key={num}
-                  onClick={() => update("setup", { ...config.setup, number: num })}
-                  className={`w-11 h-11 rounded-full flex items-center justify-center text-sm font-medium transition ${
-                    isActive ? "bg-white text-black shadow-lg" : "bg-panel border border-line text-zinc-400 hover:border-zinc-500 hover:text-white"
-                  }`}
-                >
-                  {num}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {(!isDigitPicker) && (
-        <div className="bg-panel border border-line rounded-2xl p-5 sm:p-6 mb-4 mt-6">
-          <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-600 font-medium mb-3">DURATION</p>
-          <p className="text-sm text-white font-medium">
-            {config.duration} {config.durationUnit?.toLowerCase() || 'ticks'}
-          </p>
-        </div>
-      )}
-
-      <div className="bg-panel border border-line rounded-2xl p-5 sm:p-6 mb-10">
-        <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-600 font-medium mb-3">IN NUMBERS</p>
-        <p className="text-sm text-zinc-300 leading-relaxed">
-          {isOverUnder 
-            ? "About 70% of ticks win on Over 2, but payout is smaller. The closer to 9, the higher the risk and reward."
-            : config.method === "Differs"
-            ? "About 90% of ticks win. A $1 win pays about $0.09 profit."
-            : config.method === "Matches"
-            ? "About 10% of ticks win. A $1 win pays about $8.09 profit."
-            : "Close to a coin flip. A $1 win pays about $0.95 profit. Equals on Rise/Fall lose."}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function Step4Logic({ config, update }: { config: BotConfig, update: Function }) {
-  const logicOptions = [
-    { id: "Always this side", name: "Always this side", desc: "Every contract uses the side you picked. The simplest rule." },
-    { id: "Flip after a loss", name: "Flip after a loss", desc: "If a trade loses, the next one takes the other side. Popular with digit bots." },
-    { id: "Copy the last tick", name: "Copy the last tick", desc: "If the last move was up / even, buy that same side again." },
-    { id: "Fade the last tick", name: "Fade the last tick", desc: "If the last move was up / even, buy the other side." },
-    { id: "Wait for a streak, then fade", name: "Wait for a streak, then fade", desc: "Wait until 3 ticks in a row match one side, then buy the other side." }
-  ];
-
-  return (
-    <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-300">
-      <h2 className="font-display text-xl font-semibold mb-1">When to buy</h2>
-      <p className="text-sm text-zinc-500 mb-6">This is the only "logic" you need. The bot uses it before every contract.</p>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-6">
-        {logicOptions.map((opt) => {
-          const isActive = config.logic === opt.id;
-          return (
-            <article 
-              key={opt.id}
-              onClick={() => update("logic", opt.id)}
-              className={`cursor-pointer rounded-xl p-5 border transition ${
-                isActive 
-                  ? 'bg-white border-white text-black shadow-lg' 
-                  : 'bg-panel border-line text-white hover:border-zinc-500'
-              }`}
-            >
-              <h3 className="font-display font-semibold mb-1">{opt.name}</h3>
-              <p className={`text-sm leading-relaxed ${isActive ? 'text-black/70' : 'text-zinc-400'}`}>
-                {opt.desc}
-              </p>
-            </article>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function Step5Money({ config, update }: { config: BotConfig, update: Function }) {
-  const moneyStrategies = [
-    { id: "Same stake", name: "Same stake", badge: "Recommended", desc: "Every trade uses the same amount. Safest way to start." },
-    { id: "Gentle step", name: "Gentle step", badge: "Medium", desc: "Add one unit after a loss, remove one after a win." },
-    { id: "Martingale", name: "Martingale", badge: "High risk", desc: "Multiply stake after a loss so one win recovers the streak. Can drain the account." },
-    { id: "Reverse Martingale", name: "Reverse Martingale", badge: "High risk", desc: "Multiply stake after a win. Reset after a loss. Rides streaks, gives them back fast." }
-  ];
-
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start w-full animate-in fade-in slide-in-from-bottom-4 duration-300">
-      
-      {/* Left Column: Inputs and Strategies */}
-      <div className="lg:col-span-8 2xl:col-span-9 space-y-8">
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <label className="block">
-            <span className="text-xs text-zinc-500 mb-1.5 block">Starting stake ($)</span>
-            <input type="number" value={config.stake} onChange={e => update("stake", e.target.value)} className="w-full h-11 px-4 rounded-lg bg-panel border border-line text-sm text-white focus:border-zinc-500 outline-none transition-colors" />
-          </label>
-          <label className="block">
-            <span className="text-xs text-zinc-500 mb-1.5 block">Stop when profit hits ($)</span>
-            <input type="number" value={config.takeProfit} onChange={e => update("takeProfit", e.target.value)} className="w-full h-11 px-4 rounded-lg bg-panel border border-line text-sm text-white focus:border-zinc-500 outline-none transition-colors" />
-          </label>
-          <label className="block">
-            <span className="text-xs text-zinc-500 mb-1.5 block">Stop when loss hits ($)</span>
-            <input type="number" value={config.stopLoss} onChange={e => update("stopLoss", e.target.value)} className="w-full h-11 px-4 rounded-lg bg-panel border border-line text-sm text-white focus:border-zinc-500 outline-none transition-colors" />
-          </label>
-          <label className="block">
-            <span className="text-xs text-zinc-500 mb-1.5 block">Max trades this run</span>
-            <input type="number" value={config.maxTrades} onChange={e => update("maxTrades", e.target.value)} className="w-full h-11 px-4 rounded-lg bg-panel border border-line text-sm text-white focus:border-zinc-500 outline-none transition-colors" />
-          </label>
-          <label className="block">
-            <span className="text-xs text-zinc-500 mb-1.5 block">Never stake more than ($)</span>
-            <input type="number" value={config.maxStake} onChange={e => update("maxStake", e.target.value)} className="w-full h-11 px-4 rounded-lg bg-panel border border-line text-sm text-white focus:border-zinc-500 outline-none transition-colors" />
-          </label>
-        </div>
-
-        <div>
-          <p className="text-xs text-zinc-500 mb-4">After each trade</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-            {moneyStrategies.map((strategy) => {
-              const currentStrategy = config.moneyStrategy || 'Same stake';
-              const isActive = currentStrategy === strategy.id;
-              return (
-                <article 
-                  key={strategy.id}
-                  onClick={() => update("moneyStrategy", strategy.id)}
-                  className={`cursor-pointer rounded-xl p-5 border transition flex flex-col ${
-                    isActive 
-                      ? 'bg-white border-white text-black shadow-lg' 
-                      : 'bg-panel border-line text-white hover:border-zinc-500'
-                  }`}
-                >
-                  <div className="flex justify-between items-start mb-1.5 gap-2">
-                    <h3 className="font-display font-semibold">{strategy.name}</h3>
-                    <span className={`text-[10px] uppercase tracking-wider shrink-0 mt-0.5 ${isActive ? 'text-black/60' : 'text-zinc-600'}`}>
-                      {strategy.badge}
-                    </span>
-                  </div>
-                  <p className={`text-sm leading-relaxed mt-auto ${isActive ? 'text-black/70' : 'text-zinc-400'}`}>
-                    {strategy.desc}
-                  </p>
-                </article>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Right Column: Info Panel */}
-      <div className="lg:col-span-4 2xl:col-span-3">
-        <div className="bg-panel border border-line rounded-2xl p-5 sm:p-6 sticky top-4">
-          <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-600 font-medium mb-3">WHY THESE CAPS</p>
-          <p className="text-sm text-zinc-400 leading-relaxed">
-            Take profit, stop loss and max stake are required. That is how a beginner can press Run without watching every tick.
-          </p>
-        </div>
-      </div>
-
-    </div>
-  );
-}
-
-function Step6Review({ config, update }: { config: BotConfig, update: Function }) {
-  const router = useRouter();
-
-  const handleSave = (redirectUrl: Route) => {
-    try {
-      const existingStr = localStorage.getItem("fxnod-demo") || "{}";
-      const existing = JSON.parse(existingStr);
-      const bots = existing.state?.bots || [];
-      const newBot = { id: Date.now().toString(), ...config, createdAt: new Date().toISOString() };
-      
-      const newState = {
-        ...existing,
-        state: {
-          ...existing.state,
-          bots: [newBot, ...bots]
-        }
-      };
-      
-      localStorage.setItem("fxnod-demo", JSON.stringify(newState));
-      toast.success("Bot saved!");
-      router.push(redirectUrl);
-    } catch (e) {
-      console.error(e);
-      toast.error("Failed to save bot.");
-    }
-  };
-
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start animate-in fade-in slide-in-from-bottom-4 duration-300">
-      
-      {/* Left Column */}
-      <div className="lg:col-span-8 2xl:col-span-9 space-y-4">
-        <div className="space-y-1.5">
-          <label className="text-xs text-zinc-500">Bot name</label>
-          <input 
-            type="text" 
-            value={config.name} 
-            onChange={e => update("name", e.target.value)} 
-            className="w-full h-11 px-4 rounded-lg bg-panel border border-line text-sm text-white focus:border-zinc-500 outline-none transition-colors" 
-          />
-        </div>
-
-        <div className="bg-panel border border-line rounded-xl p-5">
-          <h3 className="text-xs text-zinc-500 mb-2 uppercase tracking-wider font-medium">What this bot will do</h3>
-          <p className="text-sm text-zinc-300 leading-relaxed">
-            {(() => {
-              const isDigitMethod = ["Over / Under", "Even / Odd", "Matches", "Differs"].includes(config.method);
-              const durationStr = isDigitMethod ? "1 tick" : `${config.duration} ${config.durationUnit?.toLowerCase() || 'ticks'}`;
-              const indicatorStr = (!config.indicators || config.indicators.length === 0) ? '' : ` with ${config.indicators.join(", ")}`;
-              return (
-                <>
-                  On {config.market || 'Volatility 10'}, this bot buys {config.method || 'Over / Under'} for {durationStr}{indicatorStr}.{" "}
-                  {config.setup?.type === 'Over' || config.setup?.type === 'Under' 
-                    ? `${config.setup.type} number ${config.setup.number ?? 7}. ` 
-                    : config.setup?.type ? `${config.setup.type}. ` : ''}
-                  Strategy uses {config.moneyStrategy || 'Same stake'} (${Number(config.stake || 1).toFixed(2)}). 
-                  Stops at +${Number(config.takeProfit || 5).toFixed(2)} profit, -${Number(config.stopLoss || 10).toFixed(2)} loss, or after {config.maxTrades || 40} trades.
-                </>
-              );
-            })()}
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="bg-panel border border-line rounded-xl p-4">
-            <span className="text-xs text-zinc-500 block mb-1 uppercase tracking-wider font-medium">Markets</span>
-            <span className="text-sm font-medium text-white">{config.market}</span>
-          </div>
-          <div className="bg-panel border border-line rounded-xl p-4">
-            <span className="text-xs text-zinc-500 block mb-1 uppercase tracking-wider font-medium">Trade type</span>
-            <span className="text-sm font-medium text-white capitalize">
-              {config.method} · {config.setup?.type || ''} {config.setup?.number !== undefined ? 'number ' + config.setup.number : ''}
-            </span>
-          </div>
-          <div className="bg-panel border border-line rounded-xl p-4">
-            <span className="text-xs text-zinc-500 block mb-1 uppercase tracking-wider font-medium">Duration</span>
-            <span className="text-sm font-medium text-white">
-              {["Over / Under", "Even / Odd", "Matches", "Differs"].includes(config.method) 
-                ? "1 tick" 
-                : `${config.duration} ${config.durationUnit?.toLowerCase() || 'ticks'}`}
-            </span>
-          </div>
-          <div className="bg-panel border border-line rounded-xl p-4">
-            <span className="text-xs text-zinc-500 block mb-1 uppercase tracking-wider font-medium">When to buy</span>
-            <span className="text-sm font-medium text-white">{config.logic}</span>
-          </div>
-          <div className="bg-panel border border-line rounded-xl p-4 sm:col-span-2">
-            <span className="text-xs text-zinc-500 block mb-1 uppercase tracking-wider font-medium">Money</span>
-            <span className="text-sm font-medium text-white">{config.moneyStrategy} · ${Number(config.stake || 1).toFixed(2)}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Right Column */}
-      <div className="lg:col-span-4 2xl:col-span-3 sticky top-4">
-        <div className="bg-panel border border-line rounded-2xl p-6 h-fit sticky top-24">
-          <h3 className="text-sm font-semibold text-white mb-2 tracking-wide">NEXT</h3>
-          <p className="text-xs text-zinc-400 mb-6 leading-relaxed">Save, then practice on a demo feed or run it live when you are ready.</p>
-          
-          <button onClick={() => handleSave("/options/dbot" as Route)} className="w-full h-11 rounded-lg bg-white text-black text-sm font-medium mb-3 hover:bg-zinc-200 transition">
-            Save and open
-          </button>
-          <button onClick={() => handleSave("/dbot" as Route)} className="w-full h-11 rounded-lg border border-line text-sm text-zinc-300 hover:text-white transition">
-            Save and go to list
-          </button>
-        </div>
-      </div>
-
-    </div>
+    ["no_subscription", "subscription_expired", "subscription_cancelled"].find((r) =>
+      detail.includes(r),
+    ) ?? null
   );
 }
