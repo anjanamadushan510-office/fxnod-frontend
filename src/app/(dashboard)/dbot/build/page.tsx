@@ -13,6 +13,8 @@ type BotConfig = {
   stake: string;
   takeProfit: string;
   stopLoss: string;
+  maxTrades?: string;
+  maxStake?: string;
   moneyStrategy: string;
   name: string;
 };
@@ -28,7 +30,9 @@ export default function BotBuilderPage() {
     stake: "1.00",
     takeProfit: "5.00",
     stopLoss: "10.00",
-    moneyStrategy: "same",
+    maxTrades: "40",
+    maxStake: "8",
+    moneyStrategy: "Same stake",
     name: "Even / Odd — first bot"
   });
 
@@ -375,67 +379,84 @@ function Step4Logic({ config, update }: { config: BotConfig, update: Function })
 }
 
 function Step5Money({ config, update }: { config: BotConfig, update: Function }) {
-  const strategies = [
-    { id: "same", label: "Same stake", desc: "Keeps the stake the same after every trade." },
-    { id: "gentle", label: "Gentle step", desc: "Increases the stake slightly after a loss to recover slowly." },
-    { id: "martingale", label: "Martingale", desc: "Doubles the stake after a loss. High risk." },
-    { id: "rev_martingale", label: "Reverse Martingale", desc: "Doubles the stake after a win. Good for streaks." },
+  const moneyStrategies = [
+    { id: "Same stake", name: "Same stake", badge: "Recommended", desc: "Every trade uses the same amount. Safest way to start." },
+    { id: "Gentle step", name: "Gentle step", badge: "Medium", desc: "Add one unit after a loss, remove one after a win." },
+    { id: "Martingale", name: "Martingale", badge: "High risk", desc: "Multiply stake after a loss so one win recovers the streak. Can drain the account." },
+    { id: "Reverse Martingale", name: "Reverse Martingale", badge: "High risk", desc: "Multiply stake after a win. Reset after a loss. Rides streaks, gives them back fast." }
   ];
 
   return (
-    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-300">
-      <div>
-        <h2 className="text-xl font-medium text-white mb-6">Limits</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-400">Starting stake ($)</label>
-            <input 
-              type="number" 
-              value={config.stake} 
-              onChange={e => update("stake", e.target.value)} 
-              className="w-full h-12 bg-panel border border-line rounded-xl px-4 text-white focus:outline-none focus:border-zinc-500 transition-colors"
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-400">Stop when profit hits ($)</label>
-            <input 
-              type="number" 
-              value={config.takeProfit} 
-              onChange={e => update("takeProfit", e.target.value)} 
-              className="w-full h-12 bg-panel border border-line rounded-xl px-4 text-white focus:outline-none focus:border-zinc-500 transition-colors"
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-400">Stop when loss hits ($)</label>
-            <input 
-              type="number" 
-              value={config.stopLoss} 
-              onChange={e => update("stopLoss", e.target.value)} 
-              className="w-full h-12 bg-panel border border-line rounded-xl px-4 text-white focus:outline-none focus:border-zinc-500 transition-colors"
-            />
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start w-full animate-in fade-in slide-in-from-bottom-4 duration-300">
+      
+      {/* Left Column: Inputs and Strategies */}
+      <div className="lg:col-span-8 2xl:col-span-9 space-y-8">
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <label className="block">
+            <span className="text-xs text-zinc-500 mb-1.5 block">Starting stake ($)</span>
+            <input type="number" value={config.stake} onChange={e => update("stake", e.target.value)} className="w-full h-11 px-4 rounded-lg bg-panel border border-line text-sm text-white focus:border-zinc-500 outline-none transition-colors" />
+          </label>
+          <label className="block">
+            <span className="text-xs text-zinc-500 mb-1.5 block">Stop when profit hits ($)</span>
+            <input type="number" value={config.takeProfit} onChange={e => update("takeProfit", e.target.value)} className="w-full h-11 px-4 rounded-lg bg-panel border border-line text-sm text-white focus:border-zinc-500 outline-none transition-colors" />
+          </label>
+          <label className="block">
+            <span className="text-xs text-zinc-500 mb-1.5 block">Stop when loss hits ($)</span>
+            <input type="number" value={config.stopLoss} onChange={e => update("stopLoss", e.target.value)} className="w-full h-11 px-4 rounded-lg bg-panel border border-line text-sm text-white focus:border-zinc-500 outline-none transition-colors" />
+          </label>
+          <label className="block">
+            <span className="text-xs text-zinc-500 mb-1.5 block">Max trades this run</span>
+            <input type="number" value={config.maxTrades} onChange={e => update("maxTrades", e.target.value)} className="w-full h-11 px-4 rounded-lg bg-panel border border-line text-sm text-white focus:border-zinc-500 outline-none transition-colors" />
+          </label>
+          <label className="block">
+            <span className="text-xs text-zinc-500 mb-1.5 block">Never stake more than ($)</span>
+            <input type="number" value={config.maxStake} onChange={e => update("maxStake", e.target.value)} className="w-full h-11 px-4 rounded-lg bg-panel border border-line text-sm text-white focus:border-zinc-500 outline-none transition-colors" />
+          </label>
+        </div>
+
+        <div>
+          <p className="text-xs text-zinc-500 mb-4">After each trade</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+            {moneyStrategies.map((strategy) => {
+              const currentStrategy = config.moneyStrategy || 'Same stake';
+              const isActive = currentStrategy === strategy.id;
+              return (
+                <article 
+                  key={strategy.id}
+                  onClick={() => update("moneyStrategy", strategy.id)}
+                  className={`cursor-pointer rounded-xl p-5 border transition flex flex-col ${
+                    isActive 
+                      ? 'bg-white border-white text-black shadow-lg' 
+                      : 'bg-panel border-line text-white hover:border-zinc-500'
+                  }`}
+                >
+                  <div className="flex justify-between items-start mb-1.5 gap-2">
+                    <h3 className="font-display font-semibold">{strategy.name}</h3>
+                    <span className={`text-[10px] uppercase tracking-wider shrink-0 mt-0.5 ${isActive ? 'text-black/60' : 'text-zinc-600'}`}>
+                      {strategy.badge}
+                    </span>
+                  </div>
+                  <p className={`text-sm leading-relaxed mt-auto ${isActive ? 'text-black/70' : 'text-zinc-400'}`}>
+                    {strategy.desc}
+                  </p>
+                </article>
+              );
+            })}
           </div>
         </div>
       </div>
 
-      <div>
-        <h2 className="text-xl font-medium text-white mb-6">After each trade</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {strategies.map(s => (
-            <article 
-              key={s.id}
-              onClick={() => update("moneyStrategy", s.id)}
-              className={`cursor-pointer p-6 rounded-2xl border transition-all ${
-                config.moneyStrategy === s.id 
-                  ? "bg-panel border-white shadow-lg" 
-                  : "bg-panel border-line hover:border-zinc-700"
-              }`}
-            >
-              <h3 className="font-medium text-white mb-2">{s.label}</h3>
-              <p className="text-sm text-zinc-400">{s.desc}</p>
-            </article>
-          ))}
+      {/* Right Column: Info Panel */}
+      <div className="lg:col-span-4 2xl:col-span-3">
+        <div className="bg-panel border border-line rounded-2xl p-5 sm:p-6 sticky top-4">
+          <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-600 font-medium mb-3">WHY THESE CAPS</p>
+          <p className="text-sm text-zinc-400 leading-relaxed">
+            Take profit, stop loss and max stake are required. That is how a beginner can press Run without watching every tick.
+          </p>
         </div>
       </div>
+
     </div>
   );
 }
@@ -462,7 +483,7 @@ function Step6Review({ config, update }: { config: BotConfig, update: Function }
             This bot trades <strong className="text-white font-medium">{config.market}</strong> using the <strong className="text-white font-medium capitalize">{config.method.replace('_', ' ')}</strong> method. 
             It is set to execute <strong className="text-white font-medium">{config.setup?.type}</strong> contracts for a duration of <strong className="text-white font-medium">{config.duration} ticks</strong>. 
             The entry logic uses "<strong className="text-white font-medium">{config.logic}</strong>".
-            Starting stake is <strong className="text-white font-medium">${config.stake}</strong>, applying a <strong className="text-white font-medium capitalize">{config.moneyStrategy.replace('_', ' ')}</strong> strategy after each trade, 
+            Starting stake is <strong className="text-white font-medium">${config.stake}</strong>, applying a <strong className="text-white font-medium">{config.moneyStrategy}</strong> strategy after each trade, 
             running until it hits a profit of <strong className="text-white font-medium">${config.takeProfit}</strong> or a loss of <strong className="text-white font-medium">${config.stopLoss}</strong>.
           </p>
         </div>
@@ -486,7 +507,7 @@ function Step6Review({ config, update }: { config: BotConfig, update: Function }
           </div>
           <div className="bg-panel border border-line rounded-xl p-4 sm:col-span-2">
             <span className="text-xs text-zinc-500 block mb-1 uppercase tracking-wider font-medium">Money</span>
-            <span className="text-sm font-medium text-white capitalize">{config.moneyStrategy.replace('_', ' ')} strategy starting at ${config.stake}</span>
+            <span className="text-sm font-medium text-white">{config.moneyStrategy} strategy starting at ${config.stake}</span>
           </div>
         </div>
       </div>
