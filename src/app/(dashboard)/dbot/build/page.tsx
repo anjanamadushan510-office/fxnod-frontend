@@ -556,7 +556,7 @@ function Step5Money({ config, update }: { config: BotConfig, update: Function })
 function Step6Review({ config, update }: { config: BotConfig, update: Function }) {
   const router = useRouter();
 
-  const handleSave = (redirectUrl: string) => {
+  const handleSave = (redirectUrl: Route) => {
     try {
       const existingStr = localStorage.getItem("fxnod-demo") || "{}";
       const existing = JSON.parse(existingStr);
@@ -632,10 +632,10 @@ function Step6Review({ config, update }: { config: BotConfig, update: Function }
           <h3 className="text-sm font-semibold text-white mb-2 tracking-wide">NEXT</h3>
           <p className="text-xs text-zinc-400 mb-6 leading-relaxed">Save, then practice on a demo feed or run it live when you are ready.</p>
           
-          <button onClick={() => handleSave("/options/dbot")} className="w-full h-11 rounded-lg bg-white text-black text-sm font-medium mb-3 hover:bg-zinc-200 transition">
+          <button onClick={() => handleSave("/options/dbot" as Route)} className="w-full h-11 rounded-lg bg-white text-black text-sm font-medium mb-3 hover:bg-zinc-200 transition">
             Save and open
           </button>
-          <button onClick={() => handleSave("/dbot")} className="w-full h-11 rounded-lg border border-line text-sm text-zinc-300 hover:text-white transition">
+          <button onClick={() => handleSave("/dbot" as Route)} className="w-full h-11 rounded-lg border border-line text-sm text-zinc-300 hover:text-white transition">
             Save and go to list
           </button>
         </div>
