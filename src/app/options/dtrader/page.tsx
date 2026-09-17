@@ -142,6 +142,7 @@ function OptionsPageInner() {
   return (
     <>
       <OptionsShell
+        theme="dark"
         drawerOpen={positionsOpen}
         drawer={
           <PositionsDrawer
@@ -152,7 +153,7 @@ function OptionsPageInner() {
         sidebar={
           <IconSidebar
             brandInitials="DT"
-            theme="light"
+            theme="dark"
             positionsOpen={positionsOpen}
             onPositionsToggle={togglePositions}
             positionsBadge={positionsCount || undefined}
@@ -183,17 +184,17 @@ function OptionsPageInner() {
 
       {showWarning && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setShowWarning(false)} />
-          <div className="relative flex w-[400px] flex-col rounded-lg bg-white shadow-2xl p-6">
-            <h2 className="text-[16px] font-bold text-[#333333]">Are you sure?</h2>
-            <p className="text-[14px] leading-relaxed text-[#333333] mt-4 mb-6">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setShowWarning(false)} />
+          <div className="relative flex w-[400px] flex-col rounded-lg bg-panel border border-line shadow-2xl p-6">
+            <h2 className="text-[16px] font-bold text-white">Are you sure?</h2>
+            <p className="text-[14px] leading-relaxed text-zinc-400 mt-4 mb-6">
               Some of your active indicators don't support 1-tick intervals. If you switch to this trade type, these indicators will be removed from your chart.
             </p>
             <div className="flex items-center justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setShowWarning(false)}
-                className="rounded border border-[#999999] bg-[#f2f3f4] px-4 py-2 text-[14px] font-bold text-[#333333] hover:bg-[#e6e9ed] transition-colors"
+                className="rounded border border-line bg-surface-2 px-4 py-2 text-[14px] font-bold text-white hover:bg-line transition-colors"
               >
                 Cancel
               </button>
@@ -204,7 +205,7 @@ function OptionsPageInner() {
                   if (pendingTradeType) setTradeType(pendingTradeType);
                   setShowWarning(false);
                 }}
-                className="rounded bg-[#ff444f] px-4 py-2 text-[14px] font-bold text-white hover:bg-[#eb3e48] transition-colors"
+                className="rounded bg-accent px-4 py-2 text-[14px] font-bold text-ink hover:opacity-90 transition-colors"
               >
                 Continue
               </button>

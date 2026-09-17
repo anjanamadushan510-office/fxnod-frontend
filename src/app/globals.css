@@ -151,15 +151,15 @@ a {
 }
 
 [data-app="options"][data-opt-theme="dark"] {
-  --opt-bg: #0c0d10;
-  --opt-bg-elev: #14161b;
-  --opt-bg-sunk: #0a0b0e;
-  --opt-line: #21242b;
-  --opt-line-strong: #2e323b;
-  --opt-ink: #f4f5f7;
-  --opt-ink-2: #b8bcc4;
-  --opt-ink-3: #777b85;
-  --opt-ink-4: #4a4d55;
+  --opt-bg: var(--bg);
+  --opt-bg-elev: var(--surface);
+  --opt-bg-sunk: var(--surface-2);
+  --opt-line: var(--line);
+  --opt-line-strong: var(--line-2);
+  --opt-ink: var(--ink);
+  --opt-ink-2: var(--ink-2);
+  --opt-ink-3: var(--ink-3);
+  --opt-ink-4: #6b7280;
 }
 
 /* Custom Scrollbar */
