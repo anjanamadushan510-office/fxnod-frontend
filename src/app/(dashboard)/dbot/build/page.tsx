@@ -360,10 +360,10 @@ function Step5Money({ config, update }: { config: BotConfig, update: Function })
 
 function Step6Review({ config, update }: { config: BotConfig, update: Function }) {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start animate-in fade-in slide-in-from-bottom-4 duration-300">
       
       {/* Left Column */}
-      <div className="lg:col-span-2 space-y-4">
+      <div className="lg:col-span-8 2xl:col-span-9 space-y-4">
         <div className="space-y-1.5">
           <label className="text-xs text-zinc-500">Bot name</label>
           <input 
@@ -410,7 +410,7 @@ function Step6Review({ config, update }: { config: BotConfig, update: Function }
       </div>
 
       {/* Right Column */}
-      <div className="lg:col-span-1">
+      <div className="lg:col-span-4 2xl:col-span-3 sticky top-4">
         <div className="bg-panel border border-line rounded-2xl p-6 h-fit sticky top-24">
           <h3 className="text-sm font-semibold text-white mb-2 tracking-wide">NEXT</h3>
           <p className="text-xs text-zinc-400 mb-6 leading-relaxed">Save, then practice on a demo feed or run it live when you are ready.</p>
