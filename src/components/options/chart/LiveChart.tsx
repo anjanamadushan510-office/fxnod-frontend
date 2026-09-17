@@ -911,7 +911,14 @@ function syncIndicators(
   }
 
   // Update or create active indicators
-  for (const ind of activeIndicators) {
+  for (let ind of activeIndicators) {
+    // Force any black/dark colors to white for dark theme visibility
+    ind = { ...ind, params: { ...ind.params } };
+    for (const [k, v] of Object.entries(ind.params)) {
+      if (typeof v === "string" && (v.toLowerCase() === "#000000" || v.toLowerCase() === "black" || v.toLowerCase() === "#333333" || v.toLowerCase() === "#111111")) {
+        ind.params[k] = "#ffffff";
+      }
+    }
     try {
     if (ind.type === "ma" || ind.type === "RSI") {
       let series = seriesRef.current.get(ind.id) as ISeriesApi<"Line">;
