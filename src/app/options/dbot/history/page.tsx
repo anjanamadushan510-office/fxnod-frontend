@@ -196,7 +196,7 @@ function RunRow({
         <PnlText value={pnl} />
       </span>
       <span className="flex items-center gap-2 text-[10.5px] text-opt-ink-3">
-        <span className="truncate">{run.symbol}</span>
+        <span className="truncate">{run.symbols.join(", ")}</span>
         {run.is_virtual && (
           <span className="shrink-0 rounded-full bg-opt-ink-4/20 px-1.5 py-px font-bold uppercase tracking-wide">
             Demo
@@ -241,7 +241,7 @@ function RunDetail({
         <div className="flex flex-wrap items-center gap-2">
           <StatusPill status={run.status} />
           <h2 className="m-0 text-[14px] font-bold text-opt-ink">{name}</h2>
-          <span className="text-[11px] text-opt-ink-3">{run.symbol}</span>
+          <span className="text-[11px] text-opt-ink-3">{run.symbols.join(", ")}</span>
           {run.is_virtual && (
             <span className="rounded-full bg-opt-ink-4/20 px-1.5 py-px text-[9px] font-bold uppercase tracking-wide text-opt-ink-2">
               Demo

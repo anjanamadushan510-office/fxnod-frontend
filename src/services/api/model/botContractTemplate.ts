@@ -39,6 +39,12 @@ import type { BotContractTemplateDurationUnit } from './botContractTemplateDurat
 export interface BotContractTemplate {
   /** FXNod frontend contract type. */
   contract_type: string;
+  /**
+   * Deriv symbols to trade. Each is a live market-data subscription, so a run may name at most 10, with no repeats.
+
+   * @minItems 1
+   * @maxItems 10
+   */
   symbols: string[];
   currency?: string;
   duration?: number;

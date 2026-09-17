@@ -73,7 +73,7 @@ export function BotTabs({
           key={run.run_id}
           id={run.run_id}
           label={strategyNames[run.strategy_id] ?? run.strategy_id}
-          sub={run.symbol}
+          sub={run.symbols.join(", ")}
           active={activeId === run.run_id}
           status={run.status}
           onSelect={onSelect}

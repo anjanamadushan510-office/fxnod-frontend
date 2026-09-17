@@ -67,6 +67,7 @@ export * from './botPresetList';
 export * from './botRiskLimits';
 export * from './botRun';
 export * from './botRunRiskLimits';
+export * from './botRunScanType';
 export * from './botRunStatus';
 export * from './botRunStopReason';
 export * from './botRunStrategyParameters';

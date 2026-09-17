@@ -30,40 +30,12 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
-import type { BotRunScanType } from './botRunScanType';
-import type { BotRunStatus } from './botRunStatus';
-import type { BotRunStopReason } from './botRunStopReason';
-import type { BotContractTemplate } from './botContractTemplate';
-import type { BotRunStrategyParameters } from './botRunStrategyParameters';
-import type { BotRunRiskLimits } from './botRunRiskLimits';
-import type { BotIndicator } from './botIndicator';
 
-export interface BotRun {
-  run_id: string;
-  strategy_id: string;
-  strategy_version?: number;
-  deriv_account_id?: string;
-  /** Snapshotted at start; a run cannot migrate between demo and real. */
-  is_virtual: boolean;
-  /** Every market the run trades, as Deriv symbols. A run used to trade one symbol; since multi-market runs this is the full set.
- */
-  symbols: string[];
-  scan_type: BotRunScanType;
-  currency: string;
-  status: BotRunStatus;
-  stop_reason?: BotRunStopReason;
-  realized_pnl: string;
-  total_staked: string;
-  trades_total: number;
-  trades_won: number;
-  trades_lost: number;
-  trades_open: number;
-  contract_template?: BotContractTemplate;
-  strategy_parameters?: BotRunStrategyParameters;
-  risk_limits?: BotRunRiskLimits;
-  indicators?: BotIndicator[];
-  created_at: string;
-  started_at?: string;
-  ended_at?: string;
-  expires_at: string;
-}
+export type BotRunScanType = typeof BotRunScanType[keyof typeof BotRunScanType];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const BotRunScanType = {
+  LINEAR: 'LINEAR',
+  PARALLEL: 'PARALLEL',
+} as const;
