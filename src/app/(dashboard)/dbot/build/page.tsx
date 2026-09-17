@@ -20,7 +20,7 @@ type BotConfig = {
 export default function BotBuilderPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [botConfig, setBotConfig] = useState<BotConfig>({
-    method: "rise_fall",
+    method: "Rise / Fall",
     market: "Volatility 10 Index",
     setupOption: "rise",
     duration: 5,
@@ -134,32 +134,81 @@ export default function BotBuilderPage() {
 // ----------------------------------------------------------------------
 
 function Step1Method({ config, update }: { config: BotConfig, update: Function }) {
-  const methods = [
-    { id: "rise_fall", label: "Rise / Fall", desc: "Predict if the market will end higher or lower than its current level." },
-    { id: "higher_lower", label: "Higher / Lower", desc: "Predict if the market will end higher or lower than a price target." },
-    { id: "touch_no_touch", label: "Touch / No Touch", desc: "Predict if the market will touch a target price before it ends." },
-    { id: "even_odd", label: "Even / Odd", desc: "Predict if the last digit of the final price will be an even or odd number." },
+  const methodCategories = [
+    {
+      name: "PRICE DIRECTION",
+      methods: [
+        { id: "Rise / Fall", name: "Rise / Fall", desc: "Will the price finish higher or lower than it started?" },
+        { id: "Higher / Lower", name: "Higher / Lower", desc: "Will the price finish above or below a target you pick?" }
+      ]
+    },
+    {
+      name: "BARRIERS",
+      methods: [
+        { id: "Touch / No Touch", name: "Touch / No Touch", desc: "Will price touch a target at any moment before time is up?" },
+        { id: "Ends In / Ends Out", name: "Ends In / Ends Out", desc: "Will the price finish inside or outside two targets?" }
+      ]
+    },
+    {
+      name: "LAST DIGIT",
+      methods: [
+        { id: "Even / Odd", name: "Even / Odd", desc: "Will the last digit of the price be even (0,2,4,6,8) or odd (1,3,5,7,9)?" },
+        { id: "Over / Under", name: "Over / Under", desc: "Will the last digit be higher or lower than a number you pick?" },
+        { id: "Matches", name: "Matches", desc: "Will the last digit be exactly the number you pick? Harder — larger payout." },
+        { id: "Differs", name: "Differs", desc: "Will the last digit be anything except the number you pick? Easier — smaller payout." }
+      ]
+    },
+    {
+      name: "GROW / LEVERAGE",
+      methods: [
+        { id: "Accumulators", name: "Accumulators", desc: "Payout grows every tick the price stays inside a band. Stops if it hits the edge." },
+        { id: "Multipliers", name: "Multipliers", desc: "Ride the price with a multiplier. You cannot lose more than your stake." }
+      ]
+    },
+    {
+      name: "MORE OPTIONS",
+      methods: [
+        { id: "Asians", name: "Asians", desc: "Win if the average price over the contract is higher (Up) or lower (Down) than the start." },
+        { id: "Reset Call / Put", name: "Reset Call / Put", desc: "Like Rise/Fall, but if price hits a reset level the starting price is replaced." },
+        { id: "Only Ups / Only Downs", name: "Only Ups / Only Downs", desc: "Win if every tick in the contract moves only up, or only down." },
+        { id: "High Tick / Low Tick", name: "High Tick / Low Tick", desc: "Pick which tick in the series will be the highest or the lowest." },
+        { id: "Turbos", name: "Turbos", desc: "Stay on your side of a barrier. Knocked out if price crosses it." },
+        { id: "Vanillas", name: "Vanillas", desc: "Call or Put. Payout follows how far price finishes past the start." }
+      ]
+    }
   ];
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
-      <h2 className="text-xl font-medium text-white mb-6">What trading method do you want to use?</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {methods.map(m => (
-          <article 
-            key={m.id}
-            onClick={() => update("method", m.id)}
-            className={`cursor-pointer p-6 rounded-2xl border transition-all ${
-              config.method === m.id 
-                ? "bg-panel border-white shadow-lg" 
-                : "bg-panel border-line hover:border-zinc-700"
-            }`}
-          >
-            <h3 className="font-medium text-white mb-2">{m.label}</h3>
-            <p className="text-sm text-zinc-400">{m.desc}</p>
-          </article>
-        ))}
-      </div>
+    <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-300">
+      <h2 className="font-display text-xl font-semibold mb-1">Trading method</h2>
+      <p className="text-sm text-zinc-500 mb-8">Pick how this bot should trade. Markets come next.</p>
+      
+      {methodCategories.map((category, idx) => (
+        <div key={idx} className="mb-8 last:mb-0">
+          <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-600 font-medium mb-3">{category.name}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+            {category.methods.map((method) => {
+              const isActive = config.method === method.id;
+              return (
+                <article 
+                  key={method.id}
+                  onClick={() => update("method", method.id)}
+                  className={`cursor-pointer rounded-xl p-5 border transition ${
+                    isActive 
+                      ? 'bg-white border-white text-black shadow-lg' 
+                      : 'bg-panel border-line text-white hover:border-zinc-500'
+                  }`}
+                >
+                  <h3 className="font-display font-semibold mb-1.5">{method.name}</h3>
+                  <p className={`text-sm leading-relaxed ${isActive ? 'text-black/70' : 'text-zinc-400'}`}>
+                    {method.desc}
+                  </p>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -212,10 +261,10 @@ function Step2Markets({ config, update }: { config: BotConfig, update: Function 
 function Step3Setup({ config, update }: { config: BotConfig, update: Function }) {
   const getSetupOptions = () => {
     switch (config.method) {
-      case "even_odd": return [{ id: "even", label: "Even" }, { id: "odd", label: "Odd" }, { id: "both", label: "Both (Depending on logic)" }];
-      case "rise_fall": return [{ id: "rise", label: "Rise" }, { id: "fall", label: "Fall" }, { id: "both", label: "Both (Depending on logic)" }];
-      case "higher_lower": return [{ id: "higher", label: "Higher" }, { id: "lower", label: "Lower" }, { id: "both", label: "Both (Depending on logic)" }];
-      case "touch_no_touch": return [{ id: "touch", label: "Touch" }, { id: "no_touch", label: "No Touch" }];
+      case "Even / Odd": return [{ id: "even", label: "Even" }, { id: "odd", label: "Odd" }, { id: "both", label: "Both (Depending on logic)" }];
+      case "Rise / Fall": return [{ id: "rise", label: "Rise" }, { id: "fall", label: "Fall" }, { id: "both", label: "Both (Depending on logic)" }];
+      case "Higher / Lower": return [{ id: "higher", label: "Higher" }, { id: "lower", label: "Lower" }, { id: "both", label: "Both (Depending on logic)" }];
+      case "Touch / No Touch": return [{ id: "touch", label: "Touch" }, { id: "no_touch", label: "No Touch" }];
       default: return [{ id: "rise", label: "Rise" }, { id: "fall", label: "Fall" }];
     }
   };
