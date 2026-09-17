@@ -69,20 +69,29 @@ export default function BotBuilderPage() {
         
         {/* Stepper */}
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-          {steps.map(step => (
-            <button 
-              key={step.id}
-              onClick={() => setCurrentStep(step.id)}
-              className={`h-8 px-4 rounded-full border text-sm flex items-center gap-2 whitespace-nowrap transition ${
-                currentStep === step.id 
-                  ? "border-white text-black font-medium bg-white" 
-                  : "border-line text-zinc-400 bg-panel/40 hover:text-white hover:border-zinc-500"
-              }`}
-            >
-              <span>{step.id}</span>
-              {step.label}
-            </button>
-          ))}
+          {steps.map(step => {
+            const isActive = currentStep === step.id;
+            return (
+              <button 
+                key={step.id}
+                onClick={() => setCurrentStep(step.id)}
+                className={`h-8 px-4 rounded-full border text-sm flex items-center gap-2 whitespace-nowrap transition bg-transparent ${
+                  isActive 
+                    ? "border-white text-white" 
+                    : "border-line text-zinc-500 hover:text-white hover:border-zinc-500"
+                }`}
+              >
+                <span className={
+                  isActive 
+                    ? "bg-white text-black h-5 w-5 rounded-full flex items-center justify-center text-xs font-semibold"
+                    : "border border-line text-zinc-500 h-5 w-5 rounded-full flex items-center justify-center text-xs transition group-hover:border-zinc-500 group-hover:text-zinc-400"
+                }>
+                  {step.id}
+                </span>
+                {step.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
