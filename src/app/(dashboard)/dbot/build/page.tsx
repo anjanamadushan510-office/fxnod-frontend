@@ -7,7 +7,7 @@ import { type Route } from "next";
 type BotConfig = {
   method: string;
   market: string;
-  setupOption: string;
+  setup: { type: string };
   duration: number;
   logic: string;
   stake: string;
@@ -22,7 +22,7 @@ export default function BotBuilderPage() {
   const [botConfig, setBotConfig] = useState<BotConfig>({
     method: "Rise / Fall",
     market: "Volatility 10",
-    setupOption: "rise",
+    setup: { type: 'Even' },
     duration: 5,
     logic: "always",
     stake: "1.00",
@@ -290,46 +290,57 @@ function Step2Markets({ config, update }: { config: BotConfig, update: Function 
 }
 
 function Step3Setup({ config, update }: { config: BotConfig, update: Function }) {
-  const getSetupOptions = () => {
-    switch (config.method) {
-      case "Even / Odd": return [{ id: "even", label: "Even" }, { id: "odd", label: "Odd" }, { id: "both", label: "Both (Depending on logic)" }];
-      case "Rise / Fall": return [{ id: "rise", label: "Rise" }, { id: "fall", label: "Fall" }, { id: "both", label: "Both (Depending on logic)" }];
-      case "Higher / Lower": return [{ id: "higher", label: "Higher" }, { id: "lower", label: "Lower" }, { id: "both", label: "Both (Depending on logic)" }];
-      case "Touch / No Touch": return [{ id: "touch", label: "Touch" }, { id: "no_touch", label: "No Touch" }];
-      default: return [{ id: "rise", label: "Rise" }, { id: "fall", label: "Fall" }];
-    }
-  };
-
-  const durations = [1, 2, 3, 5, 8, 10];
-
   return (
-    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-300">
-      <div>
-        <h2 className="text-xl font-medium text-white mb-6">What should it buy?</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {getSetupOptions().map(opt => (
-            <button
-              key={opt.id}
-              onClick={() => update("setupOption", opt.id)}
-              className={`p-4 rounded-xl border text-center transition-all ${
-                config.setupOption === opt.id ? "bg-panel border-white text-white" : "bg-panel border-line hover:border-zinc-700 text-zinc-300"
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
+    <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-300">
+      <h2 className="font-display text-xl font-semibold mb-1">What should it buy?</h2>
+      <p className="text-sm text-zinc-500 mb-8">Digit contracts last 1 tick — the next price's last digit decides the trade.</p>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-6">
+        <article 
+          onClick={() => update("setup", { ...config.setup, type: 'Even' })}
+          className={`cursor-pointer rounded-xl p-5 border transition ${
+            config.setup?.type === 'Even' 
+              ? 'bg-white border-white text-black shadow-lg' 
+              : 'bg-panel border-line text-white hover:border-zinc-500'
+          }`}
+        >
+          <h3 className="font-display font-semibold mb-1">Even</h3>
+          <p className={`text-sm ${config.setup?.type === 'Even' ? 'text-black/70' : 'text-zinc-500'}`}>
+            0, 2, 4, 6 or 8
+          </p>
+        </article>
+
+        <article 
+          onClick={() => update("setup", { ...config.setup, type: 'Odd' })}
+          className={`cursor-pointer rounded-xl p-5 border transition ${
+            config.setup?.type === 'Odd' 
+              ? 'bg-white border-white text-black shadow-lg' 
+              : 'bg-panel border-line text-white hover:border-zinc-500'
+          }`}
+        >
+          <h3 className="font-display font-semibold mb-1">Odd</h3>
+          <p className={`text-sm ${config.setup?.type === 'Odd' ? 'text-black/70' : 'text-zinc-500'}`}>
+            1, 3, 5, 7 or 9
+          </p>
+        </article>
+      </div>
+
+      <div className="bg-panel border border-line rounded-2xl p-5 sm:p-6 mb-10">
+        <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-600 font-medium mb-3">IN NUMBERS</p>
+        <p className="text-sm text-zinc-300 leading-relaxed">
+          Close to a coin flip. A $1 win pays about $0.95 profit. Equals on Rise/Fall lose.
+        </p>
       </div>
 
       <div>
-        <h2 className="text-xl font-medium text-white mb-6">Trade duration (ticks)</h2>
+        <h2 className="font-display text-xl font-semibold mb-4">Trade duration (ticks)</h2>
         <div className="flex flex-wrap gap-3">
-          {durations.map(ticks => (
+          {[1, 2, 3, 5, 8, 10].map(ticks => (
             <button
               key={ticks}
               onClick={() => update("duration", ticks)}
               className={`h-12 w-16 rounded-xl border font-medium transition-all ${
-                config.duration === ticks ? "bg-panel border-white text-white" : "bg-panel border-line hover:border-zinc-700 text-zinc-300"
+                config.duration === ticks ? "bg-white border-white text-black" : "bg-panel border-line hover:border-zinc-500 text-zinc-300"
               }`}
             >
               {ticks}
@@ -458,7 +469,7 @@ function Step6Review({ config, update }: { config: BotConfig, update: Function }
           <h3 className="text-xs text-zinc-500 mb-2 uppercase tracking-wider font-medium">What this bot will do</h3>
           <p className="text-sm text-zinc-300 leading-relaxed">
             This bot trades <strong className="text-white font-medium">{config.market}</strong> using the <strong className="text-white font-medium capitalize">{config.method.replace('_', ' ')}</strong> method. 
-            It is set to execute <strong className="text-white font-medium">{config.setupOption}</strong> contracts for a duration of <strong className="text-white font-medium">{config.duration} ticks</strong>. 
+            It is set to execute <strong className="text-white font-medium">{config.setup?.type}</strong> contracts for a duration of <strong className="text-white font-medium">{config.duration} ticks</strong>. 
             The entry logic uses "<strong className="text-white font-medium capitalize">{config.logic.replace('_', ' ')}</strong>".
             Starting stake is <strong className="text-white font-medium">${config.stake}</strong>, applying a <strong className="text-white font-medium capitalize">{config.moneyStrategy.replace('_', ' ')}</strong> strategy after each trade, 
             running until it hits a profit of <strong className="text-white font-medium">${config.takeProfit}</strong> or a loss of <strong className="text-white font-medium">${config.stopLoss}</strong>.
@@ -472,7 +483,7 @@ function Step6Review({ config, update }: { config: BotConfig, update: Function }
           </div>
           <div className="bg-panel border border-line rounded-xl p-4">
             <span className="text-xs text-zinc-500 block mb-1 uppercase tracking-wider font-medium">Trade type</span>
-            <span className="text-sm font-medium text-white capitalize">{config.method.replace('_', ' ')} / {config.setupOption}</span>
+            <span className="text-sm font-medium text-white capitalize">{config.method.replace('_', ' ')} / {config.setup?.type}</span>
           </div>
           <div className="bg-panel border border-line rounded-xl p-4">
             <span className="text-xs text-zinc-500 block mb-1 uppercase tracking-wider font-medium">Duration</span>
