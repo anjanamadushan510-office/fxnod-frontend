@@ -64,6 +64,29 @@ export default function DBotDashboardPage() {
         </article>
       </div>
 
+      {/* Intro Panel */}
+      <article className="bg-panel border border-line rounded-2xl p-10 sm:p-14 text-center">
+          <img 
+              src="/assets/fxnod-mark.png" 
+              alt="" 
+              className="mx-auto h-10 w-10 object-contain opacity-40 mb-5" 
+          />
+          <h3 className="font-display text-lg font-semibold mb-2">
+              No Blockly. No theory.
+          </h3>
+          <p className="text-sm text-zinc-500 max-w-md mx-auto leading-relaxed mb-6">
+              You do not need Blockly or trading theory. Pick a ready bot, read the one-line summary, then practice. Or build your own in plain language. Import a file from this computer or phone if you already have one.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <button className="h-10 px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 w-full sm:w-auto">
+                  Create a bot
+              </button>
+              <button className="h-10 px-5 rounded-lg border border-line text-sm text-zinc-300 hover:text-white w-full sm:w-auto">
+                  Import
+              </button>
+          </div>
+      </article>
+
       {/* Running Now Section */}
       <div className="space-y-4">
         <div>
