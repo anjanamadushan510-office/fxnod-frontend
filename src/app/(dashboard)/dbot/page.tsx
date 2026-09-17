@@ -5,6 +5,14 @@ import { type Route } from "next";
 import { Play, Settings2, Download, Trash2, Cpu, Activity, DollarSign } from "lucide-react";
 
 export default function DBotDashboardPage() {
+  const savedBots = [
+    { name: "Even / Odd — live", trades: "267 trades", market: "Volatility 10 · Even / Odd", rules: "Flip after a loss · Same stake · stake $1.00", pnl: "-$29.10", isLoss: true },
+    { name: "Over / Under — live", trades: "379 trades", market: "Volatility 25 · Over / Under", rules: "Flip after a loss · Same stake · stake $1.00", pnl: "-$44.44", isLoss: true },
+    { name: "Test bot 1", trades: "0 trades", market: "Volatility 10 · Even / Odd", rules: "Flip after a loss · Same stake · stake $1.00", pnl: "$0.00", isLoss: false },
+    { name: "Test Bot 2", trades: "0 trades", market: "Volatility 25 · Over / Under", rules: "Flip after a loss · Same stake · stake $1.00", pnl: "$0.00", isLoss: false },
+    { name: "Test bot 3", trades: "0 trades", market: "Volatility 10 · Rise / Fall", rules: "Copy the last tick · Same stake · stake $1.00", pnl: "$0.00", isLoss: false },
+  ];
+
   return (
     <section className="p-4 lg:p-8 space-y-8">
       {/* Header */}
@@ -105,90 +113,30 @@ export default function DBotDashboardPage() {
           <p className="text-sm text-ink-3">Created or imported on this device.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Bot Card */}
-          <article className="bg-surface border border-line rounded-2xl p-5 flex flex-col">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h3 className="font-medium text-ink flex items-center gap-2">
-                  Even / Odd &mdash; live
-                  <span className="inline-flex items-center gap-1.5 text-[10px] text-green-400 bg-green-400/10 px-2 py-0.5 rounded-full">
-                    <span className="relative flex h-1.5 w-1.5">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500"></span>
-                    </span>
-                    Live
-                  </span>
-                </h3>
-                <p className="text-xs text-ink-3 mt-1">Volatility 10 &middot; Even / Odd</p>
-              </div>
-              <div className="text-right">
-                <span className="text-xs text-ink-3 block">Session P/L</span>
-                <span className="text-sm font-medium text-red-400">-$29.10</span>
-              </div>
-            </div>
-            
-            <div className="bg-surface-2 rounded-lg p-3 mb-6">
-              <p className="text-xs text-ink-2 mb-2">267 trades</p>
-              <p className="text-xs text-ink-3 truncate">Rules: Flip after a loss &middot; Same stake &middot; stake $1.00</p>
-            </div>
-            
-            <div className="mt-auto flex gap-2">
-              <Link 
-                href={"/options/dbot" as Route}
-                className="flex-1 flex justify-center items-center h-10 rounded-lg bg-white text-black text-sm font-medium hover:opacity-90 transition-opacity gap-2"
-              >
-                <Play className="w-4 h-4" /> Open
-              </Link>
-              <button className="h-10 px-3 flex items-center justify-center rounded-lg border border-line text-zinc-300 hover:text-white hover:bg-surface-2 transition-colors">
-                <Settings2 className="w-4 h-4" />
-              </button>
-              <button className="h-10 px-3 flex items-center justify-center rounded-lg border border-line text-zinc-300 hover:text-white hover:bg-surface-2 transition-colors">
-                <Download className="w-4 h-4" />
-              </button>
-              <button className="h-10 px-3 flex items-center justify-center rounded-lg border border-line text-zinc-300 hover:text-red-400 hover:bg-surface-2 transition-colors">
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-          </article>
-          
-          {/* Another Bot Card Example */}
-          <article className="bg-surface border border-line rounded-2xl p-5 flex flex-col">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h3 className="font-medium text-ink flex items-center gap-2">
-                  Martingale strategy
-                </h3>
-                <p className="text-xs text-ink-3 mt-1">Volatility 100 &middot; Rise / Fall</p>
-              </div>
-              <div className="text-right">
-                <span className="text-xs text-ink-3 block">Session P/L</span>
-                <span className="text-sm font-medium text-ink">--</span>
-              </div>
-            </div>
-            
-            <div className="bg-surface-2 rounded-lg p-3 mb-6">
-              <p className="text-xs text-ink-2 mb-2">0 trades</p>
-              <p className="text-xs text-ink-3 truncate">Rules: Double stake after loss &middot; stake $0.50</p>
-            </div>
-            
-            <div className="mt-auto flex gap-2">
-              <Link 
-                href={"/options/dbot" as Route}
-                className="flex-1 flex justify-center items-center h-10 rounded-lg bg-white text-black text-sm font-medium hover:opacity-90 transition-opacity gap-2"
-              >
-                <Play className="w-4 h-4" /> Open
-              </Link>
-              <button className="h-10 px-3 flex items-center justify-center rounded-lg border border-line text-zinc-300 hover:text-white hover:bg-surface-2 transition-colors">
-                <Settings2 className="w-4 h-4" />
-              </button>
-              <button className="h-10 px-3 flex items-center justify-center rounded-lg border border-line text-zinc-300 hover:text-white hover:bg-surface-2 transition-colors">
-                <Download className="w-4 h-4" />
-              </button>
-              <button className="h-10 px-3 flex items-center justify-center rounded-lg border border-line text-zinc-300 hover:text-red-400 hover:bg-surface-2 transition-colors">
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-          </article>
+          {savedBots.map((bot, i) => (
+            <article key={i} className="bg-panel border border-line rounded-2xl p-5 surface-hover flex flex-col justify-between">
+                <div>
+                    <div className="flex justify-between items-start mb-1">
+                        <h3 className="font-display text-lg font-semibold">{bot.name}</h3>
+                        <span className="text-xs text-zinc-500">{bot.trades}</span>
+                    </div>
+                    <p className="text-xs text-zinc-500 mb-4">{bot.market}</p>
+                    <p className="text-sm text-zinc-300 mb-6">{bot.rules}</p>
+                </div>
+                <div>
+                    <div className="flex justify-between items-center mb-4">
+                        <span className="text-xs text-zinc-500">Session P/L</span>
+                        <span className={`font-semibold ${bot.isLoss ? 'text-red-400' : 'text-white'}`}>{bot.pnl}</span>
+                    </div>
+                    <div className="flex gap-2">
+                        <button className="flex-1 h-10 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 transition">Open</button>
+                        <button className="h-10 px-4 rounded-lg border border-line text-sm text-zinc-300 hover:text-white transition">Edit</button>
+                        <button className="h-10 px-4 rounded-lg border border-line text-sm text-zinc-300 hover:text-white transition">Export</button>
+                        <button className="h-10 px-4 rounded-lg border border-line text-sm text-zinc-300 hover:text-white transition">Remove</button>
+                    </div>
+                </div>
+            </article>
+          ))}
         </div>
       </div>
 
