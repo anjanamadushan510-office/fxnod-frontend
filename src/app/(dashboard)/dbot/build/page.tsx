@@ -64,13 +64,15 @@ export default function BotBuilderPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-4rem)] lg:min-h-[calc(100vh-5rem)] -m-4 lg:-m-8 p-4 lg:p-8 bg-[#080C16] text-white">
-      {/* Top Navigation / Stepper Content (Scrollable or fluid) */}
-      <div className="flex-1 pb-16">
-        <Link className="text-xs text-zinc-400 hover:text-white mb-6 block w-fit" href={"/dbot" as Route}>← Bots</Link>
+    <div className="w-full flex-1 flex flex-col justify-between bg-[#080C16] text-white p-4 lg:p-8 h-full">
+      {/* Header */}
+      <div className="w-full mb-6">
+        <Link href={"/dbot" as Route} className="text-xs text-zinc-400 hover:text-white mb-4 block w-fit">
+          &larr; Bots
+        </Link>
         
         {/* Stepper */}
-        <div className="flex gap-2 overflow-x-auto pb-2 mb-8 scrollbar-hide">
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
           {steps.map(step => {
             const isActive = currentStep === step.id;
             return (
@@ -95,37 +97,36 @@ export default function BotBuilderPage() {
             );
           })}
         </div>
+      </div>
 
-        {/* Step Content */}
+      {/* Main Content */}
+      <div className="flex-1 pb-24">
         {renderStep()}
       </div>
 
-      {/* Sticky Action Footer anchored inside the flex pane */}
-      <div className="sticky bottom-0 z-30 -mx-4 lg:-mx-8 px-4 lg:px-8 py-3.5 bg-[#080C16]/95 backdrop-blur-md border-t border-[#24344F] flex items-center justify-between mt-auto">
+      {/* Fixed/Locked Bottom Action Bar */}
+      <div className="sticky bottom-0 z-30 -mx-4 lg:-mx-8 px-4 lg:px-8 py-3.5 bg-[#080C16]/95 backdrop-blur-md border-t border-[#24344F] flex items-center justify-start gap-3 mt-auto">
         <button 
           onClick={() => setCurrentStep(prev => Math.max(1, prev - 1))}
           disabled={currentStep === 1}
-          className="h-10 px-5 rounded-lg border border-line text-sm text-zinc-300 hover:text-white disabled:opacity-50 transition"
+          className="h-10 px-6 rounded-lg bg-panel border border-line text-sm font-medium text-zinc-300 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
         >
           Back
         </button>
         
-        {currentStep < 6 ? (
+        {currentStep === 6 ? (
+          <Link href={"/dbot" as Route}>
+            <button className="h-10 px-6 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 transition">
+              Save bot
+            </button>
+          </Link>
+        ) : (
           <button 
             onClick={() => setCurrentStep(prev => Math.min(6, prev + 1))}
-            className="h-10 px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 transition"
+            className="h-10 px-6 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 transition"
           >
             Continue
           </button>
-        ) : (
-          <div className="flex items-center gap-2">
-            <Link href={"/dbot" as Route}>
-              <button className="h-10 px-5 rounded-lg border border-line text-sm text-zinc-300 hover:text-white transition">Save and go to list</button>
-            </Link>
-            <Link href={"/options/dbot" as Route}>
-              <button className="h-10 px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 transition">Save and open</button>
-            </Link>
-          </div>
         )}
       </div>
     </div>
