@@ -3,11 +3,13 @@
 import { useState } from "react";
 import Link from "next/link";
 import { type Route } from "next";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 type BotConfig = {
   method: string;
   market: string;
-  setup: { type: string };
+  setup: { type: string; number?: string };
   duration: number;
   logic: string;
   stake: string;
@@ -294,40 +296,130 @@ function Step2Markets({ config, update }: { config: BotConfig, update: Function 
 }
 
 function Step3Setup({ config, update }: { config: BotConfig, update: Function }) {
+  const isOverUnder = config.method === "Over / Under";
+  const isDigitPicker = isOverUnder || config.method === "Matches" || config.method === "Differs";
+
   return (
     <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-300">
       <h2 className="font-display text-xl font-semibold mb-1">What should it buy?</h2>
       <p className="text-sm text-zinc-500 mb-8">Digit contracts last 1 tick — the next price's last digit decides the trade.</p>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-6">
-        <article 
-          onClick={() => update("setup", { ...config.setup, type: 'Even' })}
-          className={`cursor-pointer rounded-xl p-5 border transition ${
-            config.setup?.type === 'Even' 
-              ? 'bg-white border-white text-black shadow-lg' 
-              : 'bg-panel border-line text-white hover:border-zinc-500'
-          }`}
-        >
-          <h3 className="font-display font-semibold mb-1">Even</h3>
-          <p className={`text-sm ${config.setup?.type === 'Even' ? 'text-black/70' : 'text-zinc-500'}`}>
-            0, 2, 4, 6 or 8
-          </p>
-        </article>
+      {isOverUnder && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-6">
+          <article 
+            onClick={() => update("setup", { ...config.setup, type: 'Over' })}
+            className={`cursor-pointer rounded-xl p-5 border transition ${
+              config.setup?.type === 'Over' 
+                ? 'bg-white border-white text-black shadow-lg' 
+                : 'bg-panel border-line text-white hover:border-zinc-500'
+            }`}
+          >
+            <h3 className="font-display font-semibold mb-1">Over</h3>
+            <p className={`text-sm ${config.setup?.type === 'Over' ? 'text-black/70' : 'text-zinc-500'}`}>
+              Digit is strictly higher
+            </p>
+          </article>
+          <article 
+            onClick={() => update("setup", { ...config.setup, type: 'Under' })}
+            className={`cursor-pointer rounded-xl p-5 border transition ${
+              config.setup?.type === 'Under' 
+                ? 'bg-white border-white text-black shadow-lg' 
+                : 'bg-panel border-line text-white hover:border-zinc-500'
+            }`}
+          >
+            <h3 className="font-display font-semibold mb-1">Under</h3>
+            <p className={`text-sm ${config.setup?.type === 'Under' ? 'text-black/70' : 'text-zinc-500'}`}>
+              Digit is strictly lower
+            </p>
+          </article>
+        </div>
+      )}
 
-        <article 
-          onClick={() => update("setup", { ...config.setup, type: 'Odd' })}
-          className={`cursor-pointer rounded-xl p-5 border transition ${
-            config.setup?.type === 'Odd' 
-              ? 'bg-white border-white text-black shadow-lg' 
-              : 'bg-panel border-line text-white hover:border-zinc-500'
-          }`}
-        >
-          <h3 className="font-display font-semibold mb-1">Odd</h3>
-          <p className={`text-sm ${config.setup?.type === 'Odd' ? 'text-black/70' : 'text-zinc-500'}`}>
-            1, 3, 5, 7 or 9
-          </p>
-        </article>
-      </div>
+      {config.method === "Even / Odd" && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-6">
+          <article 
+            onClick={() => update("setup", { ...config.setup, type: 'Even' })}
+            className={`cursor-pointer rounded-xl p-5 border transition ${
+              config.setup?.type === 'Even' 
+                ? 'bg-white border-white text-black shadow-lg' 
+                : 'bg-panel border-line text-white hover:border-zinc-500'
+            }`}
+          >
+            <h3 className="font-display font-semibold mb-1">Even</h3>
+            <p className={`text-sm ${config.setup?.type === 'Even' ? 'text-black/70' : 'text-zinc-500'}`}>
+              0, 2, 4, 6 or 8
+            </p>
+          </article>
+
+          <article 
+            onClick={() => update("setup", { ...config.setup, type: 'Odd' })}
+            className={`cursor-pointer rounded-xl p-5 border transition ${
+              config.setup?.type === 'Odd' 
+                ? 'bg-white border-white text-black shadow-lg' 
+                : 'bg-panel border-line text-white hover:border-zinc-500'
+            }`}
+          >
+            <h3 className="font-display font-semibold mb-1">Odd</h3>
+            <p className={`text-sm ${config.setup?.type === 'Odd' ? 'text-black/70' : 'text-zinc-500'}`}>
+              1, 3, 5, 7 or 9
+            </p>
+          </article>
+        </div>
+      )}
+
+      {!isOverUnder && config.method !== "Even / Odd" && !isDigitPicker && (
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-6">
+          <article 
+            onClick={() => update("setup", { ...config.setup, type: 'Rise' })}
+            className={`cursor-pointer rounded-xl p-5 border transition ${
+              config.setup?.type === 'Rise' 
+                ? 'bg-white border-white text-black shadow-lg' 
+                : 'bg-panel border-line text-white hover:border-zinc-500'
+            }`}
+          >
+            <h3 className="font-display font-semibold mb-1">Rise</h3>
+            <p className={`text-sm ${config.setup?.type === 'Rise' ? 'text-black/70' : 'text-zinc-500'}`}>
+              Price goes up
+            </p>
+          </article>
+
+          <article 
+            onClick={() => update("setup", { ...config.setup, type: 'Fall' })}
+            className={`cursor-pointer rounded-xl p-5 border transition ${
+              config.setup?.type === 'Fall' 
+                ? 'bg-white border-white text-black shadow-lg' 
+                : 'bg-panel border-line text-white hover:border-zinc-500'
+            }`}
+          >
+            <h3 className="font-display font-semibold mb-1">Fall</h3>
+            <p className={`text-sm ${config.setup?.type === 'Fall' ? 'text-black/70' : 'text-zinc-500'}`}>
+              Price goes down
+            </p>
+          </article>
+        </div>       
+      )}
+
+      {isDigitPicker && (
+        <div className="w-full mb-6">
+          <p className="text-xs text-zinc-500 mb-3 uppercase tracking-wider font-medium">Which last digit?</p>
+          <div className="flex flex-wrap gap-2">
+            {[0,1,2,3,4,5,6,7,8,9].map(num => {
+              const isActive = config.setup?.number === num.toString();
+              return (
+                <button
+                  key={num}
+                  onClick={() => update("setup", { ...config.setup, number: num.toString() })}
+                  className={`w-11 h-11 rounded-full flex items-center justify-center text-sm font-medium transition ${
+                    isActive ? "bg-white text-black shadow-lg" : "bg-panel border border-line text-zinc-400 hover:border-zinc-500 hover:text-white"
+                  }`}
+                >
+                  {num}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="bg-panel border border-line rounded-2xl p-5 sm:p-6 mb-10">
         <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-600 font-medium mb-3">IN NUMBERS</p>
@@ -462,6 +554,32 @@ function Step5Money({ config, update }: { config: BotConfig, update: Function })
 }
 
 function Step6Review({ config, update }: { config: BotConfig, update: Function }) {
+  const router = useRouter();
+
+  const handleSave = (redirectUrl: string) => {
+    try {
+      const existingStr = localStorage.getItem("fxnod-demo") || "{}";
+      const existing = JSON.parse(existingStr);
+      const bots = existing.state?.bots || [];
+      const newBot = { id: Date.now().toString(), ...config, createdAt: new Date().toISOString() };
+      
+      const newState = {
+        ...existing,
+        state: {
+          ...existing.state,
+          bots: [newBot, ...bots]
+        }
+      };
+      
+      localStorage.setItem("fxnod-demo", JSON.stringify(newState));
+      toast.success("Bot saved!");
+      router.push(redirectUrl);
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to save bot.");
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start animate-in fade-in slide-in-from-bottom-4 duration-300">
       
@@ -480,11 +598,7 @@ function Step6Review({ config, update }: { config: BotConfig, update: Function }
         <div className="bg-panel border border-line rounded-xl p-5">
           <h3 className="text-xs text-zinc-500 mb-2 uppercase tracking-wider font-medium">What this bot will do</h3>
           <p className="text-sm text-zinc-300 leading-relaxed">
-            This bot trades <strong className="text-white font-medium">{config.market}</strong> using the <strong className="text-white font-medium capitalize">{config.method.replace('_', ' ')}</strong> method. 
-            It is set to execute <strong className="text-white font-medium">{config.setup?.type}</strong> contracts for a duration of <strong className="text-white font-medium">{config.duration} ticks</strong>. 
-            The entry logic uses "<strong className="text-white font-medium">{config.logic}</strong>".
-            Starting stake is <strong className="text-white font-medium">${config.stake}</strong>, applying a <strong className="text-white font-medium">{config.moneyStrategy}</strong> strategy after each trade, 
-            running until it hits a profit of <strong className="text-white font-medium">${config.takeProfit}</strong> or a loss of <strong className="text-white font-medium">${config.stopLoss}</strong>.
+            On <strong className="text-white font-medium">{config.market || 'Volatility 25'}</strong>, this bot buys <strong className="text-white font-medium">{config.method || 'Over / Under'}</strong> for 1 tick. <strong className="text-white font-medium">{config.setup?.type || ''}{config.setup?.number ? ' number ' + config.setup.number : ''}</strong>. Strategy uses <strong className="text-white font-medium">{config.moneyStrategy || 'Same stake'}</strong> (${config.stake || '1.00'}). Stops at <strong className="text-white font-medium">+${config.takeProfit || '12.00'}</strong> profit, <strong className="text-white font-medium">-${config.stopLoss || '12.00'}</strong> loss, or after <strong className="text-white font-medium">{config.maxTrades || '50'}</strong> trades.
           </p>
         </div>
 
@@ -495,7 +609,7 @@ function Step6Review({ config, update }: { config: BotConfig, update: Function }
           </div>
           <div className="bg-panel border border-line rounded-xl p-4">
             <span className="text-xs text-zinc-500 block mb-1 uppercase tracking-wider font-medium">Trade type</span>
-            <span className="text-sm font-medium text-white capitalize">{config.method.replace('_', ' ')} / {config.setup?.type}</span>
+            <span className="text-sm font-medium text-white capitalize">{config.method.replace('_', ' ')} / {config.setup?.type}{config.setup?.number ? ` ${config.setup.number}` : ''}</span>
           </div>
           <div className="bg-panel border border-line rounded-xl p-4">
             <span className="text-xs text-zinc-500 block mb-1 uppercase tracking-wider font-medium">Duration</span>
@@ -518,16 +632,12 @@ function Step6Review({ config, update }: { config: BotConfig, update: Function }
           <h3 className="text-sm font-semibold text-white mb-2 tracking-wide">NEXT</h3>
           <p className="text-xs text-zinc-400 mb-6 leading-relaxed">Save, then practice on a demo feed or run it live when you are ready.</p>
           
-          <Link href={"/options/dbot" as Route}>
-            <button className="w-full h-11 rounded-lg bg-white text-black text-sm font-medium mb-3 hover:bg-zinc-200 transition">
-              Save and open
-            </button>
-          </Link>
-          <Link href={"/dbot" as Route}>
-            <button className="w-full h-11 rounded-lg border border-line text-sm text-zinc-300 hover:text-white transition">
-              Save and go to list
-            </button>
-          </Link>
+          <button onClick={() => handleSave("/options/dbot")} className="w-full h-11 rounded-lg bg-white text-black text-sm font-medium mb-3 hover:bg-zinc-200 transition">
+            Save and open
+          </button>
+          <button onClick={() => handleSave("/dbot")} className="w-full h-11 rounded-lg border border-line text-sm text-zinc-300 hover:text-white transition">
+            Save and go to list
+          </button>
         </div>
       </div>
 
