@@ -21,7 +21,7 @@ export default function BotBuilderPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [botConfig, setBotConfig] = useState<BotConfig>({
     method: "Rise / Fall",
-    market: "Volatility 10 Index",
+    market: "Volatility 10",
     setupOption: "rise",
     duration: 5,
     logic: "always",
@@ -214,46 +214,77 @@ function Step1Method({ config, update }: { config: BotConfig, update: Function }
 }
 
 function Step2Markets({ config, update }: { config: BotConfig, update: Function }) {
-  const beginner = ["Volatility 10 Index", "Volatility 25 Index"];
-  const advanced = ["Volatility 50 Index", "Volatility 75 Index", "Volatility 100 Index"];
+  const marketCategories = [
+    {
+      name: "BEST FOR FIRST BOTS",
+      markets: [
+        { id: "Volatility 10", name: "Volatility 10", desc: "Calm · 1 tick / 2s" },
+        { id: "Volatility 25", name: "Volatility 25", desc: "Gentle · 1 tick / 2s" }
+      ]
+    },
+    {
+      name: "MORE MOVEMENT",
+      markets: [
+        { id: "Volatility 50", name: "Volatility 50", desc: "Medium · 1 tick / 2s" },
+        { id: "Volatility 75", name: "Volatility 75", desc: "Active · 1 tick / 2s" },
+        { id: "Volatility 100", name: "Volatility 100", desc: "Fast · 1 tick / 2s" }
+      ]
+    },
+    {
+      name: "1-SECOND",
+      markets: [
+        { id: "Volatility 10 (1s)", name: "Volatility 10 (1s)", desc: "Calm · 1 tick / 1s" },
+        { id: "Volatility 25 (1s)", name: "Volatility 25 (1s)", desc: "Gentle · 1 tick / 1s" },
+        { id: "Volatility 75 (1s)", name: "Volatility 75 (1s)", desc: "Active · 1 tick / 1s" },
+        { id: "Volatility 100 (1s)", name: "Volatility 100 (1s)", desc: "Fast · 1 tick / 1s" }
+      ]
+    },
+    {
+      name: "SPIKES",
+      markets: [
+        { id: "Boom 500", name: "Boom 500", desc: "Sudden spikes up" },
+        { id: "Crash 500", name: "Crash 500", desc: "Sudden spikes down" }
+      ]
+    },
+    {
+      name: "STEP",
+      markets: [
+        { id: "Step Index", name: "Step Index", desc: "Fixed 0.1 steps" }
+      ]
+    }
+  ];
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
-      <h2 className="text-xl font-medium text-white mb-6">Choose a market to trade on</h2>
+    <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-300">
+      <h2 className="font-display text-xl font-semibold mb-1">Markets</h2>
+      <p className="text-sm text-zinc-500 mb-8">1 selected · tap to add or remove</p>
       
-      <div>
-        <h3 className="text-sm font-medium text-zinc-500 mb-4 uppercase tracking-wider">Best for first bots</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {beginner.map(m => (
-            <button
-              key={m}
-              onClick={() => update("market", m)}
-              className={`p-4 rounded-xl border text-left transition-all ${
-                config.market === m ? "bg-panel border-white" : "bg-panel border-line hover:border-zinc-700 text-zinc-300"
-              }`}
-            >
-              {m}
-            </button>
-          ))}
+      {marketCategories.map((category, idx) => (
+        <div key={idx} className="mb-8 last:mb-0">
+          <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-600 font-medium mb-3">{category.name}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            {category.markets.map((market) => {
+              const isActive = config.market === market.id;
+              return (
+                <article 
+                  key={market.id}
+                  onClick={() => update("market", market.id)}
+                  className={`cursor-pointer rounded-xl p-5 border transition ${
+                    isActive 
+                      ? 'bg-white border-white text-black shadow-lg' 
+                      : 'bg-panel border-line text-white hover:border-zinc-500'
+                  }`}
+                >
+                  <h3 className="font-display font-semibold mb-1">{market.name}</h3>
+                  <p className={`text-xs ${isActive ? 'text-black/70' : 'text-zinc-500'}`}>
+                    {market.desc}
+                  </p>
+                </article>
+              );
+            })}
+          </div>
         </div>
-      </div>
-      
-      <div>
-        <h3 className="text-sm font-medium text-zinc-500 mb-4 uppercase tracking-wider">More movement</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {advanced.map(m => (
-            <button
-              key={m}
-              onClick={() => update("market", m)}
-              className={`p-4 rounded-xl border text-left transition-all ${
-                config.market === m ? "bg-panel border-white" : "bg-panel border-line hover:border-zinc-700 text-zinc-300"
-              }`}
-            >
-              {m}
-            </button>
-          ))}
-        </div>
-      </div>
+      ))}
     </div>
   );
 }
