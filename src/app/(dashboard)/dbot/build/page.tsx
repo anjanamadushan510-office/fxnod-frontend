@@ -9,7 +9,10 @@ import { toast } from "sonner";
 type BotConfig = {
   method: string;
   market: string;
-  setup: { type: string; number?: string };
+  setup: {
+    type: 'Even' | 'Odd' | 'Over' | 'Under' | string;
+    number?: number;
+  };
   duration: number;
   logic: string;
   stake: string;
@@ -404,11 +407,11 @@ function Step3Setup({ config, update }: { config: BotConfig, update: Function })
           <p className="text-xs text-zinc-500 mb-3 uppercase tracking-wider font-medium">Which last digit?</p>
           <div className="flex flex-wrap gap-2">
             {[0,1,2,3,4,5,6,7,8,9].map(num => {
-              const isActive = config.setup?.number === num.toString();
+              const isActive = config.setup?.number === num;
               return (
                 <button
                   key={num}
-                  onClick={() => update("setup", { ...config.setup, number: num.toString() })}
+                  onClick={() => update("setup", { ...config.setup, number: num })}
                   className={`w-11 h-11 rounded-full flex items-center justify-center text-sm font-medium transition ${
                     isActive ? "bg-white text-black shadow-lg" : "bg-panel border border-line text-zinc-400 hover:border-zinc-500 hover:text-white"
                   }`}
@@ -424,7 +427,9 @@ function Step3Setup({ config, update }: { config: BotConfig, update: Function })
       <div className="bg-panel border border-line rounded-2xl p-5 sm:p-6 mb-10">
         <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-600 font-medium mb-3">IN NUMBERS</p>
         <p className="text-sm text-zinc-300 leading-relaxed">
-          Close to a coin flip. A $1 win pays about $0.95 profit. Equals on Rise/Fall lose.
+          {isOverUnder 
+            ? "About 70% of ticks win on Over 2, but payout is smaller. The closer to 9, the higher the risk and reward."
+            : "Close to a coin flip. A $1 win pays about $0.95 profit. Equals on Rise/Fall lose."}
         </p>
       </div>
     </div>
@@ -598,7 +603,12 @@ function Step6Review({ config, update }: { config: BotConfig, update: Function }
         <div className="bg-panel border border-line rounded-xl p-5">
           <h3 className="text-xs text-zinc-500 mb-2 uppercase tracking-wider font-medium">What this bot will do</h3>
           <p className="text-sm text-zinc-300 leading-relaxed">
-            On <strong className="text-white font-medium">{config.market || 'Volatility 25'}</strong>, this bot buys <strong className="text-white font-medium">{config.method || 'Over / Under'}</strong> for 1 tick. <strong className="text-white font-medium">{config.setup?.type || ''}{config.setup?.number ? ' number ' + config.setup.number : ''}</strong>. Strategy uses <strong className="text-white font-medium">{config.moneyStrategy || 'Same stake'}</strong> (${config.stake || '1.00'}). Stops at <strong className="text-white font-medium">+${config.takeProfit || '12.00'}</strong> profit, <strong className="text-white font-medium">-${config.stopLoss || '12.00'}</strong> loss, or after <strong className="text-white font-medium">{config.maxTrades || '50'}</strong> trades.
+            On {config.market || 'Volatility 10'}, this bot buys {config.method || 'Over / Under'} for 1 tick.{" "}
+            {config.setup?.type === 'Over' || config.setup?.type === 'Under' 
+              ? `${config.setup.type} number ${config.setup.number ?? 7}. ` 
+              : config.setup?.type ? `${config.setup.type}. ` : ''}
+            Strategy uses {config.moneyStrategy || 'Same stake'} (${Number(config.stake || 1).toFixed(2)}). 
+            Stops at +${Number(config.takeProfit || 5).toFixed(2)} profit, -${Number(config.stopLoss || 10).toFixed(2)} loss, or after {config.maxTrades || 40} trades.
           </p>
         </div>
 
@@ -609,11 +619,13 @@ function Step6Review({ config, update }: { config: BotConfig, update: Function }
           </div>
           <div className="bg-panel border border-line rounded-xl p-4">
             <span className="text-xs text-zinc-500 block mb-1 uppercase tracking-wider font-medium">Trade type</span>
-            <span className="text-sm font-medium text-white capitalize">{config.method.replace('_', ' ')} / {config.setup?.type}{config.setup?.number ? ` ${config.setup.number}` : ''}</span>
+            <span className="text-sm font-medium text-white capitalize">
+              {config.method} · {config.setup?.type || ''} {config.setup?.number !== undefined ? 'number ' + config.setup.number : ''}
+            </span>
           </div>
           <div className="bg-panel border border-line rounded-xl p-4">
             <span className="text-xs text-zinc-500 block mb-1 uppercase tracking-wider font-medium">Duration</span>
-            <span className="text-sm font-medium text-white">{config.duration} ticks</span>
+            <span className="text-sm font-medium text-white">1 tick</span>
           </div>
           <div className="bg-panel border border-line rounded-xl p-4">
             <span className="text-xs text-zinc-500 block mb-1 uppercase tracking-wider font-medium">When to buy</span>
@@ -621,7 +633,7 @@ function Step6Review({ config, update }: { config: BotConfig, update: Function }
           </div>
           <div className="bg-panel border border-line rounded-xl p-4 sm:col-span-2">
             <span className="text-xs text-zinc-500 block mb-1 uppercase tracking-wider font-medium">Money</span>
-            <span className="text-sm font-medium text-white">{config.moneyStrategy} strategy starting at ${config.stake}</span>
+            <span className="text-sm font-medium text-white">{config.moneyStrategy} · ${Number(config.stake || 1).toFixed(2)}</span>
           </div>
         </div>
       </div>
