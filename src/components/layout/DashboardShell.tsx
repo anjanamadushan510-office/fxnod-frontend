@@ -10,7 +10,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((s) => s.user);
 
   return (
-    <div className="flex min-h-screen bg-bg">
+    <div className="flex min-h-screen bg-[#080C16] text-white">
       <Sidebar 
         isOpen={sidebarOpen} 
         onClose={() => setSidebarOpen(false)} 
@@ -21,7 +21,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       />
       <div className="flex min-w-0 flex-1 flex-col">
         <TopNav onMenu={() => setSidebarOpen(true)} />
-        <main className="flex-1 overflow-x-hidden bg-bg">
+        <main className="flex-1 overflow-x-hidden bg-[#080C16]">
           {children}
         </main>
       </div>

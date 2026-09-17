@@ -70,7 +70,7 @@ export default function BotBuilderPage() {
   };
 
   return (
-    <div className="min-h-full w-full bg-ink text-white flex flex-col p-4 lg:p-8">
+    <div className="w-full min-h-screen bg-[#080C16] text-white flex flex-col p-4 lg:p-8">
       {/* Header */}
       <div className="max-w-5xl mx-auto w-full">
         <Link href={"/dbot" as Route} className="text-xs text-zinc-400 hover:text-white mb-6 block w-fit">
