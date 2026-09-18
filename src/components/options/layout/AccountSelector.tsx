@@ -136,10 +136,6 @@ export function AccountSelector({
               "rounded-[var(--opt-radius)] border border-opt-line bg-opt-bg-elev shadow-lg"
             )}
           >
-            <p className="m-0 border-b border-opt-line px-3 py-2 text-[10px] font-bold uppercase tracking-wide text-opt-ink-3">
-              Deriv accounts
-            </p>
-
             {accountsQuery.isPending && (
               <p className="m-0 px-3 py-4 text-center text-[11px] text-opt-ink-3">
                 Loading…
@@ -152,35 +148,36 @@ export function AccountSelector({
               </p>
             )}
 
-            {accounts.map((account) => (
-              <button
-                key={account.deriv_account_id}
-                type="button"
-                role="menuitem"
-                disabled={busy}
-                onClick={() => switchTo(account)}
-                className={cn(
-                  "flex w-full items-center gap-2 border-b border-opt-line px-3 py-2.5 text-left",
-                  "transition-colors hover:bg-opt-bg-sunk disabled:opacity-50",
-                  account.is_selected && "bg-opt-bg-sunk"
-                )}
-              >
-                <AccountBadge isVirtual={account.is_virtual} />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate font-mono text-[12px] font-semibold text-opt-ink">
-                    {account.deriv_account_id}
+            {accounts.map((account) => {
+              const isSelected = account.is_selected;
+              const accountTypeLabel = account.is_virtual ? "Demo account" : "Real account";
+              const itemBalance = isSelected ? balance : ((account as any).balance ?? 0);
+              const formattedBalance = itemBalance.toLocaleString("en-US", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              });
+
+              return (
+                <button
+                  key={account.deriv_account_id}
+                  type="button"
+                  role="menuitem"
+                  disabled={busy}
+                  onClick={() => switchTo(account)}
+                  className={cn(
+                    "flex w-full flex-col gap-0.5 border-b border-opt-line px-4 py-3 text-left transition-colors disabled:opacity-50",
+                    isSelected ? "bg-opt-bg-sunk" : "hover:bg-opt-bg-sunk"
+                  )}
+                >
+                  <span className="text-sm text-zinc-400">
+                    {accountTypeLabel}
                   </span>
-                  <span className="block text-[10px] text-opt-ink-3">
-                    {account.currency}
+                  <span className="font-bold text-white">
+                    {formattedBalance} {account.currency}
                   </span>
-                </span>
-                {account.is_selected && (
-                  <span className="text-[10px] font-bold text-opt-rise">
-                    Active
-                  </span>
-                )}
-              </button>
-            ))}
+                </button>
+              );
+            })}
 
             {loaded && !hasRealAccount && (
               <a
@@ -232,20 +229,5 @@ export function AccountSelector({
         </div>
       )}
     </>
-  );
-}
-
-function AccountBadge({ isVirtual }: { isVirtual: boolean }) {
-  return (
-    <span
-      className={cn(
-        "shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide",
-        isVirtual
-          ? "bg-opt-ink-4/20 text-opt-ink-2"
-          : "bg-opt-rise-soft text-opt-rise"
-      )}
-    >
-      {isVirtual ? "Demo" : "Real"}
-    </span>
   );
 }
