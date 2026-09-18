@@ -51,8 +51,8 @@ export function RunPanel({ ready, saving, starting, saved, onSave, onRun }: RunP
   return (
     <div className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-5">
       <div>
-        <h3 className="text-sm font-semibold text-white mb-1 tracking-wide">NEXT</h3>
-        <p className="text-xs text-zinc-400 leading-relaxed">
+        <h3 className="text-sm font-semibold text-ink mb-1 tracking-wide">NEXT</h3>
+        <p className="text-xs text-ink-2 leading-relaxed">
           Save it to your account, then practise on demo or run it with real money.
           A running bot keeps going when you close this page.
         </p>
@@ -82,7 +82,7 @@ export function RunPanel({ ready, saving, starting, saved, onSave, onRun }: RunP
           onClick={() => onRun(real && acknowledged)}
           className={cn(
             "w-full h-11 rounded-lg text-sm font-medium transition disabled:opacity-45 disabled:cursor-not-allowed",
-            real ? "bg-amber-400 text-black hover:bg-amber-300" : "bg-white text-black hover:bg-zinc-200",
+            real ? "bg-amber-400 text-black hover:bg-amber-300" : "bg-ink text-surface hover:opacity-80",
           )}
         >
           {starting
@@ -95,7 +95,7 @@ export function RunPanel({ ready, saving, starting, saved, onSave, onRun }: RunP
           type="button"
           disabled={!ready || busy}
           onClick={onSave}
-          className="w-full h-11 rounded-lg border border-line text-sm text-zinc-300 hover:text-white transition disabled:opacity-45 disabled:cursor-not-allowed"
+          className="w-full h-11 rounded-lg border border-line text-sm text-ink-3 hover:text-ink transition disabled:opacity-45 disabled:cursor-not-allowed"
         >
           {saving ? "Saving…" : saved ? "Save changes" : "Save only"}
         </button>
@@ -112,14 +112,14 @@ function AccountSection() {
   const [pending, setPending] = useState<DerivLinkedAccount | null>(null);
 
   if (deriv.isLoading) {
-    return <p className="text-xs text-zinc-500">Checking your Deriv account…</p>;
+    return <p className="text-xs text-ink-3">Checking your Deriv account…</p>;
   }
 
   if (!deriv.linked) {
     return (
-      <div className="rounded-xl border border-line p-3 text-xs text-zinc-400 leading-relaxed">
-        No Deriv account is linked. Bots trade through your Deriv account —{" "}
-        <Link href={"/options/dtrader" as Route} className="text-white underline underline-offset-2">
+      <div className="rounded-xl border border-line p-3 text-xs text-ink-2 leading-relaxed">
+        You need an active Deriv connection to run this bot.
+        <Link href={"/options/dtrader" as Route} className="text-ink underline underline-offset-2">
           connect one in dTrader
         </Link>
         , then come back.
@@ -145,7 +145,7 @@ function AccountSection() {
 
   return (
     <div>
-      <span className="text-xs text-zinc-500 mb-2 block">Trades on</span>
+      <span className="text-xs text-ink-3 mb-2 block">Trades on</span>
       <div className="space-y-2">
         {(accounts.length > 0
           ? accounts
@@ -164,14 +164,14 @@ function AccountSection() {
             }}
             className={cn(
               "w-full flex items-center justify-between gap-2 rounded-lg border px-3 py-2 text-left text-xs transition",
-              account.is_selected ? "border-white text-white" : "border-line text-zinc-400 hover:border-zinc-500",
+              account.is_selected ? "border-ink text-ink" : "border-line text-ink-2 hover:border-ink-3",
             )}
           >
             <span className="font-mono">{account.deriv_account_id}</span>
             <span
               className={cn(
                 "rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
-                account.is_virtual ? "bg-zinc-700 text-zinc-200" : "bg-amber-400 text-black",
+                account.is_virtual ? "bg-surface-2 text-ink" : "bg-amber-400 text-black",
               )}
             >
               {account.is_virtual ? "Demo" : "Real"}
@@ -198,7 +198,7 @@ function AccountSection() {
             <button
               type="button"
               onClick={() => setPending(null)}
-              className="h-8 px-3 rounded-md border border-line text-zinc-300"
+              className="h-8 px-3 rounded-md border border-line text-ink-2"
             >
               Cancel
             </button>

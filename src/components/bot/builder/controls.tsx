@@ -12,15 +12,15 @@ import { cn } from "@/lib/cn";
 export function StepHeader({ title, subtitle }: { title: string; subtitle?: ReactNode }) {
   return (
     <header className="mb-8">
-      <h2 className="font-display text-xl font-semibold mb-1">{title}</h2>
-      {subtitle && <p className="text-sm text-zinc-500">{subtitle}</p>}
+      <h2 className="font-display text-xl font-semibold mb-1 text-ink">{title}</h2>
+      {subtitle && <p className="text-sm text-ink-3">{subtitle}</p>}
     </header>
   );
 }
 
 export function GroupLabel({ children }: { children: ReactNode }) {
   return (
-    <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-600 font-medium mb-3">
+    <p className="text-[10px] uppercase tracking-[0.18em] text-ink-3 font-medium mb-3">
       {children}
     </p>
   );
@@ -59,8 +59,8 @@ export function ChoiceCard({
         "w-full text-left rounded-xl border transition flex flex-col",
         size === "md" ? "p-5" : "p-4",
         active
-          ? "bg-white border-white text-black shadow-lg"
-          : "bg-panel border-line text-white hover:border-zinc-500",
+          ? "bg-ink border-ink text-surface shadow-lg"
+          : "bg-surface-2 border-line text-ink hover:border-ink-3",
         disabled && "cursor-not-allowed opacity-45 hover:border-line",
       )}
     >
@@ -70,7 +70,7 @@ export function ChoiceCard({
           <span
             className={cn(
               "text-[10px] uppercase tracking-wider shrink-0 mt-0.5",
-              active ? "text-black/60" : "text-zinc-500",
+              active ? "text-surface/80" : "text-ink-3",
             )}
           >
             {badge}
@@ -81,7 +81,7 @@ export function ChoiceCard({
         <span
           className={cn(
             "text-sm leading-relaxed",
-            active ? "text-black/70" : "text-zinc-400",
+            active ? "text-surface/80" : "text-ink-2",
           )}
         >
           {description}
@@ -113,7 +113,7 @@ export function TextField({
 }: TextFieldProps) {
   return (
     <label className="block">
-      <span className="text-xs text-zinc-500 mb-1.5 block">{label}</span>
+      <span className="text-xs text-ink-3 mb-1.5 block">{label}</span>
       <input
         type="text"
         inputMode={kind === "text" ? "text" : kind === "integer" ? "numeric" : "decimal"}
@@ -121,9 +121,9 @@ export function TextField({
         placeholder={placeholder}
         maxLength={maxLength}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full h-11 px-4 rounded-lg bg-panel border border-line text-sm text-white placeholder:text-zinc-600 focus:border-zinc-500 outline-none transition-colors"
+        className="w-full h-11 px-4 rounded-lg bg-surface-2 border border-line text-sm text-ink placeholder:text-ink-3 focus:border-ink-3 outline-none transition-colors"
       />
-      {hint && <span className="mt-1.5 block text-[11px] text-zinc-500">{hint}</span>}
+      {hint && <span className="mt-1.5 block text-[11px] text-ink-3">{hint}</span>}
     </label>
   );
 }
@@ -144,7 +144,7 @@ export function PillPicker<T extends string | number>({
 }) {
   return (
     <div>
-      <span className="text-xs text-zinc-500 mb-1.5 block">{label}</span>
+      <span className="text-xs text-ink-3 mb-1.5 block">{label}</span>
       <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={label}>
         {options.map((option) => {
           const active = option === value;
@@ -158,8 +158,8 @@ export function PillPicker<T extends string | number>({
               className={cn(
                 "h-10 min-w-10 px-3 rounded-lg border text-sm font-medium transition",
                 active
-                  ? "bg-white border-white text-black"
-                  : "bg-panel border-line text-zinc-300 hover:border-zinc-500",
+                  ? "bg-ink border-ink text-surface"
+                  : "bg-surface-2 border-line text-ink hover:border-ink-3",
               )}
             >
               {format(option)}
@@ -173,9 +173,9 @@ export function PillPicker<T extends string | number>({
 
 export function InfoPanel({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="bg-panel border border-line rounded-2xl p-5 sm:p-6">
+    <div className="bg-surface border border-line rounded-2xl p-5 sm:p-6">
       <GroupLabel>{title}</GroupLabel>
-      <div className="text-sm text-zinc-400 leading-relaxed">{children}</div>
+      <div className="text-sm text-ink-2 leading-relaxed">{children}</div>
     </div>
   );
 }

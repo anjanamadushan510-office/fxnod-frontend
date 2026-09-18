@@ -242,14 +242,14 @@ function BotBuilder() {
               aria-selected={active}
               onClick={() => setStep(s.key)}
               className={`h-8 px-4 rounded-full border text-sm flex items-center gap-2 whitespace-nowrap transition bg-transparent ${
-                active ? "border-white text-white" : "border-line text-zinc-500 hover:text-white hover:border-zinc-500"
+                active ? "border-ink text-ink" : "border-line text-ink-3 hover:text-ink hover:border-ink-3"
               }`}
             >
               <span
                 className={
                   active
-                    ? "bg-white text-black h-5 w-5 rounded-full flex items-center justify-center text-xs font-semibold"
-                    : "border border-line text-zinc-500 h-5 w-5 rounded-full flex items-center justify-center text-xs"
+                    ? "bg-ink text-surface h-5 w-5 rounded-full flex items-center justify-center text-xs font-semibold"
+                    : "border border-line text-ink-3 h-5 w-5 rounded-full flex items-center justify-center text-xs"
                 }
               >
                 {i + 1}
@@ -290,12 +290,12 @@ function BotBuilder() {
         )}
       </div>
 
-      <div className="sticky bottom-0 z-30 -mx-4 lg:-mx-8 px-4 lg:px-8 py-3.5 bg-[#080C16]/95 backdrop-blur-md border-t border-[#24344F] flex items-center justify-start gap-3 mt-auto">
+      <div className="sticky bottom-0 z-30 -mx-4 lg:-mx-8 px-4 lg:px-8 py-3.5 bg-bg/95 backdrop-blur-md border-t border-line flex items-center justify-start gap-3 mt-auto">
         <button
           type="button"
           onClick={() => setStep(steps[Math.max(0, index - 1)].key)}
           disabled={index === 0}
-          className="h-10 px-6 rounded-lg bg-panel border border-line text-sm font-medium text-zinc-300 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
+          className="h-10 px-6 rounded-lg bg-surface-2 border border-line text-sm font-medium text-ink-3 hover:text-ink disabled:opacity-50 disabled:cursor-not-allowed transition"
         >
           Back
         </button>
@@ -304,7 +304,7 @@ function BotBuilder() {
             type="button"
             onClick={() => setStep(steps[index + 1].key)}
             disabled={current === "method" && !methodChosen}
-            className="h-10 px-6 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 disabled:opacity-50 transition"
+            className="h-10 px-6 rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-80 disabled:opacity-50 transition"
           >
             Continue
           </button>
@@ -325,8 +325,8 @@ function BotBuilder() {
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="w-full flex-1 flex flex-col bg-[#080C16] text-white p-4 lg:p-8 h-full">
-      <Link href={"/dbot" as Route} className="text-xs text-zinc-400 hover:text-white mb-4 block w-fit">
+    <div className="w-full flex-1 flex flex-col bg-bg text-ink p-4 lg:p-8 h-full">
+      <Link href={"/dbot" as Route} className="text-xs text-ink-3 hover:text-ink mb-4 block w-fit">
         &larr; Bots
       </Link>
       {children}
@@ -346,12 +346,12 @@ function Notice({
   cta?: string;
 }) {
   return (
-    <div className="bg-panel border border-line rounded-2xl p-8 text-center max-w-lg">
-      <h2 className="font-display text-lg font-semibold mb-2">{title}</h2>
-      <p className="text-sm text-zinc-400 mb-5">{body}</p>
+    <div className="bg-surface border border-line rounded-2xl p-8 text-center max-w-lg">
+      <h2 className="font-display text-lg font-semibold mb-2 text-ink">{title}</h2>
+      <p className="text-sm text-ink-3 mb-5">{body}</p>
       <Link
         href={href as Route}
-        className="inline-flex h-10 items-center px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200"
+        className="inline-flex h-10 items-center px-5 rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-80"
       >
         {cta}
       </Link>

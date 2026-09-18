@@ -241,7 +241,7 @@ export function DurationStep({ draft, onChange }: StepProps) {
 
       <div className="mt-8 max-w-md">
         <InfoPanel title="Each contract">
-          <span className="text-white font-medium">{durationLabel(draft) ?? "—"}</span>
+          <span className="text-ink font-medium">{durationLabel(draft) ?? "—"}</span>
           <span className="block mt-1">
             Deriv sets the shortest and longest length per market; a length it does not offer is
             refused when the bot opens its first contract.
@@ -353,7 +353,7 @@ export function IndicatorsStep({
 
         {configured.length === 0 ? (
           <div className="bg-panel border border-line rounded-2xl p-8 mb-8 text-center">
-            <p className="text-sm text-zinc-500">No indicators yet. The bot can still trade without them.</p>
+            <p className="text-sm text-ink-3">No indicators yet. The bot can still trade without them.</p>
           </div>
         ) : (
           <div className="space-y-4 mb-8">
@@ -363,13 +363,13 @@ export function IndicatorsStep({
                 <div key={indicator.kind} className="bg-panel border border-line rounded-2xl p-5">
                   <div className="flex justify-between items-start mb-4 gap-3">
                     <div>
-                      <h3 className="font-display font-semibold text-white">{option?.name ?? indicator.kind}</h3>
-                      <p className="text-xs text-zinc-500 mt-1">{option?.description}</p>
+                      <h3 className="font-display font-semibold text-ink">{option?.name ?? indicator.kind}</h3>
+                      <p className="text-xs text-ink-3 mt-1">{option?.description}</p>
                     </div>
                     <button
                       type="button"
                       onClick={() => toggle(indicator.kind)}
-                      className="text-xs text-zinc-500 hover:text-white transition"
+                      className="text-xs text-ink-3 hover:text-ink transition"
                     >
                       Remove
                     </button>
@@ -794,8 +794,8 @@ export function ReviewStep({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {rows.map(([label, value]) => (
             <div key={label} className="bg-panel border border-line rounded-xl p-4">
-              <span className="text-xs text-zinc-500 block mb-1 uppercase tracking-wider font-medium">{label}</span>
-              <span className="text-sm font-medium text-white break-words">{value}</span>
+              <span className="text-xs text-ink-3 block mb-1 uppercase tracking-wider font-medium">{label}</span>
+              <span className="text-sm font-medium text-ink break-words">{value}</span>
             </div>
           ))}
         </div>
