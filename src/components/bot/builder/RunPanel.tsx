@@ -61,7 +61,7 @@ export function RunPanel({ ready, saving, starting, saved, onSave, onRun }: RunP
       <AccountSection />
 
       {real && (
-        <label className="flex items-start gap-3 rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-xs leading-relaxed text-amber-100">
+        <label className="flex items-start gap-3 rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-xs leading-relaxed text-amber-900 dark:text-amber-100">
           <input
             type="checkbox"
             checked={acknowledged}
@@ -181,7 +181,7 @@ function AccountSection() {
       </div>
 
       {pending && (
-        <div className="mt-3 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-100">
+        <div className="mt-3 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-900 dark:text-amber-100">
           <p className="mb-2">
             Switch to <span className="font-mono">{pending.deriv_account_id}</span>? Bots and
             trades will use real money.
