@@ -187,7 +187,7 @@ export default function DBotDashboardPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {activeRuns.map((run) => (
-              <article key={run.run_id} className="bg-panel border border-line rounded-2xl p-5 flex flex-col gap-4">
+              <article key={run.run_id} className="bg-surface border border-line rounded-2xl p-5 flex flex-col gap-4">
                 <div className="flex justify-between items-start gap-3">
                   <div className="min-w-0">
                     <h3 className="font-display text-lg font-semibold truncate text-ink">{strategyName(run.strategy_id)}</h3>
@@ -203,7 +203,7 @@ export default function DBotDashboardPage() {
                 <div className="flex gap-2">
                   <Link
                     href={`/dbot/runs/${run.run_id}` as Route}
-                    className="flex-1 inline-flex h-10 items-center justify-center rounded-lg bg-surface-2 text-ink text-sm font-medium hover:bg-line transition"
+                    className="flex-1 inline-flex h-10 items-center justify-center rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-80 transition"
                   >
                     Watch
                   </Link>
@@ -236,7 +236,7 @@ export default function DBotDashboardPage() {
               const draft = draftFromPreset(preset);
               const strategyId = draft ? strategyIdFor(draft) : undefined;
               return (
-                <article key={preset.id} className="bg-panel border border-line rounded-2xl p-5 flex flex-col justify-between">
+                <article key={preset.id} className="bg-surface border border-line rounded-2xl p-5 flex flex-col justify-between">
                   <div>
                     <div className="flex justify-between items-start gap-3 mb-1">
                       <h3 className="font-display text-lg font-semibold break-words text-ink">{preset.name}</h3>
@@ -277,7 +277,7 @@ export default function DBotDashboardPage() {
                       <button
                         type="button"
                         onClick={() => setConfirmRemove(null)}
-                        className="h-10 px-4 rounded-lg border border-line text-sm text-ink-3 hover:text-ink transition"
+                        className="h-10 px-4 rounded-lg bg-surface-2 text-ink text-sm font-medium hover:bg-line transition"
                       >
                         Keep
                       </button>
@@ -288,7 +288,7 @@ export default function DBotDashboardPage() {
                         type="button"
                         disabled={!draft}
                         onClick={() => router.push(`/dbot/build?preset=${preset.id}&step=review` as Route)}
-                        className="flex-1 h-10 rounded-lg bg-surface-2 text-ink text-sm font-medium hover:bg-line transition disabled:opacity-45"
+                        className="flex-1 h-10 rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-80 transition disabled:opacity-45"
                       >
                         Open
                       </button>
@@ -296,7 +296,7 @@ export default function DBotDashboardPage() {
                         type="button"
                         disabled={!draft}
                         onClick={() => router.push(`/dbot/build?preset=${preset.id}` as Route)}
-                        className="h-10 px-4 rounded-lg border border-line text-sm text-ink-3 hover:text-ink transition disabled:opacity-45"
+                        className="h-10 px-4 rounded-lg bg-surface-2 text-ink text-sm font-medium hover:bg-line transition disabled:opacity-45"
                       >
                         Edit
                       </button>
@@ -306,14 +306,14 @@ export default function DBotDashboardPage() {
                         onClick={() => {
                           if (draft && strategyId) setPackageModal({ tab: "export", draft, strategyId });
                         }}
-                        className="h-10 px-4 rounded-lg border border-line text-sm text-ink-3 hover:text-ink transition disabled:opacity-45"
+                        className="h-10 px-4 rounded-lg bg-surface-2 text-ink text-sm font-medium hover:bg-line transition disabled:opacity-45"
                       >
                         Export
                       </button>
                       <button
                         type="button"
                         onClick={() => setConfirmRemove(preset.id)}
-                        className="h-10 px-4 rounded-lg border border-line text-sm text-ink-3 hover:text-ink transition"
+                        className="h-10 px-4 rounded-lg bg-surface-2 text-ink text-sm font-medium hover:bg-line transition"
                       >
                         Remove
                       </button>
