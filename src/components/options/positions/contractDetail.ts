@@ -361,7 +361,44 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
         if (ticks.length > 1) {
           ticks[ticks.length - 1].kind = "exit";
         }
-        
+      }
+    }
+
+    if (isAccu && ticks.length > 0) {
+      if (exitSpot > 0) {
+         let actualExitIdx = -1;
+         const exitTickTime = Number((h as any).exit_tick_time) || 0;
+         for (let i = ticks.length - 1; i >= 0; i--) {
+             if (exitTickTime > 0 && ticks[i].time === exitTickTime) {
+                 actualExitIdx = i;
+                 break;
+             }
+             if (exitTickTime === 0 && Math.abs(ticks[i].value - exitSpot) < 0.000001) {
+                 actualExitIdx = i;
+                 break;
+             }
+         }
+         if (actualExitIdx !== -1 && actualExitIdx < ticks.length - 1) {
+             ticks = ticks.slice(0, actualExitIdx + 1);
+             ticks.forEach(t => { if (t.kind === "exit") t.kind = "normal"; });
+             ticks[ticks.length - 1].kind = "exit";
+         }
+      }
+
+      if (entrySpot > 0) {
+         let actualEntryIdx = -1;
+         for(let i = 0; i < Math.min(ticks.length, 5); i++) {
+             if (Math.abs(ticks[i].value - entrySpot) < 0.000001) {
+                 actualEntryIdx = i;
+                 break;
+             }
+         }
+         if (actualEntryIdx > 0) {
+             for(let i=0; i<actualEntryIdx; i++) {
+                 ticks[i].kind = "pre-start";
+             }
+             ticks[actualEntryIdx].kind = "entry";
+         }
       }
     }
 
