@@ -4,7 +4,7 @@ import { useDerivStatus } from "@/hooks/useDerivStatus";
 import { useStartDerivOAuth } from "@/hooks/useStartDerivOAuth";
 import { cn } from "@/lib/cn";
 
-	import { DerivAccountMenu } from "./DerivAccountMenu";
+
 
 	/**
 	 * Top-bar control for Deriv account linking (authenticated users).
@@ -19,9 +19,7 @@ import { cn } from "@/lib/cn";
 	  const { start, redirecting } = useStartDerivOAuth();
 
 	if (linked) {
-	    // A linked account used to render as a static label: no way to switch
-	    // between demo and real, and no way to sign out of Deriv at all.
-	    return <DerivAccountMenu />;
+	    return null;
 	  }
 
   return (
