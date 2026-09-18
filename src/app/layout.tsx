@@ -34,7 +34,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`dark ${inter.variable} ${outfit.variable} ${jetbrainsMono.variable} scroll-smooth scroll-pt-24`} suppressHydrationWarning>
-      <body className="bg-bg text-ink antialiased">
+      <body className="bg-bg text-ink font-sans antialiased">
         <Providers>{children}</Providers>
       </body>
     </html>

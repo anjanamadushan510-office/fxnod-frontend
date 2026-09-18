@@ -26,7 +26,7 @@ export function DashboardActivity() {
                 <th className="px-5 py-3 font-medium text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#24344F] text-ink-2">
+            <tbody className="divide-y divide-line text-ink-2">
               <tr className="hover:bg-surface-2 transition-colors">
                 <td className="px-5 py-5 font-medium text-ink">dTrader Ticket #891</td>
                 <td className="px-5 py-5">
@@ -76,7 +76,7 @@ export function DashboardActivity() {
         <div className="flex-1 flex flex-col gap-6 overflow-y-auto pt-2">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-zinc-200 mb-1">Top up</p>
+              <p className="text-sm font-medium text-ink mb-1">Top up</p>
               <p className="text-xs text-ink-3">Sep 12, 2026</p>
             </div>
             <span className="text-sm font-medium text-green-400 tabular-nums">+{fmtUSD(500.00)}</span>
@@ -84,7 +84,7 @@ export function DashboardActivity() {
           
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-zinc-200 mb-1">Partner Payout</p>
+              <p className="text-sm font-medium text-ink mb-1">Partner Payout</p>
               <p className="text-xs text-ink-3">Sep 01, 2026</p>
             </div>
             <span className="text-sm font-medium text-green-400 tabular-nums">+{fmtUSD(86.40)}</span>
@@ -92,7 +92,7 @@ export function DashboardActivity() {
           
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-zinc-200 mb-1">Withdrawal</p>
+              <p className="text-sm font-medium text-ink mb-1">Withdrawal</p>
               <p className="text-xs text-ink-3">Aug 28, 2026</p>
             </div>
             <span className="text-sm font-medium text-ink-2 tabular-nums">-{fmtUSD(150.00)}</span>
