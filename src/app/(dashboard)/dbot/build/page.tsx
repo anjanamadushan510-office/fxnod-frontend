@@ -290,7 +290,7 @@ function BotBuilder() {
         )}
       </div>
 
-      <div className="sticky bottom-0 z-30 -mx-4 lg:-mx-8 px-4 lg:px-8 py-3.5 bg-bg/95 backdrop-blur-md border-t border-line flex items-center justify-start gap-3 mt-auto">
+      <div className="sticky bottom-0 z-30 -mx-4 lg:-mx-8 -mb-4 lg:-mb-8 px-4 lg:px-8 py-3.5 bg-bg/95 backdrop-blur-md border-t border-line flex items-center justify-start gap-3 mt-auto">
         <button
           type="button"
           onClick={() => setStep(steps[Math.max(0, index - 1)].key)}
@@ -325,7 +325,7 @@ function BotBuilder() {
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="w-full flex-1 flex flex-col bg-bg text-ink p-4 lg:p-8 h-full">
+    <div className="w-full flex-1 flex flex-col bg-bg text-ink p-4 lg:p-8 min-h-[calc(100vh-4rem)] lg:min-h-full">
       <Link href={"/dbot" as Route} className="text-xs text-ink-3 hover:text-ink mb-4 block w-fit">
         &larr; Bots
       </Link>
