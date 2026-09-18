@@ -21,7 +21,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       />
       <div className="flex min-w-0 flex-1 flex-col">
         <TopNav onMenu={() => setSidebarOpen(true)} />
-        <main className="flex-1 overflow-x-hidden bg-bg">
+        <main className="flex-1 bg-bg">
           {children}
         </main>
       </div>
