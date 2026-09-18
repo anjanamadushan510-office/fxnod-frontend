@@ -80,7 +80,7 @@ export function ChartToolbar({
   }
 
   return (
-    <div className="flex flex-col items-center gap-1 pl-1 pt-2">
+    <div className="flex h-full flex-col items-center gap-1 pb-4 pl-1 pt-2">
       {/* 1 — Chart types (with interval badge) */}
       <button
         type="button"
@@ -144,7 +144,7 @@ export function ChartToolbar({
       </ToolbarButton>
 
       {/* 6 — Disconnect Deriv */}
-      {linked && (
+      <div className="mt-auto">
         <ToolbarButton
           label="Disconnect Deriv"
           active={false}
@@ -152,7 +152,7 @@ export function ChartToolbar({
         >
           <LogOut className="h-4 w-4" />
         </ToolbarButton>
-      )}
+      </div>
 
       {typesOpen && (
         <ChartTypesModal
