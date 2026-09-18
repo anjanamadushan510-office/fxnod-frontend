@@ -252,7 +252,7 @@ function PlanCard({
         className={cn(
           "mt-auto h-10 rounded-lg px-4 text-sm font-medium transition",
           "disabled:cursor-not-allowed disabled:opacity-45",
-          lifetime ? "bg-gold-3 text-white hover:opacity-90" : "bg-white text-black hover:bg-zinc-200",
+          lifetime ? "bg-gold-3 text-white hover:opacity-90" : "bg-ink text-surface hover:opacity-80",
         )}
       >
         {busy ? "Charging…" : blocked ? "Included" : "Buy"}
