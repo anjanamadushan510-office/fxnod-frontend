@@ -152,24 +152,24 @@ export default function DBotDashboardPage() {
         />
       </div>
 
-      <article className="bg-panel border border-line rounded-2xl p-10 sm:p-14 text-center">
-        <img src="/assets/fxnod-mark.png" alt="" className="mx-auto h-10 w-10 object-contain opacity-40 mb-5" />
-        <h3 className="font-display text-lg font-semibold mb-2">No Blockly. No theory.</h3>
-        <p className="text-sm text-zinc-500 max-w-md mx-auto leading-relaxed mb-6">
+      <article className="bg-surface border border-line rounded-2xl p-10 sm:p-14 text-center">
+        <img src="/assets/fxnod-mark.png" alt="" className="mx-auto h-10 w-10 object-contain opacity-40 mb-5 dark:invert-0 invert" />
+        <h3 className="font-display text-lg font-semibold mb-2 text-ink">No Blockly. No theory.</h3>
+        <p className="text-sm text-ink-3 max-w-md mx-auto leading-relaxed mb-6">
           Pick a ready bot, read its one-line summary, then practise on demo. Or build your own in
           plain language, or import a bot someone shared with you.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
             href={"/dbot/build" as Route}
-            className="w-full sm:w-auto inline-flex h-10 items-center justify-center px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200"
+            className="w-full sm:w-auto inline-flex h-10 items-center justify-center px-5 rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-80 transition"
           >
             Create a bot
           </Link>
           <button
             type="button"
             onClick={() => setPackageModal({ tab: "import" })}
-            className="h-10 px-5 rounded-lg border border-line text-sm text-zinc-300 hover:text-white w-full sm:w-auto"
+            className="h-10 px-5 rounded-lg border border-line text-sm text-ink-3 hover:text-ink transition w-full sm:w-auto"
           >
             Import
           </button>
@@ -190,8 +190,8 @@ export default function DBotDashboardPage() {
               <article key={run.run_id} className="bg-panel border border-line rounded-2xl p-5 flex flex-col gap-4">
                 <div className="flex justify-between items-start gap-3">
                   <div className="min-w-0">
-                    <h3 className="font-display text-lg font-semibold truncate">{strategyName(run.strategy_id)}</h3>
-                    <p className="text-xs text-zinc-500 truncate">{run.symbols.map(marketName).join(", ")}</p>
+                    <h3 className="font-display text-lg font-semibold truncate text-ink">{strategyName(run.strategy_id)}</h3>
+                    <p className="text-xs text-ink-3 truncate">{run.symbols.map(marketName).join(", ")}</p>
                   </div>
                   <AccountBadge isVirtual={run.is_virtual} />
                 </div>
@@ -203,7 +203,7 @@ export default function DBotDashboardPage() {
                 <div className="flex gap-2">
                   <Link
                     href={`/dbot/runs/${run.run_id}` as Route}
-                    className="flex-1 inline-flex h-10 items-center justify-center rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 transition"
+                    className="flex-1 inline-flex h-10 items-center justify-center rounded-lg bg-surface-2 text-ink text-sm font-medium hover:bg-line transition"
                   >
                     Watch
                   </Link>
@@ -239,12 +239,12 @@ export default function DBotDashboardPage() {
                 <article key={preset.id} className="bg-panel border border-line rounded-2xl p-5 flex flex-col justify-between">
                   <div>
                     <div className="flex justify-between items-start gap-3 mb-1">
-                      <h3 className="font-display text-lg font-semibold break-words">{preset.name}</h3>
-                      <span className="text-xs text-zinc-500 shrink-0">
+                      <h3 className="font-display text-lg font-semibold break-words text-ink">{preset.name}</h3>
+                      <span className="text-xs text-ink-3 shrink-0">
                         {new Date(preset.updated_at).toLocaleDateString()}
                       </span>
                     </div>
-                    <p className="text-xs text-zinc-500 mb-4">
+                    <p className="text-xs text-ink-3 mb-4">
                       {draft
                         ? [findMethod(draft.method)?.name, draft.form.symbols.map(marketName).join(", ")]
                             .filter(Boolean)
@@ -252,7 +252,7 @@ export default function DBotDashboardPage() {
                         : strategyName(preset.strategy_id)}
                     </p>
                     {draft && (
-                      <p className="text-sm text-zinc-300 mb-6">
+                      <p className="text-sm text-ink-2 mb-6">
                         {[
                           ENTRY_RULES.find((r) => r.key === draft.entryRule)?.name,
                           MONEY_OPTIONS.find((m) => m.key === draft.money)?.name,
@@ -265,7 +265,7 @@ export default function DBotDashboardPage() {
 
                   {confirmRemove === preset.id ? (
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-sm text-zinc-300 mr-auto">Remove this bot?</span>
+                      <span className="text-sm text-ink-2 mr-auto">Remove this bot?</span>
                       <button
                         type="button"
                         disabled={deletePreset.isPending}
@@ -277,7 +277,7 @@ export default function DBotDashboardPage() {
                       <button
                         type="button"
                         onClick={() => setConfirmRemove(null)}
-                        className="h-10 px-4 rounded-lg border border-line text-sm text-zinc-300"
+                        className="h-10 px-4 rounded-lg border border-line text-sm text-ink-3 hover:text-ink transition"
                       >
                         Keep
                       </button>
@@ -288,7 +288,7 @@ export default function DBotDashboardPage() {
                         type="button"
                         disabled={!draft}
                         onClick={() => router.push(`/dbot/build?preset=${preset.id}&step=review` as Route)}
-                        className="flex-1 h-10 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 transition disabled:opacity-45"
+                        className="flex-1 h-10 rounded-lg bg-surface-2 text-ink text-sm font-medium hover:bg-line transition disabled:opacity-45"
                       >
                         Open
                       </button>
@@ -296,7 +296,7 @@ export default function DBotDashboardPage() {
                         type="button"
                         disabled={!draft}
                         onClick={() => router.push(`/dbot/build?preset=${preset.id}` as Route)}
-                        className="h-10 px-4 rounded-lg border border-line text-sm text-zinc-300 hover:text-white transition disabled:opacity-45"
+                        className="h-10 px-4 rounded-lg border border-line text-sm text-ink-3 hover:text-ink transition disabled:opacity-45"
                       >
                         Edit
                       </button>
@@ -306,14 +306,14 @@ export default function DBotDashboardPage() {
                         onClick={() => {
                           if (draft && strategyId) setPackageModal({ tab: "export", draft, strategyId });
                         }}
-                        className="h-10 px-4 rounded-lg border border-line text-sm text-zinc-300 hover:text-white transition disabled:opacity-45"
+                        className="h-10 px-4 rounded-lg border border-line text-sm text-ink-3 hover:text-ink transition disabled:opacity-45"
                       >
                         Export
                       </button>
                       <button
                         type="button"
                         onClick={() => setConfirmRemove(preset.id)}
-                        className="h-10 px-4 rounded-lg border border-line text-sm text-zinc-300 hover:text-white transition"
+                        className="h-10 px-4 rounded-lg border border-line text-sm text-ink-3 hover:text-ink transition"
                       >
                         Remove
                       </button>
@@ -366,25 +366,25 @@ export default function DBotDashboardPage() {
       )}
 
       <div className="mt-12">
-        <h2 className="font-display text-xl font-semibold mb-1">Bot templates</h2>
-        <p className="text-sm text-zinc-500 mb-6">Each one is already filled in. You can change anything before you run.</p>
+        <h2 className="font-display text-xl font-semibold mb-1 text-ink">Bot templates</h2>
+        <p className="text-sm text-ink-3 mb-6">Each one is already filled in. You can change anything before you run.</p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {BOT_TEMPLATES.map((template) => {
             const available = strategiesQuery.isSuccess && isTemplateAvailable(template, strategies);
             const body = (
               <article
                 className={cn(
-                  "w-full h-full bg-panel border border-line rounded-2xl p-5 transition flex flex-col",
-                  available ? "surface-hover cursor-pointer" : "opacity-50",
+                  "w-full h-full bg-surface border border-line rounded-2xl p-5 transition flex flex-col",
+                  available ? "hover:border-ink cursor-pointer" : "opacity-50",
                 )}
               >
                 <div className="flex justify-between items-start mb-3 gap-2">
-                  <h3 className="font-display text-base font-semibold leading-snug">{template.title}</h3>
-                  <span className="text-[11px] text-zinc-500 shrink-0 mt-0.5">
+                  <h3 className="font-display text-base font-semibold leading-snug text-ink">{template.title}</h3>
+                  <span className="text-[11px] text-ink-3 shrink-0 mt-0.5">
                     {available || strategiesQuery.isPending ? template.badge : "Coming soon"}
                   </span>
                 </div>
-                <p className="text-sm text-zinc-400 leading-relaxed mt-auto">{template.description}</p>
+                <p className="text-sm text-ink-2 leading-relaxed mt-auto">{template.description}</p>
               </article>
             );
             return available ? (
@@ -484,11 +484,11 @@ function EmptyPanel({ text }: { text: string }) {
 function Figure({ label, value, tone = 0 }: { label: string; value: string; tone?: -1 | 0 | 1 }) {
   return (
     <div>
-      <dt className="text-xs text-zinc-500">{label}</dt>
+      <dt className="text-xs text-ink-3">{label}</dt>
       <dd
         className={cn(
           "font-semibold capitalize",
-          tone < 0 ? "text-red-400" : tone > 0 ? "text-emerald-400" : "text-white",
+          tone < 0 ? "text-red-400" : tone > 0 ? "text-emerald-400" : "text-ink",
         )}
       >
         {value}
@@ -502,7 +502,7 @@ function AccountBadge({ isVirtual }: { isVirtual: boolean }) {
     <span
       className={cn(
         "rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider shrink-0",
-        isVirtual ? "bg-zinc-700 text-zinc-200" : "bg-amber-400 text-black",
+        isVirtual ? "bg-surface-2 text-ink" : "bg-amber-400 text-black",
       )}
     >
       {isVirtual ? "Demo" : "Real"}
