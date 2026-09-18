@@ -115,7 +115,7 @@ export function AccountSelector({
         >
           <div className="flex flex-col leading-tight">
             <span className="flex items-center gap-1 text-[11px] text-opt-ink-3">
-              {mode === "real" ? "Real account" : "Demo account"}
+              {isVirtual ? "Demo account" : "Real account"}
               <CaretDownIcon className="h-3 w-3" />
             </span>
             <span className="font-mono text-sm font-semibold tabular-nums text-opt-ink">
