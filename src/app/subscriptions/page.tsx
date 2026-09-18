@@ -33,7 +33,7 @@ export default function SubscriptionsPage() {
           <div className="mt-auto flex">
             <Link
               href={"/dbot" as Route}
-              className="w-full sm:w-auto h-10 px-5 flex justify-center items-center rounded-lg bg-white text-black text-sm font-medium hover:opacity-90 transition-opacity"
+              className="w-full h-10 px-5 flex justify-center items-center rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-80 transition-opacity"
             >
               Open dBot
             </Link>
