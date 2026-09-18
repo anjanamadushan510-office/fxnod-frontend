@@ -82,19 +82,19 @@ export default function TransferPage() {
       
       {/* Top Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <article className="bg-bg border border-line rounded-2xl p-6 min-w-0" style={{ backgroundColor: "#101827", borderColor: "#24344F" }}>
+        <article className="bg-surface border border-line rounded-2xl p-6 min-w-0">
           <p className="text-xs uppercase tracking-[0.14em] text-ink-3 mb-3">FXNOD Wallet</p>
           <p className="font-display text-3xl font-semibold tabular-nums text-ink">{fmtUSD(balance)}</p>
           <p className="mt-2 text-sm text-ink-3">Available to send</p>
         </article>
 
-        <article className="bg-bg border border-line rounded-2xl p-6 min-w-0" style={{ backgroundColor: "#101827", borderColor: "#24344F" }}>
+        <article className="bg-surface border border-line rounded-2xl p-6 min-w-0">
           <p className="text-xs uppercase tracking-[0.14em] text-ink-3 mb-3">On Deriv</p>
           <p className="font-display text-3xl font-semibold tabular-nums text-ink">{fmtUSD(0)}</p>
           <p className="mt-2 text-sm text-ink-3">Sent from this wallet</p>
         </article>
 
-        <article className="bg-bg border border-line rounded-2xl p-6 min-w-0 flex flex-col justify-center" style={{ backgroundColor: "#101827", borderColor: "#24344F" }}>
+        <article className="bg-surface border border-line rounded-2xl p-6 min-w-0 flex flex-col justify-center">
           <p className="text-xs uppercase tracking-[0.14em] text-ink-3 mb-3">Destination</p>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center text-red-500 font-bold text-lg">D</div>
@@ -114,7 +114,7 @@ export default function TransferPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Form */}
         <div className="lg:col-span-2 space-y-6">
-          <article className="bg-bg border border-line rounded-2xl p-6" style={{ backgroundColor: "#101827", borderColor: "#24344F" }}>
+          <article className="bg-surface border border-line rounded-2xl p-6">
             <h3 className="font-display text-sm font-semibold text-ink mb-4">Select Venue</h3>
             <div className="flex flex-wrap gap-3">
               <button className="flex-1 min-w-[120px] py-3 px-4 rounded-xl border border-line-2 bg-surface-2 text-ink font-medium text-sm transition-colors text-center">
@@ -141,7 +141,7 @@ export default function TransferPage() {
                     onClick={() => setAmount(preset)}
                     className={`flex-1 py-2 rounded-lg border text-sm font-medium transition-colors ${
                       amount === preset 
-                        ? "bg-white text-surface border-white" 
+                        ? "bg-ink text-surface border-ink" 
                         : "bg-transparent text-ink-2 border-line hover:border-ink-2"
                     }`}
                   >
@@ -162,8 +162,7 @@ export default function TransferPage() {
                   type="number"
                   value={amount}
                   onChange={(e) => setAmount(Number(e.target.value))}
-                  className="w-full h-12 pl-8 pr-4 rounded-xl bg-ink border border-line text-ink font-medium focus:outline-none focus:border-ink-2 transition-colors"
-                  style={{ backgroundColor: "#0D1421", borderColor: "#24344F" }}
+                  className="w-full h-12 pl-8 pr-4 rounded-xl bg-surface-2 border border-line text-ink font-medium focus:outline-none focus:border-ink-2 transition-colors"
                 />
               </div>
             </div>
@@ -171,7 +170,7 @@ export default function TransferPage() {
             <button
               onClick={handleTransfer}
               disabled={transferMutation.isPending || amount <= 0}
-              className="mt-8 w-full h-12 rounded-xl bg-white text-surface font-semibold hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="mt-8 w-full h-12 rounded-xl bg-ink text-surface font-semibold hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {transferMutation.isPending ? "Processing..." : `Send ${fmtUSD(amount)} to Deriv`}
             </button>
@@ -180,7 +179,7 @@ export default function TransferPage() {
 
         {/* Info Card */}
         <div className="space-y-6">
-          <article className="bg-bg border border-line rounded-2xl p-6" style={{ backgroundColor: "#101827", borderColor: "#24344F" }}>
+          <article className="bg-surface border border-line rounded-2xl p-6">
             <p className="text-xs uppercase tracking-[0.14em] text-ink-3 mb-4">How it works</p>
             <ol className="text-sm text-ink-2 space-y-4 list-decimal pl-4">
               <li>Enter the amount you wish to transfer.</li>
