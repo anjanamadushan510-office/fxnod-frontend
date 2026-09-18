@@ -20,12 +20,6 @@ import { ChartTypesModal } from "./ChartTypesModal";
 import { DrawingToolsPanel } from "./DrawingToolsPanel";
 import { IndicatorsModal } from "./IndicatorsModal";
 import { useChartIndicators } from "@/stores/useChartIndicators";
-import { LogOut } from "lucide-react";
-import { useDerivStatus, derivStatusKey } from "@/hooks/useDerivStatus";
-import { useDerivUnlink } from "@/services/api/endpoints/trading/trading";
-import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 
 interface ChartToolbarProps {
   symbol: string;
@@ -58,29 +52,8 @@ export function ChartToolbar({
 
   const activeIndicatorsCount = useChartIndicators((s) => s.indicators.filter((i) => i.symbol === symbol).length);
 
-  const queryClient = useQueryClient();
-  const router = useRouter();
-  const { linked } = useDerivStatus();
-  const unlinkMutation = useDerivUnlink();
-
-  async function disconnectDeriv() {
-    const ok = window.confirm(
-      "Sign out of Deriv? Running bots will stop, and you will need to connect again before trading."
-    );
-    if (!ok) return;
-    try {
-      await unlinkMutation.mutateAsync();
-      await queryClient.invalidateQueries({ queryKey: derivStatusKey });
-      await queryClient.invalidateQueries();
-      toast.success("Signed out of Deriv");
-      router.push("/venues");
-    } catch {
-      toast.error("Could not sign out of Deriv. Please try again.");
-    }
-  }
-
   return (
-    <div className="flex h-full flex-col items-center gap-1 pb-4 pl-1 pt-2">
+    <div className="flex flex-col items-center gap-1 pl-1 pt-2">
       {/* 1 — Chart types (with interval badge) */}
       <button
         type="button"
@@ -142,17 +115,6 @@ export function ChartToolbar({
       <ToolbarButton label="Download" active={false} onClick={() => undefined}>
         <DownloadIcon className="h-4 w-4" />
       </ToolbarButton>
-
-      {/* 6 — Disconnect Deriv */}
-      <div className="mt-auto">
-        <ToolbarButton
-          label="Disconnect Deriv"
-          active={false}
-          onClick={disconnectDeriv}
-        >
-          <LogOut className="h-4 w-4" />
-        </ToolbarButton>
-      </div>
 
       {typesOpen && (
         <ChartTypesModal

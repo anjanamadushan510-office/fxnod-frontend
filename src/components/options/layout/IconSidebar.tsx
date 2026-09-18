@@ -2,8 +2,13 @@
 
 import type { Route } from "next";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
+import { LogOut } from "lucide-react";
+import { useDerivStatus, derivStatusKey } from "@/hooks/useDerivStatus";
+import { useDerivUnlink } from "@/services/api/endpoints/trading/trading";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   AppsGridIcon,
   ClockIcon,
@@ -64,7 +69,28 @@ export function IconSidebar({
   onThemeToggle,
 }: IconSidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [activeKey, setActiveKey] = useState<string>("home");
+
+  const queryClient = useQueryClient();
+  const { linked } = useDerivStatus();
+  const unlinkMutation = useDerivUnlink();
+
+  async function disconnectDeriv() {
+    const ok = window.confirm(
+      "Sign out of Deriv? Running bots will stop, and you will need to connect again before trading."
+    );
+    if (!ok) return;
+    try {
+      await unlinkMutation.mutateAsync();
+      await queryClient.invalidateQueries({ queryKey: derivStatusKey });
+      await queryClient.invalidateQueries();
+      toast.success("Signed out of Deriv");
+      router.push("/venues");
+    } catch {
+      toast.error("Could not sign out of Deriv. Please try again.");
+    }
+  }
 
   const primary: NavItem[] = [
     { key: "apps", label: "Apps", icon: <AppsGridIcon className="h-[18px] w-[18px]" />, href: "/home" },
@@ -131,6 +157,15 @@ export function IconSidebar({
         active={false}
         onClick={() => undefined}
       />
+
+      <div className="mt-auto pt-2">
+        <NavButton
+          label="Disconnect Deriv"
+          icon={<LogOut className="h-[18px] w-[18px]" />}
+          active={false}
+          onClick={disconnectDeriv}
+        />
+      </div>
     </div>
   );
 }
