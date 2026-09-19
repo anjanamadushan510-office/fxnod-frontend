@@ -16,6 +16,8 @@ export interface Drawing {
   symbol: string;
   tool: DrawingTool;
   color: string;
+  /** Line thickness in pixels (1-4). Defaults to 2. */
+  thickness?: number;
   /** Horizontal line. */
   price?: number;
   /** Vertical line — epoch seconds. */
@@ -27,8 +29,11 @@ export interface Drawing {
 interface ChartDrawingsState {
   /** Tool armed for the next click(s); null = not drawing. */
   activeTool: DrawingTool | null;
+  activeDrawingId: string | null;
   drawings: Drawing[];
   setActiveTool: (tool: DrawingTool | null) => void;
+  setActiveDrawingId: (id: string | null) => void;
+  updateDrawing: (id: string, updates: Partial<Drawing>) => void;
   /** Add a placed drawing; returns its generated id. */
   addDrawing: (drawing: Omit<Drawing, "id">) => string;
   removeDrawing: (id: string) => void;
@@ -43,8 +48,14 @@ interface ChartDrawingsState {
  */
 export const useChartDrawings = create<ChartDrawingsState>((set) => ({
   activeTool: null,
+  activeDrawingId: null,
   drawings: [],
   setActiveTool: (tool) => set({ activeTool: tool }),
+  setActiveDrawingId: (id) => set({ activeDrawingId: id }),
+  updateDrawing: (id, updates) =>
+    set((s) => ({
+      drawings: s.drawings.map((d) => (d.id === id ? { ...d, ...updates } : d)),
+    })),
   addDrawing: (drawing) => {
     const id = crypto.randomUUID();
     set((s) => ({ drawings: [...s.drawings, { ...drawing, id }] }));

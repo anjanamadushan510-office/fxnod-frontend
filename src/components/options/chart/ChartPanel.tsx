@@ -17,6 +17,7 @@ import { CHART_COLORS } from "./chartColors";
 import { MarketPicker } from "../market/MarketPicker";
 import { ChartFooter } from "./ChartFooter";
 import { ChartToolbar, ChartNavControls } from "./ChartToolbar";
+import { DrawingToolbar } from "./DrawingToolbar";
 import { LiveChart, type LiveChartHandle } from "./LiveChart";
 import { MarketPill } from "./MarketPill";
 import { StatsStrip } from "./StatsStrip";
@@ -179,6 +180,8 @@ export function ChartPanel({
           onChartTypeChange={setChartType}
           onIntervalChange={setInterval}
         />
+
+        <DrawingToolbar />
 
         <LiveChart
           ref={chartRef}

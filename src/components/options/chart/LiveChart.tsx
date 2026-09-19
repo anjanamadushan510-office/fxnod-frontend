@@ -365,12 +365,63 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
         const tool = activeToolRef.current;
         const series = seriesRef.current;
         const point = param.point;
-        if (!tool || !series || !point) return;
+        if (!series || !point) return;
+
+        const store = useChartDrawings.getState();
+
+        if (!tool) {
+          const clickY = point.y;
+          const clickX = point.x;
+          let clickedDrawingId: string | null = null;
+          
+          for (const d of store.drawings.filter(d => d.symbol === symbol)) {
+            if (d.tool === "horizontal" && d.price != null) {
+              const lineY = series.priceToCoordinate(d.price);
+              if (lineY !== null && Math.abs(lineY - clickY) < 10) {
+                clickedDrawingId = d.id;
+                break;
+              }
+            } else if (d.tool === "vertical" && d.time != null) {
+              const lineX = chart.timeScale().timeToCoordinate(d.time as any);
+              if (lineX !== null && Math.abs(lineX - clickX) < 10) {
+                clickedDrawingId = d.id;
+                break;
+              }
+            } else if (d.tool === "trend" && d.points) {
+              const [p1, p2] = d.points;
+              const x1 = chart.timeScale().timeToCoordinate(p1.time as any);
+              const y1 = series.priceToCoordinate(p1.price);
+              const x2 = chart.timeScale().timeToCoordinate(p2.time as any);
+              const y2 = series.priceToCoordinate(p2.price);
+              
+              if (x1 !== null && y1 !== null && x2 !== null && y2 !== null) {
+                const l2 = (x2 - x1) ** 2 + (y2 - y1) ** 2;
+                if (l2 !== 0) {
+                  let t = ((clickX - x1) * (x2 - x1) + (clickY - y1) * (y2 - y1)) / l2;
+                  t = Math.max(0, Math.min(1, t));
+                  const projX = x1 + t * (x2 - x1);
+                  const projY = y1 + t * (y2 - y1);
+                  const dist = Math.sqrt((clickX - projX) ** 2 + (clickY - projY) ** 2);
+                  if (dist < 10) {
+                    clickedDrawingId = d.id;
+                    break;
+                  }
+                }
+              }
+            }
+          }
+          
+          if (clickedDrawingId) {
+            store.setActiveDrawingId(clickedDrawingId);
+          } else {
+            store.setActiveDrawingId(null);
+          }
+          return;
+        }
 
         const price = series.coordinateToPrice(point.y);
         const time = (param.time ??
           chart.timeScale().coordinateToTime(point.x)) as Time | null;
-        const store = useChartDrawings.getState();
 
         if (tool === "horizontal") {
           if (price === null) return;
@@ -752,14 +803,14 @@ function applyDrawings(
       const line = series.createPriceLine({
         price: d.price,
         color: d.color,
-        lineWidth: 2,
+        lineWidth: (d.thickness || 2) as any,
         lineStyle: LineStyle.Solid,
         axisLabelVisible: true,
         title: "",
       });
       objsRef.current.set(d.id, { kind: "priceline", line });
     } else if (d.tool === "vertical" && d.time != null) {
-      const primitive = new VerticalPrimitive(d.time as Time, d.color);
+      const primitive = new VerticalPrimitive(d.time as Time, d.color, d.thickness || 2);
       series.attachPrimitive(primitive);
       objsRef.current.set(d.id, { kind: "primitive", primitive });
     } else if (d.tool === "trend" && d.points) {
@@ -768,6 +819,7 @@ function applyDrawings(
         { time: p1.time as Time, price: p1.price },
         { time: p2.time as Time, price: p2.price },
         d.color,
+        d.thickness || 2
       );
       series.attachPrimitive(primitive);
       objsRef.current.set(d.id, { kind: "primitive", primitive });
