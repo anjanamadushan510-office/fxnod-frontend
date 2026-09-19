@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState, useRef } from "react";
 import type { Route } from "next";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { ChartPanel } from "@/components/options/chart/ChartPanel";
@@ -105,13 +105,19 @@ function OptionsPageInner() {
   });
   const toggleReports = () => setReportsOpen((prev) => !prev);
 
+  // Store the chart query string so we can restore it when closing Reports
+  const chartParamsRef = useRef("");
+
   // Sync Reports modal open state with URL
   useEffect(() => {
     const isReportsUrl = window.location.pathname.startsWith("/reports");
     if (reportsOpen && !isReportsUrl) {
-      window.history.pushState(null, '', '/reports/positions' + window.location.search);
+      // Save current params before navigating away from dtrader
+      chartParamsRef.current = window.location.search;
+      window.history.pushState(null, '', '/reports/positions');
     } else if (!reportsOpen && isReportsUrl) {
-      window.history.pushState(null, '', '/options/dtrader' + window.location.search);
+      // Restore chart params when returning to dtrader
+      window.history.pushState(null, '', '/options/dtrader' + chartParamsRef.current);
     }
   }, [reportsOpen]);
 

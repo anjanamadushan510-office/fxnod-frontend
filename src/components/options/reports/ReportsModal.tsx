@@ -41,7 +41,7 @@ export function ReportsModal({ isOpen, onClose }: ReportsModalProps) {
     
     // Only push state if the path actually changes to prevent duplicate history entries
     if (window.location.pathname !== path) {
-      window.history.pushState(null, '', path + window.location.search);
+      window.history.pushState(null, '', path);
     }
   };
 
