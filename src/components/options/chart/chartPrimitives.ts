@@ -33,6 +33,7 @@ class TrendRenderer implements IPrimitivePaneRenderer {
     private readonly _y2: number | null,
     private readonly _color: string,
     private readonly _width: number,
+    private readonly _dashed: boolean,
   ) {}
 
   draw(target: CanvasRenderingTarget2D): void {
@@ -50,6 +51,8 @@ class TrendRenderer implements IPrimitivePaneRenderer {
       const vr = scope.verticalPixelRatio;
       ctx.lineWidth = this._width * vr;
       ctx.strokeStyle = this._color;
+      if (this._dashed) ctx.setLineDash([5 * vr, 5 * vr]);
+      else ctx.setLineDash([]);
       ctx.beginPath();
       ctx.moveTo(this._x1! * hr, this._y1! * vr);
       ctx.lineTo(this._x2! * hr, this._y2! * vr);
@@ -85,6 +88,7 @@ class TrendPaneView implements IPrimitivePaneView {
       this._y2,
       this._source.color,
       this._source.width,
+      this._source.dashed,
     );
   }
 }
@@ -95,12 +99,19 @@ export class TrendPrimitive implements ISeriesPrimitive<Time> {
   private readonly _paneView: TrendPaneView;
 
   constructor(
-    public readonly a: LinePoint,
-    public readonly b: LinePoint,
+    public a: LinePoint,
+    public b: LinePoint,
     public readonly color = "#2962FF",
     public readonly width = 2,
+    public readonly dashed = false,
   ) {
     this._paneView = new TrendPaneView(this);
+  }
+
+  updatePoints(a: LinePoint, b: LinePoint) {
+    this.a = a;
+    this.b = b;
+    this.chart?.timeScale().applyOptions({}); // force redraw? Actually series.applyOptions is better, or just rely on crosshair move triggering render
   }
 
   attached(param: SeriesAttachedParameter<Time>): void {
@@ -129,6 +140,7 @@ class VerticalRenderer implements IPrimitivePaneRenderer {
     private readonly _x: number | null,
     private readonly _color: string,
     private readonly _width: number,
+    private readonly _dashed: boolean,
   ) {}
 
   draw(target: CanvasRenderingTarget2D): void {
@@ -138,6 +150,8 @@ class VerticalRenderer implements IPrimitivePaneRenderer {
       const x = Math.round(this._x! * scope.horizontalPixelRatio);
       ctx.lineWidth = this._width * scope.verticalPixelRatio;
       ctx.strokeStyle = this._color;
+      if (this._dashed) ctx.setLineDash([5 * scope.verticalPixelRatio, 5 * scope.verticalPixelRatio]);
+      else ctx.setLineDash([]);
       ctx.beginPath();
       ctx.moveTo(x, 0);
       ctx.lineTo(x, scope.bitmapSize.height);
@@ -158,7 +172,7 @@ class VerticalPaneView implements IPrimitivePaneView {
   }
 
   renderer(): IPrimitivePaneRenderer {
-    return new VerticalRenderer(this._x, this._source.color, this._source.width);
+    return new VerticalRenderer(this._x, this._source.color, this._source.width, this._source.dashed);
   }
 }
 
@@ -168,11 +182,16 @@ export class VerticalPrimitive implements ISeriesPrimitive<Time> {
   private readonly _paneView: VerticalPaneView;
 
   constructor(
-    public readonly time: Time,
+    public time: Time,
     public readonly color = "#2962FF",
     public readonly width = 1,
+    public readonly dashed = false,
   ) {
     this._paneView = new VerticalPaneView(this);
+  }
+
+  updateTime(time: Time) {
+    this.time = time;
   }
 
   attached(param: SeriesAttachedParameter<Time>): void {

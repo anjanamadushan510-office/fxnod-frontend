@@ -175,6 +175,9 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
 
     const [status, setStatus] = useState<FeedStatus>("idle");
     const [paneHeights, setPaneHeights] = useState<Record<string, number>>({});
+    
+    // -- Preview State --
+    const previewObjRef = useRef<{ kind: "priceline", line: IPriceLine } | { kind: "primitive", primitive: any } | null>(null);
     const [isResizing, setIsResizing] = useState(false);
 
     const activeScales = new Set<string>();
@@ -429,6 +432,64 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
              }
            }
         }
+
+        // Update live drawing preview
+        const tool = activeToolRef.current;
+        if (tool) {
+           const price = series.coordinateToPrice(point.y);
+           const time = (chart.timeScale().coordinateToTime(point.x) ?? param.time) as Time | null;
+           
+           if (tool === 'horizontal' && price !== null) {
+              if (!previewObjRef.current || previewObjRef.current.kind !== 'priceline') {
+                 if (previewObjRef.current) {
+                    if (previewObjRef.current.kind === 'primitive') series.detachPrimitive(previewObjRef.current.primitive);
+                 }
+                 const line = series.createPriceLine({
+                    price, color: DRAWING_COLOR, lineWidth: 2, lineStyle: LineStyle.Dashed, axisLabelVisible: true, title: ""
+                 });
+                 previewObjRef.current = { kind: 'priceline', line };
+              } else {
+                 previewObjRef.current.line.applyOptions({ price });
+              }
+           } else if (tool === 'vertical' && time !== null) {
+              if (!previewObjRef.current || previewObjRef.current.kind !== 'primitive' || !(previewObjRef.current.primitive instanceof VerticalPrimitive)) {
+                 if (previewObjRef.current) {
+                    if (previewObjRef.current.kind === 'priceline') series.removePriceLine(previewObjRef.current.line);
+                    else series.detachPrimitive(previewObjRef.current.primitive);
+                 }
+                 const primitive = new VerticalPrimitive(time as Time, DRAWING_COLOR, 2, true);
+                 series.attachPrimitive(primitive);
+                 previewObjRef.current = { kind: 'primitive', primitive };
+              } else {
+                 (previewObjRef.current.primitive as VerticalPrimitive).updateTime(time as Time);
+                 // force a redraw by updating dummy options on series
+                 series.applyOptions({});
+              }
+           } else if (tool === 'trend' && time !== null && price !== null) {
+              if (pendingTrendRef.current) {
+                 // drawing trailing line
+                 if (!previewObjRef.current || previewObjRef.current.kind !== 'primitive' || !(previewObjRef.current.primitive instanceof TrendPrimitive)) {
+                    if (previewObjRef.current) {
+                       if (previewObjRef.current.kind === 'priceline') series.removePriceLine(previewObjRef.current.line);
+                       else series.detachPrimitive(previewObjRef.current.primitive);
+                    }
+                    const primitive = new TrendPrimitive(
+                       { time: pendingTrendRef.current.time as Time, price: pendingTrendRef.current.price },
+                       { time: time as Time, price },
+                       DRAWING_COLOR, 2, true
+                    );
+                    series.attachPrimitive(primitive);
+                    previewObjRef.current = { kind: 'primitive', primitive };
+                 } else {
+                    (previewObjRef.current.primitive as TrendPrimitive).updatePoints(
+                       { time: pendingTrendRef.current.time as Time, price: pendingTrendRef.current.price },
+                       { time: time as Time, price }
+                    );
+                    series.applyOptions({});
+                 }
+              }
+           }
+        }
       };
       
       chart.subscribeCrosshairMove(handler);
@@ -507,8 +568,32 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
     useEffect(() => {
       const el = containerRef.current;
       if (el && activeTool) el.style.cursor = "crosshair";
-      if (!activeTool) pendingTrendRef.current = null;
+      if (!activeTool) {
+         pendingTrendRef.current = null;
+         if (previewObjRef.current) {
+            const series = seriesRef.current;
+            if (series) {
+               if (previewObjRef.current.kind === 'priceline') {
+                  try { series.removePriceLine(previewObjRef.current.line); } catch(e) {}
+               } else {
+                  try { series.detachPrimitive(previewObjRef.current.primitive); } catch(e) {}
+               }
+            }
+            previewObjRef.current = null;
+         }
+      }
     }, [activeTool]);
+
+    // Handle Esc key to cancel drawing mode
+    useEffect(() => {
+       const handleKeyDown = (e: KeyboardEvent) => {
+          if (e.key === "Escape" && useChartDrawings.getState().activeTool) {
+             useChartDrawings.getState().setActiveTool(null);
+          }
+       };
+       window.addEventListener("keydown", handleKeyDown);
+       return () => window.removeEventListener("keydown", handleKeyDown);
+    }, []);
 
     // Subscribe to chart clicks once; the handler reads the armed tool from a
     // ref so it never goes stale. Horizontal → one click; vertical → one click;
@@ -882,6 +967,25 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
             );
           });
         })()}
+
+        {/* Placement Action Box UI (Drawing Mode) */}
+        {activeTool && (
+          <div className="pointer-events-none absolute bottom-[40px] left-0 right-0 z-50 flex justify-center">
+            <div className="pointer-events-auto flex items-center gap-4 rounded-md bg-white px-4 py-2 text-sm font-medium text-black shadow-lg">
+              <span>Click on the chart to place the line.</span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  useChartDrawings.getState().setActiveTool(null);
+                }}
+                className="rounded px-2 py-1 text-[#ff444f] transition-colors hover:bg-black/5"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
         <FeedStatusBadge status={status} unsupported={!derivSymbol} />
       </div>
     );
