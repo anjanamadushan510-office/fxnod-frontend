@@ -740,12 +740,14 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
       return () => chart.unsubscribeClick(handler);
     }, [symbol]);
 
+    const activeDrawingId = useChartDrawings((s) => s.activeDrawingId);
+
     // Re-render drawings whenever the store set for this symbol changes.
     useEffect(() => {
       if (seriesRef.current) {
-        applyDrawings(seriesRef.current, drawings, drawingObjsRef);
+        applyDrawings(seriesRef.current, drawings, drawingObjsRef, activeDrawingId);
       }
-    }, [drawings]);
+    }, [drawings, activeDrawingId]);
 
     // Re-sync indicators when the active list changes.
     useEffect(() => {
@@ -1089,6 +1091,7 @@ function applyDrawings(
   series: ISeriesApi<"Area"> | ISeriesApi<"Candlestick"> | ISeriesApi<"Bar">,
   drawings: Drawing[],
   objsRef: React.MutableRefObject<Map<string, DrawingObj>>,
+  activeDrawingId: string | null,
 ) {
   const currentIds = new Set(drawings.map((d) => d.id));
 
@@ -1111,7 +1114,7 @@ function applyDrawings(
 
     if (d.tool === "horizontal" && d.price != null) {
       if (existing && existing.kind === "priceline") {
-        existing.line.applyOptions({ price: d.price, color: d.color, lineWidth: (d.thickness || 2) as any });
+        existing.line.applyOptions({ price: d.price, color: d.color, lineWidth: (d.thickness || 2) as any, axisLabelVisible: d.id === activeDrawingId });
       } else {
         if (existing) {
            if (existing.kind === "primitive") series.detachPrimitive(existing.primitive);
@@ -1121,7 +1124,7 @@ function applyDrawings(
           color: d.color,
           lineWidth: (d.thickness || 2) as any,
           lineStyle: LineStyle.Solid,
-          axisLabelVisible: true,
+          axisLabelVisible: d.id === activeDrawingId,
           title: "",
         });
         objsRef.current.set(d.id, { kind: "priceline", line });
@@ -1130,6 +1133,7 @@ function applyDrawings(
       if (existing && existing.kind === "primitive" && existing.primitive instanceof VerticalPrimitive) {
         existing.primitive.color = d.color;
         existing.primitive.width = d.thickness || 2;
+        existing.primitive.axisLabelVisible = d.id === activeDrawingId;
         existing.primitive.updateTime(d.time as Time);
         series.applyOptions({}); // force redraw
       } else {
@@ -1137,7 +1141,7 @@ function applyDrawings(
            if (existing.kind === "priceline") series.removePriceLine(existing.line);
            else series.detachPrimitive(existing.primitive);
         }
-        const primitive = new VerticalPrimitive(d.time as Time, d.color, d.thickness || 2);
+        const primitive = new VerticalPrimitive(d.time as Time, d.color, d.thickness || 2, false, d.id === activeDrawingId);
         series.attachPrimitive(primitive);
         objsRef.current.set(d.id, { kind: "primitive", primitive });
       }

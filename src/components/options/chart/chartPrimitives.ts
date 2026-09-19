@@ -10,6 +10,7 @@ import type {
   IPrimitivePaneRenderer,
   IPrimitivePaneView,
   ISeriesPrimitive,
+  ITimeAxisView,
   SeriesAttachedParameter,
   Time,
 } from "lightweight-charts";
@@ -176,18 +177,49 @@ class VerticalPaneView implements IPrimitivePaneView {
   }
 }
 
+class VerticalTimeAxisView implements ITimeAxisView {
+  private _x: number | null = null;
+  private _text: string = "";
+
+  constructor(private readonly _source: VerticalPrimitive) {}
+
+  update(): void {
+    const chart = this._source.chart;
+    if (!chart) return;
+    this._x = chart.timeScale().timeToCoordinate(this._source.time);
+    
+    const t = this._source.time;
+    if (typeof t === "number") {
+      const d = new Date(t * 1000);
+      this._text = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } else if (typeof t === "object" && t !== null && 'year' in t) {
+      this._text = `${t.year}-${String(t.month).padStart(2, '0')}-${String(t.day).padStart(2, '0')}`;
+    } else {
+      this._text = String(t);
+    }
+  }
+
+  coordinate(): number { return this._x ?? 0; }
+  text(): string { return this._text; }
+  background(): string { return this._source.color; }
+  color(): string { return "#FFFFFF"; }
+}
+
 export class VerticalPrimitive implements ISeriesPrimitive<Time> {
   chart: AttachedChart | null = null;
   series: AttachedSeries | null = null;
   private readonly _paneView: VerticalPaneView;
+  private readonly _timeAxisView: VerticalTimeAxisView;
 
   constructor(
     public time: Time,
     public color = "#2962FF",
     public width = 1,
     public readonly dashed = false,
+    public axisLabelVisible = false,
   ) {
     this._paneView = new VerticalPaneView(this);
+    this._timeAxisView = new VerticalTimeAxisView(this);
   }
 
   updateTime(time: Time) {
@@ -206,9 +238,14 @@ export class VerticalPrimitive implements ISeriesPrimitive<Time> {
 
   updateAllViews(): void {
     this._paneView.update();
+    this._timeAxisView.update();
   }
 
   paneViews(): readonly IPrimitivePaneView[] {
     return [this._paneView];
+  }
+  
+  timeAxisViews(): readonly ITimeAxisView[] {
+    return this.axisLabelVisible ? [this._timeAxisView] : [];
   }
 }
