@@ -30,45 +30,18 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
-import type { BotContractTemplateDurationUnit } from './botContractTemplateDurationUnit';
 
 /**
- * The shape of every contract this run buys. Snapshotted immutably on the run as the record of what the user authorised.
+ * How the stake moves after each settled contract, per market. flat keeps it fixed; martingale multiplies after a loss; gentle_step adds one base stake after a loss and removes one after a win, never below the base; reverse_martingale multiplies after a win and resets after a loss. Absent, martingale_enabled chooses between martingale and flat, as it did before modes existed.
 
  */
-export interface BotContractTemplate {
-  /** FXNod frontend contract type. */
-  contract_type: string;
-  /**
-   * Deriv symbols to trade. Each is a live market-data subscription, so a run may name at most 10, with no repeats.
+export type BotRiskLimitsStakeMode = typeof BotRiskLimitsStakeMode[keyof typeof BotRiskLimitsStakeMode];
 
-   * @minItems 1
-   * @maxItems 10
-   */
-  symbols: string[];
-  currency?: string;
-  duration?: number;
-  duration_unit?: BotContractTemplateDurationUnit;
-  barrier?: string;
-  /**
-   * @minimum 0
-   * @maximum 9
-   */
-  digit?: number;
-  /**
-   * @minimum 1
-   * @maximum 5
-   */
-  growth_rate?: number;
-  multiplier?: number;
-  payout_per_point?: number;
-  /** The low barrier of an Ends In / Ends Out contract; `barrier` is the high one. Relative offsets like "+0.5" / "-0.5", as with barrier.
- */
-  barrier2?: string;
-  /**
-   * High / Low Tick only - which tick is predicted to be the highest or lowest.
-   * @minimum 1
-   * @maximum 5
-   */
-  selected_tick?: number;
-}
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const BotRiskLimitsStakeMode = {
+  flat: 'flat',
+  martingale: 'martingale',
+  gentle_step: 'gentle_step',
+  reverse_martingale: 'reverse_martingale',
+} as const;

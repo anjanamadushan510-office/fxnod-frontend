@@ -59,7 +59,7 @@ export const METHOD_GROUPS: MethodGroup[] = [
     label: "Barriers",
     methods: [
       { key: "touch_no_touch", name: "Touch / No Touch", strategyId: "touch_no_touch", description: "Will price touch a target at any moment before time is up?" },
-      { key: "ends_in_out", name: "Ends In / Ends Out", description: "Will the price finish inside or outside two targets?" },
+      { key: "ends_in_out", strategyId: "ends_in_out", name: "Ends In / Ends Out", description: "Will the price finish inside or outside two targets?" },
     ],
   },
   {
@@ -81,12 +81,12 @@ export const METHOD_GROUPS: MethodGroup[] = [
   {
     label: "More options",
     methods: [
-      { key: "asians", name: "Asians", description: "Win if the average price over the contract is higher or lower than the start." },
-      { key: "reset_call_put", name: "Reset Call / Put", description: "Like Rise / Fall, but if price hits a reset level the starting price is replaced." },
-      { key: "only_ups_downs", name: "Only Ups / Only Downs", description: "Win if every tick in the contract moves only up, or only down." },
-      { key: "high_low_tick", name: "High Tick / Low Tick", description: "Pick which tick in the series will be the highest or the lowest." },
-      { key: "turbos", name: "Turbos", description: "Stay on your side of a barrier. Knocked out if price crosses it." },
-      { key: "vanillas", name: "Vanillas", description: "Call or Put. Payout follows how far price finishes past the start." },
+      { key: "asians", strategyId: "asians", name: "Asians", description: "Win if the average price over the contract is higher or lower than the start." },
+      { key: "reset_call_put", strategyId: "reset_call_put", name: "Reset Call / Put", description: "Like Rise / Fall, but if price hits a reset level the starting price is replaced." },
+      { key: "only_ups_downs", strategyId: "only_ups_downs", name: "Only Ups / Only Downs", description: "Win if every tick in the contract moves only up, or only down." },
+      { key: "high_low_tick", strategyId: "high_low_ticks", name: "High Tick / Low Tick", description: "Pick which tick in the series will be the highest or the lowest." },
+      { key: "turbos", strategyId: "turbos", name: "Turbos", description: "Stay on your side of a barrier. Knocked out if price crosses it." },
+      { key: "vanillas", strategyId: "vanillas", name: "Vanillas", description: "Call or Put. Payout follows how far price finishes past the start." },
     ],
   },
 ];
@@ -174,18 +174,24 @@ export interface MoneyOption {
   description: string;
   /** False until the engine's risk layer can size stakes this way. */
   available: boolean;
+  /** The engine's stake_mode for this option. */
+  stakeMode: "flat" | "martingale" | "gentle_step" | "reverse_martingale";
+  /** Whether it scales by a multiplier (and so needs one). */
+  multiplies: boolean;
+  /** Whether it walks a ladder at all (and so needs a step count). */
+  escalates: boolean;
 }
 
 /**
  * Staking modes. Unlike entry rules these are not a strategy's to declare:
- * stake sizing belongs to the risk layer, which no bot can widen. The engine
- * implements flat stakes and martingale today.
+ * stake sizing belongs to the risk layer, which no bot can widen, and every
+ * mode here is one it implements (risk.StakeMode).
  */
 export const MONEY_OPTIONS: MoneyOption[] = [
-  { key: "same", name: "Same stake", badge: "Recommended", available: true, description: "Every trade uses the same amount. Safest way to start." },
-  { key: "gentle_step", name: "Gentle step", badge: "Medium", available: false, description: "Add one unit after a loss, remove one after a win." },
-  { key: "martingale", name: "Martingale", badge: "High risk", available: true, description: "Multiply the stake after a loss so one win recovers the streak. Can drain the account." },
-  { key: "reverse_martingale", name: "Reverse Martingale", badge: "High risk", available: false, description: "Multiply the stake after a win. Reset after a loss. Rides streaks, gives them back fast." },
+  { key: "same", name: "Same stake", badge: "Recommended", available: true, stakeMode: "flat", multiplies: false, escalates: false, description: "Every trade uses the same amount. Safest way to start." },
+  { key: "gentle_step", name: "Gentle step", badge: "Medium", available: true, stakeMode: "gentle_step", multiplies: false, escalates: true, description: "Add one starting stake after a loss, remove one after a win. Never below where you started." },
+  { key: "martingale", name: "Martingale", badge: "High risk", available: true, stakeMode: "martingale", multiplies: true, escalates: true, description: "Multiply the stake after a loss so one win recovers the streak. The bot stops if the losses outlast its steps." },
+  { key: "reverse_martingale", name: "Reverse Martingale", badge: "High risk", available: true, stakeMode: "reverse_martingale", multiplies: true, escalates: true, description: "Multiply the stake after a win. Reset after a loss, or after the last step. Rides streaks, gives them back fast." },
 ];
 
 export function findMoneyOption(key: string): MoneyOption | undefined {

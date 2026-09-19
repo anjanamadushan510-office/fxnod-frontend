@@ -43,6 +43,11 @@ export const FALLBACK_MARKETS: Record<string, string[]> = {
   matches_differs: ["1HZ100V", "1HZ75V", "1HZ50V", "1HZ25V"],
   even_odd:        ["1HZ100V", "1HZ75V", "1HZ50V", "1HZ25V"],
   over_under:      ["1HZ100V", "1HZ75V", "1HZ50V", "1HZ25V"],
+  asians:          ["R_10", "R_25", "R_50", "R_75", "R_100"],
+  reset_call_put:  ["R_10", "R_25", "R_50", "R_75", "R_100"],
+  only_ups_downs:  ["R_10", "R_25", "R_50", "R_75", "R_100"],
+  high_low_ticks:  ["R_10", "R_25", "R_50", "R_75", "R_100"],
+  ends_in_out:     ["R_10", "R_25", "R_50", "R_75", "R_100"],
 };
 
 export function getFallbackMarkets(strategyId: string): string[] {

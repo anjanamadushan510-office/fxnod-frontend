@@ -27,6 +27,10 @@ export interface BotFormState {
   barrierDigit: number;
   barrierAbove: boolean;
   barrierOffset: string;
+  /** Distance of the LOW barrier below spot, Ends In / Ends Out only. */
+  lowBarrierOffset: string;
+  /** 1-based tick predicted to be the extreme, High / Low Tick only. */
+  selectedTick: number;
   duration: string;
   durationUnit: string;
 
@@ -41,6 +45,8 @@ export interface BotFormState {
   martingaleEnabled: boolean;
   martingaleMultiplier: string;
   martingaleMaxSteps: string;
+  /** The user's own ceiling on one stake. Empty means only the platform's. */
+  maxStake: string;
 
   configuredBotIndicators: string[];
 }
@@ -59,6 +65,8 @@ export function defaultFormState(): BotFormState {
     barrierDigit: 5,
     barrierAbove: true,
     barrierOffset: "1",
+    lowBarrierOffset: "1",
+    selectedTick: 1,
     duration: "5",
     durationUnit: "t",
 
@@ -75,6 +83,7 @@ export function defaultFormState(): BotFormState {
     martingaleEnabled: false,
     martingaleMultiplier: "2",
     martingaleMaxSteps: "3",
+    maxStake: "",
 
     configuredBotIndicators: [],
   };
@@ -166,6 +175,15 @@ export function buildStartRequest(
       ...(shape.barrierOffset
         ? { barrier: `${state.barrierAbove ? "+" : "-"}${state.barrierOffset.trim()}` }
         : {}),
+      // Ends In / Ends Out: `barrier` is the high one and `barrier2` the low
+      // one, as Deriv names them, each relative to the spot at entry.
+      ...(shape.twoBarriers
+        ? {
+            barrier: `+${state.barrierOffset.trim()}`,
+            barrier2: `-${state.lowBarrierOffset.trim()}`,
+          }
+        : {}),
+      ...(shape.selectedTick ? { selected_tick: state.selectedTick } : {}),
       ...(shape.barrierDigit ? { digit: state.barrierDigit } : {}),
       // Skipped when auto_digit is on: the strategy chooses it per trade from
       // the recent distribution, and sending one here would be ignored anyway.
@@ -230,7 +248,18 @@ function buildStrategyParameters(
     case "rise_fall":
     case "higher_lower":
     case "touch_no_touch":
+    case "asians":
+    case "reset_call_put":
+    case "only_ups_downs":
+    case "turbos":
+    case "vanillas":
       return { direction: state.direction };
+
+    // Not bets on direction, so "auto" does not exist for them: the engine
+    // accepts only a fixed side.
+    case "ends_in_out":
+    case "high_low_ticks":
+      return { direction: state.direction === "down" ? "down" : "up" };
 
     case "matches_differs":
       return {
@@ -274,6 +303,8 @@ export function toPresetConfig(state: BotFormState): Record<string, unknown> {
     barrierDigit: state.barrierDigit,
     barrierAbove: state.barrierAbove,
     barrierOffset: state.barrierOffset,
+    lowBarrierOffset: state.lowBarrierOffset,
+    selectedTick: state.selectedTick,
     duration: state.duration,
     durationUnit: state.durationUnit,
     stake: state.stake,
@@ -285,6 +316,7 @@ export function toPresetConfig(state: BotFormState): Record<string, unknown> {
     martingaleEnabled: state.martingaleEnabled,
     martingaleMultiplier: state.martingaleMultiplier,
     martingaleMaxSteps: state.martingaleMaxSteps,
+    maxStake: state.maxStake,
   };
 }
 
@@ -313,6 +345,9 @@ export function fromPresetConfig(raw: unknown): BotFormState {
     barrierDigit: typeof cfg.barrierDigit === "number" ? cfg.barrierDigit : defaults.barrierDigit,
     barrierAbove: typeof cfg.barrierAbove === "boolean" ? cfg.barrierAbove : defaults.barrierAbove,
     barrierOffset: typeof cfg.barrierOffset === "string" ? cfg.barrierOffset : defaults.barrierOffset,
+    lowBarrierOffset:
+      typeof cfg.lowBarrierOffset === "string" ? cfg.lowBarrierOffset : defaults.lowBarrierOffset,
+    selectedTick: typeof cfg.selectedTick === "number" ? cfg.selectedTick : defaults.selectedTick,
     duration: typeof cfg.duration === "string" ? cfg.duration : defaults.duration,
     durationUnit: typeof cfg.durationUnit === "string" ? cfg.durationUnit : defaults.durationUnit,
     stake: typeof cfg.stake === "string" ? cfg.stake : defaults.stake,
@@ -338,6 +373,7 @@ export function fromPresetConfig(raw: unknown): BotFormState {
       typeof cfg.martingaleMaxSteps === "string"
         ? cfg.martingaleMaxSteps
         : defaults.martingaleMaxSteps,
+    maxStake: typeof cfg.maxStake === "string" ? cfg.maxStake : defaults.maxStake,
     configuredBotIndicators: Array.isArray(cfg.configuredBotIndicators)
       ? (cfg.configuredBotIndicators as string[])
       : defaults.configuredBotIndicators,

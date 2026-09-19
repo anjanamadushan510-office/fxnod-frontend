@@ -35,6 +35,15 @@ export interface BotFormShape {
   takeProfit?: boolean;
   /** Per-contract stop loss is meaningful for this type. */
   perTradeStopLoss?: boolean;
+  /**
+   * A tick-only contract whose length Deriv bounds, as [min, max]. The engine
+   * refuses anything outside it, so the picker offers only what is inside.
+   */
+  tickRange?: [number, number];
+  /** Two barriers, above and below spot (Ends In / Ends Out). */
+  twoBarriers?: boolean;
+  /** Which tick is predicted to be the highest / lowest (High / Low Tick). */
+  selectedTick?: boolean;
 }
 
 export const BOT_FORMS: Record<string, BotFormShape> = {
@@ -51,6 +60,18 @@ export const BOT_FORMS: Record<string, BotFormShape> = {
   matches_differs: { sideLabels: ["Matches", "Differs"], duration: true, digit: true },
   even_odd: { sideLabels: ["Even", "Odd"], duration: true },
   over_under: { sideLabels: ["Over", "Under"], duration: true, barrierDigit: true },
+  asians: { sideLabels: ["Up", "Down"], duration: true, tickRange: [5, 10] },
+  reset_call_put: { sideLabels: ["Reset Call", "Reset Put"], duration: true },
+  only_ups_downs: { sideLabels: ["Only Ups", "Only Downs"], duration: true, tickRange: [2, 5] },
+  high_low_ticks: {
+    sideLabels: ["High Tick", "Low Tick"],
+    duration: true,
+    tickRange: [5, 5],
+    selectedTick: true,
+  },
+  ends_in_out: { sideLabels: ["Ends In", "Ends Out"], duration: true, twoBarriers: true },
+  turbos: { sideLabels: ["Up", "Down"], duration: true, barrierOffset: true, takeProfit: true },
+  vanillas: { sideLabels: ["Call", "Put"], duration: true, barrierOffset: true },
 };
 
 export function formShapeFor(strategyId: string): BotFormShape {

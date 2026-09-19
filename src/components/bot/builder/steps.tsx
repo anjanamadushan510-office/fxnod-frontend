@@ -16,6 +16,7 @@ import {
   MONEY_OPTIONS,
   findIndicatorOption,
   findMethod,
+  findMoneyOption,
   isDirectionalIndicator,
   isMethodAvailable,
   supportedEntryRules,
@@ -210,7 +211,12 @@ const DURATION_PRESETS: Array<{ unit: string; name: string; description: string;
 export function DurationStep({ draft, onChange }: StepProps) {
   const { form } = draft;
   const method = findMethod(draft.method);
-  const current = DURATION_PRESETS.find((p) => p.unit === form.durationUnit) ?? DURATION_PRESETS[0];
+  // Ends In / Ends Out is measured over wall-clock time; Deriv does not offer
+  // it in ticks, so the unit is not offered either.
+  const presets = draft.method === "ends_in_out"
+    ? DURATION_PRESETS.filter((p) => p.unit !== "t")
+    : DURATION_PRESETS;
+  const current = presets.find((p) => p.unit === form.durationUnit) ?? presets[0];
 
   return (
     <div className="w-full">
@@ -218,7 +224,7 @@ export function DurationStep({ draft, onChange }: StepProps) {
 
       <GroupLabel>Unit</GroupLabel>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-8">
-        {DURATION_PRESETS.map((preset) => (
+        {presets.map((preset) => (
           <ChoiceCard
             key={preset.unit}
             size="sm"
@@ -427,6 +433,11 @@ const OVER_BARRIERS = [0, 1, 2, 3, 4, 5, 6, 7, 8] as const;
 const UNDER_BARRIERS = [1, 2, 3, 4, 5, 6, 7, 8] as const;
 const TICK_DURATIONS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"] as const;
 
+/** "min".."max" inclusive, as the strings a tick-length picker offers. */
+function ticksBetween([min, max]: [number, number]): string[] {
+  return Array.from({ length: max - min + 1 }, (_, i) => String(min + i));
+}
+
 const SIDE_HINTS: Record<string, [string, string]> = {
   rise_fall: ["Price ends higher than it started", "Price ends lower than it started"],
   higher_lower: ["Price ends above the target", "Price ends below the target"],
@@ -434,6 +445,33 @@ const SIDE_HINTS: Record<string, [string, string]> = {
   even_odd: ["0, 2, 4, 6 or 8", "1, 3, 5, 7 or 9"],
   over_under: ["Last digit is strictly higher", "Last digit is strictly lower"],
   multiplier: ["Profit when price goes up", "Profit when price goes down"],
+  asians: ["The average price ends above the start", "The average price ends below the start"],
+  reset_call_put: ["Price ends higher, with a reset midway", "Price ends lower, with a reset midway"],
+  only_ups_downs: ["Every tick moves up", "Every tick moves down"],
+  high_low_ticks: ["Your tick is the highest of the five", "Your tick is the lowest of the five"],
+  ends_in_out: ["Price ends between the two targets", "Price ends outside the two targets"],
+  turbos: ["Profit grows as price rises past the barrier", "Profit grows as price falls past the barrier"],
+  vanillas: ["Pays by how far price ends above the strike", "Pays by how far price ends below the strike"],
+};
+
+/** What is worth knowing about each contract before running it unattended. */
+const GOOD_TO_KNOW: Record<string, string> = {
+  accumulator:
+    "An accumulator ends the moment price leaves its band, and the stake is lost. A per-contract profit target closes it before that can happen.",
+  multiplier:
+    "A multiplier contract can never lose more than its stake. It stays open until a per-contract limit closes it, so set at least one.",
+  asians: "Asians compare the average of the contract's ticks with the start, so one noisy last tick matters less.",
+  reset_call_put:
+    "Halfway through, the starting price is reset if that gives the trade a better start. Payouts are lower than Rise / Fall to pay for it.",
+  only_ups_downs:
+    "One tick the wrong way loses the whole contract. Payouts are high because wins are rare.",
+  high_low_ticks:
+    "Always five ticks. You pick which tick you expect to be the extreme; the payout reflects how unlikely that is.",
+  ends_in_out:
+    "Both targets are measured from the price when each contract opens: one above it, one below.",
+  turbos:
+    "A turbo is knocked out, and the stake lost, the moment price crosses its barrier. A per-contract profit target banks it before that.",
+  vanillas: "The strike is measured from the price when each contract opens. The further price ends past it, the bigger the payout.",
 };
 
 export function SetupStep({
@@ -540,6 +578,23 @@ export function SetupStep({
           </div>
         )}
 
+        {shape.twoBarriers && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <TextField
+              label="Upper target, above spot"
+              value={form.barrierOffset}
+              onChange={(barrierOffset) => set({ barrierOffset })}
+              hint="In price points above the price when each contract opens."
+            />
+            <TextField
+              label="Lower target, below spot"
+              value={form.lowBarrierOffset}
+              onChange={(lowBarrierOffset) => set({ lowBarrierOffset })}
+              hint="In price points below it."
+            />
+          </div>
+        )}
+
         {shape.growthRate && (
           <PillPicker
             label="Growth per tick"
@@ -569,6 +624,25 @@ export function SetupStep({
           />
         )}
 
+        {shape.tickRange && shape.tickRange[0] !== shape.tickRange[1] && (
+          <PillPicker
+            label="Contract length (ticks)"
+            options={ticksBetween(shape.tickRange)}
+            value={form.duration}
+            onChange={(duration) => set({ duration, durationUnit: "t" })}
+          />
+        )}
+
+        {shape.selectedTick && (
+          <PillPicker
+            label={form.direction === "down" ? "Which tick will be the lowest" : "Which tick will be the highest"}
+            options={ticksBetween([1, Number.parseInt(form.duration, 10) || 5]).map(Number)}
+            value={form.selectedTick}
+            onChange={(selectedTick) => set({ selectedTick })}
+            format={(tick) => `Tick ${tick}`}
+          />
+        )}
+
         {(shape.takeProfit || shape.perTradeStopLoss) && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {shape.takeProfit && (
@@ -595,11 +669,8 @@ export function SetupStep({
         <InfoPanel title="Good to know">
           {isDigit
             ? "Payouts for digit contracts are set by Deriv per contract and shown on every trade. Matches pays more because it wins less often; Differs the reverse."
-            : strategyId === "accumulator"
-              ? "An accumulator ends the moment price leaves its band, and the stake is lost. A per-contract profit target closes it before that can happen."
-              : strategyId === "multiplier"
-                ? "A multiplier contract can never lose more than its stake. It stays open until a per-contract limit closes it, so set at least one."
-                : "The payout for each contract is quoted by Deriv when it opens and recorded with the trade."}
+            : (GOOD_TO_KNOW[strategyId] ??
+              "The payout for each contract is quoted by Deriv when it opens and recorded with the trade.")}
         </InfoPanel>
       </div>
     </div>
@@ -642,12 +713,20 @@ export function EntryRuleStep({
 
 // ─── Money ───────────────────────────────────────────────────────────────
 
+/** What the step count means in each escalating mode. */
+const STEP_LABELS: Record<string, string> = {
+  martingale: "Losses in a row before the bot stops",
+  gentle_step: "Most extra stakes to add",
+  reverse_martingale: "Wins in a row before it resets",
+};
+
 export function MoneyStep({
   draft,
   onChange,
   limits,
 }: StepProps & { limits: BotLimits | undefined }) {
   const { form } = draft;
+  const money = findMoneyOption(draft.money);
   const set = (patch: Partial<BotFormState>) => onChange(patchForm(draft, patch));
 
   return (
@@ -682,6 +761,13 @@ export function MoneyStep({
             placeholder="Optional"
             hint={limits?.max_trades_per_session ? `Platform limit: ${limits.max_trades_per_session}` : undefined}
           />
+          <TextField
+            label="Never stake more than ($)"
+            value={form.maxStake}
+            onChange={(maxStake) => set({ maxStake })}
+            placeholder="Optional"
+            hint="A ceiling on any one trade, whatever the money strategy below does."
+          />
         </div>
 
         <section>
@@ -701,17 +787,19 @@ export function MoneyStep({
           </div>
         </section>
 
-        {draft.money === "martingale" && (
+        {money?.escalates && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <TextField
-              label="Multiply the stake by"
-              value={form.martingaleMultiplier}
-              onChange={(martingaleMultiplier) => set({ martingaleMultiplier })}
-              hint={limits?.max_martingale_multiplier ? `Platform limit: ×${limits.max_martingale_multiplier}` : undefined}
-            />
+            {money.multiplies && (
+              <TextField
+                label="Multiply the stake by"
+                value={form.martingaleMultiplier}
+                onChange={(martingaleMultiplier) => set({ martingaleMultiplier })}
+                hint={limits?.max_martingale_multiplier ? `Platform limit: ×${limits.max_martingale_multiplier}` : undefined}
+              />
+            )}
             <TextField
               kind="integer"
-              label="Losses in a row before the bot stops"
+              label={STEP_LABELS[draft.money] ?? "Steps"}
               value={form.martingaleMaxSteps}
               onChange={(martingaleMaxSteps) => set({ martingaleMaxSteps })}
               hint={limits?.max_martingale_steps ? `Platform limit: ${limits.max_martingale_steps}` : undefined}
@@ -734,6 +822,21 @@ export function MoneyStep({
       </div>
     </div>
   );
+}
+
+/** The staking mode's own numbers, in words, for the Review summary. */
+function moneyDetail(draft: BotDraft): string {
+  const { form } = draft;
+  switch (draft.money) {
+    case "martingale":
+      return ` · ×${form.martingaleMultiplier} after a loss, up to ${form.martingaleMaxSteps} losses`;
+    case "reverse_martingale":
+      return ` · ×${form.martingaleMultiplier} after a win, up to ${form.martingaleMaxSteps} wins`;
+    case "gentle_step":
+      return ` · +1 stake per loss, up to ${form.martingaleMaxSteps} extra`;
+    default:
+      return "";
+  }
 }
 
 // ─── Review ──────────────────────────────────────────────────────────────
@@ -765,7 +868,8 @@ export function ReviewStep({
     [
       "Money",
       `${money?.name ?? "—"} · stake $${form.stake || "?"}` +
-        (draft.money === "martingale" ? ` · ×${form.martingaleMultiplier}, up to ${form.martingaleMaxSteps} losses` : ""),
+        moneyDetail(draft) +
+        (form.maxStake.trim() ? ` · never above $${form.maxStake.trim()}` : ""),
     ],
     [
       "Stops at",

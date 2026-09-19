@@ -73,4 +73,26 @@ export const TRADE_TYPE_CONFIG: Record<string, TradeTypeConfig> = {
     label: "Multiplier",
     contractTypes: ["MULTUP", "MULTDOWN"],
   },
+
+  // ── Option bots (dBot) ────────────────────────────────────────────────────
+  asians: {
+    label: "Asians",
+    contractTypes: ["ASIANU", "ASIAND"],
+  },
+  reset_call_put: {
+    label: "Reset Call/Put",
+    contractTypes: ["RESETCALL", "RESETPUT"],
+  },
+  only_ups_downs: {
+    label: "Only Ups/Downs",
+    contractTypes: ["RUNHIGH", "RUNLOW"],
+  },
+  high_low_ticks: {
+    label: "High/Low Tick",
+    contractTypes: ["TICKHIGH", "TICKLOW"],
+  },
+  ends_in_out: {
+    label: "Ends In/Out",
+    contractTypes: ["EXPIRYRANGE", "EXPIRYMISS"],
+  },
 };

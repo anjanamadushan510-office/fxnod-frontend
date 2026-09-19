@@ -58,9 +58,24 @@ export function isDigitMethod(method: MethodKey): boolean {
   return DIGIT_METHODS.includes(method);
 }
 
-/** Digit contracts settle on the next tick; everything else starts at five. */
+/**
+ * A contract whose length is a handful of ticks the engine bounds — Asians,
+ * Only Ups / Downs, High / Low Tick. Like digit bots, its length is picked in
+ * Setup from the allowed range rather than on the Duration step.
+ */
+export function tickRangeFor(method: MethodKey): [number, number] | undefined {
+  const strategyId = findMethod(method)?.strategyId;
+  return strategyId ? formShapeFor(strategyId).tickRange : undefined;
+}
+
+/**
+ * Digit contracts settle on the next tick, bounded tick contracts start at
+ * their shortest allowed length, and everything else starts at five.
+ */
 function defaultDuration(method: MethodKey): string {
-  return isDigitMethod(method) ? "1" : "5";
+  if (isDigitMethod(method)) return "1";
+  const range = tickRangeFor(method);
+  return String(range ? range[0] : 5);
 }
 
 export function newDraft(method: MethodKey = "even_odd"): BotDraft {
@@ -93,8 +108,8 @@ export function withMethod(draft: BotDraft, method: MethodKey): BotDraft {
         option?.fixedDirection ??
         // "auto" means "follow the indicators", which digit bots cannot do.
         (draft.form.direction === "auto" && isDigitMethod(method) ? "up" : draft.form.direction),
-      duration: defaultDuration(method),
-      durationUnit: "t",
+      duration: method === "ends_in_out" ? "2" : defaultDuration(method),
+      durationUnit: method === "ends_in_out" ? "m" : "t",
       autoDigit: false,
     },
   };
@@ -127,7 +142,7 @@ export function stepsFor(draft: BotDraft): Array<{ key: StepKey; label: string }
   return [
     { key: "method", label: "Method" },
     { key: "markets", label: "Markets" },
-    ...(!digit && formShapeFor(strategyId).duration
+    ...(!digit && formShapeFor(strategyId).duration && !tickRangeFor(draft.method)
       ? [{ key: "duration" as const, label: "Duration" }]
       : []),
     ...(!digit ? [{ key: "indicators" as const, label: "Indicators" }] : []),
@@ -279,13 +294,35 @@ export function draftProblems(
   if (form.direction === "auto" && !draft.indicators.some(isDirectionalIndicator)) {
     problems.push("“Let indicators decide” needs at least one indicator other than ATR.");
   }
-  if (draft.money === "martingale") {
+  const range = tickRangeFor(draft.method);
+  if (range) {
+    const ticks = Number.parseInt(form.duration, 10);
+    if (!(ticks >= range[0] && ticks <= range[1])) {
+      problems.push(
+        range[0] === range[1]
+          ? `This contract lasts exactly ${range[0]} ticks.`
+          : `This contract lasts ${range[0]} to ${range[1]} ticks.`,
+      );
+    }
+  }
+  const money = findMoneyOption(draft.money);
+  if (money?.multiplies) {
     const multiplier = Number.parseFloat(form.martingaleMultiplier);
     if (!Number.isFinite(multiplier) || multiplier <= 1) {
-      problems.push("The martingale multiplier must be greater than 1.");
+      problems.push("The stake multiplier must be greater than 1.");
     }
-    if (!isPositiveInt(form.martingaleMaxSteps)) {
-      problems.push("Martingale steps must be a whole number.");
+  }
+  if (money?.escalates && !isPositiveInt(form.martingaleMaxSteps)) {
+    problems.push("The number of steps must be a whole number.");
+  }
+  if (form.maxStake.trim()) {
+    if (!isPositiveDecimal(form.maxStake)) {
+      problems.push("The stake ceiling must be a positive amount, or empty.");
+    } else if (
+      isPositiveDecimal(form.stake) &&
+      Number.parseFloat(form.maxStake) < Number.parseFloat(form.stake)
+    ) {
+      problems.push("The stake ceiling cannot be below the starting stake.");
     }
   }
   return problems;
@@ -313,6 +350,18 @@ export function buildDraftRunRequest(
     { ...draft.form, martingaleEnabled: draft.money === "martingale" },
   );
   if (!result.request) return result;
+
+  // The staking mode, and only the knobs it uses. The engine's risk layer is
+  // what enforces all of it; nothing here sizes a trade.
+  const money = findMoneyOption(draft.money)!;
+  const limits = result.request.risk_limits;
+  limits.stake_mode = money.stakeMode;
+  limits.martingale_enabled = money.stakeMode === "martingale";
+  limits.martingale_multiplier = money.multiplies ? draft.form.martingaleMultiplier.trim() : undefined;
+  limits.martingale_max_steps = money.escalates
+    ? Number.parseInt(draft.form.martingaleMaxSteps, 10)
+    : undefined;
+  limits.max_stake_per_trade = draft.form.maxStake.trim() || undefined;
 
   // The workspace's indicator ids are not used here; the builder keeps full
   // specs. Digit bots never act on indicators, so none are sent for them.
