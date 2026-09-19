@@ -5,6 +5,7 @@ import type { Route } from "next";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChartPanel } from "@/components/options/chart/ChartPanel";
 import { IconSidebar } from "@/components/options/layout/IconSidebar";
+import { OptionsShell } from "@/components/options/layout/OptionsShell";
 import { TopBar } from "@/components/options/layout/TopBar";
 import { findMarket } from "@/components/options/market/catalog";
 import { useChartSettings } from "@/hooks/useChartSettings";
