@@ -436,7 +436,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
             } catch (e) {}
           } else if (d.tool === "vertical" && d.time != null) {
             try {
-              let lineX = chart.timeScale().timeToCoordinate(d.time as any);
+              let lineX = chart.timeScale().timeToCoordinate(d.time as any) as any;
               if (lineX === null) lineX = getExtrapolatedX(chart as any, series as any, d.time as any);
               if (lineX !== null && !isNaN(lineX) && Math.abs(lineX - clickX) < 15) {
                 hoveredId = d.id;
