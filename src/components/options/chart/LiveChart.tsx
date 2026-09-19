@@ -167,6 +167,11 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
     const drawingObjsRef = useRef<Map<string, DrawingObj>>(new Map());
     const pendingTrendRef = useRef<{ time: Time; price: number } | null>(null);
 
+    // -- Drag State Refs --
+    const isDraggingRef = useRef(false);
+    const draggingDrawingIdRef = useRef<string | null>(null);
+    const hoveredDrawingIdRef = useRef<string | null>(null);
+
     const [status, setStatus] = useState<FeedStatus>("idle");
     const [paneHeights, setPaneHeights] = useState<Record<string, number>>({});
     const [isResizing, setIsResizing] = useState(false);
@@ -347,11 +352,105 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
     }, [isDark, seriesKind]);
 
     // ── Drawing tools: cursor, click capture, and render sync ───────────────
+    // Crosshair move for hover detection and line dragging
+    useEffect(() => {
+      const chart = chartRef.current;
+      const series = seriesRef.current;
+      if (!chart || !series) return;
+
+      const handler = (param: MouseEventParams) => {
+        const store = useChartDrawings.getState();
+        const point = param.point;
+        if (!point) return;
+
+        if (isDraggingRef.current && draggingDrawingIdRef.current) {
+           const d = store.drawings.find(x => x.id === draggingDrawingIdRef.current);
+           if (!d) return;
+           const newPrice = series.coordinateToPrice(point.y);
+           const newTime = param.time ?? chart.timeScale().coordinateToTime(point.x);
+           
+           if (d.tool === "horizontal" && newPrice !== null) {
+              store.updateDrawing(d.id, { price: Number(newPrice) });
+           } else if (d.tool === "vertical" && newTime !== null) {
+              store.updateDrawing(d.id, { time: Number(newTime) });
+           }
+           return;
+        }
+
+        let hoveredId: string | null = null;
+        const clickY = point.y;
+        const clickX = point.x;
+        
+        for (const d of store.drawings.filter(d => d.symbol === symbol)) {
+          if (d.tool === "horizontal" && d.price != null) {
+            try {
+              const lineY = series.priceToCoordinate(d.price);
+              if (lineY !== null && !isNaN(lineY) && Math.abs(lineY - clickY) < 15) {
+                hoveredId = d.id;
+                break;
+              }
+            } catch (e) {}
+          } else if (d.tool === "vertical" && d.time != null) {
+            try {
+              const lineX = chart.timeScale().timeToCoordinate(d.time as any);
+              if (lineX !== null && !isNaN(lineX) && Math.abs(lineX - clickX) < 15) {
+                hoveredId = d.id;
+                break;
+              }
+            } catch (e) {}
+          }
+        }
+        
+        hoveredDrawingIdRef.current = hoveredId;
+        
+        if (containerRef.current) {
+           if (hoveredId && !activeToolRef.current) {
+             containerRef.current.style.cursor = "grab";
+           } else if (!activeToolRef.current) {
+             containerRef.current.style.cursor = "";
+           }
+        }
+      };
+      
+      chart.subscribeCrosshairMove(handler);
+      return () => chart.unsubscribeCrosshairMove(handler);
+    }, [symbol]);
+
+    // Pointer down handler for Drag Initiation
+    useEffect(() => {
+       const el = containerRef.current;
+       if (!el) return;
+
+       const onPointerDown = (e: PointerEvent) => {
+         if (hoveredDrawingIdRef.current && !activeToolRef.current) {
+            isDraggingRef.current = true;
+            draggingDrawingIdRef.current = hoveredDrawingIdRef.current;
+            e.stopPropagation();
+            el.style.cursor = "grabbing";
+         }
+       };
+       
+       const onPointerUp = () => {
+         if (isDraggingRef.current) {
+           isDraggingRef.current = false;
+           draggingDrawingIdRef.current = null;
+           el.style.cursor = hoveredDrawingIdRef.current ? "grab" : "";
+         }
+       };
+
+       el.addEventListener("pointerdown", onPointerDown, { capture: true });
+       window.addEventListener("pointerup", onPointerUp);
+       return () => {
+         el.removeEventListener("pointerdown", onPointerDown, { capture: true });
+         window.removeEventListener("pointerup", onPointerUp);
+       };
+    }, []);
+
     // Crosshair cursor while a tool is armed; clear a half-finished trend line
     // when the tool is disarmed.
     useEffect(() => {
       const el = containerRef.current;
-      if (el) el.style.cursor = activeTool ? "crosshair" : "";
+      if (el && activeTool) el.style.cursor = "crosshair";
       if (!activeTool) pendingTrendRef.current = null;
     }, [activeTool]);
 

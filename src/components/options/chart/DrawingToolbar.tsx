@@ -87,7 +87,7 @@ export function DrawingToolbar() {
   return (
     <div
       ref={toolbarRef}
-      className="absolute z-[100] flex items-center gap-1 rounded-lg border border-[#24344F] bg-[#10141f] p-1 shadow-xl"
+      className="absolute z-[100] flex items-center gap-1 rounded-lg border border-[#24344F] bg-[#10141f] px-1.5 py-1 shadow-xl"
       style={{
         left: position.x,
         top: position.y,
@@ -206,13 +206,6 @@ export function DrawingToolbar() {
         <Trash2 className="h-[15px] w-[15px]" />
       </button>
 
-      {/* Close button for toolbar itself (deselects drawing) */}
-      <button
-        onClick={() => setActiveDrawingId(null)}
-        className="ml-1 flex h-6 w-6 items-center justify-center rounded-md text-zinc-500 hover:text-white hover:bg-zinc-800"
-      >
-        ×
-      </button>
     </div>
   );
 }
