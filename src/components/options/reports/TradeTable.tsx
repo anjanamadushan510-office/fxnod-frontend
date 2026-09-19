@@ -1,9 +1,23 @@
 import { CalendarIcon, TrendingUp, TrendingDown } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { useGetTradeHistory } from "@/services/api/endpoints/trading/trading";
 import { findMarket } from "@/components/options/market/catalog";
 
 export function TradeTable() {
-  const { data: trades, isLoading } = useGetTradeHistory();
+  const searchParams = useSearchParams();
+  const currentParams = Object.fromEntries(searchParams.entries());
+
+  const { data: trades, isLoading } = useGetTradeHistory({
+    request: {
+      params: {
+        ...currentParams,
+        trade_type: undefined,
+        symbol: undefined,
+        chart_type: undefined,
+        interval: undefined
+      }
+    }
+  });
 
   const totalProfitLoss = trades?.reduce((acc, t) => {
     const stake = parseFloat(t.stake_amount);
