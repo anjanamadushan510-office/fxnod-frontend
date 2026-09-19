@@ -180,7 +180,7 @@ class VerticalRenderer implements IPrimitivePaneRenderer {
   }
 }
 
-function getExtrapolatedX(chart: AttachedChart, series: AttachedSeries, targetTime: Time): number | null {
+function getExtrapolatedX(chart: AttachedChart | null, series: AttachedSeries | null, targetTime: Time): number | null {
     let x = chart?.timeScale().timeToCoordinate(targetTime) ?? null;
     if (x === null && chart && series) {
         const data = series.data();
