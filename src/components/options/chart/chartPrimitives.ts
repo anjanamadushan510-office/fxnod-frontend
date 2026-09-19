@@ -68,6 +68,7 @@ class TrendRenderer implements IPrimitivePaneRenderer {
     }
     target.useBitmapCoordinateSpace((scope) => {
       const ctx = scope.context;
+      ctx.save();
       const hr = scope.horizontalPixelRatio;
       const vr = scope.verticalPixelRatio;
       ctx.lineWidth = this._width * vr;
@@ -96,6 +97,7 @@ class TrendRenderer implements IPrimitivePaneRenderer {
         ctx.arc(cx2, cy2, radius, 0, 2 * Math.PI);
         ctx.fill();
       }
+      ctx.restore();
     });
   }
 }
@@ -191,6 +193,7 @@ class VerticalRenderer implements IPrimitivePaneRenderer {
     if (this._x === null) return;
     target.useBitmapCoordinateSpace((scope) => {
       const ctx = scope.context;
+      ctx.save();
       const x = Math.round(this._x! * scope.horizontalPixelRatio);
       ctx.lineWidth = this._width * scope.verticalPixelRatio;
       ctx.strokeStyle = this._color;
@@ -200,6 +203,7 @@ class VerticalRenderer implements IPrimitivePaneRenderer {
       ctx.moveTo(x, 0);
       ctx.lineTo(x, scope.bitmapSize.height);
       ctx.stroke();
+      ctx.restore();
     });
   }
 }
