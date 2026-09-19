@@ -56,6 +56,7 @@ import type {
   BotPreset,
   BotPresetList,
   BotRun,
+  BotStartConflict,
   ClaimBotPackageRequest,
   ClaimBotPackageResponse,
   CreateBotPackageRequest,
@@ -1139,7 +1140,7 @@ export const startBotRun = (
   
 
 
-export const getStartBotRunMutationOptions = <TError = ErrorType<void>,
+export const getStartBotRunMutationOptions = <TError = ErrorType<void | BotStartConflict>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof startBotRun>>, TError,{data: BodyType<StartBotRunRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof startBotRun>>, TError,{data: BodyType<StartBotRunRequest>}, TContext> => {
 
@@ -1166,12 +1167,12 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type StartBotRunMutationResult = NonNullable<Awaited<ReturnType<typeof startBotRun>>>
     export type StartBotRunMutationBody = BodyType<StartBotRunRequest>
-    export type StartBotRunMutationError = ErrorType<void>
+    export type StartBotRunMutationError = ErrorType<void | BotStartConflict>
 
     /**
  * @summary Start a bot run
  */
-export const useStartBotRun = <TError = ErrorType<void>,
+export const useStartBotRun = <TError = ErrorType<void | BotStartConflict>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof startBotRun>>, TError,{data: BodyType<StartBotRunRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof startBotRun>>,

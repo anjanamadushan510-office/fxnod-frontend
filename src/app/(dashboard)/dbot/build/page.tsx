@@ -6,6 +6,7 @@ import { type Route } from "next";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { DerivAppConsentModal } from "@/components/bot/DerivAppConsentModal";
 import { SubscriptionGateModal } from "@/components/bot/SubscriptionGateModal";
 import { useMarketStore } from "@/components/options/market/marketStore";
 import { findMethod } from "@/components/bot/builder/catalog";
@@ -45,6 +46,7 @@ import {
   useStartBotRun,
   useUpdateBotPreset,
 } from "@/services/api/endpoints/bots/bots";
+import { BotStartConflictCode, type BotStartConflict } from "@/services/api/model";
 
 /**
  * /dbot/build — create or edit a bot, step by step.
@@ -95,6 +97,9 @@ function BotBuilder() {
     presetId && params.get("step") === "review" ? "review" : "method",
   );
   const [gateReason, setGateReason] = useState<string | null>(null);
+  // A real-money bot waiting on its one-time Deriv approval, and the saved
+  // bot to come back to afterwards.
+  const [consent, setConsent] = useState<{ appKey: string; returnTo: string } | null>(null);
 
   useEffect(() => {
     if (!presetQuery.data || draft) return;
@@ -198,7 +203,8 @@ function BotBuilder() {
       toast.error(errors[0] ?? "This bot is not ready to run.");
       return;
     }
-    if (!(await save(current))) return;
+    const savedId = await save(current);
+    if (!savedId) return;
 
     try {
       const res = await startRun.mutateAsync({ data: request });
@@ -217,6 +223,11 @@ function BotBuilder() {
       const reason = subscriptionRefusal(err);
       if (reason) {
         setGateReason(reason);
+        return;
+      }
+      const appKey = consentRequired(err);
+      if (appKey) {
+        setConsent({ appKey, returnTo: `/dbot/build?preset=${savedId}&step=review` });
         return;
       }
       toast.error(parseApiError(err, "The bot could not be started.").message);
@@ -318,6 +329,11 @@ function BotBuilder() {
           reason={gateReason ?? undefined}
           onClose={() => setGateReason(null)}
         />
+        <DerivAppConsentModal
+          appKey={consent?.appKey ?? null}
+          returnTo={consent?.returnTo ?? ""}
+          onClose={() => setConsent(null)}
+        />
       </div>
     </Shell>
   );
@@ -357,6 +373,18 @@ function Notice({
       </Link>
     </div>
   );
+}
+
+/**
+ * The app a real-money start is waiting on, when the engine refused it for a
+ * missing Deriv approval rather than for anything the user got wrong.
+ */
+function consentRequired(err: unknown): string | null {
+  const data = (err as { response?: { status?: number; data?: BotStartConflict } })?.response;
+  if (data?.status !== 409 || data.data?.code !== BotStartConflictCode.deriv_app_consent_required) {
+    return null;
+  }
+  return data.data.app_key ?? null;
 }
 
 /**

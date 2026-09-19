@@ -32,11 +32,12 @@ library, not a float.
  */
 
 /**
- * `currency` and `is_virtual` are accepted for compatibility with older clients and then IGNORED. Both are read from the row stored during the code exchange, from what Deriv itself reported. They used to be believed, which let an authenticated caller post a REAL account marked virtual — harmless while everything cost the same, and a free real-money bot once demo access became free.
+ * Present only when the conflict is a missing Deriv app approval.
  */
-export interface DerivLinkRequest {
-  /** Deriv loginid (e.g. CR123456). */
-  deriv_account_id: string;
-  currency?: string;
-  is_virtual?: boolean;
-}
+export type BotStartConflictCode = typeof BotStartConflictCode[keyof typeof BotStartConflictCode];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const BotStartConflictCode = {
+  deriv_app_consent_required: 'deriv_app_consent_required',
+} as const;

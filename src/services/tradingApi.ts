@@ -2,6 +2,7 @@ import { api } from "./api";
 import type { ContractTypeId } from "@/components/options/layout/contractTypes";
 import type {
   ConfirmResponse as GeneratedConfirmResponse,
+  DerivExchangeResponse,
   ProposalRequest as GeneratedProposalRequest,
   ProposalResponse as GeneratedProposalResponse,
   ProposalStreamFrame as GeneratedProposalStreamFrame,
@@ -18,12 +19,8 @@ import type {
 
 // ─── Deriv OAuth ────────────────────────────────────────────────────────────
 
-export interface DerivAccount {
-  account: string;
-  token: string;
-  currency: string;
-  isVirtual: boolean;
-}
+/** One account a Deriv grant covers, as the exchange endpoint returns it. */
+export type DerivAccount = DerivExchangeResponse["accounts"][number];
 
 export interface AccountStatus {
   linked: boolean;
@@ -37,7 +34,10 @@ export const derivApi = {
    * Start linking — Generates PKCE parameters, stores code_verifier in sessionStorage,
    * and returns the Deriv authorize URL + state.
    */
-  async authorize(redirectUri: string): Promise<{ authorize_url: string; state: string }> {
+  async authorize(
+    redirectUri: string,
+    app?: { clientId: string; scope: string },
+  ): Promise<{ authorize_url: string; state: string }> {
     // 1. Generate code_verifier
     const array = crypto.getRandomValues(new Uint8Array(64));
     const codeVerifier = Array.from(array)
@@ -58,12 +58,14 @@ export const derivApi = {
     sessionStorage.setItem('pkce_code_verifier', codeVerifier);
     sessionStorage.setItem('oauth_state', state);
 
-    const clientId = process.env.NEXT_PUBLIC_DERIV_APP_ID || '1089';
+    // A dBot app comes with its client id from the backend; dTrader uses the
+    // build-time one.
+    const clientId = app?.clientId ?? (process.env.NEXT_PUBLIC_DERIV_APP_ID || '1089');
     const authUrl = new URL('https://auth.deriv.com/oauth2/auth');
     authUrl.searchParams.set('response_type', 'code');
     authUrl.searchParams.set('client_id', clientId);
     authUrl.searchParams.set('redirect_uri', redirectUri);
-    authUrl.searchParams.set('scope', 'trade account_manage payment');
+    authUrl.searchParams.set('scope', app?.scope ?? 'trade account_manage payment');
     authUrl.searchParams.set('state', state);
     authUrl.searchParams.set('code_challenge', codeChallenge);
     authUrl.searchParams.set('code_challenge_method', 'S256');

@@ -33,6 +33,5 @@ library, not a float.
 import type { DerivExchangeResponseAccountsItem } from './derivExchangeResponseAccountsItem';
 
 export interface DerivExchangeResponse {
-  access_token: string;
   accounts: DerivExchangeResponseAccountsItem[];
 }

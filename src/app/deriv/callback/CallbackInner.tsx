@@ -4,27 +4,26 @@ import type { Route } from "next";
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { useDerivLink } from "@/services/api/endpoints/trading/trading";
-import { derivStatusKey } from "@/hooks/useDerivStatus";
 import {
-  derivApi,
-  type DerivAccount,
-} from "@/services/tradingApi";
-import { api } from "@/services/api";
-import { useAuthStore } from "@/stores/authStore";
+  derivExchangeAppCode,
+  derivExchangeCode,
+  getDerivListAppsQueryKey,
+  useDerivLink,
+} from "@/services/api/endpoints/trading/trading";
+import { derivStatusKey } from "@/hooks/useDerivStatus";
+import { derivApi, type DerivAccount } from "@/services/tradingApi";
 
 /** sessionStorage key written by whoever calls derivApi.authorize() before redirect. */
 export const DERIV_STATE_KEY = "deriv_link_state";
 /** sessionStorage key holding the in-app path to return to after linking. */
 export const DERIV_RETURN_TO_KEY = "deriv_return_to";
 /**
- * sessionStorage key recording why the OAuth flow was started, captured
- * deterministically at click time (not re-derived in the callback, which would
- * race the auth bootstrap):
- *   "login" — logged-out visitor; Deriv mints an FXNod session
- *   "link"  — already-authenticated user linking/switching a trading account
+ * sessionStorage key naming the dBot app being approved. Absent for the
+ * dTrader link. Stored beside the PKCE verifier so a callback can only ever be
+ * exchanged against the app it was started for.
  */
-export const DERIV_INTENT_KEY = "deriv_oauth_intent";
+export const DERIV_APP_KEY = "deriv_app_key";
+const PKCE_VERIFIER_KEY = "pkce_code_verifier";
 
 type Phase =
   | { name: "loading" }
@@ -32,26 +31,36 @@ type Phase =
   | {
       name: "pick";
       accounts: DerivAccount[];
-      accessToken: string;
       /** ID of the currently linked account, if any — shown as a warning. */
       currentAccountId: string | undefined;
     }
   | { name: "linking" }
-  | { name: "done"; accountId: string };
+  | { name: "done"; title: string; body: React.ReactNode };
+
+/** Removes everything a round-trip left in sessionStorage. */
+function clearOAuthSession() {
+  for (const key of [DERIV_STATE_KEY, DERIV_APP_KEY, PKCE_VERIFIER_KEY, DERIV_RETURN_TO_KEY]) {
+    sessionStorage.removeItem(key);
+  }
+}
+
+function errorDetail(e: unknown): string | undefined {
+  return (e as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+}
 
 export function CallbackInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const queryClient = useQueryClient();
   const linkMutation = useDerivLink();
-  const loginWithDeriv = useAuthStore((s) => s.loginWithDeriv);
   const [phase, setPhase] = useState<Phase>({ name: "loading" });
   // Capture state once on mount — don't re-read on every render.
   const oauthStateRef = useRef<string | null>(null);
 
   useEffect(() => {
     oauthStateRef.current = sessionStorage.getItem(DERIV_STATE_KEY);
-    const codeVerifier = sessionStorage.getItem('pkce_code_verifier');
+    const codeVerifier = sessionStorage.getItem(PKCE_VERIFIER_KEY);
+    const appKey = sessionStorage.getItem(DERIV_APP_KEY);
 
     if (!oauthStateRef.current || !codeVerifier) {
       setPhase({
@@ -62,8 +71,8 @@ export function CallbackInner() {
       return;
     }
 
-    const code = searchParams.get('code');
-    const stateParam = searchParams.get('state');
+    const code = searchParams.get("code");
+    const stateParam = searchParams.get("state");
     if (!code || stateParam !== oauthStateRef.current) {
       setPhase({
         name: "error",
@@ -72,82 +81,91 @@ export function CallbackInner() {
       });
       return;
     }
+    const redirectUri = window.location.origin + "/deriv/callback";
+
+    if (appKey) {
+      // One-time approval of a dBot app: nothing to pick, the account the
+      // bot trades is already selected. Back to the bot the user was starting.
+      const returnTo = safeReturnPath(sessionStorage.getItem(DERIV_RETURN_TO_KEY));
+      derivExchangeAppCode(appKey, { code, code_verifier: codeVerifier, redirect_uri: redirectUri })
+        .then(async () => {
+          clearOAuthSession();
+          await queryClient.invalidateQueries({ queryKey: getDerivListAppsQueryKey() });
+          setPhase({
+            name: "done",
+            title: "Bot approved",
+            body: "Deriv has approved this bot. Press Start to run it. Redirecting…",
+          });
+          setTimeout(() => router.push(returnTo), 1500);
+        })
+        .catch((e) => {
+          clearOAuthSession();
+          setPhase({
+            name: "error",
+            message: errorDetail(e) ?? "Deriv approval failed. Please try again.",
+          });
+        });
+      return;
+    }
 
     // Check whether the user already has a linked account.
     derivApi
       .status()
-      .then((status) => {
-        // Exchange code for token and get accounts
-        return api.post("/api/v1/deriv/oauth/exchange", {
+      .then((status) =>
+        derivExchangeCode({
           code,
           code_verifier: codeVerifier,
-          state: oauthStateRef.current,
-          redirect_uri: window.location.origin + "/deriv/callback",
-        }).then(res => {
-          const accounts = res.data.accounts as DerivAccount[];
-          const accessToken = res.data.access_token as string;
-          if (!accounts || accounts.length === 0) {
+          state: oauthStateRef.current ?? "",
+          redirect_uri: redirectUri,
+        }).then(({ accounts }) => {
+          if (accounts.length === 0) {
             setPhase({ name: "error", message: "No accounts found in your Deriv profile." });
             return;
           }
           setPhase({
             name: "pick",
             accounts,
-            accessToken,
             currentAccountId: status.linked ? status.deriv_account_id : undefined,
           });
-        });
-      })
+        }),
+      )
       .catch((e) => {
-        setPhase({ name: "error", message: e?.response?.data?.detail ?? "Failed to exchange authorization code." });
+        setPhase({
+          name: "error",
+          message: errorDetail(e) ?? "Failed to exchange authorization code.",
+        });
       });
-  }, [searchParams]);
+  }, [searchParams, queryClient, router]);
 
   async function handleSelect(account: DerivAccount) {
     if (phase.name !== "pick") return;
-    const accessToken = phase.accessToken;
-    const state = oauthStateRef.current;
-    if (!state) {
-      setPhase({ name: "error", message: "OAuth state missing. Please try again." });
-      return;
-    }
     setPhase({ name: "linking" });
     try {
-      const payload = {
-        state,
-        code: "", // Legacy compat
-        code_verifier: "", // Legacy compat
-        token: accessToken,
-        deriv_account_id: account.account,
-        currency: account.currency,
-        is_virtual: account.isVirtual,
-      };
+      // The server stored every account at exchange time and reads the one
+      // chosen here from that row — the request carries no token.
+      await linkMutation.mutateAsync({ data: { deriv_account_id: account.account } });
 
-      if (sessionStorage.getItem(DERIV_INTENT_KEY) === "link") {
-        // Already authenticated → link/switch the trading account.
-        await linkMutation.mutateAsync({ data: payload });
-      } else {
-        // Logged-out → Deriv OAuth IS the login: mint the FXNod session and
-        // flip the auth store to authenticated (sets the httpOnly cookie).
-        await loginWithDeriv(payload);
-      }
-
-      sessionStorage.removeItem(DERIV_STATE_KEY);
-      sessionStorage.removeItem(DERIV_INTENT_KEY);
       // Return the user to wherever they started the flow (default: dTrader).
       const returnTo = safeReturnPath(sessionStorage.getItem(DERIV_RETURN_TO_KEY));
-      sessionStorage.removeItem(DERIV_RETURN_TO_KEY);
+      clearOAuthSession();
       // Refresh the shared link-status cache so the TopBar control + the order
       // panels' trade gate flip to "linked" immediately.
       await queryClient.invalidateQueries({ queryKey: derivStatusKey });
-      setPhase({ name: "done", accountId: account.account });
+      setPhase({
+        name: "done",
+        title: "Account linked",
+        body: (
+          <>
+            <span className="font-mono font-semibold text-ink">{account.account}</span> is now
+            your active trading account. Redirecting…
+          </>
+        ),
+      });
       setTimeout(() => router.push(returnTo), 1800);
     } catch (e) {
-      const detail = (e as { response?: { data?: { detail?: string } } })?.response
-        ?.data?.detail;
       setPhase({
         name: "error",
-        message: detail ?? "Failed to link account. Please try again.",
+        message: errorDetail(e) ?? "Failed to link account. Please try again.",
       });
     }
   }
@@ -163,7 +181,7 @@ export function CallbackInner() {
   if (phase.name === "done") {
     return (
       <PageShell>
-        <SuccessCard accountId={phase.accountId} />
+        <SuccessCard title={phase.title} body={phase.body} />
       </PageShell>
     );
   }
@@ -251,7 +269,7 @@ function ErrorCard({ message }: { message: string }) {
   );
 }
 
-function SuccessCard({ accountId }: { accountId: string }) {
+function SuccessCard({ title, body }: { title: string; body: React.ReactNode }) {
   return (
     <Card>
       <div className="flex flex-col gap-3">
@@ -259,12 +277,9 @@ function SuccessCard({ accountId }: { accountId: string }) {
           <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e8f5ec] text-[#2d7a46] text-[16px] font-bold">
             ✓
           </span>
-          <h1 className="text-[17px] font-bold text-ink">Account linked</h1>
+          <h1 className="text-[17px] font-bold text-ink">{title}</h1>
         </div>
-        <p className="text-[13px] text-ink-3">
-          <span className="font-mono font-semibold text-ink">{accountId}</span> is now your
-          active trading account. Redirecting…
-        </p>
+        <p className="text-[13px] text-ink-3">{body}</p>
       </div>
     </Card>
   );
