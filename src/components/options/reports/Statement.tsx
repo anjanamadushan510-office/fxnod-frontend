@@ -126,7 +126,7 @@ export function Statement() {
                   <div className="h-6 w-6 rounded bg-gray-800 flex items-center justify-center text-xs">V</div>
                   <div className="flex flex-col">
                     <span className="font-medium text-xs truncate max-w-[150px]">{marketName}</span>
-                    <span className={`flex items-center gap-1 ${isRise ? "text-opt-rise text-[11px]" : "text-opt-fall text-[11px]"}`}>
+                    <span className={`flex items-center gap-1 ${isRise ? "text-emerald-500 text-[11px]" : "text-red-500 text-[11px]"}`}>
                       {isRise ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                       {item.action}
                     </span>
@@ -144,12 +144,12 @@ export function Statement() {
                 </div>
                 <div className="font-medium">
                   {item.transactionType === "Buy" ? (
-                    <span className="text-opt-fall">Buy</span>
+                    <span className="text-red-500">Buy</span>
                   ) : (
-                    <span className="text-opt-rise">Sell</span>
+                    <span className="text-emerald-500">Sell</span>
                   )}
                 </div>
-                <div className={`text-right font-medium ${item.creditDebit >= 0 ? "text-opt-rise" : "text-opt-fall"}`}>
+                <div className={`text-right font-medium ${item.creditDebit >= 0 ? "text-emerald-500" : "text-red-500"}`}>
                   {cdSign}{cdValue}
                 </div>
                 <div className="text-right font-medium text-white">{item.balance}</div>

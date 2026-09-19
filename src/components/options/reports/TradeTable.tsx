@@ -79,7 +79,7 @@ export function TradeTable() {
                   <div className="h-6 w-6 rounded bg-gray-800 flex items-center justify-center text-xs">V</div>
                   <div className="flex flex-col">
                     <span className="font-medium text-xs truncate max-w-[150px]">{marketName}</span>
-                    <span className={`flex items-center gap-1 ${isRise ? "text-opt-rise text-[11px]" : "text-opt-fall text-[11px]"}`}>
+                    <span className={`flex items-center gap-1 ${isRise ? "text-emerald-500 text-[11px]" : "text-red-500 text-[11px]"}`}>
                       {isRise ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                       {trade.side}
                     </span>
@@ -101,7 +101,7 @@ export function TradeTable() {
                   {sellTimeStr && <span className="text-zinc-500">{sellTimeStr} GMT</span>}
                 </div>
                 <div className="text-right text-zinc-300">{payout.toFixed(2)}</div>
-                <div className={`text-right font-medium ${isWin ? "text-opt-rise" : "text-opt-fall"}`}>
+                <div className={`text-right font-medium ${isWin ? "text-emerald-500" : "text-red-500"}`}>
                   {plSign}{plValue}
                 </div>
               </div>
@@ -113,7 +113,7 @@ export function TradeTable() {
       {/* Footer */}
       <div className="flex items-center justify-between border-t border-gray-800 p-4 font-medium">
         <div className="text-zinc-400">Profit/loss on the last 50 contracts</div>
-        <div className={`text-[16px] ${totalProfitLoss >= 0 ? "text-opt-rise" : "text-opt-fall"}`}>
+        <div className={`text-[16px] ${totalProfitLoss >= 0 ? "text-emerald-500" : "text-red-500"}`}>
           {totalProfitLoss >= 0 ? "+" : "-"}{Math.abs(totalProfitLoss).toFixed(2)} USD
         </div>
       </div>
