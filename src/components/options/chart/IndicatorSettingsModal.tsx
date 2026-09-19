@@ -150,9 +150,9 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
             onChange={(e) => handleParamChange(key, e.target.value)}
             className="rounded border border-opt-line bg-opt-bg-sunk px-2 py-1 text-[13px] text-opt-ink outline-none focus:border-opt-ink"
           >
-            <option value="SMA">Simple</option>
-            <option value="EMA">Exponential</option>
-            <option value="WMA">Weighted</option>
+            <option className="bg-opt-bg-sunk" value="SMA">Simple</option>
+            <option className="bg-opt-bg-sunk" value="EMA">Exponential</option>
+            <option className="bg-opt-bg-sunk" value="WMA">Weighted</option>
           </select>
         </div>
       );
@@ -166,8 +166,8 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
             onChange={(e) => handleParamChange(key, e.target.value)}
             className="rounded border border-opt-line bg-opt-bg-sunk px-2 py-1 text-[13px] text-opt-ink outline-none focus:border-opt-ink"
           >
-            <option value="percent">Percentage</option>
-            <option value="points">Points</option>
+            <option className="bg-opt-bg-sunk" value="percent">Percentage</option>
+            <option className="bg-opt-bg-sunk" value="points">Points</option>
           </select>
         </div>
       );
@@ -179,14 +179,14 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
           <select
             value={value}
             onChange={(e) => handleParamChange(key, e.target.value)}
-            className="w-full rounded bg-transparent px-2 py-1 text-[13px] text-opt-ink outline-none"
+            className="w-full rounded bg-opt-bg-sunk px-2 py-1 text-[13px] text-opt-ink outline-none border border-opt-line focus:border-opt-ink"
           >
-            <option value="Close">Close</option>
-            <option value="Open">Open</option>
-            <option value="High">High</option>
-            <option value="Low">Low</option>
-            <option value="Hl/2">Hl/2</option>
-            <option value="Hlc/3">Hlc/3</option>
+            <option className="bg-opt-bg-sunk" value="Close">Close</option>
+            <option className="bg-opt-bg-sunk" value="Open">Open</option>
+            <option className="bg-opt-bg-sunk" value="High">High</option>
+            <option className="bg-opt-bg-sunk" value="Low">Low</option>
+            <option className="bg-opt-bg-sunk" value="Hl/2">Hl/2</option>
+            <option className="bg-opt-bg-sunk" value="Hlc/3">Hlc/3</option>
           </select>
         </div>
       );
@@ -198,14 +198,14 @@ export function IndicatorSettingsModal({ indicatorId, onClose }: { indicatorId: 
           <select
             value={value}
             onChange={(e) => handleParamChange(key, e.target.value)}
-            className="w-full rounded bg-transparent px-2 py-1 text-[13px] text-opt-ink outline-none"
+            className="w-full rounded bg-opt-bg-sunk px-2 py-1 text-[13px] text-opt-ink outline-none border border-opt-line focus:border-opt-ink"
           >
-            <option value="Simple">Simple</option>
-            <option value="Exponential">Exponential</option>
-            <option value="Weighted">Weighted</option>
-            <option value="Hull">Hull</option>
-            <option value="Zero Lag">Zero Lag</option>
-            <option value="Time Series">Time Series</option>
+            <option className="bg-opt-bg-sunk" value="Simple">Simple</option>
+            <option className="bg-opt-bg-sunk" value="Exponential">Exponential</option>
+            <option className="bg-opt-bg-sunk" value="Weighted">Weighted</option>
+            <option className="bg-opt-bg-sunk" value="Hull">Hull</option>
+            <option className="bg-opt-bg-sunk" value="Zero Lag">Zero Lag</option>
+            <option className="bg-opt-bg-sunk" value="Time Series">Time Series</option>
           </select>
         </div>
       );
