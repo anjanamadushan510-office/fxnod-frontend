@@ -92,7 +92,7 @@ export function DrawingToolsPanel({ onClose }: { onClose: () => void }) {
             type="button"
             aria-label="Close"
             onClick={onClose}
-            className="grid h-8 w-8 place-items-center rounded-lg text-opt-ink-3 transition-colors hover:bg-[#1a2332] hover:text-opt-ink"
+            className="grid h-8 w-8 place-items-center rounded-lg text-opt-ink-3 transition-colors hover:bg-opt-bg-hover hover:text-opt-ink"
           >
             <X className="h-[18px] w-[18px]" />
           </button>
@@ -131,7 +131,7 @@ export function DrawingToolsPanel({ onClose }: { onClose: () => void }) {
                   {active.map((d) => (
                     <div
                       key={d.id}
-                      className="group flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-[#1a2332]"
+                      className="group flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-opt-bg-hover"
                     >
                       <span className="flex h-5 w-6 flex-shrink-0 items-center justify-center">
                         {TOOL_PREVIEW[d.tool]}
@@ -159,7 +159,7 @@ export function DrawingToolsPanel({ onClose }: { onClose: () => void }) {
                     key={tool.id}
                     type="button"
                     onClick={() => selectTool(tool.id)}
-                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-[#1a2332]"
+                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-opt-bg-hover"
                   >
                     <span className="flex h-5 w-6 flex-shrink-0 items-center justify-center">
                       {tool.preview}
@@ -196,8 +196,8 @@ function NavTab({
       className={cn(
         "relative flex items-center gap-2 rounded-lg px-2.5 py-2 text-left text-[13px] font-medium transition-colors",
         active
-          ? "bg-[#1a2332] text-white"
-          : "text-zinc-400 hover:text-white",
+          ? "bg-opt-bg-hover text-opt-ink"
+          : "text-opt-ink-3 hover:text-opt-ink",
       )}
     >
       {/* §4.3.1: red left-border accent on the active tab */}
