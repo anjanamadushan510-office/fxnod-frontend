@@ -94,14 +94,14 @@ export function DashboardActivity() {
               const isPositive = tx.direction === "credit";
               
               return (
-                <div key={tx.id} className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-ink mb-1 capitalize">
-                      {tx.description || tx.transaction_type?.replace(/_/g, ' ')}
+                <div key={tx.id} className="flex items-center justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-ink mb-0.5 capitalize truncate">
+                      {tx.transaction_type ? tx.transaction_type.replace(/_/g, ' ') : tx.description || "Transaction"}
                     </p>
-                    <p className="text-xs text-ink-3">{formatDate(tx.created_at)}</p>
+                    <p className="text-xs text-ink-3 truncate">{formatDate(tx.created_at)}</p>
                   </div>
-                  <span className={`text-sm font-medium tabular-nums ${isPositive ? 'text-green-400' : 'text-ink-2'}`}>
+                  <span className={`text-sm font-medium tabular-nums shrink-0 ${isPositive ? 'text-green-400' : 'text-ink-2'}`}>
                     {isPositive ? '+' : '-'}{fmtUSD(amount)}
                   </span>
                 </div>

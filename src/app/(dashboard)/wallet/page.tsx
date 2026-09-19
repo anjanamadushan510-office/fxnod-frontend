@@ -65,8 +65,8 @@ export default function WalletPage() {
               return (
                 <div key={tx.id} className="flex items-start justify-between gap-3 px-5 py-3.5 min-w-0 hover:bg-surface-2 transition-colors">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm truncate text-ink capitalize">{tx.description || tx.transaction_type?.replace(/_/g, ' ')}</p>
-                    <p className="text-[11px] text-ink-3 mt-0.5">{formatDate(tx.created_at)}</p>
+                    <p className="text-sm truncate text-ink capitalize">{tx.transaction_type ? tx.transaction_type.replace(/_/g, ' ') : tx.description || "Transaction"}</p>
+                    <p className="text-[11px] text-ink-3 mt-0.5 truncate">{formatDate(tx.created_at)}</p>
                   </div>
                   <p className={`tabular-nums text-sm shrink-0 ${isPositive ? 'text-green-400' : 'text-ink-2'}`}>
                     {isPositive ? '+' : '-'}{fmtUSD(amount)}
