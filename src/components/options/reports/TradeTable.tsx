@@ -1,5 +1,6 @@
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, TrendingUp, TrendingDown } from "lucide-react";
 import { useGetTradeHistory } from "@/services/api/endpoints/trading/trading";
+import { findMarket } from "@/components/options/market/catalog";
 
 export function TradeTable() {
   const { data: trades, isLoading } = useGetTradeHistory();
@@ -51,40 +52,57 @@ export function TradeTable() {
             const payout = parseFloat(trade.final_payout_amount || "0");
             const profitLoss = payout - stake;
             const isWin = profitLoss >= 0;
-            
             const buyDate = new Date(trade.created_at);
-            const buyTimeStr = buyDate.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const buyDayStr = buyDate.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'GMT' });
+            const buyTimeStr = buyDate.toLocaleString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'GMT' });
             
-            let sellTimeStr = "-";
+            let sellDayStr = "-";
+            let sellTimeStr = "";
             if (trade.duration_seconds && trade.outcome) {
               const sellDate = new Date(buyDate.getTime() + trade.duration_seconds * 1000);
-              sellTimeStr = sellDate.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+              sellDayStr = sellDate.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'GMT' });
+              sellTimeStr = sellDate.toLocaleString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'GMT' });
             }
 
             const side = trade.side.toLowerCase();
+            const isRise = side === "rise" || side === "buy" || side === "up";
+            const marketName = findMarket(trade.symbol)?.name || trade.symbol;
+            const plSign = profitLoss >= 0 ? "+" : "-";
+            const plValue = Math.abs(profitLoss).toFixed(2);
 
             return (
               <div 
                 key={trade.id} 
                 className="grid grid-cols-[2fr_1.5fr_1fr_1.5fr_1fr_1.5fr_1fr_1.5fr] gap-4 border-b border-gray-800/50 p-4 items-center hover:bg-gray-800/20 transition-colors"
               >
-                <div className="flex items-center gap-2 text-white">
+                <div className="flex items-center gap-2 text-white" title={marketName}>
                   <div className="h-6 w-6 rounded bg-gray-800 flex items-center justify-center text-xs">V</div>
                   <div className="flex flex-col">
-                    <span className="font-medium text-xs truncate max-w-[150px]">{trade.frontend_contract_type}</span>
-                    <span className={side === "rise" || side === "buy" || side === "up" ? "text-opt-rise text-[11px]" : "text-opt-fall text-[11px]"}>
+                    <span className="font-medium text-xs truncate max-w-[150px]">{marketName}</span>
+                    <span className={`flex items-center gap-1 ${isRise ? "text-opt-rise text-[11px]" : "text-opt-fall text-[11px]"}`}>
+                      {isRise ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                       {trade.side}
                     </span>
                   </div>
                 </div>
                 <div className="text-zinc-300">{trade.deriv_contract_id}</div>
-                <div className="text-zinc-300">{trade.currency}</div>
-                <div className="text-zinc-300 whitespace-nowrap">{buyTimeStr}</div>
+                <div>
+                  <span className="bg-gray-700/50 text-gray-300 px-2 py-0.5 rounded text-[11px] font-bold">
+                    {trade.currency}
+                  </span>
+                </div>
+                <div className="flex flex-col whitespace-nowrap">
+                  <span>{buyDayStr}</span>
+                  <span className="text-zinc-500">{buyTimeStr} GMT</span>
+                </div>
                 <div className="text-right text-zinc-300">{stake.toFixed(2)}</div>
-                <div className="text-zinc-300 whitespace-nowrap">{sellTimeStr}</div>
+                <div className="flex flex-col whitespace-nowrap">
+                  <span>{sellDayStr}</span>
+                  {sellTimeStr && <span className="text-zinc-500">{sellTimeStr} GMT</span>}
+                </div>
                 <div className="text-right text-zinc-300">{payout.toFixed(2)}</div>
                 <div className={`text-right font-medium ${isWin ? "text-opt-rise" : "text-opt-fall"}`}>
-                  {profitLoss > 0 ? "+" : ""}{profitLoss.toFixed(2)}
+                  {plSign}{plValue}
                 </div>
               </div>
             );
@@ -96,7 +114,7 @@ export function TradeTable() {
       <div className="flex items-center justify-between border-t border-gray-800 p-4 font-medium">
         <div className="text-zinc-400">Profit/loss on the last 50 contracts</div>
         <div className={`text-[16px] ${totalProfitLoss >= 0 ? "text-opt-rise" : "text-opt-fall"}`}>
-          {totalProfitLoss > 0 ? "+" : ""}{totalProfitLoss.toFixed(2)} USD
+          {totalProfitLoss >= 0 ? "+" : "-"}{Math.abs(totalProfitLoss).toFixed(2)} USD
         </div>
       </div>
     </div>

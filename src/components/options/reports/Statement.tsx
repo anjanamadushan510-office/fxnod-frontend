@@ -1,5 +1,6 @@
-import { CalendarIcon, ChevronDownIcon } from "lucide-react";
+import { CalendarIcon, ChevronDownIcon, TrendingUp, TrendingDown } from "lucide-react";
 import { useGetTradeHistory } from "@/services/api/endpoints/trading/trading";
+import { findMarket } from "@/components/options/market/catalog";
 import { useMemo } from "react";
 
 export function Statement() {
@@ -107,21 +108,40 @@ export function Statement() {
         ) : (
           statementItems.map((item, idx) => {
             const side = item.action.toLowerCase();
+            const isRise = side === "rise" || side === "buy" || side === "up";
+            const marketName = findMarket(item.typeId)?.name || item.typeId;
+            
+            const dayStr = item.time.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'GMT' });
+            const timeStr = item.time.toLocaleString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'GMT' });
+            
+            const cdSign = item.creditDebit >= 0 ? "+" : "-";
+            const cdValue = Math.abs(item.creditDebit).toFixed(2);
+
             return (
               <div 
                 key={`${item.id}-${item.transactionType}-${idx}`}
                 className="grid grid-cols-[2fr_1.5fr_1fr_1.5fr_1.5fr_1.5fr_1.5fr] gap-4 border-b border-gray-800/50 p-4 items-center hover:bg-gray-800/20 transition-colors"
               >
-                <div className="flex items-center gap-2 text-white">
+                <div className="flex items-center gap-2 text-white" title={marketName}>
                   <div className="h-6 w-6 rounded bg-gray-800 flex items-center justify-center text-xs">V</div>
                   <div className="flex flex-col">
-                    <span className="font-medium text-xs truncate max-w-[150px]">{item.typeName}</span>
-                    <span className={side === "sell" || side === "fall" || side === "down" ? "text-opt-fall text-[11px]" : "text-opt-rise text-[11px]"}>{item.action}</span>
+                    <span className="font-medium text-xs truncate max-w-[150px]">{marketName}</span>
+                    <span className={`flex items-center gap-1 ${isRise ? "text-opt-rise text-[11px]" : "text-opt-fall text-[11px]"}`}>
+                      {isRise ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                      {item.action}
+                    </span>
                   </div>
                 </div>
                 <div className="text-zinc-300">{item.id}</div>
-                <div className="text-zinc-300">{item.currency}</div>
-                <div className="text-zinc-300 whitespace-nowrap">{item.time.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}</div>
+                <div>
+                  <span className="bg-gray-700/50 text-gray-300 px-2 py-0.5 rounded text-[11px] font-bold">
+                    {item.currency}
+                  </span>
+                </div>
+                <div className="flex flex-col whitespace-nowrap">
+                  <span>{dayStr}</span>
+                  <span className="text-zinc-500">{timeStr} GMT</span>
+                </div>
                 <div className="font-medium">
                   {item.transactionType === "Buy" ? (
                     <span className="text-opt-fall">Buy</span>
@@ -130,7 +150,7 @@ export function Statement() {
                   )}
                 </div>
                 <div className={`text-right font-medium ${item.creditDebit >= 0 ? "text-opt-rise" : "text-opt-fall"}`}>
-                  {item.creditDebit > 0 ? "+" : ""}{item.creditDebit.toFixed(2)}
+                  {cdSign}{cdValue}
                 </div>
                 <div className="text-right font-medium text-white">{item.balance}</div>
               </div>
