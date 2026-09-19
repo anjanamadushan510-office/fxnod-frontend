@@ -24,6 +24,25 @@ export interface LinePoint {
 type AttachedChart = SeriesAttachedParameter<Time>["chart"];
 type AttachedSeries = SeriesAttachedParameter<Time>["series"];
 
+export function formatTimeDerivStyle(time: Time): string {
+  if (typeof time === "number") {
+    const d = new Date(time * 1000);
+    const day = d.getDate().toString().padStart(2, "0");
+    const month = d.toLocaleString("en-US", { month: "short" });
+    const year = d.getFullYear().toString().slice(-2);
+    const hours = d.getHours().toString().padStart(2, "0");
+    const minutes = d.getMinutes().toString().padStart(2, "0");
+    return `${day} ${month} '${year} ${hours}:${minutes}`;
+  } else if (typeof time === "object" && time !== null && "year" in time) {
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const day = String(time.day).padStart(2, "0");
+    const month = monthNames[time.month - 1] || "Jan";
+    const year = String(time.year).slice(-2);
+    return `${day} ${month} '${year}`;
+  }
+  return String(time);
+}
+
 // ─── Trend line (two points) ─────────────────────────────────────────────────
 
 class TrendRenderer implements IPrimitivePaneRenderer {
@@ -187,16 +206,7 @@ class VerticalTimeAxisView implements ISeriesPrimitiveAxisView {
     const chart = this._source.chart;
     if (!chart) return;
     this._x = chart.timeScale().timeToCoordinate(this._source.time);
-    
-    const t = this._source.time;
-    if (typeof t === "number") {
-      const d = new Date(t * 1000);
-      this._text = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    } else if (typeof t === "object" && t !== null && 'year' in t) {
-      this._text = `${t.year}-${String(t.month).padStart(2, '0')}-${String(t.day).padStart(2, '0')}`;
-    } else {
-      this._text = String(t);
-    }
+    this._text = formatTimeDerivStyle(this._source.time);
   }
 
   coordinate(): number { return this._x ?? 0; }

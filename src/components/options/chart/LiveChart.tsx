@@ -52,7 +52,7 @@ import {
 import { CHART_COLORS } from "./chartColors";
 import { EndPriceLinePlugin } from "./plugins/EndPriceLinePlugin";
 import { IchimokuCloudPlugin } from "./plugins/IchimokuCloudPlugin";
-import { TrendPrimitive, VerticalPrimitive } from "./chartPrimitives";
+import { TrendPrimitive, VerticalPrimitive, formatTimeDerivStyle } from "./chartPrimitives";
 import type { ChartTypeId, IntervalId } from "./chartSettings";
 import { useChartIndicators, type IndicatorConfig } from "@/stores/useChartIndicators";
 import { 
@@ -216,6 +216,11 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
           background: { type: ColorType.Solid, color: "transparent" },
           textColor: inkFaint,
           attributionLogo: false,
+        },
+        localization: {
+          timeFormatter: (businessDayOrTimestamp: Time) => {
+            return formatTimeDerivStyle(businessDayOrTimestamp);
+          },
         },
         grid: {
           vertLines: { color: line, style: 1 },
