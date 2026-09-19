@@ -80,7 +80,7 @@ function TabButton({
     <button
       onClick={onClick}
       className={`flex-1 rounded-md py-2 text-xs font-semibold transition-all ${
-        active ? "bg-[#24344F] text-ink shadow-sm" : "text-ink-3 hover:text-ink-2"
+        active ? "bg-ink text-surface shadow-sm" : "text-ink-3 hover:text-ink-2"
       }`}
     >
       {children}
@@ -394,7 +394,7 @@ function BinancePayDeposit({ onClose }: { onClose: () => void }) {
       />
       {error && <p className="mb-4 text-sm text-red-500">{messageFor(error)}</p>}
       <Button
-        className="w-full bg-white text-surface hover:opacity-80 transition-opacity"
+        className="w-full bg-ink text-surface hover:opacity-80 transition-opacity"
         onClick={() => mutate({ data: { amount, currency: "USDT" } })}
         disabled={isPending || !amount || Number(amount) <= 0}
       >
@@ -468,7 +468,7 @@ function ManualDepositClaim() {
       )}
 
       <Button
-        className="w-full bg-white text-surface hover:opacity-80 transition-opacity"
+        className="w-full bg-ink text-surface hover:opacity-80 transition-opacity"
         onClick={submit}
         disabled={
           isPending || txHash.trim().length < 10 || !amount || Number(amount) <= 0
