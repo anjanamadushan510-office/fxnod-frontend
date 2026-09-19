@@ -426,7 +426,6 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
               if (newTime !== null && newTime !== dragTempStateRef.current.time) {
                  dragTempStateRef.current.time = newTime;
                  existing.primitive.updateTime(newTime as any);
-                 series.applyOptions({}); // force redraw
               }
            } else if (d.tool === "trend" && existing.kind === "primitive" && existing.primitive instanceof TrendPrimitive) {
                const part = dragTempStateRef.current.part;
@@ -442,7 +441,6 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
                            const ptIndex = part === "start" ? 0 : 1;
                            dragTempStateRef.current.points[ptIndex] = { time: newTime, price: newPrice };
                            existing.primitive.updatePoints(dragTempStateRef.current.points[0], dragTempStateRef.current.points[1]);
-                           series.applyOptions({});
                        }
                    } else if (part === "body") {
                        const st = dragTempStateRef.current;
@@ -466,7 +464,6 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
                                dragTempStateRef.current.points[0] = { time: newTimeStart, price: st.priceStart + dPrice };
                                dragTempStateRef.current.points[1] = { time: newTimeEnd, price: st.priceEnd + dPrice };
                                existing.primitive.updatePoints(dragTempStateRef.current.points[0], dragTempStateRef.current.points[1]);
-                               series.applyOptions({});
                            }
                        }
                    }
@@ -570,8 +567,6 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
                  previewObjRef.current = { kind: 'primitive', primitive };
               } else {
                  (previewObjRef.current.primitive as VerticalPrimitive).updateTime(time as Time);
-                 // force a redraw by updating dummy options on series
-                 series.applyOptions({});
               }
            } else if (tool === 'trend' && time !== null && price !== null) {
               if (pendingTrendRef.current) {
@@ -593,7 +588,6 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
                        { time: pendingTrendRef.current.time as Time, price: pendingTrendRef.current.price },
                        { time: time as Time, price }
                     );
-                    series.applyOptions({});
                  }
               }
            }

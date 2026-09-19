@@ -74,22 +74,26 @@ class TrendRenderer implements IPrimitivePaneRenderer {
       ctx.strokeStyle = this._color;
       if (this._dashed) ctx.setLineDash([5 * vr, 5 * vr]);
       else ctx.setLineDash([]);
-      ctx.beginPath();
-      ctx.moveTo(this._x1! * hr, this._y1! * vr);
-      ctx.lineTo(this._x2! * hr, this._y2! * vr);
+      const cx1 = Math.round(this._x1! * hr);
+      const cy1 = Math.round(this._y1! * vr);
+      const cx2 = Math.round(this._x2! * hr);
+      const cy2 = Math.round(this._y2! * vr);
+      
+      ctx.moveTo(cx1, cy1);
+      ctx.lineTo(cx2, cy2);
       ctx.stroke();
 
       if (this._active) {
         ctx.setLineDash([]);
         ctx.fillStyle = this._color;
-        const radius = 4 * hr;
+        const radius = Math.round(4 * hr);
         
         ctx.beginPath();
-        ctx.arc(this._x1! * hr, this._y1! * vr, radius, 0, 2 * Math.PI);
+        ctx.arc(cx1, cy1, radius, 0, 2 * Math.PI);
         ctx.fill();
 
         ctx.beginPath();
-        ctx.arc(this._x2! * hr, this._y2! * vr, radius, 0, 2 * Math.PI);
+        ctx.arc(cx2, cy2, radius, 0, 2 * Math.PI);
         ctx.fill();
       }
     });
@@ -148,12 +152,15 @@ export class TrendPrimitive implements ISeriesPrimitive<Time> {
   updatePoints(a: LinePoint, b: LinePoint) {
     this.a = a;
     this.b = b;
-    this.chart?.timeScale().applyOptions({}); // force redraw? Actually series.applyOptions is better, or just rely on crosshair move triggering render
+    this._requestUpdate?.();
   }
+
+  private _requestUpdate?: () => void;
 
   attached(param: SeriesAttachedParameter<Time>): void {
     this.chart = param.chart;
     this.series = param.series;
+    this._requestUpdate = param.requestUpdate;
   }
 
   detached(): void {
@@ -280,11 +287,15 @@ export class VerticalPrimitive implements ISeriesPrimitive<Time> {
 
   updateTime(time: Time) {
     this.time = time;
+    this._requestUpdate?.();
   }
+
+  private _requestUpdate?: () => void;
 
   attached(param: SeriesAttachedParameter<Time>): void {
     this.chart = param.chart;
     this.series = param.series;
+    this._requestUpdate = param.requestUpdate;
   }
 
   detached(): void {
