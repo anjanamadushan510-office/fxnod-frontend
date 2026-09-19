@@ -106,6 +106,15 @@ export interface LiveChartHandle {
     | null;
 }
 
+function distanceToSegment(px: number, py: number, x1: number, y1: number, x2: number, y2: number) {
+  const l2 = (x2 - x1) ** 2 + (y2 - y1) ** 2;
+  if (l2 === 0) return Math.sqrt((px - x1) ** 2 + (py - y1) ** 2);
+  let t = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / l2;
+  t = Math.max(0, Math.min(1, t));
+  return Math.sqrt((px - (x1 + t * (x2 - x1))) ** 2 + (py - (y1 + t * (y2 - y1))) ** 2);
+}
+
+
 /**
  * Real-time chart backed by lightweight-charts + the Deriv WebSocket feed.
  *
@@ -168,9 +177,10 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
     const pendingTrendRef = useRef<{ time: Time; price: number } | null>(null);
 
     // -- Drag State Refs --
+    const hoveredDrawingIdRef = useRef<string | null>(null);
+    const hoveredDrawingPartRef = useRef<"start" | "end" | "body" | null>(null);
     const isDraggingRef = useRef(false);
     const draggingDrawingIdRef = useRef<string | null>(null);
-    const hoveredDrawingIdRef = useRef<string | null>(null);
     const dragStartPosRef = useRef<{ x: number; y: number } | null>(null);
     const dragTempStateRef = useRef<any>({});
 
@@ -418,10 +428,54 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
                  existing.primitive.updateTime(newTime as any);
                  series.applyOptions({}); // force redraw
               }
+           } else if (d.tool === "trend" && existing.kind === "primitive" && existing.primitive instanceof TrendPrimitive) {
+               const part = dragTempStateRef.current.part;
+               if (!dragTempStateRef.current.points && d.points) {
+                  dragTempStateRef.current.points = JSON.parse(JSON.stringify(d.points));
+               }
+               
+               if (dragTempStateRef.current.points) {
+                   if (part === "start" || part === "end") {
+                       const newTime = getValidTime(point.x, param.time);
+                       const newPrice = series.coordinateToPrice(point.y);
+                       if (newTime !== null && newPrice !== null) {
+                           const ptIndex = part === "start" ? 0 : 1;
+                           dragTempStateRef.current.points[ptIndex] = { time: newTime, price: newPrice };
+                           existing.primitive.updatePoints(dragTempStateRef.current.points[0], dragTempStateRef.current.points[1]);
+                           series.applyOptions({});
+                       }
+                   } else if (part === "body") {
+                       const st = dragTempStateRef.current;
+                       const logicalMouse = chart.timeScale().coordinateToLogical(point.x as any);
+                       const priceMouse = series.coordinateToPrice(point.y);
+                       
+                       if (logicalMouse !== null && priceMouse !== null && st.logicalMouse !== undefined) {
+                           const dLogical = logicalMouse - st.logicalMouse;
+                           const dPrice = priceMouse - st.priceMouse;
+                           
+                           const logicalToTime = (logical: number): Time | null => {
+                               const px = chart.timeScale().logicalToCoordinate(logical as any);
+                               if (px !== null) return getValidTime(px, undefined);
+                               return null;
+                           };
+                           
+                           const newTimeStart = logicalToTime(st.logicalStart + dLogical);
+                           const newTimeEnd = logicalToTime(st.logicalEnd + dLogical);
+                           
+                           if (newTimeStart !== null && newTimeEnd !== null) {
+                               dragTempStateRef.current.points[0] = { time: newTimeStart, price: st.priceStart + dPrice };
+                               dragTempStateRef.current.points[1] = { time: newTimeEnd, price: st.priceEnd + dPrice };
+                               existing.primitive.updatePoints(dragTempStateRef.current.points[0], dragTempStateRef.current.points[1]);
+                               series.applyOptions({});
+                           }
+                       }
+                   }
+               }
            }
         }
 
         let hoveredId: string | null = null;
+        let hoveredPart: "start" | "end" | "body" | null = null;
         const clickY = point.y;
         const clickX = point.x;
         
@@ -443,10 +497,40 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
                 break;
               }
             } catch (e) {}
+          } else if (d.tool === "trend" && d.points) {
+            try {
+              let x1 = chart.timeScale().timeToCoordinate(d.points[0].time as any) as any;
+              if (x1 === null) x1 = getExtrapolatedX(chart as any, series as any, d.points[0].time as any);
+              const y1 = series.priceToCoordinate(d.points[0].price);
+              
+              let x2 = chart.timeScale().timeToCoordinate(d.points[1].time as any) as any;
+              if (x2 === null) x2 = getExtrapolatedX(chart as any, series as any, d.points[1].time as any);
+              const y2 = series.priceToCoordinate(d.points[1].price);
+              
+              if (x1 !== null && y1 !== null && x2 !== null && y2 !== null) {
+                if (Math.abs(clickX - x1) < 15 && Math.abs(clickY - y1) < 15) {
+                   hoveredId = d.id;
+                   hoveredPart = "start";
+                   break;
+                } else if (Math.abs(clickX - x2) < 15 && Math.abs(clickY - y2) < 15) {
+                   hoveredId = d.id;
+                   hoveredPart = "end";
+                   break;
+                } else {
+                   const dist = distanceToSegment(clickX, clickY, x1, y1, x2, y2);
+                   if (dist < 15) {
+                      hoveredId = d.id;
+                      hoveredPart = "body";
+                      break;
+                   }
+                }
+              }
+            } catch (e) {}
           }
         }
         
         hoveredDrawingIdRef.current = hoveredId;
+        hoveredDrawingPartRef.current = hoveredPart;
         
         if (containerRef.current) {
            if (hoveredId && !activeToolRef.current) {
@@ -636,7 +720,41 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
                clientY = (e as MouseEvent).clientY;
             }
             dragStartPosRef.current = { x: clientX, y: clientY };
+            
+            const store = useChartDrawings.getState();
+            const d = store.drawings.find(x => x.id === hoveredDrawingIdRef.current);
             dragTempStateRef.current = {};
+
+            if (d && d.tool === "trend" && d.points) {
+               dragTempStateRef.current = { part: hoveredDrawingPartRef.current };
+               if (hoveredDrawingPartRef.current === "body" && chartRef.current && seriesRef.current) {
+                   const chart = chartRef.current;
+                   const series = seriesRef.current;
+                   const rect = el.getBoundingClientRect();
+                   const logicalMouse = chart.timeScale().coordinateToLogical((clientX - rect.left) as any);
+                   
+                   const px0 = chart.timeScale().timeToCoordinate(d.points[0].time as any) ?? getExtrapolatedX(chart, series, d.points[0].time);
+                   const px1 = chart.timeScale().timeToCoordinate(d.points[1].time as any) ?? getExtrapolatedX(chart, series, d.points[1].time);
+                   
+                   const logicalStart = px0 !== null ? chart.timeScale().coordinateToLogical(px0 as any) : null;
+                   const logicalEnd = px1 !== null ? chart.timeScale().coordinateToLogical(px1 as any) : null;
+                   
+                   const priceMouse = series.coordinateToPrice((clientY - rect.top) as any);
+                   
+                   if (logicalMouse !== null && logicalStart !== null && logicalEnd !== null && priceMouse !== null) {
+                       dragTempStateRef.current = {
+                          part: hoveredDrawingPartRef.current,
+                          logicalMouse,
+                          priceMouse,
+                          logicalStart,
+                          logicalEnd,
+                          priceStart: d.points[0].price,
+                          priceEnd: d.points[1].price,
+                          points: JSON.parse(JSON.stringify(d.points))
+                       };
+                   }
+               }
+            }
             
             e.stopPropagation();
             el.style.cursor = "grabbing";
@@ -1203,6 +1321,7 @@ function applyDrawings(
       if (existing && existing.kind === "primitive" && existing.primitive instanceof TrendPrimitive) {
         existing.primitive.color = d.color;
         existing.primitive.width = d.thickness || 2;
+        existing.primitive.active = d.id === activeDrawingId;
         existing.primitive.updatePoints(
            { time: p1.time as Time, price: p1.price },
            { time: p2.time as Time, price: p2.price }
@@ -1217,7 +1336,9 @@ function applyDrawings(
           { time: p1.time as Time, price: p1.price },
           { time: p2.time as Time, price: p2.price },
           d.color,
-          d.thickness || 2
+          d.thickness || 2,
+          false,
+          d.id === activeDrawingId
         );
         series.attachPrimitive(primitive);
         objsRef.current.set(d.id, { kind: "primitive", primitive });

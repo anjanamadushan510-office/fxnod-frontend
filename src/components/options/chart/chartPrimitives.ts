@@ -54,6 +54,7 @@ class TrendRenderer implements IPrimitivePaneRenderer {
     private readonly _color: string,
     private readonly _width: number,
     private readonly _dashed: boolean,
+    private readonly _active: boolean,
   ) {}
 
   draw(target: CanvasRenderingTarget2D): void {
@@ -77,6 +78,20 @@ class TrendRenderer implements IPrimitivePaneRenderer {
       ctx.moveTo(this._x1! * hr, this._y1! * vr);
       ctx.lineTo(this._x2! * hr, this._y2! * vr);
       ctx.stroke();
+
+      if (this._active) {
+        ctx.setLineDash([]);
+        ctx.fillStyle = this._color;
+        const radius = 4 * hr;
+        
+        ctx.beginPath();
+        ctx.arc(this._x1! * hr, this._y1! * vr, radius, 0, 2 * Math.PI);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(this._x2! * hr, this._y2! * vr, radius, 0, 2 * Math.PI);
+        ctx.fill();
+      }
     });
   }
 }
@@ -94,9 +109,9 @@ class TrendPaneView implements IPrimitivePaneView {
     const series = this._source.series;
     if (!chart || !series) return;
     const ts = chart.timeScale();
-    this._x1 = ts.timeToCoordinate(this._source.a.time);
+    this._x1 = getExtrapolatedX(chart, series, this._source.a.time);
     this._y1 = series.priceToCoordinate(this._source.a.price);
-    this._x2 = ts.timeToCoordinate(this._source.b.time);
+    this._x2 = getExtrapolatedX(chart, series, this._source.b.time);
     this._y2 = series.priceToCoordinate(this._source.b.price);
   }
 
@@ -109,6 +124,7 @@ class TrendPaneView implements IPrimitivePaneView {
       this._source.color,
       this._source.width,
       this._source.dashed,
+      this._source.active
     );
   }
 }
@@ -124,6 +140,7 @@ export class TrendPrimitive implements ISeriesPrimitive<Time> {
     public color = "#2962FF",
     public width = 2,
     public readonly dashed = false,
+    public active = false,
   ) {
     this._paneView = new TrendPaneView(this);
   }
