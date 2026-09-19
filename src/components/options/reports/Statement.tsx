@@ -1,7 +1,8 @@
-import { CalendarIcon, ChevronDownIcon, TrendingUp, TrendingDown } from "lucide-react";
+import { CalendarIcon, ChevronDownIcon } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useGetTradeHistory } from "@/services/api/endpoints/trading/trading";
 import { findMarket } from "@/components/options/market/catalog";
+import { getContractDisplay } from "./utils";
 import { useMemo } from "react";
 
 export function Statement() {
@@ -47,7 +48,7 @@ export function Statement() {
         id: trade.deriv_contract_id,
         typeId: trade.symbol, // using symbol as type id
         typeName: trade.frontend_contract_type,
-        action: trade.side,
+        action: trade.contract_type,
         currency: trade.currency,
         time: buyDate,
         transactionType: "Buy",
@@ -121,8 +122,7 @@ export function Statement() {
           </div>
         ) : (
           statementItems.map((item, idx) => {
-            const side = item.action.toLowerCase();
-            const isRise = side === "rise" || side === "buy" || side === "up";
+            const { label, icon, colorClass } = getContractDisplay(item.action);
             const marketName = findMarket(item.typeId)?.name || item.typeId;
             
             const dayStr = item.time.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'GMT' });
@@ -140,9 +140,9 @@ export function Statement() {
                   <div className="h-6 w-6 rounded bg-gray-800 flex items-center justify-center text-xs">V</div>
                   <div className="flex flex-col">
                     <span className="font-medium text-xs truncate max-w-[150px]">{marketName}</span>
-                    <span className={`flex items-center gap-1 ${isRise ? "text-emerald-500 text-[11px]" : "text-red-500 text-[11px]"}`}>
-                      {isRise ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                      {item.action}
+                    <span className={`flex items-center gap-1 ${colorClass} text-[11px]`}>
+                      {icon}
+                      {item.transactionType === "Buy" ? label : "Sell"}
                     </span>
                   </div>
                 </div>

@@ -1,7 +1,8 @@
-import { CalendarIcon, TrendingUp, TrendingDown } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useGetTradeHistory } from "@/services/api/endpoints/trading/trading";
 import { findMarket } from "@/components/options/market/catalog";
+import { getContractDisplay } from "./utils";
 
 export function TradeTable() {
   const searchParams = useSearchParams();
@@ -78,8 +79,7 @@ export function TradeTable() {
               sellTimeStr = sellDate.toLocaleString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'GMT' });
             }
 
-            const side = trade.side.toLowerCase();
-            const isRise = side === "rise" || side === "buy" || side === "up";
+            const { label, icon, colorClass } = getContractDisplay(trade.contract_type);
             const marketName = findMarket(trade.symbol)?.name || trade.symbol;
             const plSign = profitLoss >= 0 ? "+" : "-";
             const plValue = Math.abs(profitLoss).toFixed(2);
@@ -93,9 +93,9 @@ export function TradeTable() {
                   <div className="h-6 w-6 rounded bg-gray-800 flex items-center justify-center text-xs">V</div>
                   <div className="flex flex-col">
                     <span className="font-medium text-xs truncate max-w-[150px]">{marketName}</span>
-                    <span className={`flex items-center gap-1 ${isRise ? "text-emerald-500 text-[11px]" : "text-red-500 text-[11px]"}`}>
-                      {isRise ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                      {trade.side}
+                    <span className={`flex items-center gap-1 ${colorClass} text-[11px]`}>
+                      {icon}
+                      {label}
                     </span>
                   </div>
                 </div>
