@@ -1295,11 +1295,12 @@ function applyDrawings(
       }
     } else if (d.tool === "vertical" && d.time != null) {
       if (existing && existing.kind === "primitive" && existing.primitive instanceof VerticalPrimitive) {
-        existing.primitive.color = d.color;
-        existing.primitive.width = d.thickness || 2;
-        existing.primitive.axisLabelVisible = d.id === activeDrawingId;
+        existing.primitive.applyOptions({
+          color: d.color,
+          width: d.thickness || 2,
+          axisLabelVisible: d.id === activeDrawingId,
+        });
         existing.primitive.updateTime(d.time as Time);
-        series.applyOptions({}); // force redraw
       } else {
         if (existing) {
            if (existing.kind === "priceline") series.removePriceLine(existing.line);
@@ -1312,14 +1313,15 @@ function applyDrawings(
     } else if (d.tool === "trend" && d.points) {
       const [p1, p2] = d.points;
       if (existing && existing.kind === "primitive" && existing.primitive instanceof TrendPrimitive) {
-        existing.primitive.color = d.color;
-        existing.primitive.width = d.thickness || 2;
-        existing.primitive.active = d.id === activeDrawingId;
+        existing.primitive.applyOptions({
+          color: d.color,
+          width: d.thickness || 2,
+          active: d.id === activeDrawingId,
+        });
         existing.primitive.updatePoints(
            { time: p1.time as Time, price: p1.price },
            { time: p2.time as Time, price: p2.price }
         );
-        series.applyOptions({}); // force redraw
       } else {
         if (existing) {
            if (existing.kind === "priceline") series.removePriceLine(existing.line);

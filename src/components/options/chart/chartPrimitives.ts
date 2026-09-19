@@ -158,6 +158,13 @@ export class TrendPrimitive implements ISeriesPrimitive<Time> {
     this._requestUpdate?.();
   }
 
+  applyOptions(options: { color?: string; width?: number; active?: boolean }) {
+    if (options.color !== undefined) this.color = options.color;
+    if (options.width !== undefined) this.width = options.width;
+    if (options.active !== undefined) this.active = options.active;
+    this._requestUpdate?.();
+  }
+
   private _requestUpdate?: () => void;
 
   attached(param: SeriesAttachedParameter<Time>): void {
@@ -270,7 +277,10 @@ class VerticalTimeAxisView implements ISeriesPrimitiveAxisView {
   coordinate(): number { return this._x ?? 0; }
   text(): string { return this._text; }
   backColor(): string { return this._source.color; }
-  textColor(): string { return "#FFFFFF"; }
+  textColor(): string { 
+    const bg = this._source.color.toLowerCase();
+    return (bg === "#ffffff" || bg === "#fff") ? "#000000" : "#FFFFFF";
+  }
 }
 
 export class VerticalPrimitive implements ISeriesPrimitive<Time> {
@@ -292,6 +302,13 @@ export class VerticalPrimitive implements ISeriesPrimitive<Time> {
 
   updateTime(time: Time) {
     this.time = time;
+    this._requestUpdate?.();
+  }
+
+  applyOptions(options: { color?: string; width?: number; axisLabelVisible?: boolean }) {
+    if (options.color !== undefined) this.color = options.color;
+    if (options.width !== undefined) this.width = options.width;
+    if (options.axisLabelVisible !== undefined) this.axisLabelVisible = options.axisLabelVisible;
     this._requestUpdate?.();
   }
 
