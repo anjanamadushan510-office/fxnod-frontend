@@ -378,7 +378,6 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
            } else if (d.tool === "vertical" && newTime !== null) {
               store.updateDrawing(d.id, { time: Number(newTime) });
            }
-           return;
         }
 
         let hoveredId: string | null = null;
@@ -1056,41 +1055,81 @@ function applyDrawings(
   drawings: Drawing[],
   objsRef: React.MutableRefObject<Map<string, DrawingObj>>,
 ) {
-  for (const obj of objsRef.current.values()) {
-    try {
-      if (obj.kind === "priceline") series.removePriceLine(obj.line);
-      else series.detachPrimitive(obj.primitive);
-    } catch {
-      /* series may have been recreated — safe to ignore */
+  const currentIds = new Set(drawings.map((d) => d.id));
+
+  // 1. Remove deleted drawings
+  for (const [id, obj] of objsRef.current.entries()) {
+    if (!currentIds.has(id)) {
+      try {
+        if (obj.kind === "priceline") series.removePriceLine(obj.line);
+        else series.detachPrimitive(obj.primitive);
+      } catch {
+        /* ignore */
+      }
+      objsRef.current.delete(id);
     }
   }
-  objsRef.current.clear();
 
+  // 2. Add or update drawings
   for (const d of drawings) {
+    const existing = objsRef.current.get(d.id);
+
     if (d.tool === "horizontal" && d.price != null) {
-      const line = series.createPriceLine({
-        price: d.price,
-        color: d.color,
-        lineWidth: (d.thickness || 2) as any,
-        lineStyle: LineStyle.Solid,
-        axisLabelVisible: true,
-        title: "",
-      });
-      objsRef.current.set(d.id, { kind: "priceline", line });
+      if (existing && existing.kind === "priceline") {
+        existing.line.applyOptions({ price: d.price, color: d.color, lineWidth: (d.thickness || 2) as any });
+      } else {
+        if (existing) {
+           if (existing.kind === "primitive") series.detachPrimitive(existing.primitive);
+        }
+        const line = series.createPriceLine({
+          price: d.price,
+          color: d.color,
+          lineWidth: (d.thickness || 2) as any,
+          lineStyle: LineStyle.Solid,
+          axisLabelVisible: true,
+          title: "",
+        });
+        objsRef.current.set(d.id, { kind: "priceline", line });
+      }
     } else if (d.tool === "vertical" && d.time != null) {
-      const primitive = new VerticalPrimitive(d.time as Time, d.color, d.thickness || 2);
-      series.attachPrimitive(primitive);
-      objsRef.current.set(d.id, { kind: "primitive", primitive });
+      if (existing && existing.kind === "primitive" && existing.primitive instanceof VerticalPrimitive) {
+        existing.primitive.color = d.color;
+        existing.primitive.width = d.thickness || 2;
+        existing.primitive.updateTime(d.time as Time);
+        series.applyOptions({}); // force redraw
+      } else {
+        if (existing) {
+           if (existing.kind === "priceline") series.removePriceLine(existing.line);
+           else series.detachPrimitive(existing.primitive);
+        }
+        const primitive = new VerticalPrimitive(d.time as Time, d.color, d.thickness || 2);
+        series.attachPrimitive(primitive);
+        objsRef.current.set(d.id, { kind: "primitive", primitive });
+      }
     } else if (d.tool === "trend" && d.points) {
       const [p1, p2] = d.points;
-      const primitive = new TrendPrimitive(
-        { time: p1.time as Time, price: p1.price },
-        { time: p2.time as Time, price: p2.price },
-        d.color,
-        d.thickness || 2
-      );
-      series.attachPrimitive(primitive);
-      objsRef.current.set(d.id, { kind: "primitive", primitive });
+      if (existing && existing.kind === "primitive" && existing.primitive instanceof TrendPrimitive) {
+        existing.primitive.color = d.color;
+        existing.primitive.width = d.thickness || 2;
+        existing.primitive.updatePoints(
+           { time: p1.time as Time, price: p1.price },
+           { time: p2.time as Time, price: p2.price }
+        );
+        series.applyOptions({}); // force redraw
+      } else {
+        if (existing) {
+           if (existing.kind === "priceline") series.removePriceLine(existing.line);
+           else series.detachPrimitive(existing.primitive);
+        }
+        const primitive = new TrendPrimitive(
+          { time: p1.time as Time, price: p1.price },
+          { time: p2.time as Time, price: p2.price },
+          d.color,
+          d.thickness || 2
+        );
+        series.attachPrimitive(primitive);
+        objsRef.current.set(d.id, { kind: "primitive", primitive });
+      }
     }
   }
 }
