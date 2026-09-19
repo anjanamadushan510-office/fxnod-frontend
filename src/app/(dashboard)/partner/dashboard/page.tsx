@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { money, productName } from "@/lib/partner";
-import { useGetCommissionHistory } from "@/services/api/endpoints/commissions/commissions";
 import {
   useGetOrCreateReferralCode,
   useGetPartnerEarnings,
@@ -16,10 +15,6 @@ export default function PartnerDashboardPage() {
   const codeMutation = useGetOrCreateReferralCode();
   const earningsQuery = useGetPartnerEarnings();
   const partnersQuery = useListPartners();
-  
-  const historyQuery = useGetCommissionHistory({
-    limit: HISTORY_PAGE_SIZE,
-  });
 
   const { mutate: ensureCode } = codeMutation;
   useEffect(() => {
@@ -117,22 +112,25 @@ export default function PartnerDashboardPage() {
           <h3 className="font-display text-sm font-semibold text-ink">Recent referrals</h3>
         </div>
         <div className="divide-y divide-[#24344F]">
-          {historyQuery.isLoading ? (
+          {partnersQuery.isLoading ? (
             <div className="px-5 py-6 text-sm text-ink-3 text-center">Loading referrals...</div>
-          ) : historyQuery.isError ? (
+          ) : partnersQuery.isError ? (
             <div className="px-5 py-6 text-sm text-red-400 text-center">Failed to load referrals.</div>
-          ) : historyQuery.data?.items?.length === 0 ? (
+          ) : !partnersQuery.data?.items?.length ? (
             <div className="px-5 py-6 text-sm text-ink-3 text-center">No recent referrals yet.</div>
           ) : (
-            historyQuery.data?.items?.map((row) => (
-              <div key={row.id} className="flex items-start justify-between gap-3 px-5 py-3.5 min-w-0">
+            partnersQuery.data?.items?.slice(0, 10).map((row) => (
+              <div key={row.user_id} className="flex items-start justify-between gap-3 px-5 py-3.5 min-w-0">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm truncate text-ink">{row.source_display_name || row.source_email || "A team member"}</p>
-                  <p className="text-xs text-ink-3 mt-0.5">{productName(row.source_type)}</p>
+                  <p className="text-sm truncate text-ink">{row.display_name || row.email || "A team member"}</p>
+                  <p className="text-xs text-ink-3 mt-0.5">Joined {new Date(row.joined_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
                 </div>
-                <p className="tabular-nums text-sm shrink-0 text-ink">
-                  {money(row.commission_amount, row.currency)}
-                </p>
+                <div className="text-right shrink-0">
+                  <p className="tabular-nums text-sm text-ink">
+                    {money(row.earned.settled, currency)}
+                  </p>
+                  <p className="text-[10px] text-ink-3 uppercase tracking-wider mt-0.5">Earned</p>
+                </div>
               </div>
             ))
           )}
