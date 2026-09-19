@@ -376,7 +376,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
            if (d.tool === "horizontal" && newPrice !== null) {
               store.updateDrawing(d.id, { price: Number(newPrice) });
            } else if (d.tool === "vertical" && newTime !== null) {
-              store.updateDrawing(d.id, { time: Number(newTime) });
+              store.updateDrawing(d.id, { time: newTime as any });
            }
         }
 
@@ -676,7 +676,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
           store.setActiveTool(null);
         } else if (tool === "vertical") {
           if (time === null) return;
-          store.addDrawing({ symbol, tool, color: DRAWING_COLOR, time: Number(time) });
+          store.addDrawing({ symbol, tool, color: DRAWING_COLOR, time: time as any });
           store.setActiveDrawingScreenPos({ x: point.x, y: point.y });
           store.setActiveTool(null);
         } else {
@@ -693,8 +693,8 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
             tool,
             color: DRAWING_COLOR,
             points: [
-              { time: Number(a.time), price: a.price },
-              { time: Number(pt.time), price: pt.price },
+              { time: a.time as any, price: a.price },
+              { time: pt.time as any, price: pt.price },
             ],
           });
           pendingTrendRef.current = null;

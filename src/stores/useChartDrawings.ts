@@ -6,7 +6,7 @@ export type DrawingTool = "horizontal" | "trend" | "vertical";
 
 /** A point in chart space: epoch-seconds time + price. */
 export interface DrawingPoint {
-  time: number;
+  time: any;
   price: number;
 }
 
@@ -20,8 +20,8 @@ export interface Drawing {
   thickness?: number;
   /** Horizontal line. */
   price?: number;
-  /** Vertical line — epoch seconds. */
-  time?: number;
+  /** Vertical line — time coordinate (number, string, or object). */
+  time?: any;
   /** Trend line — exactly two points. */
   points?: [DrawingPoint, DrawingPoint];
 }
