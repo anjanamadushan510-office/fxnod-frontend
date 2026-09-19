@@ -80,6 +80,7 @@ class TrendRenderer implements IPrimitivePaneRenderer {
       const cx2 = Math.round(this._x2! * hr);
       const cy2 = Math.round(this._y2! * vr);
       
+      ctx.beginPath();
       ctx.moveTo(cx1, cy1);
       ctx.lineTo(cx2, cy2);
       ctx.stroke();
