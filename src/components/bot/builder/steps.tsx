@@ -6,7 +6,7 @@ import type { Market } from "@/components/options/market/catalog";
 import { useContractsFor } from "@/hooks/useContractsFor";
 import { useMarketsForStrategy } from "@/hooks/useMarketsForStrategy";
 import type { BotIndicator, BotLimits, BotStrategy } from "@/services/api/model";
-import { GROWTH_RATES, MULTIPLIER_STEPS, durationPresetsFor, formShapeFor } from "../botMeta";
+import { BARRIER_SCALES, GROWTH_RATES, MULTIPLIER_STEPS, durationPresetsFor, formShapeFor } from "../botMeta";
 import type { BotFormState } from "../formState";
 import { getGroupKey, getGroupLabel } from "../marketGroups";
 import {
@@ -597,38 +597,34 @@ export function SetupStep({
           </div>
         )}
 
-        {shape.barrierOffset && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <PillPicker
-              label="Target"
-              options={["above", "below"] as const}
-              value={form.barrierAbove ? "above" : "below"}
-              onChange={(v) => set({ barrierAbove: v === "above" })}
-              format={(v) => (v === "above" ? "Above spot" : "Below spot")}
-            />
-            <TextField
-              label="Distance from spot"
-              value={form.barrierOffset}
-              onChange={(barrierOffset) => set({ barrierOffset })}
-              hint="In price points, measured from the price when each contract opens."
-            />
-          </div>
-        )}
-
-        {shape.twoBarriers && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <TextField
-              label="Upper target, above spot"
-              value={form.barrierOffset}
-              onChange={(barrierOffset) => set({ barrierOffset })}
-              hint="In price points above the price when each contract opens."
-            />
-            <TextField
-              label="Lower target, below spot"
-              value={form.lowBarrierOffset}
-              onChange={(lowBarrierOffset) => set({ lowBarrierOffset })}
-              hint="In price points below it."
-            />
+        {shape.barrierScale && (
+          <div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {shape.barrierScale === "above-below" && (
+                <PillPicker
+                  label="Target"
+                  options={["above", "below"] as const}
+                  value={form.barrierAbove ? "above" : "below"}
+                  onChange={(v) => set({ barrierAbove: v === "above" })}
+                  format={(v) => (v === "above" ? "Above spot" : "Below spot")}
+                />
+              )}
+              <PillPicker
+                label={shape.barrierScale === "range" ? "Distance of both targets" : "Barrier distance"}
+                options={BARRIER_SCALES.map((o) => o.value)}
+                value={form.barrierScale}
+                onChange={(barrierScale) => set({ barrierScale })}
+                format={(v) => BARRIER_SCALES.find((o) => o.value === v)?.label ?? `×${v}`}
+              />
+            </div>
+            <p className="mt-2 text-xs text-ink-3">
+              {shape.barrierScale === "side"
+                ? "Measured from the price when each contract opens: Higher sets the target above it, Lower the same distance below. "
+                : shape.barrierScale === "range"
+                  ? "One target above the opening price and one the same distance below. "
+                  : "Measured from the price when each contract opens. "}
+              Distances scale with each market: Deriv suggests one per market and length, and this is a multiple of it. A further target pays more and wins less often.
+            </p>
           </div>
         )}
 

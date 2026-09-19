@@ -32,7 +32,13 @@ export interface BotFormShape {
   /** Barrier-digit picker 0–8 (over/under). */
   barrierDigit?: boolean;
   /** Relative/absolute barrier with an offset (touch/no touch, higher/lower). */
-  barrierOffset?: boolean;
+  /**
+   * Higher / Lower, Touch and Ends In / Out: the barrier as a multiple of the
+   * distance Deriv itself suggests for the market. "side": the side decides
+   * above or below (Higher above, Lower below); "above-below": the user picks;
+   * "range": one above and one below.
+   */
+  barrierScale?: "side" | "above-below" | "range";
   /** Per-contract take profit is meaningful for this type. */
   takeProfit?: boolean;
   /** Per-contract stop loss is meaningful for this type. */
@@ -43,7 +49,6 @@ export interface BotFormShape {
    */
   tickRange?: [number, number];
   /** Two barriers, above and below spot (Ends In / Ends Out). */
-  twoBarriers?: boolean;
   /** Which tick is predicted to be the highest / lowest (High / Low Tick). */
   selectedTick?: boolean;
   /**
@@ -70,8 +75,8 @@ export const BOT_FORMS: Record<string, BotFormShape> = {
     perTradeStopLoss: true,
   },
   rise_fall: { sideLabels: ["Rise", "Fall"], duration: true },
-  higher_lower: { sideLabels: ["Higher", "Lower"], duration: true, barrierOffset: true },
-  touch_no_touch: { sideLabels: ["Touch", "No Touch"], duration: true, barrierOffset: true },
+  higher_lower: { sideLabels: ["Higher", "Lower"], duration: true, barrierScale: "side" },
+  touch_no_touch: { sideLabels: ["Touch", "No Touch"], duration: true, barrierScale: "above-below" },
   matches_differs: { sideLabels: ["Matches", "Differs"], duration: true, digit: true },
   even_odd: { sideLabels: ["Even", "Odd"], duration: true },
   over_under: { sideLabels: ["Over", "Under"], duration: true, barrierDigit: true },
@@ -84,10 +89,18 @@ export const BOT_FORMS: Record<string, BotFormShape> = {
     tickRange: [5, 5],
     selectedTick: true,
   },
-  ends_in_out: { sideLabels: ["Ends In", "Ends Out"], duration: true, twoBarriers: true },
+  ends_in_out: { sideLabels: ["Ends In", "Ends Out"], duration: true, barrierScale: "range" },
   turbos: { sideLabels: ["Up", "Down"], duration: true, barrierLevels: TURBOS_LEVELS, takeProfit: true },
   vanillas: { sideLabels: ["Call", "Put"], duration: true, barrierLevels: VANILLAS_LEVELS },
 };
+
+/** The barrier distances offered, as multiples of Deriv's default distance. */
+export const BARRIER_SCALES = [
+  { value: 0.5, label: "Closer · ×0.5" },
+  { value: 1, label: "Deriv default" },
+  { value: 2, label: "Further · ×2" },
+  { value: 3, label: "Far · ×3" },
+] as const;
 
 export function formShapeFor(strategyId: string): BotFormShape {
   return BOT_FORMS[strategyId] ?? { sideLabels: ["Up", "Down"], duration: true };

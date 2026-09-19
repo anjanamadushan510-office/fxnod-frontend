@@ -32,7 +32,7 @@ import {
   withMethod,
   type BotDraft,
 } from "@/components/bot/builder/draft";
-import { GROWTH_RATES, MULTIPLIER_STEPS, durationPresetsFor, formShapeFor } from "@/components/bot/botMeta";
+import { BARRIER_SCALES, GROWTH_RATES, MULTIPLIER_STEPS, durationPresetsFor, formShapeFor } from "@/components/bot/botMeta";
 import { getMarketsForStrategy } from "@/services/deriv/activeSymbols";
 import { useMarketStore } from "@/components/options/market/marketStore";
 import { getContractsFor } from "@/services/deriv/contractsFor";
@@ -189,15 +189,13 @@ for (const method of METHOD_GROUPS.flatMap((g) => g.methods)) {
     for (let d = 0; d <= 8; d++) add(tag(`over ${d}`), patch(b, { direction: "up", barrierDigit: d }));
     for (let d = 1; d <= 8; d++) add(tag(`under ${d}`), patch(b, { direction: "down", barrierDigit: d }));
   }
-  if (shape.barrierOffset) {
-    for (const off of ["0.1", "1", "5"]) {
-      add(tag(`barrier +${off}`), patch(b, { barrierAbove: true, barrierOffset: off }));
-      add(tag(`barrier -${off}`), patch(b, { barrierAbove: false, barrierOffset: off }));
-    }
-  }
-  if (shape.twoBarriers) {
-    for (const [hi, lo] of [["0.5", "0.5"], ["1", "1"], ["5", "3"]]) {
-      add(tag(`barriers +${hi}/-${lo}`), patch(b, { barrierOffset: hi, lowBarrierOffset: lo }));
+  if (shape.barrierScale) {
+    for (const { value, label } of BARRIER_SCALES) {
+      add(tag(`distance ${label}`), patch(b, { barrierScale: value }));
+      add(tag(`distance ${label}, side down`), patch(b, { barrierScale: value, direction: "down" }));
+      if (shape.barrierScale === "above-below") {
+        add(tag(`distance ${label}, below spot`), patch(b, { barrierScale: value, barrierAbove: false }));
+      }
     }
   }
   if (shape.barrierLevels) {

@@ -25,10 +25,10 @@ export interface BotFormState {
   digit: number;
   autoDigit: boolean;
   barrierDigit: number;
+  /** Touch only: the barrier above spot rather than below. */
   barrierAbove: boolean;
-  barrierOffset: string;
-  /** Distance of the LOW barrier below spot, Ends In / Ends Out only. */
-  lowBarrierOffset: string;
+  /** Barrier distance as a multiple of Deriv's default for the market. */
+  barrierScale: number;
   /** 1-based tick predicted to be the extreme, High / Low Tick only. */
   selectedTick: number;
   /** Position in Deriv's barrier list, turbos and vanillas only. */
@@ -66,8 +66,7 @@ export function defaultFormState(): BotFormState {
     autoDigit: false,
     barrierDigit: 5,
     barrierAbove: true,
-    barrierOffset: "1",
-    lowBarrierOffset: "1",
+    barrierScale: 1,
     selectedTick: 1,
     barrierLevel: 3,
     duration: "5",
@@ -175,15 +174,12 @@ export function buildStartRequest(
       ...(shape.multiplier ? { multiplier: state.multiplier } : {}),
       // A relative barrier is signed: "+1" is above spot, "-1" below. Deriv
       // reads the sign, so it is part of the value rather than a flag.
-      ...(shape.barrierOffset
-        ? { barrier: `${state.barrierAbove ? "+" : "-"}${state.barrierOffset.trim()}` }
-        : {}),
-      // Ends In / Ends Out: `barrier` is the high one and `barrier2` the low
-      // one, as Deriv names them, each relative to the spot at entry.
-      ...(shape.twoBarriers
+      ...(shape.barrierScale
         ? {
-            barrier: `+${state.barrierOffset.trim()}`,
-            barrier2: `-${state.lowBarrierOffset.trim()}`,
+            barrier_scale:
+              shape.barrierScale === "above-below" && !state.barrierAbove
+                ? -state.barrierScale
+                : state.barrierScale,
           }
         : {}),
       ...(shape.selectedTick ? { selected_tick: state.selectedTick } : {}),
@@ -308,8 +304,7 @@ export function toPresetConfig(state: BotFormState): Record<string, unknown> {
     autoDigit: state.autoDigit,
     barrierDigit: state.barrierDigit,
     barrierAbove: state.barrierAbove,
-    barrierOffset: state.barrierOffset,
-    lowBarrierOffset: state.lowBarrierOffset,
+    barrierScale: state.barrierScale,
     selectedTick: state.selectedTick,
     barrierLevel: state.barrierLevel,
     duration: state.duration,
@@ -351,9 +346,11 @@ export function fromPresetConfig(raw: unknown): BotFormState {
     autoDigit: typeof cfg.autoDigit === "boolean" ? cfg.autoDigit : defaults.autoDigit,
     barrierDigit: typeof cfg.barrierDigit === "number" ? cfg.barrierDigit : defaults.barrierDigit,
     barrierAbove: typeof cfg.barrierAbove === "boolean" ? cfg.barrierAbove : defaults.barrierAbove,
-    barrierOffset: typeof cfg.barrierOffset === "string" ? cfg.barrierOffset : defaults.barrierOffset,
-    lowBarrierOffset:
-      typeof cfg.lowBarrierOffset === "string" ? cfg.lowBarrierOffset : defaults.lowBarrierOffset,
+    // Bots saved with a price-point barrier start again from Deriv's default.
+    barrierScale:
+      typeof cfg.barrierScale === "number" && Number.isFinite(cfg.barrierScale) && cfg.barrierScale > 0
+        ? cfg.barrierScale
+        : defaults.barrierScale,
     selectedTick: typeof cfg.selectedTick === "number" ? cfg.selectedTick : defaults.selectedTick,
     barrierLevel:
       typeof cfg.barrierLevel === "number" && Number.isInteger(cfg.barrierLevel)

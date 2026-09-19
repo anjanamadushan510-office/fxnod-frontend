@@ -78,4 +78,7 @@ export interface BotContractTemplate {
    * @maximum 10
    */
   barrier_level?: number;
+  /** Higher / Lower, Touch / No Touch and Ends In / Ends Out. The barrier as a multiple of the default distance Deriv publishes for the market and expiry (contracts_for), resolved when each order is placed - raw price points mean nothing across markets. Magnitude 0.1 to 10. Higher / Lower take the sign from the side (Higher above spot, Lower below); Touch uses it (+ above, - below); Ends In / Out spans both sides. Replaces barrier / barrier2.
+ */
+  barrier_scale?: number;
 }
