@@ -232,7 +232,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
           borderColor: line,
           timeVisible: true,
           secondsVisible: false,
-          rightOffset: 25,
+          rightOffset: 50,
         },
       });
       chartRef.current = chart;
@@ -373,6 +373,32 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
         const point = param.point;
         if (!point) return;
 
+        const getValidTime = (x: number, pTime: Time | undefined): Time | null => {
+          let t = chart.timeScale().coordinateToTime(x) ?? pTime;
+          if (!t) {
+            const logical = chart.timeScale().coordinateToLogical(x);
+            const lastPoint = seriesKind === "candlestick" || chartType === "hollow" || chartType === "ohlc"
+                ? candlesRef.current[candlesRef.current.length - 1]
+                : ticksRef.current[ticksRef.current.length - 1];
+                
+            if (logical !== null && lastPoint) {
+               const lastX = chart.timeScale().timeToCoordinate(lastPoint.time as any);
+               if (lastX !== null) {
+                  const lastLogical = chart.timeScale().coordinateToLogical(lastX);
+                  if (lastLogical !== null && logical > lastLogical) {
+                     let seconds = 1;
+                     if (interval.endsWith("m")) seconds = parseInt(interval) * 60;
+                     else if (interval.endsWith("h")) seconds = parseInt(interval) * 3600;
+                     else if (interval.endsWith("d")) seconds = parseInt(interval) * 86400;
+                     t = Math.floor((lastPoint.time as number) + (logical - lastLogical) * seconds) as any;
+                  }
+               }
+            }
+          }
+          if (t !== null && t !== undefined && !isNaN(t as number)) return t as Time;
+          return null;
+        };
+
         if (isDraggingRef.current && draggingDrawingIdRef.current) {
            const id = draggingDrawingIdRef.current;
            const d = store.drawings.find(x => x.id === id);
@@ -386,7 +412,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
                  existing.line.applyOptions({ price: Number(newPrice) });
               }
            } else if (d.tool === "vertical" && existing.kind === "primitive" && existing.primitive instanceof VerticalPrimitive) {
-              const newTime = chart.timeScale().coordinateToTime(point.x) ?? param.time;
+              const newTime = getValidTime(point.x, param.time);
               if (newTime !== null && newTime !== dragTempStateRef.current.time) {
                  dragTempStateRef.current.time = newTime;
                  existing.primitive.updateTime(newTime as any);
@@ -447,11 +473,10 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
            }
         }
 
-        // Update live drawing preview
         const tool = activeToolRef.current;
         if (tool) {
            const price = series.coordinateToPrice(point.y);
-           const time = (chart.timeScale().coordinateToTime(point.x) ?? param.time) as Time | null;
+           const time = getValidTime(point.x, param.time);
            
            if (tool === 'horizontal' && price !== null) {
               if (!previewObjRef.current || previewObjRef.current.kind !== 'priceline') {
@@ -508,7 +533,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
       
       chart.subscribeCrosshairMove(handler);
       return () => chart.unsubscribeCrosshairMove(handler);
-    }, [symbol]);
+    }, [symbol, interval, chartType, seriesKind]);
 
     // Pointer down handler for Drag Initiation
     useEffect(() => {
@@ -538,8 +563,30 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
             const point = { x: clientX - rect.left, y: clientY - rect.top };
             
             const price = series.coordinateToPrice(point.y);
-            const time = chart.timeScale().coordinateToTime(point.x);
+            let time = chart.timeScale().coordinateToTime(point.x);
+            if (!time) {
+               const logical = chart.timeScale().coordinateToLogical(point.x);
+               const lastPoint = seriesKind === "candlestick" || chartType === "hollow" || chartType === "ohlc"
+                   ? candlesRef.current[candlesRef.current.length - 1]
+                   : ticksRef.current[ticksRef.current.length - 1];
+                   
+               if (logical !== null && lastPoint) {
+                  const lastX = chart.timeScale().timeToCoordinate(lastPoint.time as any);
+                  if (lastX !== null) {
+                     const lastLogical = chart.timeScale().coordinateToLogical(lastX);
+                     if (lastLogical !== null && logical > lastLogical) {
+                        let seconds = 1;
+                        if (interval.endsWith("m")) seconds = parseInt(interval) * 60;
+                        else if (interval.endsWith("h")) seconds = parseInt(interval) * 3600;
+                        else if (interval.endsWith("d")) seconds = parseInt(interval) * 86400;
+                        time = Math.floor((lastPoint.time as number) + (logical - lastLogical) * seconds) as any;
+                     }
+                  }
+               }
+            }
             
+            if (time === undefined || isNaN(time as number)) time = null;
+
             const store = useChartDrawings.getState();
             
             if (tool === "horizontal") {
@@ -623,21 +670,23 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
            draggingDrawingIdRef.current = null;
            dragStartPosRef.current = null;
            dragTempStateRef.current = {};
-           el.style.cursor = hoveredDrawingIdRef.current ? "grab" : "";
+           if (el) el.style.cursor = hoveredDrawingIdRef.current ? "grab" : "";
          }
        };
 
        el.addEventListener("mousedown", onPointerDown, { capture: true });
-       el.addEventListener("touchstart", onPointerDown, { capture: true });
+       el.addEventListener("touchstart", onPointerDown, { capture: true, passive: false });
+       window.addEventListener("mousemove", onPointerUp);
        window.addEventListener("mouseup", onPointerUp);
        window.addEventListener("touchend", onPointerUp);
        return () => {
          el.removeEventListener("mousedown", onPointerDown, { capture: true });
          el.removeEventListener("touchstart", onPointerDown, { capture: true });
+         window.removeEventListener("mousemove", onPointerUp);
          window.removeEventListener("mouseup", onPointerUp);
          window.removeEventListener("touchend", onPointerUp);
        };
-    }, []);
+    }, [symbol, interval, chartType, seriesKind]);
 
     // Crosshair cursor while a tool is armed; clear a half-finished trend line
     // when the tool is disarmed.
