@@ -316,7 +316,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
       );
       // Re-attach user drawings to the fresh series.
       applyDrawings(seriesRef.current, drawingsRef.current, drawingObjsRef);
-      syncIndicators(chart, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeights, minimizedIndicators);
+      syncIndicators(chart, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeights, minimizedIndicators, isDark);
       // chart.timeScale().fitContent();
     }, [seriesKind, chartType, isDark]);
 
@@ -416,7 +416,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
     // Re-sync indicators when the active list changes.
     useEffect(() => {
       if (chartRef.current) {
-        syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicators, seriesKind, ticksRef.current, candlesRef.current, paneHeights, minimizedIndicators);
+        syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicators, seriesKind, ticksRef.current, candlesRef.current, paneHeights, minimizedIndicators, isDark);
       }
     }, [activeIndicators, seriesKind]);
 
@@ -435,7 +435,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
           );
           // chartRef.current?.timeScale().fitContent();
         }
-        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeights, minimizedIndicators);
+        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeights, minimizedIndicators, isDark);
         const last = ticks[ticks.length - 1];
         if (last) {
             onPrice?.(last.value);
@@ -454,7 +454,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
             /* out-of-order tick — ignore */
           }
         }
-        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeights, minimizedIndicators);
+        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeights, minimizedIndicators, isDark);
         onPrice?.(tick.value);
           endPriceLineRef.current?.updatePosition(tick.time as UTCTimestamp, tick.value);
       },
@@ -466,7 +466,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
         }));
         hydrateSeries(seriesRef.current, seriesKind, ticksRef.current, candles);
         // chartRef.current?.timeScale().fitContent();
-        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeights, minimizedIndicators);
+        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeights, minimizedIndicators, isDark);
         const last = candles[candles.length - 1];
         if (last) {
             onPrice?.(last.close);
@@ -489,7 +489,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
         } catch {
           /* out-of-order candle — ignore */
         }
-        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeights, minimizedIndicators);
+        if (chartRef.current) syncIndicators(chartRef.current, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeights, minimizedIndicators, isDark);
         onPrice?.(candle.close);
           endPriceLineRef.current?.updatePosition(candle.time as UTCTimestamp, candle.close);
       },
@@ -872,8 +872,10 @@ function syncIndicators(
   ticks: FeedTick[],
   candles: FeedCandle[],
   paneHeights: Record<string, number>,
-  minimizedIndicators: Set<string> = new Set()
+  minimizedIndicators: Set<string> = new Set(),
+  isDark: boolean = true
 ) {
+  const defColor = isDark ? "#ffffff" : "#1e293b";
   // Remove series that are no longer active
   const activeIds = new Set(activeIndicators.map(i => i.id));
   for (const [id, series] of seriesRef.current.entries()) {
@@ -943,8 +945,17 @@ function syncIndicators(
     // Force any black/dark colors to white for dark theme visibility
     ind = { ...ind, params: { ...ind.params } };
     for (const [k, v] of Object.entries(ind.params)) {
-      if (typeof v === "string" && (v.toLowerCase() === "#000000" || v.toLowerCase() === "black" || v.toLowerCase() === "#333333" || v.toLowerCase() === "#111111")) {
-        ind.params[k] = "#ffffff";
+      if (typeof v === "string") {
+        const vLower = v.toLowerCase();
+        if (isDark) {
+          if (vLower === "#000000" || vLower === "black" || vLower === "#333333" || vLower === "#111111") {
+            ind.params[k] = defColor;
+          }
+        } else {
+          if (vLower === "#ffffff" || vLower === "white" || vLower === "#f8f9fa" || vLower === "#fff") {
+            ind.params[k] = "#1e293b";
+          }
+        }
       }
     }
     try {
@@ -986,8 +997,8 @@ function syncIndicators(
         if (ind.params.showZones !== false) {
             const obVal = ind.params.overBoughtValue ?? 80;
             const osVal = ind.params.overSoldValue ?? 20;
-            const obCol = ind.params.overBoughtColor || "#ffffff";
-            const osCol = ind.params.overSoldColor || "#ffffff";
+            const obCol = ind.params.overBoughtColor || defColor;
+            const osCol = ind.params.overSoldColor || defColor;
             
             let obLine = seriesRef.current.get(`${ind.id}-ob`) as ISeriesApi<"Line">;
             let osLine = seriesRef.current.get(`${ind.id}-os`) as ISeriesApi<"Line">;
@@ -1077,16 +1088,16 @@ function syncIndicators(
       let lower = seriesRef.current.get(`${ind.id}-lower`) as ISeriesApi<"Line">;
       
       if (!upper || !middle || !lower) {
-        upper = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.topColor || '#ffffff', lineWidth: 1, priceScaleId: 'right' });
-        middle = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.medianColor || '#ffffff', lineWidth: 1, priceScaleId: 'right' });
-        lower = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.bottomColor || '#ffffff', lineWidth: 1, priceScaleId: 'right' });
+        upper = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.topColor || defColor, lineWidth: 1, priceScaleId: 'right' });
+        middle = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.medianColor || defColor, lineWidth: 1, priceScaleId: 'right' });
+        lower = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.bottomColor || defColor, lineWidth: 1, priceScaleId: 'right' });
         seriesRef.current.set(`${ind.id}-upper`, upper);
         seriesRef.current.set(`${ind.id}-middle`, middle);
         seriesRef.current.set(`${ind.id}-lower`, lower);
       } else {
-        upper.applyOptions({ color: ind.params.topColor || '#ffffff' });
-        middle.applyOptions({ color: ind.params.medianColor || '#ffffff' });
-        lower.applyOptions({ color: ind.params.bottomColor || '#ffffff' });
+        upper.applyOptions({ color: ind.params.topColor || defColor });
+        middle.applyOptions({ color: ind.params.medianColor || defColor });
+        lower.applyOptions({ color: ind.params.bottomColor || defColor });
       }
       
       const p = ind.params.period || 50;
@@ -1162,7 +1173,7 @@ function syncIndicators(
           priceLineVisible: false
         });
         macdLine = chart.addSeries(LineSeries, { priceLineVisible: false,
-          color: ind.params.macdColor || "#ffffff",
+          color: ind.params.macdColor || defColor,
           lineWidth: 2,
           priceScaleId: `${ind.id}-scale`,
           priceFormat: { type: 'price', precision: 2, minMove: 0.01 }
@@ -1180,7 +1191,7 @@ function syncIndicators(
         seriesRef.current.set(`${ind.id}-macd`, macdLine);
         seriesRef.current.set(`${ind.id}-signal`, signalLine);
       } else {
-        macdLine.applyOptions({ color: ind.params.macdColor || "#ffffff" });
+        macdLine.applyOptions({ color: ind.params.macdColor || defColor });
         signalLine.applyOptions({ color: ind.params.signalColor || "#f44336" });
       }
 
@@ -1223,7 +1234,7 @@ function syncIndicators(
       let series = seriesRef.current.get(ind.id) as ISeriesApi<"Line">;
       if (!series) {
         series = chart.addSeries(LineSeries, { priceLineVisible: false,
-          color: ind.type === "roc" ? "#ffffff" : (ind.params.wprColor || "#ffffff"),
+          color: ind.type === "roc" ? defColor : (ind.params.wprColor || defColor),
           lineWidth: 2,
           priceScaleId: `${ind.id}-scale`,
           priceFormat: { type: 'price', precision: ind.type === "wpr" ? 2 : 4, minMove: ind.type === "wpr" ? 0.01 : 0.0001 },
@@ -1242,7 +1253,7 @@ function syncIndicators(
         seriesRef.current.set(ind.id, series);
       } else {
         if (ind.type === "wpr") {
-          series.applyOptions({ color: ind.params.wprColor || "#ffffff" });
+          series.applyOptions({ color: ind.params.wprColor || defColor });
         }
       }
 
@@ -1285,13 +1296,13 @@ function syncIndicators(
           let obPriceLine = seriesRef.current.get(`${ind.id}-ob-line`) as any;
           let osPriceLine = seriesRef.current.get(`${ind.id}-os-line`) as any;
           if (!obPriceLine) {
-            obPriceLine = series.createPriceLine({ price: obVal, color: ind.params.overBoughtColor || "#ffffff", lineWidth: 1, lineStyle: LineStyle.Solid, axisLabelVisible: false });
-            osPriceLine = series.createPriceLine({ price: osVal, color: ind.params.overSoldColor || "#ffffff", lineWidth: 1, lineStyle: LineStyle.Solid, axisLabelVisible: false });
+            obPriceLine = series.createPriceLine({ price: obVal, color: ind.params.overBoughtColor || defColor, lineWidth: 1, lineStyle: LineStyle.Solid, axisLabelVisible: false });
+            osPriceLine = series.createPriceLine({ price: osVal, color: ind.params.overSoldColor || defColor, lineWidth: 1, lineStyle: LineStyle.Solid, axisLabelVisible: false });
             seriesRef.current.set(`${ind.id}-ob-line`, obPriceLine);
             seriesRef.current.set(`${ind.id}-os-line`, osPriceLine);
           }
-          obPriceLine.applyOptions({ color: ind.params.overBoughtColor || "#ffffff", price: obVal });
-          osPriceLine.applyOptions({ color: ind.params.overSoldColor || "#ffffff", price: osVal });
+          obPriceLine.applyOptions({ color: ind.params.overBoughtColor || defColor, price: obVal });
+          osPriceLine.applyOptions({ color: ind.params.overSoldColor || defColor, price: osVal });
         } else {
           let obLine = seriesRef.current.get(`${ind.id}-ob`);
           let osLine = seriesRef.current.get(`${ind.id}-os`);
@@ -1308,7 +1319,7 @@ function syncIndicators(
       const p = ind.params.period || 14;
       
       if (ind.type === "roc") {
-        series.applyOptions({ color: ind.params.rocColor || "#ffffff" });
+        series.applyOptions({ color: ind.params.rocColor || defColor });
         let targetArray = valueArray;
         switch (ind.params.field) {
           case "Open": targetArray = openArray; break;
@@ -1344,7 +1355,7 @@ function syncIndicators(
       let series = seriesRef.current.get(ind.id) as ISeriesApi<"Line">;
       if (!series) {
         series = chart.addSeries(LineSeries, { priceLineVisible: false,
-          color: ind.params.cciColor || "#ffffff",
+          color: ind.params.cciColor || defColor,
           lineWidth: 1,
           priceScaleId: `${ind.id}-scale`,
           priceFormat: { type: 'price', precision: 2, minMove: 0.01 }
@@ -1352,14 +1363,14 @@ function syncIndicators(
         chart.priceScale(`${ind.id}-scale`).applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
         seriesRef.current.set(ind.id, series);
       } else {
-        series.applyOptions({ color: ind.params.cciColor || "#ffffff" });
+        series.applyOptions({ color: ind.params.cciColor || defColor });
       }
 
       if (ind.params.showZones !== false) {
         const obVal = ind.params.overBoughtValue ?? 100;
         const osVal = ind.params.overSoldValue ?? -100;
-        const obCol = ind.params.overBoughtColor || "#ffffff";
-        const osCol = ind.params.overSoldColor || "#ffffff";
+        const obCol = ind.params.overBoughtColor || defColor;
+        const osCol = ind.params.overSoldColor || defColor;
         
         let obLine = seriesRef.current.get(`${ind.id}-ob`) as ISeriesApi<"Line">;
         let osLine = seriesRef.current.get(`${ind.id}-os`) as ISeriesApi<"Line">;
@@ -1440,21 +1451,21 @@ function syncIndicators(
         let kLine = seriesRef.current.get(`${ind.id}-k`) as ISeriesApi<"Line">;
         let dLine = seriesRef.current.get(`${ind.id}-d`) as ISeriesApi<"Line">;
         if (!kLine || !dLine) {
-          kLine = chart.addSeries(LineSeries, { crosshairMarkerVisible: false, priceLineVisible: false, color: ind.params.fastColor || "#ffffff", lineWidth: 2, priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'price', precision: 2, minMove: 0.01 }, autoscaleInfoProvider: () => ({ priceRange: { minValue: 0, maxValue: 100 } }) });
+          kLine = chart.addSeries(LineSeries, { crosshairMarkerVisible: false, priceLineVisible: false, color: ind.params.fastColor || defColor, lineWidth: 2, priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'price', precision: 2, minMove: 0.01 }, autoscaleInfoProvider: () => ({ priceRange: { minValue: 0, maxValue: 100 } }) });
           dLine = chart.addSeries(LineSeries, { crosshairMarkerVisible: false, priceLineVisible: false, color: ind.params.slowColor || "#ff0000", lineWidth: 2, priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'price', precision: 2, minMove: 0.01 }, autoscaleInfoProvider: () => ({ priceRange: { minValue: 0, maxValue: 100 } }) });
           chart.priceScale(`${ind.id}-scale`).applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
           seriesRef.current.set(`${ind.id}-k`, kLine);
           seriesRef.current.set(`${ind.id}-d`, dLine);
         } else {
-          kLine.applyOptions({ color: ind.params.fastColor || "#ffffff" });
+          kLine.applyOptions({ color: ind.params.fastColor || defColor });
           dLine.applyOptions({ color: ind.params.slowColor || "#ff0000" });
         }
         
         if (ind.params.showZones !== false) {
           const obVal = ind.params.overBoughtValue ?? 80;
           const osVal = ind.params.overSoldValue ?? 20;
-          const obCol = ind.params.overBoughtColor || "#ffffff";
-          const osCol = ind.params.overSoldColor || "#ffffff";
+          const obCol = ind.params.overBoughtColor || defColor;
+          const osCol = ind.params.overSoldColor || defColor;
           
           let obLine = seriesRef.current.get(`${ind.id}-ob`) as ISeriesApi<"Line">;
           let osLine = seriesRef.current.get(`${ind.id}-os`) as ISeriesApi<"Line">;
@@ -1591,7 +1602,7 @@ function syncIndicators(
         if (hist) chart.removeSeries(hist);
         
         hist = chart.addSeries(HistogramSeries, { priceLineVisible: false, priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
-        adxLine = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.adxColor || "#ffffff", lineWidth: 2, priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+        adxLine = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.adxColor || defColor, lineWidth: 2, priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
         plusDI = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.plusDiColor || "#00ff00", lineWidth: 2, priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
         minusDI = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.minusDiColor || "#ff0000", lineWidth: 2, priceScaleId: `${ind.id}-scale`, priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
         chart.priceScale(`${ind.id}-scale`).applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
@@ -1601,7 +1612,7 @@ function syncIndicators(
         seriesRef.current.set(`${ind.id}-plusDI`, plusDI);
         seriesRef.current.set(`${ind.id}-minusDI`, minusDI);
       } else {
-        adxLine.applyOptions({ color: ind.params.adxColor || "#ffffff" });
+        adxLine.applyOptions({ color: ind.params.adxColor || defColor });
         plusDI.applyOptions({ color: ind.params.plusDiColor || "#00ff00" });
         minusDI.applyOptions({ color: ind.params.minusDiColor || "#ff0000" });
       }
@@ -1744,7 +1755,7 @@ function syncIndicators(
             time: timeArray[i] as Time,
             position: 'inBar' as const,
             shape: 'circle' as const,
-            color: ind.params.sarColor || '#ffffff',
+            color: ind.params.sarColor || defColor,
             size: 0.5,
           };
         }).filter((m): m is any => m !== null);
@@ -1754,10 +1765,10 @@ function syncIndicators(
     } else if (ind.type === "zigzag") {
       let zigzag = seriesRef.current.get(`${ind.id}-zigzag`) as ISeriesApi<"Line">;
       if (!zigzag) {
-        zigzag = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.zigZagColor || "#ffffff", lineWidth: 2, priceScaleId: "right", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+        zigzag = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.zigZagColor || defColor, lineWidth: 2, priceScaleId: "right", priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
         seriesRef.current.set(`${ind.id}-zigzag`, zigzag);
       } else {
-        zigzag.applyOptions({ color: ind.params.zigZagColor || "#ffffff" });
+        zigzag.applyOptions({ color: ind.params.zigZagColor || defColor });
       }
       const distance = ind.params.distance || 10;
       const results = calculateZigZag(highArray, lowArray, valueArray, distance);
@@ -1768,16 +1779,16 @@ function syncIndicators(
         let middle = seriesRef.current.get(`${ind.id}-middle`) as ISeriesApi<'Line'>;
         let lower = seriesRef.current.get(`${ind.id}-lower`) as ISeriesApi<'Line'>;
         if (!upper || !middle || !lower) {
-          upper = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.upperColor || '#ffffff', lineWidth: 1, priceScaleId: 'right', priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
-          middle = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.middleColor || '#ffffff', lineWidth: 1, priceScaleId: 'right', priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
-          lower = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.lowerColor || '#ffffff', lineWidth: 1, priceScaleId: 'right', priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+          upper = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.upperColor || defColor, lineWidth: 1, priceScaleId: 'right', priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+          middle = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.middleColor || defColor, lineWidth: 1, priceScaleId: 'right', priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+          lower = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.lowerColor || defColor, lineWidth: 1, priceScaleId: 'right', priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
           seriesRef.current.set(`${ind.id}-upper`, upper);
           seriesRef.current.set(`${ind.id}-middle`, middle);
           seriesRef.current.set(`${ind.id}-lower`, lower);
         } else {
-          upper.applyOptions({ color: ind.params.upperColor || '#ffffff' });
-          middle.applyOptions({ color: ind.params.middleColor || '#ffffff' });
-          lower.applyOptions({ color: ind.params.lowerColor || '#ffffff' });
+          upper.applyOptions({ color: ind.params.upperColor || defColor });
+          middle.applyOptions({ color: ind.params.middleColor || defColor });
+          lower.applyOptions({ color: ind.params.lowerColor || defColor });
         }
         const p = ind.params.period || 20;
         const dev = ind.params.standardDeviations || 2;
@@ -1817,16 +1828,16 @@ function syncIndicators(
         let middle = seriesRef.current.get(`${ind.id}-middle`) as ISeriesApi<'Line'>;
         let lower = seriesRef.current.get(`${ind.id}-lower`) as ISeriesApi<'Line'>;
         if (!upper || !middle || !lower) {
-          upper = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.upperColor || '#ffffff', lineWidth: 1, priceScaleId: 'right', priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
-          middle = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.middleColor || '#ffffff', lineWidth: 1, priceScaleId: 'right', priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
-          lower = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.lowerColor || '#ffffff', lineWidth: 1, priceScaleId: 'right', priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+          upper = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.upperColor || defColor, lineWidth: 1, priceScaleId: 'right', priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+          middle = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.middleColor || defColor, lineWidth: 1, priceScaleId: 'right', priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
+          lower = chart.addSeries(LineSeries, { priceLineVisible: false, color: ind.params.lowerColor || defColor, lineWidth: 1, priceScaleId: 'right', priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
           seriesRef.current.set(`${ind.id}-upper`, upper);
           seriesRef.current.set(`${ind.id}-middle`, middle);
           seriesRef.current.set(`${ind.id}-lower`, lower);
         } else {
-          upper.applyOptions({ color: ind.params.upperColor || '#ffffff' });
-          middle.applyOptions({ color: ind.params.middleColor || '#ffffff' });
-          lower.applyOptions({ color: ind.params.lowerColor || '#ffffff' });
+          upper.applyOptions({ color: ind.params.upperColor || defColor });
+          middle.applyOptions({ color: ind.params.middleColor || defColor });
+          lower.applyOptions({ color: ind.params.lowerColor || defColor });
         }
         const highP = ind.params.highPeriod || 20;
         const lowP = ind.params.lowPeriod || 20;
@@ -1956,7 +1967,7 @@ function syncIndicators(
           });
 
           smiLine = chart.addSeries(LineSeries, { 
-            color: ind.params.color || '#ffffff', 
+            color: ind.params.color || defColor, 
             lineWidth: 1, 
             priceScaleId: `${ind.id}-scale`,
             priceFormat: { type: 'price', precision: 2, minMove: 0.01 },
@@ -1979,7 +1990,7 @@ function syncIndicators(
           seriesRef.current.set(`${ind.id}-smi`, smiLine);
           seriesRef.current.set(`${ind.id}-signal`, signalLine);
         } else {
-          smiLine.applyOptions({ color: ind.params.color || '#ffffff' });
+          smiLine.applyOptions({ color: ind.params.color || defColor });
           signalLine.applyOptions({ color: ind.params.signalColor || '#ff0000' });
           smiObFill.applyOptions({
             baseValue: { type: 'price', price: obVal },
@@ -2039,7 +2050,7 @@ function syncIndicators(
       let series = seriesRef.current.get(ind.id) as ISeriesApi<'Line'>;
       if (!series) {
         series = chart.addSeries(LineSeries, { priceLineVisible: false, 
-          color: ind.params.color || '#ffffff', 
+          color: ind.params.color || defColor, 
           lineWidth: 1, 
           priceScaleId: `${ind.id}-scale`,
           priceFormat: { type: 'price', precision: 2, minMove: 0.01 }
@@ -2056,7 +2067,7 @@ function syncIndicators(
 
         seriesRef.current.set(ind.id, series);
       } else {
-        series.applyOptions({ color: ind.params.color || '#ffffff' });
+        series.applyOptions({ color: ind.params.color || defColor });
       }
       
       const p = ind.params.period || 14;
@@ -2077,8 +2088,8 @@ function syncIndicators(
       if (data.length > 0) series.setData(data as any);
 
       } else if (ind.type === 'fractal') {
-        const upperColor = ind.params.fractalHighColor || '#ffffff';
-        const lowerColor = ind.params.fractalLowColor || '#ffffff';
+        const upperColor = ind.params.fractalHighColor || defColor;
+        const lowerColor = ind.params.fractalLowColor || defColor;
         
         let upper = seriesRef.current.get(`${ind.id}-upper`) as ISeriesApi<'Line'>;
         let lower = seriesRef.current.get(`${ind.id}-lower`) as ISeriesApi<'Line'>;
