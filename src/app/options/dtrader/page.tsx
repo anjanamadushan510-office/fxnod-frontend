@@ -5,10 +5,10 @@ import type { Route } from "next";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChartPanel } from "@/components/options/chart/ChartPanel";
 import { IconSidebar } from "@/components/options/layout/IconSidebar";
-import { OptionsShell } from "@/components/options/layout/OptionsShell";
 import { TopBar } from "@/components/options/layout/TopBar";
 import { findMarket } from "@/components/options/market/catalog";
 import { useChartSettings } from "@/hooks/useChartSettings";
+import { useTheme } from "next-themes";
 import { OrderPanel } from "@/components/options/order/OrderPanel";
 import { PositionsDrawer } from "@/components/options/positions/PositionsDrawer";
 import { ContractDetailsModal } from "@/components/options/positions/ContractDetailsModal";
@@ -82,6 +82,10 @@ function OptionsPageInner() {
     }
   }, [searchParams, router]);
 
+  const { resolvedTheme, setTheme } = useTheme();
+  const currentTheme = (resolvedTheme === "dark" ? "dark" : "light") as "light" | "dark";
+  const toggleTheme = () => setTheme(currentTheme === "dark" ? "light" : "dark");
+
   const [accountMode, _setAccountMode] = useState<OptionsAccountMode>("demo");
 
   // Drawer open state is a store (a buy can open it from the order panel).
@@ -142,7 +146,7 @@ function OptionsPageInner() {
   return (
     <>
       <OptionsShell
-        theme="dark"
+        theme={currentTheme}
         drawerOpen={positionsOpen}
         drawer={
           <PositionsDrawer
@@ -153,7 +157,8 @@ function OptionsPageInner() {
         sidebar={
           <IconSidebar
             brandInitials="DT"
-            theme="dark"
+            theme={currentTheme}
+            onThemeToggle={toggleTheme}
             positionsOpen={positionsOpen}
             onPositionsToggle={togglePositions}
             positionsBadge={positionsCount || undefined}

@@ -128,15 +128,15 @@ a {
    Tokens here OVERRIDE the home defaults inside that scope only.
    ============================================================================ */
 [data-app="options"] {
-  --opt-bg: #fafaf9;
-  --opt-bg-elev: #ffffff;
-  --opt-bg-sunk: #f5f5f4;
-  --opt-line: #ececea;
-  --opt-line-strong: #d6d5d1;
-  --opt-ink: #15161a;
-  --opt-ink-2: #4a4d55;
-  --opt-ink-3: #8a8d94;
-  --opt-ink-4: #b8babf;
+  --opt-bg: var(--bg);
+  --opt-bg-elev: var(--surface);
+  --opt-bg-sunk: var(--surface-2);
+  --opt-line: var(--line);
+  --opt-line-strong: var(--line-2);
+  --opt-ink: var(--ink);
+  --opt-ink-2: var(--ink-2);
+  --opt-ink-3: var(--ink-3);
+  --opt-ink-4: #9CA3AF;
   --opt-rise: oklch(0.66 0.16 152);
   --opt-rise-soft: oklch(0.66 0.16 152 / 0.1);
   --opt-fall: oklch(0.62 0.2 25);
@@ -150,15 +150,8 @@ a {
   line-height: 1.4;
 }
 
-[data-app="options"][data-opt-theme="dark"] {
-  --opt-bg: var(--bg);
-  --opt-bg-elev: var(--surface);
-  --opt-bg-sunk: var(--surface-2);
-  --opt-line: var(--line);
-  --opt-line-strong: var(--line-2);
-  --opt-ink: var(--ink);
-  --opt-ink-2: var(--ink-2);
-  --opt-ink-3: var(--ink-3);
+[data-app="options"][data-opt-theme="dark"],
+[data-theme="dark"] [data-app="options"] {
   --opt-ink-4: #6b7280;
 }
 
