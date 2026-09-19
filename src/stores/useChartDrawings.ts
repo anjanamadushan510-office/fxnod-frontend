@@ -58,7 +58,7 @@ export const useChartDrawings = create<ChartDrawingsState>((set) => ({
     })),
   addDrawing: (drawing) => {
     const id = crypto.randomUUID();
-    set((s) => ({ drawings: [...s.drawings, { ...drawing, id }] }));
+    set((s) => ({ drawings: [...s.drawings, { ...drawing, id }], activeDrawingId: id }));
     return id;
   },
   removeDrawing: (id) =>

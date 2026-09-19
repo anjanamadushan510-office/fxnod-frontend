@@ -376,38 +376,44 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
           
           for (const d of store.drawings.filter(d => d.symbol === symbol)) {
             if (d.tool === "horizontal" && d.price != null) {
-              const lineY = series.priceToCoordinate(d.price);
-              if (lineY !== null && Math.abs(lineY - clickY) < 10) {
-                clickedDrawingId = d.id;
-                break;
-              }
+              try {
+                const lineY = series.priceToCoordinate(d.price);
+                if (lineY !== null && !isNaN(lineY) && Math.abs(lineY - clickY) < 15) {
+                  clickedDrawingId = d.id;
+                  break;
+                }
+              } catch (e) {}
             } else if (d.tool === "vertical" && d.time != null) {
-              const lineX = chart.timeScale().timeToCoordinate(d.time as any);
-              if (lineX !== null && Math.abs(lineX - clickX) < 10) {
-                clickedDrawingId = d.id;
-                break;
-              }
+              try {
+                const lineX = chart.timeScale().timeToCoordinate(d.time as any);
+                if (lineX !== null && !isNaN(lineX) && Math.abs(lineX - clickX) < 15) {
+                  clickedDrawingId = d.id;
+                  break;
+                }
+              } catch (e) {}
             } else if (d.tool === "trend" && d.points) {
-              const [p1, p2] = d.points;
-              const x1 = chart.timeScale().timeToCoordinate(p1.time as any);
-              const y1 = series.priceToCoordinate(p1.price);
-              const x2 = chart.timeScale().timeToCoordinate(p2.time as any);
-              const y2 = series.priceToCoordinate(p2.price);
-              
-              if (x1 !== null && y1 !== null && x2 !== null && y2 !== null) {
-                const l2 = (x2 - x1) ** 2 + (y2 - y1) ** 2;
-                if (l2 !== 0) {
-                  let t = ((clickX - x1) * (x2 - x1) + (clickY - y1) * (y2 - y1)) / l2;
-                  t = Math.max(0, Math.min(1, t));
-                  const projX = x1 + t * (x2 - x1);
-                  const projY = y1 + t * (y2 - y1);
-                  const dist = Math.sqrt((clickX - projX) ** 2 + (clickY - projY) ** 2);
-                  if (dist < 10) {
-                    clickedDrawingId = d.id;
-                    break;
+              try {
+                const [p1, p2] = d.points;
+                const x1 = chart.timeScale().timeToCoordinate(p1.time as any);
+                const y1 = series.priceToCoordinate(p1.price);
+                const x2 = chart.timeScale().timeToCoordinate(p2.time as any);
+                const y2 = series.priceToCoordinate(p2.price);
+                
+                if (x1 !== null && y1 !== null && x2 !== null && y2 !== null && !isNaN(x1) && !isNaN(y1) && !isNaN(x2) && !isNaN(y2)) {
+                  const l2 = (x2 - x1) ** 2 + (y2 - y1) ** 2;
+                  if (l2 !== 0) {
+                    let t = ((clickX - x1) * (x2 - x1) + (clickY - y1) * (y2 - y1)) / l2;
+                    t = Math.max(0, Math.min(1, t));
+                    const projX = x1 + t * (x2 - x1);
+                    const projY = y1 + t * (y2 - y1);
+                    const dist = Math.sqrt((clickX - projX) ** 2 + (clickY - projY) ** 2);
+                    if (dist < 15) {
+                      clickedDrawingId = d.id;
+                      break;
+                    }
                   }
                 }
-              }
+              } catch(e) {}
             }
           }
           

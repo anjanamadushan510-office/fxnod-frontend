@@ -30,7 +30,7 @@ export function DrawingToolbar() {
     : null;
 
   // Draggable State
-  const [position, setPosition] = useState({ x: 200, y: 100 });
+  const [position, setPosition] = useState({ x: 80, y: 20 });
   const [isDragging, setIsDragging] = useState(false);
   const dragRef = useRef<{ startX: number; startY: number; initX: number; initY: number } | null>(null);
 
@@ -87,7 +87,7 @@ export function DrawingToolbar() {
   return (
     <div
       ref={toolbarRef}
-      className="absolute z-50 flex items-center gap-1 rounded-lg border border-[#24344F] bg-[#10141f] p-1 shadow-xl"
+      className="absolute z-[100] flex items-center gap-1 rounded-lg border border-[#24344F] bg-[#10141f] p-1 shadow-xl"
       style={{
         left: position.x,
         top: position.y,
