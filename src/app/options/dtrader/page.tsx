@@ -73,17 +73,28 @@ function OptionsPageInner() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
+  const [reportsOpen, setReportsOpen] = useState(() => {
+    if (typeof window !== "undefined") {
+      return window.location.pathname.startsWith("/reports");
+    }
+    return pathname.startsWith("/reports");
+  });
+  const toggleReports = () => setReportsOpen((prev) => !prev);
+  const chartParamsRef = useRef("");
+
   // Bare /options/dtrader → pin the full default query so the URL is always
   // explicit and shareable. The guard (empty params only) means the
   // post-replace render — now with params — can't re-trigger it, so there's no
   // redirect loop.
   useEffect(() => {
+    if (reportsOpen || pathname.startsWith("/reports") || (typeof window !== "undefined" && window.location.pathname.startsWith("/reports"))) return;
+    
     if (searchParams.toString() === "") {
       router.replace(`/options/dtrader${DEFAULT_OPTIONS_QUERY}` as Route, {
         scroll: false,
       });
     }
-  }, [searchParams, router]);
+  }, [searchParams, router, pathname, reportsOpen]);
 
   const { resolvedTheme, setTheme } = useTheme();
   const currentTheme = (resolvedTheme === "dark" ? "dark" : "light") as "light" | "dark";
@@ -96,17 +107,6 @@ function OptionsPageInner() {
   const togglePositions = usePositionsUI((s) => s.toggle);
   const setPositionsOpen = usePositionsUI((s) => s.setOpen);
   const positionsCount = useOpenPositions((s) => s.positions.length);
-
-  const [reportsOpen, setReportsOpen] = useState(() => {
-    if (typeof window !== "undefined") {
-      return window.location.pathname.startsWith("/reports");
-    }
-    return pathname.startsWith("/reports");
-  });
-  const toggleReports = () => setReportsOpen((prev) => !prev);
-
-  // Store the chart query string so we can restore it when closing Reports
-  const chartParamsRef = useRef("");
 
   // Sync Reports modal open state with URL
   useEffect(() => {
