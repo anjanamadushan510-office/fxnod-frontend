@@ -101,8 +101,8 @@ export class TrendPrimitive implements ISeriesPrimitive<Time> {
   constructor(
     public a: LinePoint,
     public b: LinePoint,
-    public readonly color = "#2962FF",
-    public readonly width = 2,
+    public color = "#2962FF",
+    public width = 2,
     public readonly dashed = false,
   ) {
     this._paneView = new TrendPaneView(this);
@@ -183,8 +183,8 @@ export class VerticalPrimitive implements ISeriesPrimitive<Time> {
 
   constructor(
     public time: Time,
-    public readonly color = "#2962FF",
-    public readonly width = 1,
+    public color = "#2962FF",
+    public width = 1,
     public readonly dashed = false,
   ) {
     this._paneView = new VerticalPaneView(this);
