@@ -3,8 +3,16 @@
 import type { Route } from "next";
 import Link from "next/link";
 import { fmtUSD } from "@/lib/format";
+import { useGetWalletTransactions } from "@/services/api/endpoints/wallet/wallet";
+
+function formatDate(dateStr: string) {
+  const d = new Date(dateStr);
+  return new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).format(d);
+}
 
 export function DashboardActivity() {
+  const { data: transactionsData, isLoading, isError } = useGetWalletTransactions();
+  const transactions = (transactionsData?.items || []).slice(0, 4);
   return (
     <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
       {/* Subscriptions / Active Positions */}
@@ -74,29 +82,32 @@ export function DashboardActivity() {
         </div>
         
         <div className="flex-1 flex flex-col gap-6 overflow-y-auto pt-2">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-ink mb-1">Top up</p>
-              <p className="text-xs text-ink-3">Sep 12, 2026</p>
-            </div>
-            <span className="text-sm font-medium text-green-400 tabular-nums">+{fmtUSD(500.00)}</span>
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-ink mb-1">Partner Payout</p>
-              <p className="text-xs text-ink-3">Sep 01, 2026</p>
-            </div>
-            <span className="text-sm font-medium text-green-400 tabular-nums">+{fmtUSD(86.40)}</span>
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-ink mb-1">Withdrawal</p>
-              <p className="text-xs text-ink-3">Aug 28, 2026</p>
-            </div>
-            <span className="text-sm font-medium text-ink-2 tabular-nums">-{fmtUSD(150.00)}</span>
-          </div>
+          {isLoading ? (
+            <p className="text-sm text-ink-3">Loading activity...</p>
+          ) : isError ? (
+            <p className="text-sm text-red-400">Failed to load activity.</p>
+          ) : transactions.length === 0 ? (
+            <p className="text-sm text-ink-3">No recent activity.</p>
+          ) : (
+            transactions.map((tx) => {
+              const amount = Math.abs(Number(tx.amount));
+              const isPositive = tx.direction === "credit";
+              
+              return (
+                <div key={tx.id} className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-ink mb-1 capitalize">
+                      {tx.description || tx.transaction_type?.replace(/_/g, ' ')}
+                    </p>
+                    <p className="text-xs text-ink-3">{formatDate(tx.created_at)}</p>
+                  </div>
+                  <span className={`text-sm font-medium tabular-nums ${isPositive ? 'text-green-400' : 'text-ink-2'}`}>
+                    {isPositive ? '+' : '-'}{fmtUSD(amount)}
+                  </span>
+                </div>
+              );
+            })
+          )}
         </div>
       </article>
     </div>
