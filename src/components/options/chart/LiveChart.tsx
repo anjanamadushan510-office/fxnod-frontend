@@ -501,7 +501,66 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
        if (!el) return;
 
        const onPointerDown = (e: MouseEvent | TouchEvent) => {
-         if (hoveredDrawingIdRef.current && !activeToolRef.current) {
+         const tool = activeToolRef.current;
+         if (tool) {
+            e.stopPropagation();
+            
+            let clientX = 0; let clientY = 0;
+            if ('touches' in e) {
+               clientX = e.touches[0].clientX;
+               clientY = e.touches[0].clientY;
+            } else {
+               clientX = (e as MouseEvent).clientX;
+               clientY = (e as MouseEvent).clientY;
+            }
+            
+            const el = containerRef.current;
+            const chart = chartRef.current;
+            const series = seriesRef.current;
+            if (!el || !chart || !series) return;
+            
+            const rect = el.getBoundingClientRect();
+            const point = { x: clientX - rect.left, y: clientY - rect.top };
+            
+            const price = series.coordinateToPrice(point.y);
+            const time = chart.timeScale().coordinateToTime(point.x);
+            
+            const store = useChartDrawings.getState();
+            
+            if (tool === "horizontal") {
+               if (price !== null) {
+                  store.addDrawing({ symbol, tool, color: DRAWING_COLOR, price: Number(price) });
+                  store.setActiveDrawingScreenPos({ x: point.x, y: point.y });
+                  store.setActiveTool(null);
+               }
+            } else if (tool === "vertical") {
+               if (time !== null) {
+                  store.addDrawing({ symbol, tool, color: DRAWING_COLOR, time: time as any });
+                  store.setActiveDrawingScreenPos({ x: point.x, y: point.y });
+                  store.setActiveTool(null);
+               }
+            } else if (tool === "trend") {
+               if (time !== null && price !== null) {
+                  const pt = { time, price: Number(price) };
+                  if (!pendingTrendRef.current) {
+                     pendingTrendRef.current = pt;
+                  } else {
+                     const a = pendingTrendRef.current;
+                     store.addDrawing({
+                        symbol,
+                        tool,
+                        color: DRAWING_COLOR,
+                        points: [
+                           { time: a.time as any, price: a.price },
+                           { time: pt.time as any, price: pt.price },
+                        ],
+                     });
+                     pendingTrendRef.current = null;
+                     store.setActiveTool(null);
+                  }
+               }
+            }
+         } else if (hoveredDrawingIdRef.current) {
             isDraggingRef.current = true;
             draggingDrawingIdRef.current = hoveredDrawingIdRef.current;
             
@@ -510,8 +569,8 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
                clientX = e.touches[0].clientX;
                clientY = e.touches[0].clientY;
             } else {
-               clientX = e.clientX;
-               clientY = e.clientY;
+               clientX = (e as MouseEvent).clientX;
+               clientY = (e as MouseEvent).clientY;
             }
             dragStartPosRef.current = { x: clientX, y: clientY };
             
@@ -662,43 +721,6 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
           } else {
             store.setActiveDrawingId(null);
           }
-          return;
-        }
-
-        const price = series.coordinateToPrice(point.y);
-        const time = (param.time ??
-          chart.timeScale().coordinateToTime(point.x)) as Time | null;
-
-        if (tool === "horizontal") {
-          if (price === null) return;
-          store.addDrawing({ symbol, tool, color: DRAWING_COLOR, price: Number(price) });
-          store.setActiveDrawingScreenPos({ x: point.x, y: point.y });
-          store.setActiveTool(null);
-        } else if (tool === "vertical") {
-          if (time === null) return;
-          store.addDrawing({ symbol, tool, color: DRAWING_COLOR, time: time as any });
-          store.setActiveDrawingScreenPos({ x: point.x, y: point.y });
-          store.setActiveTool(null);
-        } else {
-          // trend — first click anchors, second click completes.
-          if (time === null || price === null) return;
-          const pt = { time, price: Number(price) };
-          if (!pendingTrendRef.current) {
-            pendingTrendRef.current = pt;
-            return;
-          }
-          const a = pendingTrendRef.current;
-          store.addDrawing({
-            symbol,
-            tool,
-            color: DRAWING_COLOR,
-            points: [
-              { time: a.time as any, price: a.price },
-              { time: pt.time as any, price: pt.price },
-            ],
-          });
-          pendingTrendRef.current = null;
-          store.setActiveTool(null);
         }
       };
       chart.subscribeClick(handler);
