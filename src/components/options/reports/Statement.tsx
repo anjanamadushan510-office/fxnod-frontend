@@ -1,42 +1,67 @@
 import { CalendarIcon, ChevronDownIcon } from "lucide-react";
-
-const MOCK_STATEMENT = [
-  {
-    id: "44728919293",
-    type: "vol_100_1s",
-    typeName: "Volatility 100 (1s) Index",
-    action: "Sell",
-    currency: "USD",
-    time: "19 Sep 2026, 10:16:00",
-    transactionType: "Sell",
-    creditDebit: 10.88,
-    balance: 7458.76,
-  },
-  {
-    id: "44728919293",
-    type: "vol_100_1s",
-    typeName: "Volatility 100 (1s) Index",
-    action: "Buy",
-    currency: "USD",
-    time: "19 Sep 2026, 10:15:00",
-    transactionType: "Buy",
-    creditDebit: -10.00,
-    balance: 7447.88,
-  },
-  {
-    id: "44728919280",
-    type: "vol_50_1s",
-    typeName: "Volatility 50 (1s) Index",
-    action: "Buy",
-    currency: "USD",
-    time: "19 Sep 2026, 09:30:15",
-    transactionType: "Buy",
-    creditDebit: -5.00,
-    balance: 7457.88,
-  }
-];
+import { useGetTradeHistory } from "@/services/api/endpoints/trading/trading";
+import { useMemo } from "react";
 
 export function Statement() {
+  const { data: trades, isLoading } = useGetTradeHistory();
+
+  const statementItems = useMemo(() => {
+    if (!trades) return [];
+
+    const items: Array<{
+      id: string;
+      typeId: string;
+      typeName: string;
+      action: string;
+      currency: string;
+      time: Date;
+      transactionType: "Buy" | "Sell";
+      creditDebit: number;
+      balance: string;
+    }> = [];
+
+    trades.forEach((trade) => {
+      const stake = parseFloat(trade.stake_amount);
+      const payout = parseFloat(trade.final_payout_amount || "0");
+      const side = trade.side.toLowerCase();
+      
+      const buyDate = new Date(trade.created_at);
+
+      // Buy transaction
+      items.push({
+        id: trade.deriv_contract_id,
+        typeId: trade.symbol, // using symbol as type id
+        typeName: trade.frontend_contract_type,
+        action: trade.side,
+        currency: trade.currency,
+        time: buyDate,
+        transactionType: "Buy",
+        creditDebit: -stake,
+        balance: "-",
+      });
+
+      // Sell transaction if settled with a payout
+      if (trade.outcome && payout > 0 && trade.duration_seconds) {
+        const sellDate = new Date(buyDate.getTime() + trade.duration_seconds * 1000);
+        items.push({
+          id: trade.deriv_contract_id,
+          typeId: trade.symbol,
+          typeName: trade.frontend_contract_type,
+          action: "Sell",
+          currency: trade.currency,
+          time: sellDate,
+          transactionType: "Sell",
+          creditDebit: payout,
+          balance: "-",
+        });
+      }
+    });
+
+    // Sort descending by time
+    items.sort((a, b) => b.time.getTime() - a.time.getTime());
+    return items;
+  }, [trades]);
+
   return (
     <div className="flex h-full flex-col text-[14px]">
       {/* Top filters */}
@@ -71,39 +96,46 @@ export function Statement() {
 
       {/* Table body */}
       <div className="flex-1 overflow-y-auto">
-        {MOCK_STATEMENT.length === 0 ? (
+        {isLoading ? (
+           <div className="flex h-full flex-col items-center justify-center p-8 text-center text-zinc-500">
+             Loading statement...
+           </div>
+        ) : statementItems.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center p-8 text-center text-zinc-500">
              No transactions found for this period.
           </div>
         ) : (
-          MOCK_STATEMENT.map((item, idx) => (
-            <div 
-              key={`${item.id}-${item.transactionType}-${idx}`}
-              className="grid grid-cols-[2fr_1.5fr_1fr_1.5fr_1.5fr_1.5fr_1.5fr] gap-4 border-b border-gray-800/50 p-4 items-center hover:bg-gray-800/20 transition-colors"
-            >
-              <div className="flex items-center gap-2 text-white">
-                <div className="h-6 w-6 rounded bg-gray-800 flex items-center justify-center text-xs">V</div>
-                <div className="flex flex-col">
-                  <span className="font-medium text-xs truncate max-w-[150px]">{item.typeName}</span>
-                  <span className={item.action === "Buy" ? "text-opt-fall text-[11px]" : "text-opt-rise text-[11px]"}>{item.action}</span>
+          statementItems.map((item, idx) => {
+            const side = item.action.toLowerCase();
+            return (
+              <div 
+                key={`${item.id}-${item.transactionType}-${idx}`}
+                className="grid grid-cols-[2fr_1.5fr_1fr_1.5fr_1.5fr_1.5fr_1.5fr] gap-4 border-b border-gray-800/50 p-4 items-center hover:bg-gray-800/20 transition-colors"
+              >
+                <div className="flex items-center gap-2 text-white">
+                  <div className="h-6 w-6 rounded bg-gray-800 flex items-center justify-center text-xs">V</div>
+                  <div className="flex flex-col">
+                    <span className="font-medium text-xs truncate max-w-[150px]">{item.typeName}</span>
+                    <span className={side === "sell" || side === "fall" || side === "down" ? "text-opt-fall text-[11px]" : "text-opt-rise text-[11px]"}>{item.action}</span>
+                  </div>
                 </div>
+                <div className="text-zinc-300">{item.id}</div>
+                <div className="text-zinc-300">{item.currency}</div>
+                <div className="text-zinc-300 whitespace-nowrap">{item.time.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}</div>
+                <div className="font-medium">
+                  {item.transactionType === "Buy" ? (
+                    <span className="text-opt-fall">Buy</span>
+                  ) : (
+                    <span className="text-opt-rise">Sell</span>
+                  )}
+                </div>
+                <div className={`text-right font-medium ${item.creditDebit >= 0 ? "text-opt-rise" : "text-opt-fall"}`}>
+                  {item.creditDebit > 0 ? "+" : ""}{item.creditDebit.toFixed(2)}
+                </div>
+                <div className="text-right font-medium text-white">{item.balance}</div>
               </div>
-              <div className="text-zinc-300">{item.id}</div>
-              <div className="text-zinc-300">{item.currency}</div>
-              <div className="text-zinc-300 whitespace-nowrap">{item.time}</div>
-              <div className="font-medium">
-                {item.transactionType === "Buy" ? (
-                  <span className="text-opt-fall">Buy</span>
-                ) : (
-                  <span className="text-opt-rise">Sell</span>
-                )}
-              </div>
-              <div className={`text-right font-medium ${item.creditDebit >= 0 ? "text-opt-rise" : "text-opt-fall"}`}>
-                {item.creditDebit > 0 ? "+" : ""}{item.creditDebit.toFixed(2)}
-              </div>
-              <div className="text-right font-medium text-white">{item.balance.toFixed(2)}</div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>

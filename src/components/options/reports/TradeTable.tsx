@@ -1,34 +1,14 @@
-import { CalendarIcon, ChevronDownIcon, ClockIcon } from "lucide-react";
-
-const MOCK_TRADES = [
-  {
-    id: "44728919293",
-    type: "vol_100_1s",
-    typeName: "Volatility 100 (1s) Index",
-    action: "Rise",
-    currency: "USD",
-    buyTime: "19 Sep 2026, 10:15:00",
-    stake: 10.00,
-    sellTime: "19 Sep 2026, 10:16:00",
-    contractValue: 10.88,
-    profitLoss: 0.88,
-  },
-  {
-    id: "44728919280",
-    type: "vol_50_1s",
-    typeName: "Volatility 50 (1s) Index",
-    action: "Fall",
-    currency: "USD",
-    buyTime: "19 Sep 2026, 09:30:15",
-    stake: 5.00,
-    sellTime: "19 Sep 2026, 09:31:15",
-    contractValue: 0.00,
-    profitLoss: -5.00,
-  }
-];
+import { CalendarIcon } from "lucide-react";
+import { useGetTradeHistory } from "@/services/api/endpoints/trading/trading";
 
 export function TradeTable() {
-  const totalProfitLoss = MOCK_TRADES.reduce((acc, t) => acc + t.profitLoss, 0);
+  const { data: trades, isLoading } = useGetTradeHistory();
+
+  const totalProfitLoss = trades?.reduce((acc, t) => {
+    const stake = parseFloat(t.stake_amount);
+    const payout = parseFloat(t.final_payout_amount || "0");
+    return acc + (payout - stake);
+  }, 0) ?? 0;
 
   return (
     <div className="flex h-full flex-col text-[14px]">
@@ -57,34 +37,58 @@ export function TradeTable() {
 
       {/* Table body */}
       <div className="flex-1 overflow-y-auto">
-        {MOCK_TRADES.length === 0 ? (
+        {isLoading ? (
+          <div className="flex h-full flex-col items-center justify-center p-8 text-center text-zinc-500">
+             Loading trades...
+          </div>
+        ) : !trades || trades.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center p-8 text-center text-zinc-500">
              No trades found for this period.
           </div>
         ) : (
-          MOCK_TRADES.map((trade) => (
-            <div 
-              key={trade.id} 
-              className="grid grid-cols-[2fr_1.5fr_1fr_1.5fr_1fr_1.5fr_1fr_1.5fr] gap-4 border-b border-gray-800/50 p-4 items-center hover:bg-gray-800/20 transition-colors"
-            >
-              <div className="flex items-center gap-2 text-white">
-                <div className="h-6 w-6 rounded bg-gray-800 flex items-center justify-center text-xs">V</div>
-                <div className="flex flex-col">
-                  <span className="font-medium text-xs truncate max-w-[150px]">{trade.typeName}</span>
-                  <span className={trade.action === "Rise" ? "text-opt-rise text-[11px]" : "text-opt-fall text-[11px]"}>{trade.action}</span>
+          trades.map((trade) => {
+            const stake = parseFloat(trade.stake_amount);
+            const payout = parseFloat(trade.final_payout_amount || "0");
+            const profitLoss = payout - stake;
+            const isWin = profitLoss >= 0;
+            
+            const buyDate = new Date(trade.created_at);
+            const buyTimeStr = buyDate.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            
+            let sellTimeStr = "-";
+            if (trade.duration_seconds && trade.outcome) {
+              const sellDate = new Date(buyDate.getTime() + trade.duration_seconds * 1000);
+              sellTimeStr = sellDate.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            }
+
+            const side = trade.side.toLowerCase();
+
+            return (
+              <div 
+                key={trade.id} 
+                className="grid grid-cols-[2fr_1.5fr_1fr_1.5fr_1fr_1.5fr_1fr_1.5fr] gap-4 border-b border-gray-800/50 p-4 items-center hover:bg-gray-800/20 transition-colors"
+              >
+                <div className="flex items-center gap-2 text-white">
+                  <div className="h-6 w-6 rounded bg-gray-800 flex items-center justify-center text-xs">V</div>
+                  <div className="flex flex-col">
+                    <span className="font-medium text-xs truncate max-w-[150px]">{trade.frontend_contract_type}</span>
+                    <span className={side === "rise" || side === "buy" || side === "up" ? "text-opt-rise text-[11px]" : "text-opt-fall text-[11px]"}>
+                      {trade.side}
+                    </span>
+                  </div>
+                </div>
+                <div className="text-zinc-300">{trade.deriv_contract_id}</div>
+                <div className="text-zinc-300">{trade.currency}</div>
+                <div className="text-zinc-300 whitespace-nowrap">{buyTimeStr}</div>
+                <div className="text-right text-zinc-300">{stake.toFixed(2)}</div>
+                <div className="text-zinc-300 whitespace-nowrap">{sellTimeStr}</div>
+                <div className="text-right text-zinc-300">{payout.toFixed(2)}</div>
+                <div className={`text-right font-medium ${isWin ? "text-opt-rise" : "text-opt-fall"}`}>
+                  {profitLoss > 0 ? "+" : ""}{profitLoss.toFixed(2)}
                 </div>
               </div>
-              <div className="text-zinc-300">{trade.id}</div>
-              <div className="text-zinc-300">{trade.currency}</div>
-              <div className="text-zinc-300 whitespace-nowrap">{trade.buyTime}</div>
-              <div className="text-right text-zinc-300">{trade.stake.toFixed(2)}</div>
-              <div className="text-zinc-300 whitespace-nowrap">{trade.sellTime}</div>
-              <div className="text-right text-zinc-300">{trade.contractValue.toFixed(2)}</div>
-              <div className={`text-right font-medium ${trade.profitLoss >= 0 ? "text-opt-rise" : "text-opt-fall"}`}>
-                {trade.profitLoss > 0 ? "+" : ""}{trade.profitLoss.toFixed(2)}
-              </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 
