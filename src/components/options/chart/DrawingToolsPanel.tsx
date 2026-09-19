@@ -44,6 +44,11 @@ function drawingLabel(d: Drawing): string {
  */
 export function DrawingToolsPanel({ onClose }: { onClose: () => void }) {
   const [tab, setTab] = useState<DrawTab>("all");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const symbol = useLiveMarket((s) => s.symbol);
   const allDrawings = useChartDrawings((s) => s.drawings);
@@ -64,6 +69,8 @@ export function DrawingToolsPanel({ onClose }: { onClose: () => void }) {
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
+
+  if (!mounted) return null;
 
   return (
     <div

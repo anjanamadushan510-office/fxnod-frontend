@@ -1,6 +1,7 @@
 "use client";
 
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 export type DrawingTool = "horizontal" | "trend" | "vertical";
 
@@ -48,25 +49,33 @@ interface ChartDrawingsState {
  * (arms a tool, lists/deletes drawings in the "Active" tab). Keyed by symbol so
  * each market keeps its own drawings.
  */
-export const useChartDrawings = create<ChartDrawingsState>((set) => ({
-  activeTool: null,
-  activeDrawingId: null,
-  activeDrawingScreenPos: null,
-  drawings: [],
-  setActiveTool: (tool) => set({ activeTool: tool }),
-  setActiveDrawingId: (id) => set({ activeDrawingId: id, activeDrawingScreenPos: null }),
-  setActiveDrawingScreenPos: (pos) => set({ activeDrawingScreenPos: pos }),
-  updateDrawing: (id, updates) =>
-    set((s) => ({
-      drawings: s.drawings.map((d) => (d.id === id ? { ...d, ...updates } : d)),
-    })),
-  addDrawing: (drawing) => {
-    const id = crypto.randomUUID();
-    set((s) => ({ drawings: [...s.drawings, { ...drawing, id }], activeDrawingId: id }));
-    return id;
-  },
-  removeDrawing: (id) =>
-    set((s) => ({ drawings: s.drawings.filter((d) => d.id !== id) })),
-  clearSymbol: (symbol) =>
-    set((s) => ({ drawings: s.drawings.filter((d) => d.symbol !== symbol) })),
-}));
+export const useChartDrawings = create<ChartDrawingsState>()(
+  persist(
+    (set) => ({
+      activeTool: null,
+      activeDrawingId: null,
+      activeDrawingScreenPos: null,
+      drawings: [],
+      setActiveTool: (tool) => set({ activeTool: tool }),
+      setActiveDrawingId: (id) => set({ activeDrawingId: id, activeDrawingScreenPos: null }),
+      setActiveDrawingScreenPos: (pos) => set({ activeDrawingScreenPos: pos }),
+      updateDrawing: (id, updates) =>
+        set((s) => ({
+          drawings: s.drawings.map((d) => (d.id === id ? { ...d, ...updates } : d)),
+        })),
+      addDrawing: (drawing) => {
+        const id = crypto.randomUUID();
+        set((s) => ({ drawings: [...s.drawings, { ...drawing, id }], activeDrawingId: id }));
+        return id;
+      },
+      removeDrawing: (id) =>
+        set((s) => ({ drawings: s.drawings.filter((d) => d.id !== id) })),
+      clearSymbol: (symbol) =>
+        set((s) => ({ drawings: s.drawings.filter((d) => d.symbol !== symbol) })),
+    }),
+    {
+      name: "dtrader-drawings-storage",
+      partialize: (state) => ({ drawings: state.drawings }),
+    }
+  )
+);
