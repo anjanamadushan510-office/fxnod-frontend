@@ -220,6 +220,10 @@ function PlanCard({
   const price = Number.parseFloat(plan.price_usd) || 0;
   const affordable = balance >= price;
   const lifetime = plan.duration_days === null;
+  // The "was" price comes from the catalogue, like the price itself. It is
+  // shown only when it is actually higher; the server enforces that too.
+  const compareAt = plan.compare_at_price_usd ? Number.parseFloat(plan.compare_at_price_usd) : null;
+  const showCompareAt = compareAt !== null && compareAt > price;
 
   // The plan says what it is charged in, and the wallet is debited in the same
   // thing. Hardcoding "$" here made the card read "$25.00" directly under a
@@ -241,9 +245,16 @@ function PlanCard({
         </p>
       </div>
 
-      <p className="text-2xl font-semibold tabular-nums leading-none text-ink">
-        {price.toFixed(2)} <span className="text-sm font-medium">{unit}</span>
-      </p>
+      <div>
+        {showCompareAt && (
+          <p className="text-sm tabular-nums text-ink-3 line-through decoration-red-500/60 decoration-2 mb-1">
+            {compareAt.toFixed(2)} {unit}
+          </p>
+        )}
+        <p className="text-2xl font-semibold tabular-nums leading-none text-ink">
+          {price.toFixed(2)} <span className="text-sm font-medium">{unit}</span>
+        </p>
+      </div>
 
       <button
         type="button"
