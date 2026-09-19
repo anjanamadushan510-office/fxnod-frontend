@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { createChart, ISeriesApi, Time, LineSeries, SeriesMarker, createSeriesMarkers } from "lightweight-charts";
+import { useTheme } from "next-themes";
 import { useDerivChartFeed, type FeedTick } from "@/hooks/useDerivChartFeed";
 import { useOpenContract } from "@/hooks/useOpenContract";
 import type { BotTrade, PlottableTick } from "./types";
@@ -144,6 +145,29 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
   const markersPluginRef = useRef<ReturnType<typeof createSeriesMarkers<Time>>>();
   const entryLineRef = useRef<ISeriesApi<"Line">>();
 
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+  const isDarkRef = useRef(isDark);
+  useEffect(() => {
+    isDarkRef.current = isDark;
+    
+    // Update existing chart if theme changes
+    if (chartRef.current) {
+      chartRef.current.applyOptions({
+        layout: { textColor: isDark ? "#A3A3A3" : "#6B7280" },
+        grid: {
+          vertLines: { color: isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.05)" },
+          horzLines: { color: isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.05)" },
+        }
+      });
+    }
+    if (seriesRef.current) {
+      seriesRef.current.applyOptions({
+        color: isDark ? "#D1D5DB" : "#1F2937",
+      });
+    }
+  }, [isDark]);
+
   const openContract = useOpenContract(trade.result === "open" ? trade.derivContractId : undefined);
   const entryPrice = trade.entryPrice ?? openContract?.entrySpot;
 
@@ -154,11 +178,11 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
     const chart = createChart(chartContainerRef.current, {
       layout: {
         background: { color: "transparent" },
-        textColor: "#A3A3A3",
+        textColor: isDarkRef.current ? "#A3A3A3" : "#6B7280",
       },
       grid: {
-        vertLines: { color: "rgba(255, 255, 255, 0.05)" },
-        horzLines: { color: "rgba(255, 255, 255, 0.05)" },
+        vertLines: { color: isDarkRef.current ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.05)" },
+        horzLines: { color: isDarkRef.current ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.05)" },
       },
       timeScale: {
         timeVisible: true,
@@ -168,7 +192,7 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
     });
 
     const series = chart.addSeries(LineSeries, {
-      color: "#2A2A2A",
+      color: isDarkRef.current ? "#D1D5DB" : "#1F2937",
       lineWidth: 2,
       crosshairMarkerRadius: 4,
       lastValueVisible: false,
@@ -205,7 +229,7 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
       markers.push({
         time: t.time as Time,
         position: "inBar",
-        color: "#888888",
+        color: isDarkRef.current ? "#9CA3AF" : "#6B7280",
         shape: "circle",
         text: isFirst ? "" : `${i}`,
         size: 1,
@@ -292,11 +316,11 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
         displayTicks.forEach((t, i) => {
           const isLast = i === displayTicks.length - 1;
           
-          let color = "#888888"; // Solid Gray
+          let color = isDark ? "#9CA3AF" : "#6B7280"; 
           
           // Outcome Highlight for the final tick, regardless of array length
           if (isLast) {
-            color = "#000000"; // Solid Black
+            color = isDark ? "#FFFFFF" : "#000000";
           }
           
           markers.push({
@@ -335,7 +359,7 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
         }
       }
     }
-  }, [isLive, trade.tickStream]);
+  }, [isLive, trade.tickStream, isDark]);
 
   return <div ref={chartContainerRef} className="absolute inset-0 [&_.tv-lightweight-charts-logo]:hidden [&_#tv-attr-logo]:hidden" />;
 }
