@@ -6,6 +6,7 @@
 // (time, price) each frame, and a renderer paints onto the canvas in the
 // bitmap coordinate space (handling devicePixelRatio).
 
+import type {
   IPrimitivePaneRenderer,
   IPrimitivePaneView,
   ISeriesPrimitive,
