@@ -676,13 +676,11 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
 
        el.addEventListener("mousedown", onPointerDown, { capture: true });
        el.addEventListener("touchstart", onPointerDown, { capture: true, passive: false });
-       window.addEventListener("mousemove", onPointerUp);
        window.addEventListener("mouseup", onPointerUp);
        window.addEventListener("touchend", onPointerUp);
        return () => {
          el.removeEventListener("mousedown", onPointerDown, { capture: true });
          el.removeEventListener("touchstart", onPointerDown, { capture: true });
-         window.removeEventListener("mousemove", onPointerUp);
          window.removeEventListener("mouseup", onPointerUp);
          window.removeEventListener("touchend", onPointerUp);
        };
