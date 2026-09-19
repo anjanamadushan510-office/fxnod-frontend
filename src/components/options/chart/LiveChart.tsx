@@ -325,7 +325,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
         markersRef.current,
       );
       // Re-attach user drawings to the fresh series.
-      applyDrawings(seriesRef.current, drawingsRef.current, drawingObjsRef);
+      applyDrawings(seriesRef.current, drawingsRef.current, drawingObjsRef, useChartDrawings.getState().activeDrawingId);
       syncIndicators(chart, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeights, minimizedIndicators, isDark);
       // chart.timeScale().fitContent();
     }, [seriesKind, chartType, isDark]);

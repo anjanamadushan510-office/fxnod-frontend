@@ -6,11 +6,10 @@
 // (time, price) each frame, and a renderer paints onto the canvas in the
 // bitmap coordinate space (handling devicePixelRatio).
 
-import type {
   IPrimitivePaneRenderer,
   IPrimitivePaneView,
   ISeriesPrimitive,
-  ITimeAxisView,
+  ISeriesPrimitiveAxisView,
   SeriesAttachedParameter,
   Time,
 } from "lightweight-charts";
@@ -177,7 +176,7 @@ class VerticalPaneView implements IPrimitivePaneView {
   }
 }
 
-class VerticalTimeAxisView implements ITimeAxisView {
+class VerticalTimeAxisView implements ISeriesPrimitiveAxisView {
   private _x: number | null = null;
   private _text: string = "";
 
@@ -201,8 +200,8 @@ class VerticalTimeAxisView implements ITimeAxisView {
 
   coordinate(): number { return this._x ?? 0; }
   text(): string { return this._text; }
-  background(): string { return this._source.color; }
-  color(): string { return "#FFFFFF"; }
+  backColor(): string { return this._source.color; }
+  textColor(): string { return "#FFFFFF"; }
 }
 
 export class VerticalPrimitive implements ISeriesPrimitive<Time> {
@@ -245,7 +244,7 @@ export class VerticalPrimitive implements ISeriesPrimitive<Time> {
     return [this._paneView];
   }
   
-  timeAxisViews(): readonly ITimeAxisView[] {
+  timeAxisViews(): readonly ISeriesPrimitiveAxisView[] {
     return this.axisLabelVisible ? [this._timeAxisView] : [];
   }
 }
