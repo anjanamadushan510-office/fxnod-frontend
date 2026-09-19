@@ -367,7 +367,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
            const d = store.drawings.find(x => x.id === draggingDrawingIdRef.current);
            if (!d) return;
            const newPrice = series.coordinateToPrice(point.y);
-           const newTime = param.time ?? chart.timeScale().coordinateToTime(point.x);
+           const newTime = chart.timeScale().coordinateToTime(point.x) ?? param.time;
            
            if (d.tool === "horizontal" && newPrice !== null) {
               store.updateDrawing(d.id, { price: Number(newPrice) });
@@ -410,6 +410,24 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
              containerRef.current.style.cursor = "";
            }
         }
+        
+        // Update contextual toolbar position if hovering or actively dragging
+        if (hoveredId || (isDraggingRef.current && draggingDrawingIdRef.current)) {
+           const id = hoveredId || draggingDrawingIdRef.current;
+           if (id === store.activeDrawingId) {
+             const d = store.drawings.find(x => x.id === id);
+             if (d) {
+               let screenY = point.y;
+               let screenX = point.x;
+               if (d.tool === "horizontal" && d.price != null) {
+                  screenY = series.priceToCoordinate(d.price) ?? point.y;
+               } else if (d.tool === "vertical" && d.time != null) {
+                  screenX = chart.timeScale().timeToCoordinate(d.time as any) ?? point.x;
+               }
+               store.setActiveDrawingScreenPos({ x: screenX, y: screenY });
+             }
+           }
+        }
       };
       
       chart.subscribeCrosshairMove(handler);
@@ -421,7 +439,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
        const el = containerRef.current;
        if (!el) return;
 
-       const onPointerDown = (e: PointerEvent) => {
+       const onPointerDown = (e: MouseEvent | TouchEvent) => {
          if (hoveredDrawingIdRef.current && !activeToolRef.current) {
             isDraggingRef.current = true;
             draggingDrawingIdRef.current = hoveredDrawingIdRef.current;
@@ -438,11 +456,15 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
          }
        };
 
-       el.addEventListener("pointerdown", onPointerDown, { capture: true });
-       window.addEventListener("pointerup", onPointerUp);
+       el.addEventListener("mousedown", onPointerDown, { capture: true });
+       el.addEventListener("touchstart", onPointerDown, { capture: true });
+       window.addEventListener("mouseup", onPointerUp);
+       window.addEventListener("touchend", onPointerUp);
        return () => {
-         el.removeEventListener("pointerdown", onPointerDown, { capture: true });
-         window.removeEventListener("pointerup", onPointerUp);
+         el.removeEventListener("mousedown", onPointerDown, { capture: true });
+         el.removeEventListener("touchstart", onPointerDown, { capture: true });
+         window.removeEventListener("mouseup", onPointerUp);
+         window.removeEventListener("touchend", onPointerUp);
        };
     }, []);
 
@@ -518,6 +540,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
           
           if (clickedDrawingId) {
             store.setActiveDrawingId(clickedDrawingId);
+            store.setActiveDrawingScreenPos({ x: point.x, y: point.y });
           } else {
             store.setActiveDrawingId(null);
           }
@@ -531,10 +554,12 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
         if (tool === "horizontal") {
           if (price === null) return;
           store.addDrawing({ symbol, tool, color: DRAWING_COLOR, price: Number(price) });
+          store.setActiveDrawingScreenPos({ x: point.x, y: point.y });
           store.setActiveTool(null);
         } else if (tool === "vertical") {
           if (time === null) return;
           store.addDrawing({ symbol, tool, color: DRAWING_COLOR, time: Number(time) });
+          store.setActiveDrawingScreenPos({ x: point.x, y: point.y });
           store.setActiveTool(null);
         } else {
           // trend — first click anchors, second click completes.

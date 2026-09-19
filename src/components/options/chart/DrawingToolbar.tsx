@@ -28,6 +28,8 @@ export function DrawingToolbar() {
   const activeDrawing = activeDrawingId
     ? drawings.find((d) => d.id === activeDrawingId)
     : null;
+    
+  const activeDrawingScreenPos = useChartDrawings((s) => s.activeDrawingScreenPos);
 
   // Draggable State
   const [position, setPosition] = useState({ x: 80, y: 20 });
@@ -36,8 +38,10 @@ export function DrawingToolbar() {
 
   useEffect(() => {
     // Basic centering when a new drawing is selected if we haven't dragged
-    // Or we could just keep it where it is.
-  }, [activeDrawingId]);
+    if (activeDrawingScreenPos) {
+       setPosition({ x: activeDrawingScreenPos.x + 10, y: activeDrawingScreenPos.y - 35 });
+    }
+  }, [activeDrawingScreenPos, activeDrawingId]);
 
   useEffect(() => {
     const handlePointerMove = (e: PointerEvent) => {
@@ -87,7 +91,7 @@ export function DrawingToolbar() {
   return (
     <div
       ref={toolbarRef}
-      className="absolute z-[100] flex items-center gap-1 rounded-lg border border-[#24344F] bg-[#10141f] px-1.5 py-1 shadow-xl"
+      className="absolute z-[100] flex items-center gap-1 rounded-md border border-[#24344F] bg-[#10141f] px-1 py-0.5 shadow-xl text-xs"
       style={{
         left: position.x,
         top: position.y,
@@ -106,10 +110,10 @@ export function DrawingToolbar() {
           };
           e.currentTarget.setPointerCapture(e.pointerId);
         }}
-        className="flex cursor-grab items-center justify-center p-1 text-zinc-500 hover:text-white active:cursor-grabbing"
+        className="flex h-6 w-5 cursor-grab items-center justify-center rounded text-zinc-500 hover:text-white active:cursor-grabbing"
         title="Drag toolbar"
       >
-        <GripVertical className="h-5 w-5" />
+        <GripVertical className="h-3.5 w-3.5" />
       </button>
 
       {/* Thickness Selector */}
@@ -120,11 +124,14 @@ export function DrawingToolbar() {
             setColorOpen(false);
           }}
           className={cn(
-            "flex h-8 items-center justify-center rounded-md px-3 text-[13px] font-medium text-zinc-300 transition-colors hover:bg-[#1a2332]",
-            thicknessOpen && "bg-[#1a2332] text-white"
+            "flex h-6 w-6 items-center justify-center rounded transition-colors hover:bg-[#1a2332]",
+            thicknessOpen && "bg-[#1a2332]"
           )}
         >
-          {currentThickness} px
+          <div
+            className="w-3 rounded-full bg-zinc-300"
+            style={{ height: currentThickness }}
+          />
         </button>
         {thicknessOpen && (
           <div className="absolute left-0 top-full mt-2 w-[140px] rounded-md border border-[#24344F] bg-[#10141f] p-1 shadow-lg">
@@ -160,12 +167,12 @@ export function DrawingToolbar() {
             setThicknessOpen(false);
           }}
           className={cn(
-            "flex h-8 w-8 items-center justify-center rounded-md transition-colors hover:bg-[#1a2332]",
+            "flex h-6 w-6 items-center justify-center rounded transition-colors hover:bg-[#1a2332]",
             colorOpen && "bg-[#1a2332]"
           )}
         >
           <div
-            className="h-4 w-4 rounded-sm border border-black/20"
+            className="h-3.5 w-3.5 rounded-sm border border-black/20"
             style={{ backgroundColor: activeDrawing.color }}
           />
         </button>
@@ -200,10 +207,10 @@ export function DrawingToolbar() {
           removeDrawing(activeDrawing.id);
           setActiveDrawingId(null);
         }}
-        className="flex h-8 w-8 items-center justify-center rounded-md text-red-500 transition-colors hover:bg-red-500/10"
+        className="flex h-6 w-6 items-center justify-center rounded text-red-500 transition-colors hover:bg-red-500/10"
         title="Delete drawing"
       >
-        <Trash2 className="h-[15px] w-[15px]" />
+        <Trash2 className="h-3.5 w-3.5" />
       </button>
 
     </div>

@@ -30,9 +30,11 @@ interface ChartDrawingsState {
   /** Tool armed for the next click(s); null = not drawing. */
   activeTool: DrawingTool | null;
   activeDrawingId: string | null;
+  activeDrawingScreenPos: { x: number; y: number } | null;
   drawings: Drawing[];
   setActiveTool: (tool: DrawingTool | null) => void;
   setActiveDrawingId: (id: string | null) => void;
+  setActiveDrawingScreenPos: (pos: { x: number; y: number } | null) => void;
   updateDrawing: (id: string, updates: Partial<Drawing>) => void;
   /** Add a placed drawing; returns its generated id. */
   addDrawing: (drawing: Omit<Drawing, "id">) => string;
@@ -49,9 +51,11 @@ interface ChartDrawingsState {
 export const useChartDrawings = create<ChartDrawingsState>((set) => ({
   activeTool: null,
   activeDrawingId: null,
+  activeDrawingScreenPos: null,
   drawings: [],
   setActiveTool: (tool) => set({ activeTool: tool }),
-  setActiveDrawingId: (id) => set({ activeDrawingId: id }),
+  setActiveDrawingId: (id) => set({ activeDrawingId: id, activeDrawingScreenPos: null }),
+  setActiveDrawingScreenPos: (pos) => set({ activeDrawingScreenPos: pos }),
   updateDrawing: (id, updates) =>
     set((s) => ({
       drawings: s.drawings.map((d) => (d.id === id ? { ...d, ...updates } : d)),
