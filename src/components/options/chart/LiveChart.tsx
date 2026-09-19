@@ -52,7 +52,7 @@ import {
 import { CHART_COLORS } from "./chartColors";
 import { EndPriceLinePlugin } from "./plugins/EndPriceLinePlugin";
 import { IchimokuCloudPlugin } from "./plugins/IchimokuCloudPlugin";
-import { TrendPrimitive, VerticalPrimitive, formatTimeDerivStyle } from "./chartPrimitives";
+import { TrendPrimitive, VerticalPrimitive, formatTimeDerivStyle, getExtrapolatedX } from "./chartPrimitives";
 import type { ChartTypeId, IntervalId } from "./chartSettings";
 import { useChartIndicators, type IndicatorConfig } from "@/stores/useChartIndicators";
 import { 
@@ -436,7 +436,8 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
             } catch (e) {}
           } else if (d.tool === "vertical" && d.time != null) {
             try {
-              const lineX = chart.timeScale().timeToCoordinate(d.time as any);
+              let lineX = chart.timeScale().timeToCoordinate(d.time as any);
+              if (lineX === null) lineX = getExtrapolatedX(chart as any, series as any, d.time as any);
               if (lineX !== null && !isNaN(lineX) && Math.abs(lineX - clickX) < 15) {
                 hoveredId = d.id;
                 break;
