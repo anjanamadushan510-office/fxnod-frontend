@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import type { Route } from "next";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { ChartPanel } from "@/components/options/chart/ChartPanel";
 import { IconSidebar } from "@/components/options/layout/IconSidebar";
 import { OptionsShell } from "@/components/options/layout/OptionsShell";
@@ -71,6 +71,7 @@ const DEFAULT_OPTIONS_QUERY =
 function OptionsPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
 
   // Bare /options/dtrader → pin the full default query so the URL is always
   // explicit and shareable. The guard (empty params only) means the
@@ -96,8 +97,32 @@ function OptionsPageInner() {
   const setPositionsOpen = usePositionsUI((s) => s.setOpen);
   const positionsCount = useOpenPositions((s) => s.positions.length);
 
-  const [reportsOpen, setReportsOpen] = useState(false);
+  const [reportsOpen, setReportsOpen] = useState(() => {
+    if (typeof window !== "undefined") {
+      return window.location.pathname.startsWith("/reports");
+    }
+    return pathname.startsWith("/reports");
+  });
   const toggleReports = () => setReportsOpen((prev) => !prev);
+
+  // Sync Reports modal open state with URL
+  useEffect(() => {
+    const isReportsUrl = window.location.pathname.startsWith("/reports");
+    if (reportsOpen && !isReportsUrl) {
+      window.history.pushState(null, '', '/reports/positions' + window.location.search);
+    } else if (!reportsOpen && isReportsUrl) {
+      window.history.pushState(null, '', '/options/dtrader' + window.location.search);
+    }
+  }, [reportsOpen]);
+
+  // Handle browser back/forward buttons
+  useEffect(() => {
+    const handlePopState = () => {
+      setReportsOpen(window.location.pathname.startsWith("/reports"));
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
 
   // Real-time P/L stream — runs whenever authenticated (needs the access token
   // for the WS handshake) and the feature flag is on.

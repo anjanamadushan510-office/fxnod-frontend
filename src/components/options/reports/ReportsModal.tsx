@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Clock, Table, FileText } from "lucide-react";
 import { OpenPositions } from "./OpenPositions";
 import { TradeTable } from "./TradeTable";
@@ -12,7 +12,38 @@ interface ReportsModalProps {
 type TabId = "open_positions" | "trade_table" | "statement";
 
 export function ReportsModal({ isOpen, onClose }: ReportsModalProps) {
-  const [activeTab, setActiveTab] = useState<TabId>("open_positions");
+  const [activeTab, setActiveTab] = useState<TabId>(() => {
+    if (typeof window === "undefined") return "open_positions";
+    const path = window.location.pathname;
+    if (path.includes("/profit")) return "trade_table";
+    if (path.includes("/statement")) return "statement";
+    return "open_positions";
+  });
+
+  // Sync activeTab on popstate (browser back/forward) if modal is already open
+  useEffect(() => {
+    if (!isOpen) return;
+    const handlePopState = () => {
+      const path = window.location.pathname;
+      if (path.includes("/profit")) setActiveTab("trade_table");
+      else if (path.includes("/statement")) setActiveTab("statement");
+      else setActiveTab("open_positions");
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [isOpen]);
+
+  const handleTabChange = (tab: TabId) => {
+    setActiveTab(tab);
+    let path = "/reports/positions";
+    if (tab === "trade_table") path = "/reports/profit";
+    else if (tab === "statement") path = "/reports/statement";
+    
+    // Only push state if the path actually changes to prevent duplicate history entries
+    if (window.location.pathname !== path) {
+      window.history.pushState(null, '', path + window.location.search);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -40,21 +71,21 @@ export function ReportsModal({ isOpen, onClose }: ReportsModalProps) {
               label="Open positions"
               icon={<Clock className="h-5 w-5" />}
               isActive={activeTab === "open_positions"}
-              onClick={() => setActiveTab("open_positions")}
+              onClick={() => handleTabChange("open_positions")}
             />
             <TabItem
               id="trade_table"
               label="Trade table"
               icon={<Table className="h-5 w-5" />}
               isActive={activeTab === "trade_table"}
-              onClick={() => setActiveTab("trade_table")}
+              onClick={() => handleTabChange("trade_table")}
             />
             <TabItem
               id="statement"
               label="Statement"
               icon={<FileText className="h-5 w-5" />}
               isActive={activeTab === "statement"}
-              onClick={() => setActiveTab("statement")}
+              onClick={() => handleTabChange("statement")}
             />
           </nav>
         </div>
