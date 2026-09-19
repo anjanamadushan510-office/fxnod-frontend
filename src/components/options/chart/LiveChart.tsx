@@ -172,6 +172,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
     const draggingDrawingIdRef = useRef<string | null>(null);
     const hoveredDrawingIdRef = useRef<string | null>(null);
     const dragStartPosRef = useRef<{ x: number; y: number } | null>(null);
+    const dragTempStateRef = useRef<any>({});
 
     const [status, setStatus] = useState<FeedStatus>("idle");
     const [paneHeights, setPaneHeights] = useState<Record<string, number>>({});
@@ -368,15 +369,24 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
         if (!point) return;
 
         if (isDraggingRef.current && draggingDrawingIdRef.current) {
-           const d = store.drawings.find(x => x.id === draggingDrawingIdRef.current);
-           if (!d) return;
-           const newPrice = series.coordinateToPrice(point.y);
-           const newTime = chart.timeScale().coordinateToTime(point.x) ?? param.time;
+           const id = draggingDrawingIdRef.current;
+           const d = store.drawings.find(x => x.id === id);
+           const existing = drawingObjsRef.current.get(id);
+           if (!d || !existing) return;
            
-           if (d.tool === "horizontal" && newPrice !== null) {
-              store.updateDrawing(d.id, { price: Number(newPrice) });
-           } else if (d.tool === "vertical" && newTime !== null) {
-              store.updateDrawing(d.id, { time: newTime as any });
+           if (d.tool === "horizontal" && existing.kind === "priceline") {
+              const newPrice = series.coordinateToPrice(point.y);
+              if (newPrice !== null && newPrice !== dragTempStateRef.current.price) {
+                 dragTempStateRef.current.price = Number(newPrice);
+                 existing.line.applyOptions({ price: Number(newPrice) });
+              }
+           } else if (d.tool === "vertical" && existing.kind === "primitive" && existing.primitive instanceof VerticalPrimitive) {
+              const newTime = chart.timeScale().coordinateToTime(point.x) ?? param.time;
+              if (newTime !== null && newTime !== dragTempStateRef.current.time) {
+                 dragTempStateRef.current.time = newTime;
+                 existing.primitive.updateTime(newTime as any);
+                 series.applyOptions({}); // force redraw
+              }
            }
         }
 
@@ -573,6 +583,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
                clientY = (e as MouseEvent).clientY;
             }
             dragStartPosRef.current = { x: clientX, y: clientY };
+            dragTempStateRef.current = {};
             
             e.stopPropagation();
             el.style.cursor = "grabbing";
@@ -597,14 +608,16 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
               if (Math.sqrt(dx * dx + dy * dy) < 5 && draggingDrawingIdRef.current) {
                  const store = useChartDrawings.getState();
                  store.setActiveDrawingId(draggingDrawingIdRef.current);
-                 // Setting activeDrawingId will trigger crosshair move to update activeDrawingScreenPos next frame naturally
-                 // but we can also force an update here if we want.
+              } else if (draggingDrawingIdRef.current && Object.keys(dragTempStateRef.current).length > 0) {
+                 const store = useChartDrawings.getState();
+                 store.updateDrawing(draggingDrawingIdRef.current, { ...dragTempStateRef.current });
               }
            }
            
            isDraggingRef.current = false;
            draggingDrawingIdRef.current = null;
            dragStartPosRef.current = null;
+           dragTempStateRef.current = {};
            el.style.cursor = hoveredDrawingIdRef.current ? "grab" : "";
          }
        };
