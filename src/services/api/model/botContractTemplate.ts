@@ -71,4 +71,11 @@ export interface BotContractTemplate {
    * @maximum 5
    */
   selected_tick?: number;
+  /**
+   * Turbos and vanillas only, and required for them in a bot. Deriv accepts only barriers from a list it computes per market and duration, and the list moves with price, so a bot cannot store a barrier. This picks the entry at that position in Deriv's list when each order is placed: turbos distances run nearest (1) to farthest (10); vanillas strikes run highest (1) to lowest (5). Past the end of a shorter list, the last entry is used.
+
+   * @minimum 1
+   * @maximum 10
+   */
+  barrier_level?: number;
 }

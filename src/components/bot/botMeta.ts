@@ -1,5 +1,7 @@
 import type { BotIndicatorKind } from "@/services/api/model";
 import { getFallbackMarkets } from "@/services/deriv/activeSymbols";
+import type { ContractForEntry } from "@/services/deriv/contractsFor";
+import { TRADE_TYPE_CONFIG } from "@/services/deriv/contractTypes";
 
 /**
  * Per-bot presentation metadata.
@@ -44,7 +46,20 @@ export interface BotFormShape {
   twoBarriers?: boolean;
   /** Which tick is predicted to be the highest / lowest (High / Low Tick). */
   selectedTick?: boolean;
+  /**
+   * Turbos and vanillas: Deriv accepts only barriers from a list it computes
+   * per market and duration, and the list moves with price. The bot stores a
+   * position in that list; these are its labels, in Deriv's order.
+   */
+  barrierLevels?: readonly string[];
 }
+
+const TURBOS_LEVELS = [
+  "1 · nearest", "2", "3", "4", "5", "6", "7", "8", "9", "10 · farthest",
+] as const;
+const VANILLAS_LEVELS = [
+  "Highest strike", "Higher", "At the money", "Lower", "Lowest strike",
+] as const;
 
 export const BOT_FORMS: Record<string, BotFormShape> = {
   accumulator: { growthRate: true, takeProfit: true },
@@ -70,8 +85,8 @@ export const BOT_FORMS: Record<string, BotFormShape> = {
     selectedTick: true,
   },
   ends_in_out: { sideLabels: ["Ends In", "Ends Out"], duration: true, twoBarriers: true },
-  turbos: { sideLabels: ["Up", "Down"], duration: true, barrierOffset: true, takeProfit: true },
-  vanillas: { sideLabels: ["Call", "Put"], duration: true, barrierOffset: true },
+  turbos: { sideLabels: ["Up", "Down"], duration: true, barrierLevels: TURBOS_LEVELS, takeProfit: true },
+  vanillas: { sideLabels: ["Call", "Put"], duration: true, barrierLevels: VANILLAS_LEVELS },
 };
 
 export function formShapeFor(strategyId: string): BotFormShape {
@@ -89,6 +104,100 @@ export const MULTIPLIER_STEPS = [100, 200, 300, 400, 500, 600, 1000] as const;
 
 /** Accumulator growth rates, as Deriv offers them. */
 export const GROWTH_RATES = [1, 2, 3, 4, 5] as const;
+
+export interface DurationPreset {
+  unit: string;
+  name: string;
+  description: string;
+  values: string[];
+}
+
+const DURATION_PRESETS: DurationPreset[] = [
+  { unit: "t", name: "Ticks", description: "Each new price print.", values: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"] },
+  { unit: "s", name: "Seconds", description: "Wall-clock seconds.", values: ["15", "30", "45", "60", "90", "120", "180", "300"] },
+  { unit: "m", name: "Minutes", description: "Wall-clock minutes.", values: ["1", "2", "3", "5", "10", "15", "30", "60"] },
+  { unit: "h", name: "Hours", description: "Wall-clock hours.", values: ["1", "2", "3", "4", "8", "12", "24"] },
+];
+
+/**
+ * The lengths the Duration step offers a bot — only what Deriv sells for it.
+ * Deriv refuses anything else at the first order, which the user would only
+ * see as a bot that stopped.
+ */
+export function durationPresetsFor(
+  strategyId: string,
+  offered?: readonly ContractForEntry[],
+): DurationPreset[] {
+  return withinDerivLimits(staticPresetsFor(strategyId), strategyId, offered);
+}
+
+const UNIT_SECONDS: Record<string, number> = { s: 1, m: 60, h: 3600, d: 86400 };
+
+/** "5t" -> {ticks: 5}; "15s" / "2m" / "1d" -> {seconds: ...}. */
+function parseDuration(raw: string | undefined): { ticks?: number; seconds?: number } | undefined {
+  const m = /^(\d+)([tsmhd])$/.exec(raw ?? "");
+  if (!m) return undefined;
+  const n = Number(m[1]);
+  return m[2] === "t" ? { ticks: n } : { seconds: n * UNIT_SECONDS[m[2]] };
+}
+
+/**
+ * Drops the lengths Deriv does not sell on the chosen market, from its own
+ * contracts_for. A length must be sold for EVERY side the bot may take — a bot
+ * that flips from Touch to No Touch needs both. Without the market's list (not
+ * loaded yet, or Deriv unreachable) nothing is dropped; the engine checks again
+ * at start.
+ */
+function withinDerivLimits(
+  presets: DurationPreset[],
+  strategyId: string,
+  offered: readonly ContractForEntry[] | undefined,
+): DurationPreset[] {
+  const types = TRADE_TYPE_CONFIG[strategyId]?.contractTypes ?? [];
+  if (!offered || offered.length === 0 || types.length === 0) return presets;
+
+  const sold = (type: string, value: number, unit: string): boolean => {
+    const entries = offered.filter((e) => e.contract_type === type);
+    if (entries.length === 0) return true; // Deriv says nothing about it: do not guess
+    return entries.some((e) => {
+      const min = parseDuration(e.min_contract_duration);
+      const max = parseDuration(e.max_contract_duration);
+      if (unit === "t") {
+        return min?.ticks !== undefined && max?.ticks !== undefined && value >= min.ticks && value <= max.ticks;
+      }
+      const seconds = value * UNIT_SECONDS[unit];
+      return min?.seconds !== undefined && max?.seconds !== undefined && seconds >= min.seconds && seconds <= max.seconds;
+    });
+  };
+
+  const filtered = presets
+    .map((p) => ({ ...p, values: p.values.filter((v) => types.every((t) => sold(t, Number(v), p.unit))) }))
+    .filter((p) => p.values.length > 0);
+  // Nothing left means Deriv's list and ours disagree entirely; show ours and
+  // let the start-time check give Deriv's reason, rather than an empty step.
+  return filtered.length > 0 ? filtered : presets;
+}
+
+function staticPresetsFor(strategyId: string): DurationPreset[] {
+  switch (strategyId) {
+    // Measured over wall-clock time: no ticks.
+    case "ends_in_out":
+      return DURATION_PRESETS.filter((p) => p.unit !== "t");
+    // Intraday vanillas start at one minute.
+    case "vanillas":
+      return DURATION_PRESETS.filter((p) => p.unit === "m" || p.unit === "h");
+    // Deriv sells these in 5 to 10 ticks only.
+    case "turbos":
+    case "higher_lower":
+    case "touch_no_touch":
+    case "reset_call_put":
+      return DURATION_PRESETS.map((p) =>
+        p.unit === "t" ? { ...p, values: p.values.filter((v) => Number(v) >= 5) } : p,
+      );
+    default:
+      return DURATION_PRESETS;
+  }
+}
 
 export const DURATION_UNITS = [
   { value: "t", label: "Ticks (t)" },

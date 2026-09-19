@@ -31,6 +31,8 @@ export interface BotFormState {
   lowBarrierOffset: string;
   /** 1-based tick predicted to be the extreme, High / Low Tick only. */
   selectedTick: number;
+  /** Position in Deriv's barrier list, turbos and vanillas only. */
+  barrierLevel: number;
   duration: string;
   durationUnit: string;
 
@@ -67,6 +69,7 @@ export function defaultFormState(): BotFormState {
     barrierOffset: "1",
     lowBarrierOffset: "1",
     selectedTick: 1,
+    barrierLevel: 3,
     duration: "5",
     durationUnit: "t",
 
@@ -184,6 +187,9 @@ export function buildStartRequest(
           }
         : {}),
       ...(shape.selectedTick ? { selected_tick: state.selectedTick } : {}),
+      ...(shape.barrierLevels
+        ? { barrier_level: Math.min(Math.max(state.barrierLevel, 1), shape.barrierLevels.length) }
+        : {}),
       ...(shape.barrierDigit ? { digit: state.barrierDigit } : {}),
       // Skipped when auto_digit is on: the strategy chooses it per trade from
       // the recent distribution, and sending one here would be ignored anyway.
@@ -305,6 +311,7 @@ export function toPresetConfig(state: BotFormState): Record<string, unknown> {
     barrierOffset: state.barrierOffset,
     lowBarrierOffset: state.lowBarrierOffset,
     selectedTick: state.selectedTick,
+    barrierLevel: state.barrierLevel,
     duration: state.duration,
     durationUnit: state.durationUnit,
     stake: state.stake,
@@ -348,6 +355,10 @@ export function fromPresetConfig(raw: unknown): BotFormState {
     lowBarrierOffset:
       typeof cfg.lowBarrierOffset === "string" ? cfg.lowBarrierOffset : defaults.lowBarrierOffset,
     selectedTick: typeof cfg.selectedTick === "number" ? cfg.selectedTick : defaults.selectedTick,
+    barrierLevel:
+      typeof cfg.barrierLevel === "number" && Number.isInteger(cfg.barrierLevel)
+        ? cfg.barrierLevel
+        : defaults.barrierLevel,
     duration: typeof cfg.duration === "string" ? cfg.duration : defaults.duration,
     durationUnit: typeof cfg.durationUnit === "string" ? cfg.durationUnit : defaults.durationUnit,
     stake: typeof cfg.stake === "string" ? cfg.stake : defaults.stake,

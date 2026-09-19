@@ -6,7 +6,7 @@ import type { Market } from "@/components/options/market/catalog";
 import { useContractsFor } from "@/hooks/useContractsFor";
 import { useMarketsForStrategy } from "@/hooks/useMarketsForStrategy";
 import type { BotIndicator, BotLimits, BotStrategy } from "@/services/api/model";
-import { GROWTH_RATES, MULTIPLIER_STEPS, formShapeFor } from "../botMeta";
+import { GROWTH_RATES, MULTIPLIER_STEPS, durationPresetsFor, formShapeFor } from "../botMeta";
 import type { BotFormState } from "../formState";
 import { getGroupKey, getGroupLabel } from "../marketGroups";
 import {
@@ -201,22 +201,22 @@ export function MarketsStep({ draft, onChange }: StepProps) {
 
 // ─── Duration (non-digit bots) ──────────────────────────────────────────────
 
-const DURATION_PRESETS: Array<{ unit: string; name: string; description: string; values: string[] }> = [
-  { unit: "t", name: "Ticks", description: "Each new price print.", values: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"] },
-  { unit: "s", name: "Seconds", description: "Wall-clock seconds.", values: ["15", "30", "45", "60", "90", "120", "180", "300"] },
-  { unit: "m", name: "Minutes", description: "Wall-clock minutes.", values: ["1", "2", "3", "5", "10", "15", "30", "60"] },
-  { unit: "h", name: "Hours", description: "Wall-clock hours.", values: ["1", "2", "3", "4", "8", "12", "24"] },
-];
-
 export function DurationStep({ draft, onChange }: StepProps) {
   const { form } = draft;
   const method = findMethod(draft.method);
-  // Ends In / Ends Out is measured over wall-clock time; Deriv does not offer
-  // it in ticks, so the unit is not offered either.
-  const presets = draft.method === "ends_in_out"
-    ? DURATION_PRESETS.filter((p) => p.unit !== "t")
-    : DURATION_PRESETS;
+  // Only the lengths Deriv sells on the first market, when its list is in.
+  const { params } = useContractsFor(form.symbols[0] ?? "");
+  const presets = durationPresetsFor(strategyIdFor(draft) ?? "", params.available);
   const current = presets.find((p) => p.unit === form.durationUnit) ?? presets[0];
+
+  // A length the market does not sell (after switching market, say) moves to
+  // the first one it does, rather than waiting to be refused at Start.
+  useEffect(() => {
+    if (current.unit !== form.durationUnit || !current.values.includes(form.duration)) {
+      onChange(patchForm(draft, { durationUnit: current.unit, duration: current.values[0] }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [current.unit, current.values.join(",")]);
 
   return (
     <div className="w-full">
@@ -434,6 +434,10 @@ const UNDER_BARRIERS = [1, 2, 3, 4, 5, 6, 7, 8] as const;
 const TICK_DURATIONS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"] as const;
 
 /** "min".."max" inclusive, as the strings a tick-length picker offers. */
+function nearest(options: readonly number[], value: number): number {
+  return options.reduce((best, o) => (Math.abs(o - value) < Math.abs(best - value) ? o : best), options[0]);
+}
+
 function ticksBetween([min, max]: [number, number]): string[] {
   return Array.from({ length: max - min + 1 }, (_, i) => String(min + i));
 }
@@ -490,6 +494,22 @@ export function SetupStep({
   const growthRates = params.growthRateRange.length > 0 ? params.growthRateRange : [...GROWTH_RATES];
 
   const set = (patch: Partial<BotFormState>) => onChange(patchForm(draft, patch));
+
+  // Deriv sets the allowed multipliers and growth rates per market (x100 does
+  // not exist on Volatility 10). When the market's list arrives and the saved
+  // value is not on it, move to the nearest one rather than send one Deriv
+  // will refuse.
+  useEffect(() => {
+    const patch: Partial<BotFormState> = {};
+    if (shape.multiplier && params.multiplierRange.length > 0 && !params.multiplierRange.includes(form.multiplier)) {
+      patch.multiplier = nearest(params.multiplierRange, form.multiplier);
+    }
+    if (shape.growthRate && params.growthRateRange.length > 0 && !params.growthRateRange.includes(form.growthRate)) {
+      patch.growthRate = nearest(params.growthRateRange, form.growthRate);
+    }
+    if (Object.keys(patch).length > 0) set(patch);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.multiplierRange, params.growthRateRange]);
 
   // An Under barrier of 0 is not a contract; move it rather than let it fail.
   useEffect(() => {
@@ -558,6 +578,23 @@ export function SetupStep({
             value={form.barrierDigit}
             onChange={(barrierDigit) => set({ barrierDigit })}
           />
+        )}
+
+        {shape.barrierLevels && (
+          <div>
+            <PillPicker
+              label={draft.method === "turbos" ? "Barrier distance" : "Strike"}
+              options={shape.barrierLevels.map((_, i) => i + 1)}
+              value={Math.min(form.barrierLevel, shape.barrierLevels.length)}
+              onChange={(barrierLevel) => set({ barrierLevel })}
+              format={(level) => shape.barrierLevels![level - 1]}
+            />
+            <p className="mt-2 text-xs text-ink-3">
+              {draft.method === "turbos"
+                ? "Deriv sets the exact distances for each market and moves them with price. A nearer barrier pays more per point and is knocked out sooner."
+                : "Deriv sets the exact strikes for each market and moves them with price. The bot takes this position in Deriv’s list for every contract."}
+            </p>
+          </div>
         )}
 
         {shape.barrierOffset && (

@@ -108,8 +108,9 @@ export function withMethod(draft: BotDraft, method: MethodKey): BotDraft {
         option?.fixedDirection ??
         // "auto" means "follow the indicators", which digit bots cannot do.
         (draft.form.direction === "auto" && isDigitMethod(method) ? "up" : draft.form.direction),
-      duration: method === "ends_in_out" ? "2" : defaultDuration(method),
-      durationUnit: method === "ends_in_out" ? "m" : "t",
+      // Ends In / Out and vanillas are not sold in ticks.
+      duration: method === "ends_in_out" ? "2" : method === "vanillas" ? "5" : defaultDuration(method),
+      durationUnit: method === "ends_in_out" || method === "vanillas" ? "m" : "t",
       autoDigit: false,
     },
   };
@@ -304,6 +305,15 @@ export function draftProblems(
           : `This contract lasts ${range[0]} to ${range[1]} ticks.`,
       );
     }
+  }
+  // Deriv caps a contract's own stop loss at its stake.
+  if (
+    formShapeFor(strategy!.strategy_id).perTradeStopLoss &&
+    isPositiveDecimal(form.perTradeStopLoss) &&
+    isPositiveDecimal(form.stake) &&
+    Number.parseFloat(form.perTradeStopLoss) > Number.parseFloat(form.stake)
+  ) {
+    problems.push("A contract's stop loss cannot be more than its stake.");
   }
   const money = findMoneyOption(draft.money);
   if (money?.multiplies) {
