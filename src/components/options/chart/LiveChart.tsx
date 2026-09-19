@@ -2,6 +2,7 @@
 
 
 import { Settings, Trash2, ChevronDown, Maximize, EyeOff } from "lucide-react";
+import { useTheme } from "next-themes";
 import { INDICATOR_LIST } from "./IndicatorsModal";
 import { IndicatorSettingsModal } from "./IndicatorSettingsModal";
 import {
@@ -123,6 +124,8 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
     const seriesRef = useRef<
       ISeriesApi<"Area"> | ISeriesApi<"Candlestick"> | ISeriesApi<"Bar"> | null
     >(null);
+    const { resolvedTheme } = useTheme();
+    const isDark = resolvedTheme === "dark";
 
     // Data buffers — replaced on seed, mutated tail-only on update.
     const ticksRef = useRef<FeedTick[]>([]);
@@ -193,7 +196,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
 
       // Literal hex only — lightweight-charts cannot parse oklch() (the form
       // our --opt-* Tailwind tokens resolve to). See chartColors.ts.
-      const line = CHART_COLORS.line;
+      const line = isDark ? CHART_COLORS.line : "#E5E7EB";
       const inkFaint = CHART_COLORS.inkFaint;
 
       const chart = createChart(el, {
@@ -245,8 +248,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
       const el = containerRef.current;
       if (!chart || !el) return;
 
-      // Literal hex only — see chartColors.ts (oklch crashes the chart parser).
-      const ink = CHART_COLORS.ink;
+      const ink = isDark ? CHART_COLORS.ink : "#111827";
       const rise = CHART_COLORS.rise;
       const fall = CHART_COLORS.fall;
 
@@ -316,7 +318,33 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
       applyDrawings(seriesRef.current, drawingsRef.current, drawingObjsRef);
       syncIndicators(chart, indicatorSeriesRef, indicatorPluginsRef, indicatorPriceLinesRef, activeIndicatorsRef.current, seriesKind, ticksRef.current, candlesRef.current, paneHeights, minimizedIndicators);
       // chart.timeScale().fitContent();
-    }, [seriesKind, chartType]);
+    }, [seriesKind, chartType, isDark]);
+
+    // Update chart colors dynamically when theme changes without recreation
+    useEffect(() => {
+      const chart = chartRef.current;
+      if (!chart) return;
+      const line = isDark ? CHART_COLORS.line : "#E5E7EB";
+      const ink = isDark ? CHART_COLORS.ink : "#111827";
+      
+      chart.applyOptions({
+        layout: { textColor: CHART_COLORS.inkFaint },
+        grid: {
+          vertLines: { color: line },
+          horzLines: { color: line },
+        },
+        rightPriceScale: { borderColor: line },
+        timeScale: { borderColor: line },
+      });
+
+      if (seriesRef.current && seriesKind === "area") {
+        seriesRef.current.applyOptions({
+          lineColor: ink,
+          topColor: hexToRgba(ink, 0.18),
+          bottomColor: hexToRgba(ink, 0),
+        });
+      }
+    }, [isDark, seriesKind]);
 
     // ── Drawing tools: cursor, click capture, and render sync ───────────────
     // Crosshair cursor while a tool is armed; clear a half-finished trend line

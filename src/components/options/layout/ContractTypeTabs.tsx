@@ -28,8 +28,8 @@ export function ContractTypeTabs({ value, onChange }: ContractTypeTabsProps) {
               "whitespace-nowrap rounded-full border-0 px-3.5 py-2 text-[13px] font-medium",
               "transition-colors duration-150",
               active
-                ? "bg-opt-ink text-opt-bg"
-                : "bg-transparent text-opt-ink-2 hover:bg-opt-bg-sunk hover:text-opt-ink",
+                ? "bg-opt-bg-sunk text-opt-ink"
+                : "bg-transparent text-opt-ink-3 hover:bg-opt-bg-sunk/50 hover:text-opt-ink",
             )}
           >
             {type.label}

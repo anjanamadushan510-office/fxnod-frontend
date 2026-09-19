@@ -62,7 +62,7 @@ export function OptionsShell({
       </div>
 
       {/* Top bar — spans drawer + chart + order columns (left edge fixed at 76) */}
-      <div className="col-start-2 col-span-3 row-start-1 border-b border-opt-line bg-opt-bg">
+      <div className="col-start-2 col-span-3 row-start-1 border-b border-opt-line bg-opt-bg-elev">
         {topbar}
       </div>
 
@@ -75,7 +75,7 @@ export function OptionsShell({
       </div>
 
       {/* Right-side order panel */}
-      <aside className="col-start-4 row-start-2 flex min-h-0 flex-col overflow-y-auto border-l border-opt-line bg-opt-bg">
+      <aside className="col-start-4 row-start-2 flex min-h-0 flex-col overflow-y-auto border-l border-opt-line bg-opt-bg-elev">
         {order}
       </aside>
     </div>

@@ -39,11 +39,10 @@ export function Field({
   return (
     <div
       className={cn(
-        // Deriv §12: light-gray field fill (#F4F4F4 ≈ --opt-bg-sunk), gray
-        // border (#E8E8E8 ≈ --opt-line), teal focus highlight (#00A79E).
-        "rounded-[10px] border bg-opt-bg-sunk px-3 py-2.5",
-        "transition-colors hover:border-opt-line-strong focus-within:border-[#00A79E]",
-        active ? "border-[#00A79E]" : "border-opt-line",
+        "rounded-[10px] border px-3 py-2.5",
+        "bg-transparent dark:bg-opt-bg-sunk",
+        "transition-colors hover:border-opt-line-strong focus-within:border-gold",
+        active ? "border-gold" : "border-opt-line",
         disabled && "opacity-50 pointer-events-none",
       )}
     >

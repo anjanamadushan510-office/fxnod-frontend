@@ -63,10 +63,10 @@ export function StakePicker({
                   type="button"
                   onClick={() => onSelect(clamp(n))}
                   className={cn(
-                    "rounded-md py-2 text-[13px] font-semibold tabular-nums transition-colors",
+                    "rounded-md border py-2 text-[13px] font-semibold tabular-nums transition-colors",
                     selected
-                      ? "bg-opt-ink text-opt-bg"
-                      : "bg-opt-bg-sunk text-opt-ink hover:bg-opt-line",
+                      ? "border-transparent bg-opt-ink text-opt-bg"
+                      : "border-opt-line bg-opt-bg-sunk text-opt-ink hover:border-opt-line-strong hover:bg-opt-line",
                   )}
                 >
                   {n} {currency}
@@ -81,7 +81,7 @@ export function StakePicker({
               commitManual();
             }}
           >
-            <div className="flex items-center gap-1.5 rounded-md border border-opt-line bg-opt-bg-sunk px-3 py-2 focus-within:border-[#00A79E]">
+            <div className="flex items-center gap-1.5 rounded-md border border-opt-line bg-transparent dark:bg-opt-bg-sunk px-3 py-2 focus-within:border-gold">
               <input
                 autoFocus
                 inputMode="decimal"

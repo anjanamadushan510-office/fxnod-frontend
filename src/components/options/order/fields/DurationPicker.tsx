@@ -128,10 +128,10 @@ export function DurationPicker({ value, onSelect, onValidationError, allowTicks 
                     type="button"
                     onClick={() => onSelect({ amount: n, unit: active.unit })}
                     className={cn(
-                      "rounded-md py-2 text-[13px] font-semibold tabular-nums transition-colors",
+                      "rounded-md border py-2 text-[13px] font-semibold tabular-nums transition-colors",
                       selected
-                        ? "bg-opt-ink text-opt-bg"
-                        : "bg-opt-bg-sunk text-opt-ink hover:bg-opt-line",
+                        ? "border-transparent bg-opt-ink text-opt-bg"
+                        : "border-opt-line bg-opt-bg-sunk text-opt-ink hover:border-opt-line-strong hover:bg-opt-line",
                     )}
                   >
                     {n}
