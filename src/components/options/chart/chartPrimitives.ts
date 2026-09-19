@@ -180,15 +180,46 @@ class VerticalRenderer implements IPrimitivePaneRenderer {
   }
 }
 
+function getExtrapolatedX(chart: AttachedChart, series: AttachedSeries, targetTime: Time): number | null {
+    let x = chart?.timeScale().timeToCoordinate(targetTime) ?? null;
+    if (x === null && chart && series) {
+        const data = series.data();
+        if (data && data.length >= 2) {
+            const lastPoint = data[data.length - 1];
+            const prevPoint = data[data.length - 2];
+            const lastTime = lastPoint.time as number;
+            const prevTime = prevPoint.time as number;
+            const tTime = targetTime as number;
+            
+            if (tTime > lastTime) {
+                const secondsPerBar = lastTime - prevTime;
+                if (secondsPerBar > 0) {
+                    const barsDiff = (tTime - lastTime) / secondsPerBar;
+                    const lastX = chart.timeScale().timeToCoordinate(lastPoint.time);
+                    if (lastX !== null) {
+                        const lastLogical = chart.timeScale().coordinateToLogical(lastX);
+                        if (lastLogical !== null) {
+                            const targetLogical = lastLogical + barsDiff;
+                            const extrapolatedX = chart.timeScale().logicalToCoordinate(targetLogical as any);
+                            if (extrapolatedX !== null) {
+                                x = extrapolatedX;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return x;
+}
+
 class VerticalPaneView implements IPrimitivePaneView {
   private _x: number | null = null;
 
   constructor(private readonly _source: VerticalPrimitive) {}
 
   update(): void {
-    const chart = this._source.chart;
-    if (!chart) return;
-    this._x = chart.timeScale().timeToCoordinate(this._source.time);
+    this._x = getExtrapolatedX(this._source.chart, this._source.series, this._source.time);
   }
 
   renderer(): IPrimitivePaneRenderer {
@@ -203,9 +234,7 @@ class VerticalTimeAxisView implements ISeriesPrimitiveAxisView {
   constructor(private readonly _source: VerticalPrimitive) {}
 
   update(): void {
-    const chart = this._source.chart;
-    if (!chart) return;
-    this._x = chart.timeScale().timeToCoordinate(this._source.time);
+    this._x = getExtrapolatedX(this._source.chart, this._source.series, this._source.time);
     this._text = formatTimeDerivStyle(this._source.time);
   }
 
