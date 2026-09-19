@@ -91,7 +91,7 @@ export function DrawingToolbar() {
   return (
     <div
       ref={toolbarRef}
-      className="absolute z-[100] flex items-center gap-1 rounded-md border border-[#24344F] bg-[#10141f] px-1 py-0.5 shadow-xl text-xs"
+      className="absolute z-[100] flex items-center gap-4 rounded-md border border-[#24344F] bg-[#10141f] px-3 py-1.5 shadow-xl text-sm"
       style={{
         left: position.x,
         top: position.y,
@@ -113,7 +113,7 @@ export function DrawingToolbar() {
         className="flex h-6 w-5 cursor-grab items-center justify-center rounded text-zinc-500 hover:text-white active:cursor-grabbing"
         title="Drag toolbar"
       >
-        <GripVertical className="h-3.5 w-3.5" />
+        <GripVertical className="h-4 w-4" />
       </button>
 
       {/* Thickness Selector */}
@@ -172,7 +172,7 @@ export function DrawingToolbar() {
           )}
         >
           <div
-            className="h-3.5 w-3.5 rounded-sm border border-black/20"
+            className="h-4 w-4 rounded-sm border border-black/20"
             style={{ backgroundColor: activeDrawing.color }}
           />
         </button>
@@ -210,7 +210,7 @@ export function DrawingToolbar() {
         className="flex h-6 w-6 items-center justify-center rounded text-red-500 transition-colors hover:bg-red-500/10"
         title="Delete drawing"
       >
-        <Trash2 className="h-3.5 w-3.5" />
+        <Trash2 className="h-4 w-4" />
       </button>
 
     </div>

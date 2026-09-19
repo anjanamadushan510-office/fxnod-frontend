@@ -171,6 +171,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
     const isDraggingRef = useRef(false);
     const draggingDrawingIdRef = useRef<string | null>(null);
     const hoveredDrawingIdRef = useRef<string | null>(null);
+    const dragStartPosRef = useRef<{ x: number; y: number } | null>(null);
 
     const [status, setStatus] = useState<FeedStatus>("idle");
     const [paneHeights, setPaneHeights] = useState<Record<string, number>>({});
@@ -443,15 +444,48 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
          if (hoveredDrawingIdRef.current && !activeToolRef.current) {
             isDraggingRef.current = true;
             draggingDrawingIdRef.current = hoveredDrawingIdRef.current;
+            
+            let clientX = 0; let clientY = 0;
+            if ('touches' in e) {
+               clientX = e.touches[0].clientX;
+               clientY = e.touches[0].clientY;
+            } else {
+               clientX = e.clientX;
+               clientY = e.clientY;
+            }
+            dragStartPosRef.current = { x: clientX, y: clientY };
+            
             e.stopPropagation();
             el.style.cursor = "grabbing";
          }
        };
        
-       const onPointerUp = () => {
+       const onPointerUp = (e: MouseEvent | TouchEvent) => {
          if (isDraggingRef.current) {
+           let clientX = 0; let clientY = 0;
+           if ('changedTouches' in e) {
+              clientX = e.changedTouches[0].clientX;
+              clientY = e.changedTouches[0].clientY;
+           } else {
+              clientX = (e as MouseEvent).clientX;
+              clientY = (e as MouseEvent).clientY;
+           }
+           
+           // If the mouse didn't move much, treat it as a click
+           if (dragStartPosRef.current) {
+              const dx = clientX - dragStartPosRef.current.x;
+              const dy = clientY - dragStartPosRef.current.y;
+              if (Math.sqrt(dx * dx + dy * dy) < 5 && draggingDrawingIdRef.current) {
+                 const store = useChartDrawings.getState();
+                 store.setActiveDrawingId(draggingDrawingIdRef.current);
+                 // Setting activeDrawingId will trigger crosshair move to update activeDrawingScreenPos next frame naturally
+                 // but we can also force an update here if we want.
+              }
+           }
+           
            isDraggingRef.current = false;
            draggingDrawingIdRef.current = null;
+           dragStartPosRef.current = null;
            el.style.cursor = hoveredDrawingIdRef.current ? "grab" : "";
          }
        };
