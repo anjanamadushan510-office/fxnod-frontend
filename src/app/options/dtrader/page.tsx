@@ -13,6 +13,7 @@ import { useTheme } from "next-themes";
 import { OrderPanel } from "@/components/options/order/OrderPanel";
 import { PositionsDrawer } from "@/components/options/positions/PositionsDrawer";
 import { ContractDetailsModal } from "@/components/options/positions/ContractDetailsModal";
+import { ReportsModal } from "@/components/options/reports/ReportsModal";
 import { usePositionsUI } from "@/stores/usePositionsUI";
 import { useOpenPositions } from "@/stores/useOpenPositions";
 import { useAccountBalance } from "@/stores/useAccountBalance";
@@ -95,6 +96,9 @@ function OptionsPageInner() {
   const setPositionsOpen = usePositionsUI((s) => s.setOpen);
   const positionsCount = useOpenPositions((s) => s.positions.length);
 
+  const [reportsOpen, setReportsOpen] = useState(false);
+  const toggleReports = () => setReportsOpen((prev) => !prev);
+
   // Real-time P/L stream — runs whenever authenticated (needs the access token
   // for the WS handshake) and the feature flag is on.
   const authed = useAuthStore((s) => s.status === "authenticated");
@@ -163,6 +167,8 @@ function OptionsPageInner() {
             positionsOpen={positionsOpen}
             onPositionsToggle={togglePositions}
             positionsBadge={positionsCount || undefined}
+            reportsOpen={reportsOpen}
+            onReportsToggle={toggleReports}
           />
         }
         topbar={
@@ -187,6 +193,8 @@ function OptionsPageInner() {
       />
       {/* Contract Details modal — self-portals into the options subtree (§10) */}
       <ContractDetailsModal />
+
+      <ReportsModal isOpen={reportsOpen} onClose={() => setReportsOpen(false)} />
 
       {showWarning && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">

@@ -49,6 +49,8 @@ interface IconSidebarProps {
   onPositionsToggle?: () => void;
   theme?: "light" | "dark";
   onThemeToggle?: () => void;
+  reportsOpen?: boolean;
+  onReportsToggle?: () => void;
 }
 
 /**
@@ -67,6 +69,8 @@ export function IconSidebar({
   onPositionsToggle,
   theme = "light",
   onThemeToggle,
+  reportsOpen = false,
+  onReportsToggle,
 }: IconSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -103,7 +107,13 @@ export function IconSidebar({
       onClick: onPositionsToggle,
       controlledActive: positionsOpen,
     },
-    { key: "reports", label: "Reports", icon: <DocIcon className="h-[18px] w-[18px]" /> },
+    {
+      key: "reports",
+      label: "Reports",
+      icon: <DocIcon className="h-[18px] w-[18px]" />,
+      onClick: onReportsToggle,
+      controlledActive: reportsOpen,
+    },
   ];
 
   const secondary: NavItem[] = [
