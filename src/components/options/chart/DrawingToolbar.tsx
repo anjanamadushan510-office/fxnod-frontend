@@ -91,7 +91,7 @@ export function DrawingToolbar() {
   return (
     <div
       ref={toolbarRef}
-      className="absolute z-[100] flex items-center gap-4 rounded-md border border-[#24344F] bg-[#10141f] px-3 py-1.5 shadow-xl text-sm"
+      className="absolute z-[100] flex items-center gap-2 rounded-md border border-[#24344F] bg-[#10141f] px-1.5 py-1 shadow-xl text-xs"
       style={{
         left: position.x,
         top: position.y,
@@ -124,14 +124,11 @@ export function DrawingToolbar() {
             setColorOpen(false);
           }}
           className={cn(
-            "flex h-6 w-6 items-center justify-center rounded transition-colors hover:bg-[#1a2332]",
-            thicknessOpen && "bg-[#1a2332]"
+            "flex h-6 items-center justify-center rounded px-1.5 font-medium transition-colors hover:bg-[#1a2332] text-zinc-300",
+            thicknessOpen && "bg-[#1a2332] text-white"
           )}
         >
-          <div
-            className="w-3 rounded-full bg-zinc-300"
-            style={{ height: currentThickness }}
-          />
+          {currentThickness} px
         </button>
         {thicknessOpen && (
           <div className="absolute left-0 top-full mt-2 w-[140px] rounded-md border border-[#24344F] bg-[#10141f] p-1 shadow-lg">
