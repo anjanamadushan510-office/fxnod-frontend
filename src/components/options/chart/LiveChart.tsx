@@ -540,23 +540,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
            }
         }
         
-        // Update contextual toolbar position if hovering or actively dragging
-        if (hoveredId || (isDraggingRef.current && draggingDrawingIdRef.current)) {
-           const id = hoveredId || draggingDrawingIdRef.current;
-           if (id === store.activeDrawingId) {
-             const d = store.drawings.find(x => x.id === id);
-             if (d) {
-               let screenY = point.y;
-               let screenX = point.x;
-               if (d.tool === "horizontal" && d.price != null) {
-                  screenY = series.priceToCoordinate(d.price) ?? point.y;
-               } else if (d.tool === "vertical" && d.time != null) {
-                  screenX = chart.timeScale().timeToCoordinate(d.time as any) ?? point.x;
-               }
-               store.setActiveDrawingScreenPos({ x: screenX, y: screenY });
-             }
-           }
-        }
+        // Toolbar positioning is now handled strictly on pointer down/up to avoid jitter.
 
         const tool = activeToolRef.current;
         if (tool) {
@@ -703,6 +687,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
                         ],
                      });
                      pendingTrendRef.current = null;
+                     store.setActiveDrawingScreenPos({ x: point.x, y: point.y });
                      store.setActiveTool(null);
                   }
                }
@@ -722,6 +707,8 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
             dragStartPosRef.current = { x: clientX, y: clientY };
             
             const store = useChartDrawings.getState();
+            store.setActiveDrawingScreenPos(null); // Hide toolbar while dragging
+            
             const d = store.drawings.find(x => x.id === hoveredDrawingIdRef.current);
             dragTempStateRef.current = {};
 
@@ -782,6 +769,18 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
               } else if (draggingDrawingIdRef.current && Object.keys(dragTempStateRef.current).length > 0) {
                  const store = useChartDrawings.getState();
                  store.updateDrawing(draggingDrawingIdRef.current, { ...dragTempStateRef.current });
+                 // Set new fixed toolbar position on drop
+                 
+                 // For better UI, we adjust the position slightly depending on what was dragged.
+                 // clientX/clientY is exactly where the user released the mouse.
+                 const containerRect = containerRef.current?.getBoundingClientRect();
+                 if (containerRect) {
+                    const chartX = clientX - containerRect.left;
+                    const chartY = clientY - containerRect.top;
+                    store.setActiveDrawingScreenPos({ x: chartX, y: chartY });
+                 } else {
+                    store.setActiveDrawingScreenPos({ x: clientX, y: clientY });
+                 }
               }
            }
            
