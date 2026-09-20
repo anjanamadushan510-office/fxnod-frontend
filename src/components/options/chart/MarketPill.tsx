@@ -36,9 +36,10 @@ export function MarketPill({
       type="button"
       onClick={onOpen}
       className={cn(
-        "flex min-w-[280px] items-center gap-3 rounded-[10px] border border-opt-line bg-opt-bg-elev",
+        "flex min-w-[280px] items-center gap-3 rounded-[10px] border border-opt-line",
+        "bg-[#111928]/75 backdrop-blur-md",
         "px-3.5 py-2.5",
-        "transition-colors hover:border-opt-line-strong",
+        "transition-colors hover:border-opt-line-strong hover:bg-[#111928]/90",
       )}
     >
       <InstrumentBadge />

@@ -146,33 +146,13 @@ export function ChartPanel({
   const changePct = anchor !== 0 ? (change / anchor) * 100 : 0;
 
   return (
-    <div className="flex flex-col w-full h-full overflow-hidden">
-      {/* Market pill row — relative so the picker can anchor to it */}
-      <div className="relative px-4 pt-3">
-        <MarketPill
-          name={marketName}
-          price={price}
-          change={change}
-          changePct={changePct}
-          onOpen={() => setPickerOpen((v) => !v)}
-        />
-        {pickerOpen && (
-          <MarketPicker
-            activeMarketId={marketId}
-            allowedMarketIds={allowedMarketIds}
-            onSelectMarket={(id) => {
-              onSelectMarket(id);
-              setPickerOpen(false);
-            }}
-            onClose={() => setPickerOpen(false)}
-          />
-        )}
-      </div>
+    {/* Single relative container — chart fills full height, pill floats on top */}
+    <div className="relative w-full h-full overflow-hidden">
 
-      {/* Chart body: [toolbar] [live canvas] */}
-      <div className="relative flex flex-row flex-1 min-w-0 h-full gap-0 px-3 pt-2">
+      {/* ── Chart body: fills 100% of the space ── */}
+      <div className="relative flex flex-row w-full h-full gap-0">
         {/* Left Toolbars */}
-        <div className="w-[44px] flex-shrink-0 flex flex-col gap-2 z-20">
+        <div className="flex-none w-[44px] h-full flex flex-col gap-2 z-20 pt-3 pl-1">
           <ChartToolbar
             symbol={marketId}
             chartType={chartType}
@@ -185,7 +165,7 @@ export function ChartPanel({
           <DrawingToolbar />
         </div>
 
-        {/* Live Canvas Area */}
+        {/* Live Canvas Area — full height, no top padding */}
         <div className="flex-1 min-w-0 h-full relative overflow-hidden">
           <LiveChart
             ref={chartRef}
@@ -208,6 +188,29 @@ export function ChartPanel({
           </div>
         </div>
       </div>
+
+      {/* ── Floating Market Selector — absolute over the chart ── */}
+      <div className="absolute top-3 left-14 z-30">
+        <MarketPill
+          name={marketName}
+          price={price}
+          change={change}
+          changePct={changePct}
+          onOpen={() => setPickerOpen((v) => !v)}
+        />
+        {pickerOpen && (
+          <MarketPicker
+            activeMarketId={marketId}
+            allowedMarketIds={allowedMarketIds}
+            onSelectMarket={(id) => {
+              onSelectMarket(id);
+              setPickerOpen(false);
+            }}
+            onClose={() => setPickerOpen(false)}
+          />
+        )}
+      </div>
+
     </div>
   );
 }
