@@ -170,37 +170,42 @@ export function ChartPanel({
       </div>
 
       {/* Chart body: [toolbar] [live canvas] */}
-      <div className="relative grid flex-1 min-h-0 min-w-0 grid-cols-[44px_1fr] gap-0 px-3 pt-2">
-        <ChartToolbar
-          symbol={marketId}
-          chartType={chartType}
-          interval={interval}
-          tickOnly={tickOnly}
-          onChartTypeChange={setChartType}
-          onIntervalChange={setInterval}
-          chartRef={chartRef}
-        />
+      <div className="relative flex flex-1 flex-row min-h-0 min-w-0 gap-0 px-3 pt-2">
+        {/* Left Toolbars */}
+        <div className="w-[44px] flex-shrink-0 flex flex-col gap-2 z-20">
+          <ChartToolbar
+            symbol={marketId}
+            chartType={chartType}
+            interval={interval}
+            tickOnly={tickOnly}
+            onChartTypeChange={setChartType}
+            onIntervalChange={setInterval}
+            chartRef={chartRef}
+          />
+          <DrawingToolbar />
+        </div>
 
-        <DrawingToolbar />
+        {/* Live Canvas Area */}
+        <div className="relative flex-1 min-w-0 h-full overflow-hidden">
+          <LiveChart
+            ref={chartRef}
+            symbol={marketId}
+            chartType={chartType}
+            interval={interval}
+            onPrice={handlePrice}
+          />
 
-        <LiveChart
-          ref={chartRef}
-          symbol={marketId}
-          chartType={chartType}
-          interval={interval}
-          onPrice={handlePrice}
-        />
-
-        {/* Floating lower-left controls */}
-        <div className="pointer-events-none absolute bottom-10 left-[52px] z-10 flex items-end gap-3">
-          <div className="pointer-events-auto">
-            <ChartNavControls />
-          </div>
-          {showStatsStrip && (
+          {/* Floating lower-left controls */}
+          <div className="pointer-events-none absolute bottom-10 left-3 z-10 flex items-end gap-3">
             <div className="pointer-events-auto">
-              <StatsStrip runs={accuStats || undefined} />
+              <ChartNavControls />
             </div>
-          )}
+            {showStatsStrip && (
+              <div className="pointer-events-auto">
+                <StatsStrip runs={accuStats || undefined} />
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
