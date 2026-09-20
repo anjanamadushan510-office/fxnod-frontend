@@ -128,18 +128,18 @@ export function OptionsShell({
       </div>
 
       {/* Positions drawer column — clipped to its (animating) width */}
-      <div className="relative col-start-2 row-start-2 overflow-hidden">
+      <div className="relative z-50 col-start-2 row-start-2 overflow-hidden bg-opt-bg shadow-xl">
         {drawerOpen && (
           <div
             onMouseDown={handleDrawerMouseDown}
-            className="absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize z-50 hover:bg-opt-ink/10 transition-colors"
+            className="absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize z-[60] hover:bg-opt-ink/10 transition-colors"
           />
         )}
         {drawer}
       </div>
 
       {/* Chart column — 1fr, compresses as the drawer column grows */}
-      <div className="col-start-3 row-start-2 flex min-h-0 min-w-0 flex-col">
+      <div className="col-start-3 row-start-2 flex min-h-0 min-w-0 flex-col overflow-hidden">
         {main}
       </div>
 
