@@ -41,42 +41,14 @@ export function OptionsShell({
   theme: themeProp,
 }: OptionsShellProps) {
   const [theme, _setTheme] = useState<"light" | "dark">(themeProp ?? "light");
-  const [orderWidth, setOrderWidth] = useState(340);
-  const [isResizing, setIsResizing] = useState(false);
   const [drawerWidth, setDrawerWidth] = useState(360);
   const [isResizingDrawer, setIsResizingDrawer] = useState(false);
 
   // ── Hydrate persisted widths (client-only to avoid SSR mismatch) ──────────
   useEffect(() => {
-    const savedOrder = localStorage.getItem("fxnod_right_panel_width");
-    if (savedOrder) setOrderWidth(Number(savedOrder));
     const savedDrawer = localStorage.getItem("fxnod_left_drawer_width");
     if (savedDrawer) setDrawerWidth(Number(savedDrawer));
   }, []);
-
-  // ── Right panel resizer ───────────────────────────────────────────────────
-  useEffect(() => {
-    if (!isResizing) return;
-    const onMove = (e: MouseEvent) => {
-      let w = window.innerWidth - e.clientX;
-      if (w < 280) w = 280;
-      if (w > 500) w = 500;
-      setOrderWidth(w);
-    };
-    const onUp = (e: MouseEvent) => {
-      // Persist the final width so it survives a page reload.
-      const w = window.innerWidth - e.clientX;
-      const clamped = Math.min(500, Math.max(280, w));
-      localStorage.setItem("fxnod_right_panel_width", String(clamped));
-      setIsResizing(false);
-    };
-    document.addEventListener("mousemove", onMove);
-    document.addEventListener("mouseup", onUp);
-    return () => {
-      document.removeEventListener("mousemove", onMove);
-      document.removeEventListener("mouseup", onUp);
-    };
-  }, [isResizing]);
 
   // ── Left drawer resizer ───────────────────────────────────────────────────
   useEffect(() => {
@@ -108,7 +80,7 @@ export function OptionsShell({
       data-opt-theme={theme}
       className={cn(
         "fixed inset-0 flex flex-row overflow-hidden bg-opt-bg font-sans text-opt-ink",
-        (isResizing || isResizingDrawer) && "cursor-col-resize select-none"
+        isResizingDrawer && "cursor-col-resize select-none"
       )}
     >
       {/* ── Icon Sidebar (flex-none) ── */}
@@ -154,18 +126,8 @@ export function OptionsShell({
             {main}
           </div>
 
-          {/* Right Order Panel (flex-none) */}
-          <div
-            className="flex-none h-full relative z-20 bg-opt-bg-elev border-l border-opt-line flex flex-col"
-            style={{
-              width: orderWidth,
-              transition: isResizing ? "none" : "width 300ms ease-out",
-            }}
-          >
-            <div
-              onMouseDown={(e) => { e.preventDefault(); setIsResizing(true); }}
-              className="absolute -left-1.5 top-0 bottom-0 w-3 cursor-col-resize z-30 hover:bg-opt-ink/10 transition-colors"
-            />
+          {/* Right Order Panel (flex-none fixed width) */}
+          <div className="flex-none w-[280px] h-full relative z-20 bg-opt-bg-elev border-l border-opt-line flex flex-col">
             {order}
           </div>
 
