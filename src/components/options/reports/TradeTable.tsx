@@ -10,11 +10,8 @@ export function TradeTable() {
   const searchParams = useSearchParams();
   const currentParams = Object.fromEntries(searchParams.entries());
 
-  // Default to today
-  const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: new Date(new Date().setHours(0, 0, 0, 0)),
-    to: new Date(new Date().setHours(23, 59, 59, 999))
-  });
+  // Default to all time (empty)
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
 
   const { data: trades, isLoading } = useGetTradeHistory({
     request: {
