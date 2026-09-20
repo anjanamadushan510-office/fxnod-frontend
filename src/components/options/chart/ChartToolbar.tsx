@@ -11,6 +11,7 @@ import {
   PlusIcon,
 } from "@/components/ui/Icons";
 import { cn } from "@/lib/cn";
+import type { LiveChartHandle } from "./LiveChart";
 import {
   intervalShortLabel,
   type ChartTypeId,
@@ -191,26 +192,61 @@ export function ChartToolbar({
 }
 
 /**
- * Floating lower-left chart navigation controls (Deriv §4.4): zoom in,
- * crosshair toggle, zoom out. Overlaid on the canvas (not part of the toolbar
- * group). UI-only for now — wiring to the chart API comes later.
+ * Floating bottom-center chart navigation controls: zoom in, recenter,
+ * zoom out. Wired to the lightweight-charts timeScale API via chartRef.
  */
-export function ChartNavControls() {
+export function ChartNavControls({
+  chartRef,
+}: {
+  chartRef: React.RefObject<LiveChartHandle | null>;
+}) {
   const [crosshair, setCrosshair] = useState(true);
+
+  const handleZoomIn = () => {
+    const chart = chartRef.current?.getChart();
+    if (!chart) return;
+    const range = chart.timeScale().getVisibleLogicalRange();
+    if (!range) return;
+    const len = range.to - range.from;
+    const shrink = len * 0.15;
+    chart.timeScale().setVisibleLogicalRange({
+      from: range.from + shrink,
+      to: range.to - shrink,
+    });
+  };
+
+  const handleZoomOut = () => {
+    const chart = chartRef.current?.getChart();
+    if (!chart) return;
+    const range = chart.timeScale().getVisibleLogicalRange();
+    if (!range) return;
+    const len = range.to - range.from;
+    const expand = len * 0.15;
+    chart.timeScale().setVisibleLogicalRange({
+      from: range.from - expand,
+      to: range.to + expand,
+    });
+  };
+
+  const handleRecenter = () => {
+    const chart = chartRef.current?.getChart();
+    if (!chart) return;
+    chart.timeScale().scrollToRealTime();
+  };
 
   return (
     <div className="flex flex-row gap-1 rounded-lg border border-opt-line bg-opt-bg-elev/90 p-1 shadow-[0_2px_8px_rgba(0,0,0,0.12)] backdrop-blur-sm">
-      <NavButton label="Zoom in" onClick={() => undefined}>
+      <NavButton label="Zoom in" onClick={handleZoomIn}>
         <PlusIcon className="h-4 w-4" />
       </NavButton>
       <NavButton
-        label={crosshair ? "Disable Crosshair" : "Enable Crosshair"}
-        active={crosshair}
-        onClick={() => setCrosshair((v) => !v)}
+        label={crosshair ? "Snap to latest" : "Snap to latest"}
+        active={false}
+        onClick={handleRecenter}
       >
         <Crosshair className="h-4 w-4" />
       </NavButton>
-      <NavButton label="Zoom out" onClick={() => undefined}>
+      <NavButton label="Zoom out" onClick={handleZoomOut}>
         <MinusIcon className="h-4 w-4" />
       </NavButton>
     </div>

@@ -46,6 +46,14 @@ export function OptionsShell({
   const [drawerWidth, setDrawerWidth] = useState(360);
   const [isResizingDrawer, setIsResizingDrawer] = useState(false);
 
+  // ── Hydrate persisted widths (client-only to avoid SSR mismatch) ──────────
+  useEffect(() => {
+    const savedOrder = localStorage.getItem("fxnod_right_panel_width");
+    if (savedOrder) setOrderWidth(Number(savedOrder));
+    const savedDrawer = localStorage.getItem("fxnod_left_drawer_width");
+    if (savedDrawer) setDrawerWidth(Number(savedDrawer));
+  }, []);
+
   // ── Right panel resizer ───────────────────────────────────────────────────
   useEffect(() => {
     if (!isResizing) return;
@@ -55,7 +63,13 @@ export function OptionsShell({
       if (w > 500) w = 500;
       setOrderWidth(w);
     };
-    const onUp = () => setIsResizing(false);
+    const onUp = (e: MouseEvent) => {
+      // Persist the final width so it survives a page reload.
+      const w = window.innerWidth - e.clientX;
+      const clamped = Math.min(500, Math.max(280, w));
+      localStorage.setItem("fxnod_right_panel_width", String(clamped));
+      setIsResizing(false);
+    };
     document.addEventListener("mousemove", onMove);
     document.addEventListener("mouseup", onUp);
     return () => {
@@ -73,7 +87,13 @@ export function OptionsShell({
       if (w > 500) w = 500;
       setDrawerWidth(w);
     };
-    const onUp = () => setIsResizingDrawer(false);
+    const onUp = (e: MouseEvent) => {
+      // Persist the final width so it survives a page reload.
+      const w = e.clientX - 76;
+      const clamped = Math.min(500, Math.max(250, w));
+      localStorage.setItem("fxnod_left_drawer_width", String(clamped));
+      setIsResizingDrawer(false);
+    };
     document.addEventListener("mousemove", onMove);
     document.addEventListener("mouseup", onUp);
     return () => {

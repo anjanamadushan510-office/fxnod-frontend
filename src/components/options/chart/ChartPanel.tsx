@@ -176,7 +176,7 @@ export function ChartPanel({
 
           <div className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3">
             <div className="pointer-events-auto">
-              <ChartNavControls />
+              <ChartNavControls chartRef={chartRef} />
             </div>
             {showStatsStrip && (
               <div className="pointer-events-auto">
