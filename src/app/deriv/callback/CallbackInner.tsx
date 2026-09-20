@@ -31,7 +31,7 @@ type Phase =
   | {
       name: "pick";
       accounts: DerivAccount[];
-      /** ID of the currently linked account, if any — shown as a warning. */
+      /** The account being traded right now, if any — offered as the one to keep. */
       currentAccountId: string | undefined;
     }
   | { name: "linking" }
@@ -137,6 +137,26 @@ export function CallbackInner() {
       });
   }, [searchParams, queryClient, router]);
 
+  /**
+   * Finish without changing which account is traded.
+   *
+   * Connecting a second Deriv login used to disconnect the first, so the
+   * picker could only ever be a replacement. It is not any more: the new login
+   * is already stored and switchable, and someone adding one should not be
+   * made to move their trading onto it to get out of this page.
+   */
+  function handleKeepCurrent() {
+    const returnTo = safeReturnPath(sessionStorage.getItem(DERIV_RETURN_TO_KEY));
+    clearOAuthSession();
+    void queryClient.invalidateQueries({ queryKey: derivStatusKey });
+    setPhase({
+      name: "done",
+      title: "Deriv account added",
+      body: "You can switch to it any time from Venues or the account menu. Redirecting…",
+    });
+    setTimeout(() => router.push(returnTo), 1800);
+  }
+
   async function handleSelect(account: DerivAccount) {
     if (phase.name !== "pick") return;
     setPhase({ name: "linking" });
@@ -201,6 +221,7 @@ export function CallbackInner() {
         accounts={phase.accounts}
         currentAccountId={phase.currentAccountId}
         onSelect={handleSelect}
+        onKeepCurrent={handleKeepCurrent}
       />
     </PageShell>
   );
@@ -289,24 +310,27 @@ function PickerCard({
   accounts,
   currentAccountId,
   onSelect,
+  onKeepCurrent,
 }: {
   accounts: DerivAccount[];
   currentAccountId: string | undefined;
   onSelect: (account: DerivAccount) => void;
+  onKeepCurrent: () => void;
 }) {
   return (
     <Card>
       <div className="flex flex-col gap-1">
-        <h1 className="text-[18px] font-bold text-ink">Connect Deriv account</h1>
+        <h1 className="text-[18px] font-bold text-ink">Choose an account to trade</h1>
         <p className="text-[13px] text-ink-3">
-          Select the account you want to use for trading.
+          Deriv has connected every account on this login. Pick the one to trade.
         </p>
       </div>
 
       {currentAccountId && (
         <div className="rounded-lg border border-[var(--gold-soft)] bg-gold-soft px-3.5 py-2.5 text-[12px] leading-relaxed text-[var(--ink-2)]">
-          <span className="font-semibold text-ink">{currentAccountId}</span> is currently
-          linked. Selecting a new account will replace it.
+          You are trading <span className="font-semibold text-ink">{currentAccountId}</span>{" "}
+          right now. Choosing one below moves your trading to it — the accounts you
+          already connected stay connected either way.
         </div>
       )}
 
@@ -320,8 +344,19 @@ function PickerCard({
         ))}
       </ul>
 
+      {currentAccountId && (
+        <button
+          type="button"
+          onClick={onKeepCurrent}
+          className="text-[12px] font-semibold text-ink-3 transition-colors hover:text-ink"
+        >
+          Keep trading {currentAccountId}
+        </button>
+      )}
+
       <p className="text-[11px] text-ink-3 leading-relaxed">
-        Only one account can be active at a time. Demo accounts trade with virtual funds.
+        One account is traded at a time, and you can switch whenever you like from
+        Venues or the account menu. Demo accounts trade with virtual funds.
       </p>
     </Card>
   );

@@ -30,16 +30,15 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
+import type { DerivLinkedAccount } from './derivLinkedAccount';
 
-export interface DerivLinkedAccount {
-  deriv_account_id: string;
-  currency: string;
-  /** As DERIV reported it when the account was linked. Never taken from a client — it decides whether a bot run needs a paid subscription. */
-  is_virtual: boolean;
-  /** Whether trades currently go to this account. */
-  is_selected: boolean;
-  /** The Deriv login this account belongs to. A user may authorise several, and the accounts of each are only switchable within the grant that covers them. */
+/**
+ * One Deriv login the user has authorised, with every account that grant reaches. Nothing of the grant itself is exposed but its lifetime: the access token never leaves the service, and `connection_id` is only a handle for disconnecting this login rather than all of them.
+ */
+export interface DerivConnection {
   connection_id: string;
-  /** The grant behind this account has expired. Resolved against the SERVER clock — the browser is never asked to decide it from a timestamp of its own. */
+  connected_at: string;
+  expires_at: string;
   needs_reconnect: boolean;
+  accounts: DerivLinkedAccount[];
 }

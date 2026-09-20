@@ -8,6 +8,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Activity, Cpu, DollarSign } from "lucide-react";
 import { BotPackageModal } from "@/components/bot/BotPackageModal";
+import { DerivConnectionMenu } from "@/components/deriv/DerivConnectionMenu";
 import { defaultFormState } from "@/components/bot/formState";
 import {
   ENTRY_RULES,
@@ -122,12 +123,18 @@ export default function DBotDashboardPage() {
           <h1 className="text-2xl font-semibold text-ink">dBot</h1>
           <p className="text-sm text-ink-2 mt-1">Build a bot in plain language</p>
         </div>
-        <Link
-          href={"/dbot/subscription" as Route}
-          className="h-10 px-4 inline-flex items-center rounded-lg border border-line text-sm text-ink-2 hover:text-ink transition"
-        >
-          Subscription
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href={"/dbot/subscription" as Route}
+            className="h-10 px-4 inline-flex items-center rounded-lg border border-line text-sm text-ink-2 hover:text-ink transition"
+          >
+            Subscription
+          </Link>
+          {/* A bot cannot trade without a Deriv account, and this was the one
+              screen that never said so — the first anyone heard of it was a
+              run refusing to start. */}
+          <DerivConnectionMenu />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

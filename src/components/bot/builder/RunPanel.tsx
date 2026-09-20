@@ -6,7 +6,7 @@ import type { Route } from "next";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { cn } from "@/lib/cn";
-import { useDerivStatus } from "@/hooks/useDerivStatus";
+import { useDerivStatus, type DerivStatus } from "@/hooks/useDerivStatus";
 import {
   useDerivListAccounts,
   useDerivSelectAccount,
@@ -147,10 +147,7 @@ function AccountSection() {
     <div>
       <span className="text-xs text-ink-3 mb-2 block">Trades on</span>
       <div className="space-y-2">
-        {(accounts.length > 0
-          ? accounts
-          : [{ deriv_account_id: deriv.accountId ?? "", currency: "", is_virtual: deriv.isVirtual, is_selected: true }]
-        ).map((account) => (
+        {(accounts.length > 0 ? accounts : fallbackAccounts(deriv)).map((account) => (
           <button
             key={account.deriv_account_id}
             type="button"
@@ -207,4 +204,27 @@ function AccountSection() {
       )}
     </div>
   );
+}
+
+/**
+ * What to show while the account list is still loading: the one account the
+ * status endpoint has already named.
+ *
+ * Every field comes from that response — none is invented. An account with no
+ * id means nothing is linked, and then there is nothing to offer.
+ */
+function fallbackAccounts(deriv: DerivStatus): DerivLinkedAccount[] {
+  if (!deriv.accountId || !deriv.connectionId) return [];
+  return [
+    {
+      deriv_account_id: deriv.accountId,
+      // The status endpoint carries the currency; it is absent only when
+      // nothing is linked, which the guard above already covers.
+      currency: deriv.currency ?? "",
+      is_virtual: deriv.isVirtual,
+      is_selected: true,
+      connection_id: deriv.connectionId,
+      needs_reconnect: deriv.needsReconnect,
+    },
+  ];
 }

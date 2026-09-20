@@ -57,6 +57,8 @@ import type {
   DerivAppConnectionList,
   DerivAppExchangeRequest,
   DerivAppExchangeResponse,
+  DerivConnectionListResponse,
+  DerivDisconnectResponse,
   DerivExchangeRequest,
   DerivExchangeResponse,
   DerivLinkRequest,
@@ -218,8 +220,8 @@ export const useDerivLink = <TError = ErrorType<Error | UnauthorizedResponse>,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * Deriv issues one token for a user's whole account set, so demo and real are both already linked after a single authorisation. This lists them so the UI can offer the switch without sending anyone back through Deriv.
- * @summary Every Deriv account the current grant covers
+ * Deriv issues one token for a whole Deriv login, so demo and real are both already linked after a single authorisation. This lists every account across every login the user has connected, flat, so the switcher can offer them all without sending anyone back through Deriv. `connection_id` says which login each belongs to.
+ * @summary Every Deriv account the user's live grants cover
  */
 export const derivListAccounts = (
     
@@ -290,7 +292,7 @@ export function useDerivListAccounts<TData = Awaited<ReturnType<typeof derivList
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Every Deriv account the current grant covers
+ * @summary Every Deriv account the user's live grants cover
  */
 
 export function useDerivListAccounts<TData = Awaited<ReturnType<typeof derivListAccounts>>, TError = ErrorType<UnauthorizedResponse>>(
@@ -470,7 +472,165 @@ export function useDerivAccountStatus<TData = Awaited<ReturnType<typeof derivAcc
 
 
 /**
- * @summary Unlink the Deriv account
+ * One connection is one Deriv login, with the accounts its grant reaches underneath it. A user may hold several: a fresh authorisation supersedes only the connection whose accounts it overlaps, because a Deriv loginid belongs to exactly one Deriv login.
+
+Deriv issues our clients no refresh token, so every grant expires within about an hour and `needs_reconnect` is how the UI knows to offer the reconnect instead of a Connected badge that is no longer true.
+ * @summary Every Deriv login the user has authorised
+ */
+export const derivListConnections = (
+    
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<DerivConnectionListResponse>(
+      {url: `/api/v1/deriv/connections`, method: 'GET', signal
+    },
+      options);
+    }
+  
+
+
+
+export const getDerivListConnectionsQueryKey = () => {
+    return [
+    `/api/v1/deriv/connections`
+    ] as const;
+    }
+
+    
+export const getDerivListConnectionsQueryOptions = <TData = Awaited<ReturnType<typeof derivListConnections>>, TError = ErrorType<UnauthorizedResponse | Error>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof derivListConnections>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getDerivListConnectionsQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof derivListConnections>>> = ({ signal }) => derivListConnections(requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof derivListConnections>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type DerivListConnectionsQueryResult = NonNullable<Awaited<ReturnType<typeof derivListConnections>>>
+export type DerivListConnectionsQueryError = ErrorType<UnauthorizedResponse | Error>
+
+
+export function useDerivListConnections<TData = Awaited<ReturnType<typeof derivListConnections>>, TError = ErrorType<UnauthorizedResponse | Error>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof derivListConnections>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof derivListConnections>>,
+          TError,
+          Awaited<ReturnType<typeof derivListConnections>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDerivListConnections<TData = Awaited<ReturnType<typeof derivListConnections>>, TError = ErrorType<UnauthorizedResponse | Error>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof derivListConnections>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof derivListConnections>>,
+          TError,
+          Awaited<ReturnType<typeof derivListConnections>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDerivListConnections<TData = Awaited<ReturnType<typeof derivListConnections>>, TError = ErrorType<UnauthorizedResponse | Error>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof derivListConnections>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Every Deriv login the user has authorised
+ */
+
+export function useDerivListConnections<TData = Awaited<ReturnType<typeof derivListConnections>>, TError = ErrorType<UnauthorizedResponse | Error>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof derivListConnections>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getDerivListConnectionsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * Revokes this grant, its accounts, and any dBot app consent that reaches them. A grant for a different Deriv login is untouched — that login is still connected. To remove every one of them, use DELETE /api/v1/deriv/oauth.
+ * @summary Disconnect one Deriv login
+ */
+export const derivDisconnect = (
+    connectionId: string,
+ options?: SecondParameter<typeof customInstance>,) => {
+      
+      
+      return customInstance<DerivDisconnectResponse>(
+      {url: `/api/v1/deriv/connections/${connectionId}`, method: 'DELETE'
+    },
+      options);
+    }
+  
+
+
+export const getDerivDisconnectMutationOptions = <TError = ErrorType<UnauthorizedResponse | Error>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof derivDisconnect>>, TError,{connectionId: string}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof derivDisconnect>>, TError,{connectionId: string}, TContext> => {
+
+const mutationKey = ['derivDisconnect'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof derivDisconnect>>, {connectionId: string}> = (props) => {
+          const {connectionId} = props ?? {};
+
+          return  derivDisconnect(connectionId,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DerivDisconnectMutationResult = NonNullable<Awaited<ReturnType<typeof derivDisconnect>>>
+    
+    export type DerivDisconnectMutationError = ErrorType<UnauthorizedResponse | Error>
+
+    /**
+ * @summary Disconnect one Deriv login
+ */
+export const useDerivDisconnect = <TError = ErrorType<UnauthorizedResponse | Error>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof derivDisconnect>>, TError,{connectionId: string}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof derivDisconnect>>,
+        TError,
+        {connectionId: string},
+        TContext
+      > => {
+
+      const mutationOptions = getDerivDisconnectMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Every Deriv login, every account, every dBot app consent. To remove one login and keep the others, use DELETE /api/v1/deriv/connections/{connection_id}.
+ * @summary Disconnect Deriv entirely
  */
 export const derivUnlink = (
     
@@ -515,7 +675,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type DerivUnlinkMutationError = ErrorType<UnauthorizedResponse | Error>
 
     /**
- * @summary Unlink the Deriv account
+ * @summary Disconnect Deriv entirely
  */
 export const useDerivUnlink = <TError = ErrorType<UnauthorizedResponse | Error>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof derivUnlink>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
