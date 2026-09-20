@@ -1,13 +1,21 @@
-import { CalendarIcon, ChevronDownIcon } from "lucide-react";
+import { ChevronDownIcon } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useGetTradeHistory } from "@/services/api/endpoints/trading/trading";
 import { findMarket } from "@/components/options/market/catalog";
 import { getContractDisplay } from "./utils";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { DateRangePicker } from "@/components/ui/DateRangePicker";
+import type { DateRange } from "react-day-picker";
 
 export function Statement() {
   const searchParams = useSearchParams();
   const currentParams = Object.fromEntries(searchParams.entries());
+
+  // Default to today
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: new Date(new Date().setHours(0, 0, 0, 0)),
+    to: new Date(new Date().setHours(23, 59, 59, 999))
+  });
 
   const { data: trades, isLoading } = useGetTradeHistory({
     request: {
@@ -16,7 +24,9 @@ export function Statement() {
         trade_type: undefined,
         symbol: undefined,
         chart_type: undefined,
-        interval: undefined
+        interval: undefined,
+        date_from: dateRange?.from ? Math.floor(dateRange.from.getTime() / 1000) : undefined,
+        date_to: dateRange?.to ? Math.floor(dateRange.to.getTime() / 1000) : undefined,
       }
     }
   });
@@ -83,19 +93,16 @@ export function Statement() {
       {/* Top filters */}
       <div className="flex items-center gap-6 border-b border-gray-800 p-4">
         <div className="flex items-center gap-2">
-          <span className="text-zinc-400">Date from</span>
-          <button className="flex items-center gap-2 rounded border border-gray-800 bg-panel px-3 py-1.5 text-white hover:bg-gray-800 transition-colors">
-            <CalendarIcon className="h-4 w-4" />
-            <span>Today</span>
-          </button>
-        </div>
-        
-        <div className="flex items-center gap-2">
           <span className="text-zinc-400">Transaction type</span>
           <button className="flex items-center gap-2 rounded border border-gray-800 bg-panel px-3 py-1.5 text-white hover:bg-gray-800 transition-colors">
             <span>All transactions</span>
             <ChevronDownIcon className="h-4 w-4" />
           </button>
+        </div>
+
+        <div className="flex items-center gap-2 ml-auto">
+          <span className="text-zinc-400">Date from</span>
+          <DateRangePicker value={dateRange} onChange={setDateRange} />
         </div>
       </div>
 

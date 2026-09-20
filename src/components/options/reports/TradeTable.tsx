@@ -1,12 +1,20 @@
-import { CalendarIcon } from "lucide-react";
+import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useGetTradeHistory } from "@/services/api/endpoints/trading/trading";
 import { findMarket } from "@/components/options/market/catalog";
 import { getContractDisplay } from "./utils";
+import { DateRangePicker } from "@/components/ui/DateRangePicker";
+import type { DateRange } from "react-day-picker";
 
 export function TradeTable() {
   const searchParams = useSearchParams();
   const currentParams = Object.fromEntries(searchParams.entries());
+
+  // Default to today
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: new Date(new Date().setHours(0, 0, 0, 0)),
+    to: new Date(new Date().setHours(23, 59, 59, 999))
+  });
 
   const { data: trades, isLoading } = useGetTradeHistory({
     request: {
@@ -15,7 +23,9 @@ export function TradeTable() {
         trade_type: undefined,
         symbol: undefined,
         chart_type: undefined,
-        interval: undefined
+        interval: undefined,
+        date_from: dateRange?.from ? Math.floor(dateRange.from.getTime() / 1000) : undefined,
+        date_to: dateRange?.to ? Math.floor(dateRange.to.getTime() / 1000) : undefined,
       }
     }
   });
@@ -29,13 +39,10 @@ export function TradeTable() {
   return (
     <div className="flex h-full flex-col text-[14px]">
       {/* Top filters */}
-      <div className="flex items-center gap-4 border-b border-gray-800 p-4">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center border-b border-gray-800 p-4">
+        <div className="flex items-center gap-2 ml-auto">
           <span className="text-zinc-400">Date from</span>
-          <button className="flex items-center gap-2 rounded border border-gray-800 bg-panel px-3 py-1.5 text-white hover:bg-gray-800 transition-colors">
-            <CalendarIcon className="h-4 w-4" />
-            <span>Today</span>
-          </button>
+          <DateRangePicker value={dateRange} onChange={setDateRange} />
         </div>
       </div>
 
