@@ -47,6 +47,7 @@ export function ChartToolbar({
   tickOnly,
   onChartTypeChange,
   onIntervalChange,
+  chartRef,
 }: ChartToolbarProps) {
   const [typesOpen, setTypesOpen] = useState(false);
   const [drawOpen, setDrawOpen] = useState(false);
@@ -77,13 +78,13 @@ export function ChartToolbar({
     
     if (candles && candles.length > 0) {
       csvStr += "Time,Open,High,Low,Close\n";
-      candles.forEach(c => {
+      candles.forEach((c: any) => {
         const d = new Date((c.time as number) * 1000).toISOString();
         csvStr += `${d},${c.open},${c.high},${c.low},${c.close}\n`;
       });
     } else if (ticks && ticks.length > 0) {
       csvStr += "Time,Price\n";
-      ticks.forEach(t => {
+      ticks.forEach((t: any) => {
         const d = new Date((t.time as number) * 1000).toISOString();
         csvStr += `${d},${t.value}\n`;
       });
