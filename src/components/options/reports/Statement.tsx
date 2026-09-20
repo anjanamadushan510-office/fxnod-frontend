@@ -6,6 +6,7 @@ import { getContractDisplay } from "./utils";
 import { useMemo, useState } from "react";
 import { DateRangePicker } from "@/components/ui/DateRangePicker";
 import type { DateRange } from "react-day-picker";
+import type { TradeHistoryEntry } from "@/services/api/model/tradeHistoryEntry";
 
 export function Statement() {
   const searchParams = useSearchParams();
@@ -31,6 +32,16 @@ export function Statement() {
   const statementItems = useMemo(() => {
     if (!trades) return [];
 
+    let filteredTrades = trades;
+    if (dateRange?.from || dateRange?.to) {
+      filteredTrades = trades.filter((trade: TradeHistoryEntry) => {
+        const tradeDate = new Date(trade.created_at).getTime();
+        const fromTime = dateRange.from ? dateRange.from.getTime() : 0;
+        const toTime = dateRange.to ? new Date(dateRange.to).setHours(23, 59, 59, 999) : Infinity;
+        return tradeDate >= fromTime && tradeDate <= toTime;
+      });
+    }
+
     const items: Array<{
       id: string;
       typeId: string;
@@ -43,7 +54,7 @@ export function Statement() {
       balance: string;
     }> = [];
 
-    trades.forEach((trade) => {
+    filteredTrades.forEach((trade: TradeHistoryEntry) => {
       const stake = parseFloat(trade.stake_amount);
       const payout = parseFloat(trade.final_payout_amount || "0");
       const side = trade.side.toLowerCase();

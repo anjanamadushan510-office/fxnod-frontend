@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { useGetTradeHistory } from "@/services/api/endpoints/trading/trading";
 import { findMarket } from "@/components/options/market/catalog";
 import { getContractDisplay } from "./utils";
 import { DateRangePicker } from "@/components/ui/DateRangePicker";
 import type { DateRange } from "react-day-picker";
+import type { TradeHistoryEntry } from "@/services/api/model/tradeHistoryEntry";
 
 export function TradeTable() {
   const searchParams = useSearchParams();
@@ -27,11 +28,23 @@ export function TradeTable() {
     }
   });
 
-  const totalProfitLoss = trades?.reduce((acc, t) => {
+  const filteredTrades = useMemo(() => {
+    if (!trades) return [];
+    if (!dateRange?.from && !dateRange?.to) return trades;
+
+    return trades.filter((trade: TradeHistoryEntry) => {
+      const tradeDate = new Date(trade.created_at).getTime();
+      const fromTime = dateRange.from ? dateRange.from.getTime() : 0;
+      const toTime = dateRange.to ? new Date(dateRange.to).setHours(23, 59, 59, 999) : Infinity;
+      return tradeDate >= fromTime && tradeDate <= toTime;
+    });
+  }, [trades, dateRange]);
+
+  const totalProfitLoss = filteredTrades.reduce((acc: number, t: TradeHistoryEntry) => {
     const stake = parseFloat(t.stake_amount);
     const payout = parseFloat(t.final_payout_amount || "0");
     return acc + (payout - stake);
-  }, 0) ?? 0;
+  }, 0);
 
   return (
     <div className="flex h-full flex-col text-[14px]">
@@ -58,29 +71,30 @@ export function TradeTable() {
       <div className="flex-1 overflow-y-auto">
         {isLoading ? (
           <div className="flex h-full flex-col items-center justify-center p-8 text-center text-zinc-500">
-             Loading trades...
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
           </div>
-        ) : !trades || trades.length === 0 ? (
+        ) : filteredTrades.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center p-8 text-center text-zinc-500">
-             No trades found for this period.
+            <p>You have no trades for the selected period.</p>
           </div>
         ) : (
-          trades.map((trade) => {
-            const stake = parseFloat(trade.stake_amount);
-            const payout = parseFloat(trade.final_payout_amount || "0");
-            const profitLoss = payout - stake;
-            const isWin = profitLoss >= 0;
-            const buyDate = new Date(trade.created_at);
-            const buyDayStr = buyDate.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'GMT' });
-            const buyTimeStr = buyDate.toLocaleString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'GMT' });
-            
-            let sellDayStr = "-";
-            let sellTimeStr = "";
-            if (trade.duration_seconds && trade.outcome) {
-              const sellDate = new Date(buyDate.getTime() + trade.duration_seconds * 1000);
-              sellDayStr = sellDate.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'GMT' });
-              sellTimeStr = sellDate.toLocaleString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'GMT' });
-            }
+          <div className="flex flex-col">
+            {filteredTrades.map((trade: TradeHistoryEntry) => {
+              const stake = parseFloat(trade.stake_amount);
+              const payout = parseFloat(trade.final_payout_amount || "0");
+              const profitLoss = payout - stake;
+              const isWin = profitLoss >= 0;
+              const buyDate = new Date(trade.created_at);
+              const buyDayStr = buyDate.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'GMT' });
+              const buyTimeStr = buyDate.toLocaleString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'GMT' });
+              
+              let sellDayStr = "-";
+              let sellTimeStr = "";
+              if (trade.duration_seconds && trade.outcome) {
+                const sellDate = new Date(buyDate.getTime() + trade.duration_seconds * 1000);
+                sellDayStr = sellDate.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'GMT' });
+                sellTimeStr = sellDate.toLocaleString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'GMT' });
+              }
 
             const { label, icon, colorClass } = getContractDisplay(trade.contract_type);
             const marketName = findMarket(trade.symbol)?.name || trade.symbol;
@@ -123,9 +137,10 @@ export function TradeTable() {
                 </div>
               </div>
             );
-          })
-        )}
-      </div>
+          })}
+        </div>
+      )}
+    </div>
 
       {/* Footer */}
       <div className="flex items-center justify-between border-t border-gray-800 p-4 font-medium">
