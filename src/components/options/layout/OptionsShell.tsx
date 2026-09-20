@@ -102,56 +102,68 @@ export function OptionsShell({
     <div
       data-app="options"
       data-opt-theme={theme}
-      style={{
-        gridTemplateColumns: drawerOpen
-          ? `76px ${drawerWidth}px 1fr ${orderWidth}px`
-          : `76px 0px 1fr ${orderWidth}px`,
-      }}
       className={cn(
-        "fixed inset-0 grid overflow-hidden",
-        // rows: topbar 64 / rest
-        "grid-rows-[64px_1fr]",
-        // cols: sidebar 76 / drawer 0↔360 / chart 1fr / order 340 — animated.
-        !(isResizing || isResizingDrawer) && "transition-[grid-template-columns] duration-300 ease-out",
-        "bg-opt-bg font-sans text-opt-ink",
+        "fixed inset-0 flex overflow-hidden bg-opt-bg font-sans text-opt-ink",
         (isResizing || isResizingDrawer) && "cursor-col-resize select-none"
       )}
     >
-      {/* Sidebar — spans both rows */}
-      <div className="row-span-2 border-r border-opt-line bg-opt-bg-elev">
+      {/* Icon Sidebar (fixed left) */}
+      <div className="relative z-50 w-[76px] flex-shrink-0 border-r border-opt-line bg-opt-bg-elev">
         {sidebar}
       </div>
 
-      {/* Top bar — spans drawer + chart + order columns (left edge fixed at 76) */}
-      <div className="col-start-2 col-span-3 row-start-1 border-b border-opt-line bg-opt-bg-elev">
-        {topbar}
-      </div>
+      {/* Main Content Area */}
+      <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
+        {/* Topbar */}
+        <div className="relative z-40 h-[64px] flex-shrink-0 border-b border-opt-line bg-opt-bg-elev">
+          {topbar}
+        </div>
 
-      {/* Positions drawer column — clipped to its (animating) width */}
-      <div className="relative z-50 col-start-2 row-start-2 overflow-hidden bg-opt-bg shadow-xl">
-        {drawerOpen && (
-          <div
-            onMouseDown={handleDrawerMouseDown}
-            className="absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize z-[60] hover:bg-opt-ink/10 transition-colors"
-          />
-        )}
-        {drawer}
-      </div>
+        {/* Middle Area: Drawer + Chart + Order */}
+        <div className="flex flex-1 flex-row min-h-0 overflow-hidden">
+          
+          {/* Drawer Panel */}
+          <div 
+            className={cn(
+              "relative z-50 flex-shrink-0 border-opt-line bg-opt-bg shadow-xl overflow-hidden",
+              drawerOpen && "border-r",
+              !(isResizing || isResizingDrawer) && "transition-[width] duration-300 ease-out"
+            )}
+            style={{ width: drawerOpen ? drawerWidth : 0 }}
+          >
+            {drawerOpen && (
+              <div
+                onMouseDown={handleDrawerMouseDown}
+                className="absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize z-[60] hover:bg-opt-ink/10 transition-colors"
+              />
+            )}
+            <div className="w-full h-full min-w-[250px]">
+               {drawer}
+            </div>
+          </div>
 
-      {/* Chart column — 1fr, compresses as the drawer column grows */}
-      <div className="col-start-3 row-start-2 flex min-h-0 min-w-0 flex-col overflow-hidden">
-        {main}
-      </div>
+          {/* Chart Panel (flex-1) */}
+          <div className="relative z-10 flex-1 min-w-0 overflow-hidden flex flex-col">
+            {main}
+          </div>
 
-      {/* Right-side order panel */}
-      <aside className="relative col-start-4 row-start-2 flex min-h-0 flex-col border-l border-opt-line bg-opt-bg-elev">
-        {/* Resizer Handle */}
-        <div
-          onMouseDown={handleMouseDown}
-          className="absolute -left-1.5 top-0 bottom-0 w-3 cursor-col-resize z-50 hover:bg-opt-ink/10 transition-colors"
-        />
-        {order}
-      </aside>
+          {/* Order Panel */}
+          <aside 
+            className={cn(
+              "relative z-40 flex-shrink-0 flex flex-col border-l border-opt-line bg-opt-bg-elev",
+              !(isResizing || isResizingDrawer) && "transition-[width] duration-300 ease-out"
+            )}
+            style={{ width: orderWidth }}
+          >
+            {/* Resizer Handle */}
+            <div
+              onMouseDown={handleMouseDown}
+              className="absolute -left-1.5 top-0 bottom-0 w-3 cursor-col-resize z-[60] hover:bg-opt-ink/10 transition-colors"
+            />
+            {order}
+          </aside>
+        </div>
+      </div>
     </div>
   );
 }
