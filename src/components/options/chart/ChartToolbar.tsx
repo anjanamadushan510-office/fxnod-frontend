@@ -103,7 +103,7 @@ export function ChartToolbar({
   };
 
   return (
-    <div className="flex flex-col items-center gap-0.5 rounded-xl bg-[#111928]/50 px-1 py-1.5 shadow-lg backdrop-blur-md border border-white/[0.06]">
+    <div className="flex flex-col items-center gap-0.5 rounded-xl bg-slate-50/80 dark:bg-[#111928]/50 px-1 py-1.5 shadow-lg backdrop-blur-md border border-slate-200 dark:border-white/[0.06]">
       {/* 1 — Chart types (with interval badge) */}
       <button
         type="button"
@@ -115,8 +115,8 @@ export function ChartToolbar({
         className={cn(
           "flex flex-col items-center gap-0.5 rounded-md px-1.5 py-1 transition-colors",
           typesOpen
-            ? "bg-white/15 text-white"
-            : "text-white/60 hover:bg-white/10 hover:text-white",
+            ? "bg-slate-200/80 text-slate-900 dark:bg-white/15 dark:text-white"
+            : "text-slate-600 hover:bg-slate-200/50 hover:text-slate-900 dark:text-white/60 dark:hover:bg-white/10 dark:hover:text-white",
         )}
       >
         <span className="font-mono text-[10px] font-semibold leading-none">
@@ -273,8 +273,8 @@ function ToolbarButton({
       className={cn(
         "grid h-8 w-8 place-items-center rounded-md transition-colors",
         active
-          ? "bg-white/15 text-white"
-          : "text-white/60 hover:bg-white/10 hover:text-white",
+          ? "bg-slate-200/80 text-slate-900 dark:bg-white/15 dark:text-white"
+          : "text-slate-600 hover:bg-slate-200/50 hover:text-slate-900 dark:text-white/60 dark:hover:bg-white/10 dark:hover:text-white",
       )}
     >
       {children}

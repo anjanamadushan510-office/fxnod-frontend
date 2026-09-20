@@ -36,19 +36,20 @@ export function MarketPill({
       type="button"
       onClick={onOpen}
       className={cn(
-        "flex min-w-[280px] items-center gap-3 rounded-[10px] border border-opt-line",
-        "bg-[#111928]/75 backdrop-blur-md",
+        "flex min-w-[280px] items-center gap-3 rounded-[10px] border",
+        "bg-white/90 dark:bg-[#111928]/75 backdrop-blur-md",
+        "border-slate-200 dark:border-opt-line",
         "px-3.5 py-2.5",
-        "transition-colors hover:border-opt-line-strong hover:bg-[#111928]/90",
+        "transition-colors hover:border-slate-300 dark:hover:border-opt-line-strong hover:bg-white dark:hover:bg-[#111928]/90",
       )}
     >
       <InstrumentBadge />
 
       <div className="flex flex-col items-start">
-        <div className="text-[13.5px] font-semibold leading-tight text-opt-ink">
+        <div className="text-[13.5px] font-semibold leading-tight text-slate-900 dark:text-opt-ink">
           {name}
         </div>
-        <div className="mt-0.5 flex items-center gap-1.5 text-[11.5px] leading-tight text-opt-ink-3">
+        <div className="mt-0.5 flex items-center gap-1.5 text-[11.5px] leading-tight text-slate-600 dark:text-opt-ink-3">
           <span className="font-mono tabular-nums">{price.toFixed(2)}</span>
           <span
             className={cn(
@@ -63,7 +64,7 @@ export function MarketPill({
         </div>
       </div>
 
-      <CaretDownIcon className="ml-auto h-3.5 w-3.5 text-opt-ink-3" />
+      <CaretDownIcon className="ml-auto h-3.5 w-3.5 text-slate-900 dark:text-opt-ink-3" />
     </button>
   );
 }
