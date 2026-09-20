@@ -312,9 +312,9 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
         }
       } else {
         seriesRef.current = chart.addSeries(AreaSeries, {
-          lineColor: ink,
-          topColor: hexToRgba(ink, 0.18),
-          bottomColor: hexToRgba(ink, 0),
+          lineColor: rise,
+          topColor: hexToRgba(rise, 0.18),
+          bottomColor: hexToRgba(rise, 0),
           lineWidth: 2,
           lastPriceAnimation: 1,
           priceLineVisible: false,
@@ -328,9 +328,10 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
         candlesRef.current,
       );
       
-      if (!endPriceLineRef.current) {
-          endPriceLineRef.current = new EndPriceLinePlugin(ink);
+      if (endPriceLineRef.current) {
+          try { seriesRef.current.detachPrimitive(endPriceLineRef.current); } catch(e) {}
       }
+      endPriceLineRef.current = new EndPriceLinePlugin(rise);
       seriesRef.current.attachPrimitive(endPriceLineRef.current);
 
       // Re-attach overlays to the fresh series.
@@ -364,9 +365,9 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
 
       if (seriesRef.current && seriesKind === "area") {
         seriesRef.current.applyOptions({
-          lineColor: ink,
-          topColor: hexToRgba(ink, 0.18),
-          bottomColor: hexToRgba(ink, 0),
+          lineColor: CHART_COLORS.rise,
+          topColor: hexToRgba(CHART_COLORS.rise, 0.18),
+          bottomColor: hexToRgba(CHART_COLORS.rise, 0),
         });
       }
     }, [isDark, seriesKind]);
