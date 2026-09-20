@@ -1,4 +1,4 @@
-import { ChevronDownIcon } from "lucide-react";
+import { ChevronDownIcon, ListFilter } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useGetTradeHistory } from "@/services/api/endpoints/trading/trading";
 import { findMarket } from "@/components/options/market/catalog";
@@ -7,6 +7,7 @@ import { useMemo, useState } from "react";
 import { DateRangePicker } from "@/components/ui/DateRangePicker";
 import type { DateRange } from "react-day-picker";
 import type { TradeHistoryEntry } from "@/services/api/model/tradeHistoryEntry";
+import * as Popover from "@radix-ui/react-popover";
 
 export function Statement() {
   const searchParams = useSearchParams();
@@ -14,6 +15,8 @@ export function Statement() {
 
   // Default to all time (empty)
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [transactionType, setTransactionType] = useState("All transactions");
+  const [isTypeOpen, setIsTypeOpen] = useState(false);
 
   const { data: trades, isLoading } = useGetTradeHistory({
     request: {
@@ -93,23 +96,49 @@ export function Statement() {
 
     // Sort descending by time
     items.sort((a, b) => b.time.getTime() - a.time.getTime());
+
+    // Filter by transaction type
+    if (transactionType !== "All transactions") {
+      return items.filter(item => item.transactionType === transactionType || item.action === transactionType);
+    }
+
     return items;
-  }, [trades]);
+  }, [trades, dateRange, transactionType]);
 
   return (
     <div className="flex h-full flex-col text-[14px]">
       {/* Top filters */}
-      <div className="flex items-center gap-6 border-b border-gray-800 p-4">
-        <div className="flex items-center gap-2">
-          <span className="text-zinc-400">Transaction type</span>
-          <button className="flex items-center gap-2 rounded border border-gray-800 bg-panel px-3 py-1.5 text-white hover:bg-gray-800 transition-colors">
-            <span>All transactions</span>
-            <ChevronDownIcon className="h-4 w-4" />
-          </button>
-        </div>
-
-        <div className="flex items-center gap-2 ml-auto">
+      <div className="flex items-center border-b border-gray-800 p-4">
+        <div className="flex items-center gap-4 ml-auto">
           <DateRangePicker value={dateRange} onChange={setDateRange} />
+          
+          <Popover.Root open={isTypeOpen} onOpenChange={setIsTypeOpen}>
+            <Popover.Trigger asChild>
+              <button className="flex items-center gap-2 rounded border border-gray-700 bg-transparent px-3 py-1.5 text-white hover:bg-gray-800/50 transition-colors text-[14px] outline-none">
+                <ListFilter className="h-4 w-4 text-zinc-400" />
+                <span>{transactionType}</span>
+                <ChevronDownIcon className="h-4 w-4 text-zinc-400" />
+              </button>
+            </Popover.Trigger>
+            
+            <Popover.Portal>
+              <Popover.Content 
+                className="z-[110] w-[200px] flex flex-col rounded-lg border border-gray-800 bg-[#151a24] shadow-2xl overflow-hidden mt-2 text-[14px] text-zinc-300 outline-none"
+                align="end"
+                sideOffset={4}
+              >
+                {["All transactions", "Buy", "Sell", "Deposit", "Withdrawal"].map(type => (
+                  <button 
+                    key={type}
+                    onClick={() => { setTransactionType(type); setIsTypeOpen(false); }}
+                    className="text-left px-4 py-2 hover:bg-gray-800 transition-colors"
+                  >
+                    {type}
+                  </button>
+                ))}
+              </Popover.Content>
+            </Popover.Portal>
+          </Popover.Root>
         </div>
       </div>
 
