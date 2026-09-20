@@ -60,6 +60,7 @@ const nextConfig = {
   async rewrites() {
     const reportRewrites = [
       { source: "/reports/:path*", destination: "/options/dtrader" },
+      { source: "/contract/:id*", destination: "/options/dtrader" },
     ];
     if (process.env.NODE_ENV === "production") return reportRewrites;
     const target = process.env.DEV_API_PROXY_TARGET;

@@ -30,9 +30,9 @@ const DARK_THEME = {
 } as const;
 
 const LIGHT_THEME = {
-  bg: "transparent",
+  bg: "#ffffff",
   text: "#374151",                   // gray-700
-  grid: "#E5E7EB",                   // gray-200
+  grid: "#F3F4F6",                   // gray-100
   border: "#E5E7EB",
   ink: "#111827",                    // gray-900
   areaTop: "rgba(17,24,39,0.08)",
