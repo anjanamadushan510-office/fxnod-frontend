@@ -141,7 +141,7 @@ export function ChartToolbar({
       </div>
 
       {/* 3 — Templates (placeholder) */}
-      <ToolbarButton
+      {/* <ToolbarButton
         label="Templates"
         active={activePlaceholder === "templates"}
         onClick={() =>
@@ -149,7 +149,7 @@ export function ChartToolbar({
         }
       >
         <TemplatesGlyph />
-      </ToolbarButton>
+      </ToolbarButton> */}
 
       {/* 4 — Drawing tools */}
       <ToolbarButton

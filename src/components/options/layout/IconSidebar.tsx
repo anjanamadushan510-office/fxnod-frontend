@@ -39,6 +39,8 @@ interface NavItem {
    * a parent — e.g. PositionsDrawer open ↔ positions row active).
    */
   controlledActive?: boolean;
+  /** Whether the href is an external link. */
+  external?: boolean;
 }
 
 interface IconSidebarProps {
@@ -117,7 +119,7 @@ export function IconSidebar({
   ];
 
   const secondary: NavItem[] = [
-    { key: "help", label: "Help", icon: <HelpIcon className="h-[18px] w-[18px]" /> },
+    { key: "help", label: "Help", icon: <HelpIcon className="h-[18px] w-[18px]" />, href: "https://deriv.com/help-centre/deriv-trader", external: true },
     { key: "language", label: "Language", icon: <GlobeIcon className="h-[18px] w-[18px]" /> },
   ];
 
@@ -197,6 +199,24 @@ function NavRail({
         // A custom onClick beats the href — useful for "Positions" which is a
         // drawer toggle, not a route.
         if (item.href && !hasCustomClick) {
+          if (item.external) {
+            return (
+              <a
+                key={item.key}
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={item.label}
+                aria-label={item.label}
+                className={cn(navItemClass, active && navItemActive)}
+              >
+                <span className="relative grid place-items-center">
+                  {item.icon}
+                  {item.badge && <Badge value={item.badge} />}
+                </span>
+              </a>
+            );
+          }
           return (
             <NavLinkBtn
               key={item.key}
