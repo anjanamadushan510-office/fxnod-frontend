@@ -148,47 +148,49 @@ export function ChartPanel({
   return (
     <div className="relative w-full h-full overflow-hidden">
 
-      {/* ── Chart body: fills 100% of the space ── */}
-      <div className="relative flex flex-row w-full h-full gap-0">
-        {/* Left Toolbars */}
-        <div className="flex-none w-[44px] h-full flex flex-col gap-2 z-20 pt-3 pl-1">
-          <ChartToolbar
-            symbol={marketId}
-            chartType={chartType}
-            interval={interval}
-            tickOnly={tickOnly}
-            onChartTypeChange={setChartType}
-            onIntervalChange={setInterval}
-            chartRef={chartRef}
-          />
-          <DrawingToolbar />
+      {/* ── Chart canvas: full width + full height ── */}
+      <div className="w-full h-full relative overflow-hidden">
+        <LiveChart
+          ref={chartRef}
+          symbol={marketId}
+          chartType={chartType}
+          interval={interval}
+          onPrice={handlePrice}
+        />
+
+        {/* Zoom controls — bottom-center */}
+        <div className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3">
+          <div className="pointer-events-auto">
+            <ChartNavControls chartRef={chartRef} />
+          </div>
+          {showStatsStrip && (
+            <div className="pointer-events-auto">
+              <StatsStrip runs={accuStats || undefined} />
+            </div>
+          )}
         </div>
 
-        {/* Live Canvas Area — full height, no top padding */}
-        <div className="flex-1 min-w-0 h-full relative overflow-hidden">
-          <LiveChart
-            ref={chartRef}
-            symbol={marketId}
-            chartType={chartType}
-            interval={interval}
-            onPrice={handlePrice}
-          />
-
-          <div className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3">
-            <div className="pointer-events-auto">
-              <ChartNavControls chartRef={chartRef} />
-            </div>
-            {showStatsStrip && (
-              <div className="pointer-events-auto">
-                <StatsStrip runs={accuStats || undefined} />
-              </div>
-            )}
+        {/* Chart toolbar + drawing toolbar — floating bottom-left over canvas */}
+        <div className="pointer-events-none absolute bottom-16 left-4 z-40 flex flex-col items-center gap-1">
+          <div className="pointer-events-auto">
+            <ChartToolbar
+              symbol={marketId}
+              chartType={chartType}
+              interval={interval}
+              tickOnly={tickOnly}
+              onChartTypeChange={setChartType}
+              onIntervalChange={setInterval}
+              chartRef={chartRef}
+            />
+          </div>
+          <div className="pointer-events-auto">
+            <DrawingToolbar />
           </div>
         </div>
       </div>
 
-      {/* ── Floating Market Selector — absolute over the chart ── */}
-      <div className="absolute top-3 left-14 z-30">
+      {/* ── Floating Market Selector — absolute top-left over the chart ── */}
+      <div className="absolute top-3 left-4 z-30">
         <MarketPill
           name={marketName}
           price={price}

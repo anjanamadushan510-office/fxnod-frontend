@@ -103,7 +103,7 @@ export function ChartToolbar({
   };
 
   return (
-    <div className="flex flex-col items-center gap-1 pl-1 pt-2">
+    <div className="flex flex-col items-center gap-0.5 rounded-xl bg-[#111928]/50 px-1 py-1.5 shadow-lg backdrop-blur-md border border-white/[0.06]">
       {/* 1 — Chart types (with interval badge) */}
       <button
         type="button"
@@ -113,10 +113,10 @@ export function ChartToolbar({
         title="Chart types"
         onClick={() => setTypesOpen(true)}
         className={cn(
-          "flex flex-col items-center gap-0.5 rounded-lg px-1.5 py-1 transition-colors",
+          "flex flex-col items-center gap-0.5 rounded-md px-1.5 py-1 transition-colors",
           typesOpen
-            ? "bg-opt-bg-sunk text-opt-ink"
-            : "text-opt-ink-3 hover:bg-opt-bg-sunk hover:text-opt-ink",
+            ? "bg-white/15 text-white"
+            : "text-white/60 hover:bg-white/10 hover:text-white",
         )}
       >
         <span className="font-mono text-[10px] font-semibold leading-none">
@@ -271,10 +271,10 @@ function ToolbarButton({
       title={label}
       onClick={onClick}
       className={cn(
-        "grid h-8 w-8 place-items-center rounded-lg transition-colors",
+        "grid h-8 w-8 place-items-center rounded-md transition-colors",
         active
-          ? "bg-opt-bg-sunk text-opt-ink"
-          : "text-opt-ink-3 hover:bg-opt-bg-sunk hover:text-opt-ink",
+          ? "bg-white/15 text-white"
+          : "text-white/60 hover:bg-white/10 hover:text-white",
       )}
     >
       {children}
