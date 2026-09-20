@@ -22,7 +22,7 @@ import { DrawingToolsPanel } from "./DrawingToolsPanel";
 import { IndicatorsModal } from "./IndicatorsModal";
 import { DownloadModal } from "./DownloadModal";
 import { useChartIndicators } from "@/stores/useChartIndicators";
-import type { LiveChartHandle } from "./LiveChart";
+
 
 interface ChartToolbarProps {
   symbol: string;
