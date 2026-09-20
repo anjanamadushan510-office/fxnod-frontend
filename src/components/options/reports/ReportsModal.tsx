@@ -38,24 +38,24 @@ export function ReportsModal({ isOpen, onClose }: ReportsModalProps) {
     let path = "/reports/positions";
     if (tab === "trade_table") path = "/reports/profit";
     else if (tab === "statement") path = "/reports/statement";
-    
+
     // Only push state if the path actually changes to prevent duplicate history entries
     if (window.location.pathname !== path) {
-      window.history.pushState(null, '', path);
+      window.history.pushState(null, "", path);
     }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-[#111928] font-sans">
+    <div className="fixed inset-0 z-[100] flex flex-col bg-white dark:bg-[#111928] font-sans">
       {/* Header */}
-      <div className="relative flex h-16 items-center justify-center border-b border-gray-800 bg-opt-bg-elev px-4">
-        <h2 className="text-lg font-bold text-white">Reports</h2>
+      <div className="relative flex h-16 items-center justify-center border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1a2234] px-4">
+        <h2 className="text-lg font-bold text-gray-900 dark:text-white">Reports</h2>
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 rounded p-2 text-zinc-400 hover:bg-gray-800 hover:text-white transition-colors"
+          className="absolute right-4 rounded p-2 text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition-colors"
         >
           <X className="h-5 w-5" />
         </button>
@@ -64,7 +64,7 @@ export function ReportsModal({ isOpen, onClose }: ReportsModalProps) {
       {/* Body: Sidebar + Main Content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left Sidebar Tabs */}
-        <div className="w-[280px] border-r border-gray-800 bg-opt-bg-elev py-4">
+        <div className="w-[280px] border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1a2234] py-4">
           <nav className="flex flex-col">
             <TabItem
               id="open_positions"
@@ -91,7 +91,7 @@ export function ReportsModal({ isOpen, onClose }: ReportsModalProps) {
         </div>
 
         {/* Main Content Area */}
-        <div className="flex-1 bg-[#111928]">
+        <div className="flex-1 bg-white dark:bg-[#111928] overflow-hidden">
           {activeTab === "open_positions" && <OpenPositions />}
           {activeTab === "trade_table" && <TradeTable />}
           {activeTab === "statement" && <Statement />}
@@ -116,14 +116,16 @@ function TabItem({ label, icon, isActive, onClick }: TabItemProps) {
       onClick={onClick}
       className={`relative flex items-center gap-3 px-6 py-4 text-left text-[14px] font-medium transition-colors ${
         isActive
-          ? "bg-gray-800 text-white"
-          : "text-zinc-400 hover:bg-gray-800/50 hover:text-zinc-200"
+          ? "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white"
+          : "text-gray-500 dark:text-zinc-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-700 dark:hover:text-zinc-200"
       }`}
     >
       {isActive && (
         <div className="absolute left-0 top-0 bottom-0 w-1 bg-opt-rise" />
       )}
-      <span className={isActive ? "text-white" : "text-zinc-400"}>{icon}</span>
+      <span className={isActive ? "text-gray-900 dark:text-white" : "text-gray-500 dark:text-zinc-400"}>
+        {icon}
+      </span>
       {label}
     </button>
   );

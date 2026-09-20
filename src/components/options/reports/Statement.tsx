@@ -65,21 +65,20 @@ export function Statement() {
     filteredTrades.forEach((trade: TradeHistoryEntry) => {
       const stake = parseFloat(trade.stake_amount);
       const payout = parseFloat(trade.final_payout_amount || "0");
-      const side = trade.side.toLowerCase();
-      
+
       const buyDate = new Date(trade.created_at);
 
       // Buy transaction
       items.push({
         id: trade.deriv_contract_id,
-        typeId: trade.symbol, // using symbol as type id
+        typeId: trade.symbol,
         typeName: trade.frontend_contract_type,
         action: trade.contract_type,
         currency: trade.currency,
         time: buyDate,
         transactionType: "Buy",
         creditDebit: -stake,
-        balance: "-", // Need API for real balance
+        balance: "-",
         trade: trade,
       });
 
@@ -113,32 +112,32 @@ export function Statement() {
   }, [trades, dateRange, transactionType]);
 
   return (
-    <div className="flex h-full flex-col text-[14px]">
+    <div className="flex h-full flex-col text-[14px] text-gray-900 dark:text-gray-100">
       {/* Top filters */}
-      <div className="flex items-center border-b border-gray-800 p-4">
+      <div className="flex items-center border-b border-gray-200 dark:border-gray-800 p-4">
         <div className="flex items-center gap-4 ml-auto">
           <DateRangePicker value={dateRange} onChange={setDateRange} />
-          
+
           <Popover.Root open={isTypeOpen} onOpenChange={setIsTypeOpen}>
             <Popover.Trigger asChild>
-              <button className="flex items-center gap-2 rounded border border-gray-700 bg-transparent px-3 py-1.5 text-white hover:bg-gray-800/50 transition-colors text-[14px] outline-none">
-                <ListFilter className="h-4 w-4 text-zinc-400" />
+              <button className="flex items-center gap-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-transparent px-3 py-1.5 text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors text-[14px] outline-none">
+                <ListFilter className="h-4 w-4 text-gray-400 dark:text-zinc-400" />
                 <span>{transactionType}</span>
-                <ChevronDownIcon className="h-4 w-4 text-zinc-400" />
+                <ChevronDownIcon className="h-4 w-4 text-gray-400 dark:text-zinc-400" />
               </button>
             </Popover.Trigger>
-            
+
             <Popover.Portal>
-              <Popover.Content 
-                className="z-[110] w-[200px] flex flex-col rounded-lg border border-gray-800 bg-[#151a24] shadow-2xl overflow-hidden mt-2 text-[14px] text-zinc-300 outline-none"
+              <Popover.Content
+                className="z-[110] w-[200px] flex flex-col rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#151a24] shadow-2xl overflow-hidden mt-2 text-[14px] text-gray-700 dark:text-zinc-300 outline-none"
                 align="end"
                 sideOffset={4}
               >
                 {["All transactions", "Buy", "Sell", "Deposit", "Withdrawal"].map(type => (
-                  <button 
+                  <button
                     key={type}
                     onClick={() => { setTransactionType(type); setIsTypeOpen(false); }}
-                    className="text-left px-4 py-2 hover:bg-gray-800 transition-colors"
+                    className="text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                   >
                     {type}
                   </button>
@@ -150,7 +149,7 @@ export function Statement() {
       </div>
 
       {/* Table header */}
-      <div className="grid grid-cols-[2fr_1.5fr_1fr_1.5fr_1.5fr_1.5fr_1.5fr] gap-4 border-b border-gray-800 bg-[#0e0e0e]/50 p-4 text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+      <div className="grid grid-cols-[2fr_1.5fr_1fr_1.5fr_1.5fr_1.5fr_1.5fr] gap-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-[#0e0e0e]/50 p-4 text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
         <div>Type</div>
         <div>Ref. ID</div>
         <div>Currency</div>
@@ -163,32 +162,32 @@ export function Statement() {
       {/* Table body */}
       <div className="flex-1 overflow-y-auto">
         {isLoading ? (
-           <div className="flex h-full flex-col items-center justify-center p-8 text-center text-zinc-500">
-             Loading statement...
-           </div>
+          <div className="flex h-full flex-col items-center justify-center p-8 text-center text-gray-400 dark:text-zinc-500">
+            Loading statement...
+          </div>
         ) : statementItems.length === 0 ? (
-          <div className="flex h-full flex-col items-center justify-center p-8 text-center text-zinc-500">
-             No transactions found for this period.
+          <div className="flex h-full flex-col items-center justify-center p-8 text-center text-gray-400 dark:text-zinc-500">
+            No transactions found for this period.
           </div>
         ) : (
           statementItems.map((item, idx) => {
             const { label, icon, colorClass } = getContractDisplay(item.action);
             const marketName = findMarket(item.typeId)?.name || item.typeId;
-            
+
             const dayStr = item.time.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'GMT' });
             const timeStr = item.time.toLocaleString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'GMT' });
-            
+
             const cdSign = item.creditDebit >= 0 ? "+" : "-";
             const cdValue = Math.abs(item.creditDebit).toFixed(2);
 
             return (
-              <div 
-                key={`${item.id}-${item.transactionType}`} 
-                className="grid grid-cols-[2fr_1.5fr_1fr_1.5fr_1.5fr_1.5fr_1.5fr] gap-4 border-b border-gray-800/50 p-4 items-center hover:bg-gray-800/20 transition-colors cursor-pointer"
+              <div
+                key={`${item.id}-${item.transactionType}-${idx}`}
+                className="grid grid-cols-[2fr_1.5fr_1fr_1.5fr_1.5fr_1.5fr_1.5fr] gap-4 border-b border-gray-100 dark:border-gray-800/50 p-4 items-center hover:bg-gray-50 dark:hover:bg-gray-800/20 transition-colors cursor-pointer"
                 onClick={() => openDetail(historyToDetail(item.trade))}
               >
-                <div className="flex items-center gap-2 text-white" title={marketName}>
-                  <div className="h-6 w-6 rounded bg-gray-800 flex items-center justify-center text-xs">V</div>
+                <div className="flex items-center gap-2 text-gray-900 dark:text-white" title={marketName}>
+                  <div className="h-6 w-6 rounded bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-xs text-gray-600 dark:text-gray-300">V</div>
                   <div className="flex flex-col">
                     <span className="font-medium text-xs truncate max-w-[150px]">{marketName}</span>
                     <span className={`flex items-center gap-1 ${colorClass} text-[11px]`}>
@@ -197,15 +196,15 @@ export function Statement() {
                     </span>
                   </div>
                 </div>
-                <div className="text-zinc-300">{item.id}</div>
+                <div className="text-gray-600 dark:text-zinc-300">{item.id}</div>
                 <div>
                   <span className="bg-gray-700/50 text-gray-300 px-2 py-0.5 rounded text-[11px] font-bold">
                     {item.currency}
                   </span>
                 </div>
-                <div className="flex flex-col whitespace-nowrap">
+                <div className="flex flex-col whitespace-nowrap text-gray-800 dark:text-gray-200">
                   <span>{dayStr}</span>
-                  <span className="text-zinc-500">{timeStr} GMT</span>
+                  <span className="text-gray-400 dark:text-zinc-500">{timeStr} GMT</span>
                 </div>
                 <div className="font-medium">
                   {item.transactionType === "Buy" ? (
@@ -217,7 +216,7 @@ export function Statement() {
                 <div className={`text-right font-medium ${item.creditDebit >= 0 ? "text-emerald-500" : "text-red-500"}`}>
                   {cdSign}{cdValue}
                 </div>
-                <div className="text-right font-medium text-white">{item.balance}</div>
+                <div className="text-right font-medium text-gray-900 dark:text-white">{item.balance}</div>
               </div>
             );
           })

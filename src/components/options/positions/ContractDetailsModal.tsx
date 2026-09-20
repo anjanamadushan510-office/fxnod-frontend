@@ -77,9 +77,10 @@ export function ContractDetailsModal() {
       aria-label="Contract details"
     >
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className="absolute inset-0 bg-gray-900/40 dark:bg-black/50 backdrop-blur-sm"
         onClick={close}
       />
+
 
       <div className="relative z-10 flex h-[min(700px,calc(100vh-64px))] w-[min(1200px,calc(100vw-64px))] flex-col overflow-hidden rounded-2xl border border-opt-line bg-opt-bg-elev shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
         {/* Header */}
