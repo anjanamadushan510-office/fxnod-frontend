@@ -146,7 +146,6 @@ export function ChartPanel({
   const changePct = anchor !== 0 ? (change / anchor) * 100 : 0;
 
   return (
-    {/* Single relative container — chart fills full height, pill floats on top */}
     <div className="relative w-full h-full overflow-hidden">
 
       {/* ── Chart body: fills 100% of the space ── */}
