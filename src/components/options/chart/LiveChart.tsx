@@ -372,13 +372,23 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
     }, [isDark, seriesKind]);
 
     // ── Drawing tools: cursor, click capture, and render sync ───────────────
-    // Crosshair move for hover detection and line dragging
+    // Crosshair move for hover detection, preview lines, and line dragging.
+    // IMPORTANT: We deliberately do NOT close over `chart` or `series` at
+    // subscription time — both refs can be replaced when seriesKind/chartType
+    // changes, so we always read the *current* value from the refs inside the
+    // handler.  This fixes the stale-closure bug that caused preview lines to
+    // stop working after the first series recreation.
+    const PREVIEW_COLOR = "rgba(41,98,255,0.55)"; // translucent DRAWING_COLOR
     useEffect(() => {
       const chart = chartRef.current;
-      const series = seriesRef.current;
-      if (!chart || !series) return;
+      if (!chart) return;
 
       const handler = (param: MouseEventParams) => {
+        // Always read the live series ref — never the one captured at subscribe time.
+        const chart = chartRef.current;
+        const series = seriesRef.current;
+        if (!chart || !series) return;
+
         const store = useChartDrawings.getState();
         const point = param.point;
         if (!point) return;
@@ -469,6 +479,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
                    }
                }
            }
+           return;
         }
 
         let hoveredId: string | null = null;
@@ -537,32 +548,41 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
            }
         }
         
-        // Toolbar positioning is now handled strictly on pointer down/up to avoid jitter.
-
+        // ── Dotted preview line while a drawing tool is armed ─────────────────
         const tool = activeToolRef.current;
         if (tool) {
            const price = series.coordinateToPrice(point.y);
            const time = getValidTime(point.x, param.time);
            
            if (tool === 'horizontal' && price !== null) {
+              // Horizontal preview: dotted price line, semi-transparent
               if (!previewObjRef.current || previewObjRef.current.kind !== 'priceline') {
-                 if (previewObjRef.current) {
-                    if (previewObjRef.current.kind === 'primitive') series.detachPrimitive(previewObjRef.current.primitive);
+                 if (previewObjRef.current && previewObjRef.current.kind === 'primitive') {
+                    try { series.detachPrimitive(previewObjRef.current.primitive); } catch(e) {}
                  }
                  const line = series.createPriceLine({
-                    price, color: DRAWING_COLOR, lineWidth: 2, lineStyle: LineStyle.Dashed, axisLabelVisible: true, title: ""
+                    price,
+                    color: PREVIEW_COLOR,
+                    lineWidth: 2,
+                    lineStyle: LineStyle.Dotted,
+                    axisLabelVisible: false,
+                    title: "",
                  });
                  previewObjRef.current = { kind: 'priceline', line };
               } else {
                  previewObjRef.current.line.applyOptions({ price });
               }
            } else if (tool === 'vertical' && time !== null) {
+              // Vertical preview: dashed primitive, semi-transparent
               if (!previewObjRef.current || previewObjRef.current.kind !== 'primitive' || !(previewObjRef.current.primitive instanceof VerticalPrimitive)) {
                  if (previewObjRef.current) {
-                    if (previewObjRef.current.kind === 'priceline') series.removePriceLine(previewObjRef.current.line);
-                    else series.detachPrimitive(previewObjRef.current.primitive);
+                    if (previewObjRef.current.kind === 'priceline') {
+                       try { series.removePriceLine(previewObjRef.current.line); } catch(e) {}
+                    } else {
+                       try { series.detachPrimitive(previewObjRef.current.primitive); } catch(e) {}
+                    }
                  }
-                 const primitive = new VerticalPrimitive(time as Time, DRAWING_COLOR, 2, true);
+                 const primitive = new VerticalPrimitive(time as Time, PREVIEW_COLOR, 2, true);
                  series.attachPrimitive(primitive);
                  previewObjRef.current = { kind: 'primitive', primitive };
               } else {
@@ -570,16 +590,19 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
               }
            } else if (tool === 'trend' && time !== null && price !== null) {
               if (pendingTrendRef.current) {
-                 // drawing trailing line
+                 // Phase 2: trailing line from anchor → cursor
                  if (!previewObjRef.current || previewObjRef.current.kind !== 'primitive' || !(previewObjRef.current.primitive instanceof TrendPrimitive)) {
                     if (previewObjRef.current) {
-                       if (previewObjRef.current.kind === 'priceline') series.removePriceLine(previewObjRef.current.line);
-                       else series.detachPrimitive(previewObjRef.current.primitive);
+                       if (previewObjRef.current.kind === 'priceline') {
+                          try { series.removePriceLine(previewObjRef.current.line); } catch(e) {}
+                       } else {
+                          try { series.detachPrimitive(previewObjRef.current.primitive); } catch(e) {}
+                       }
                     }
                     const primitive = new TrendPrimitive(
                        { time: pendingTrendRef.current.time as Time, price: pendingTrendRef.current.price },
                        { time: time as Time, price },
-                       DRAWING_COLOR, 2, true
+                       PREVIEW_COLOR, 2, true
                     );
                     series.attachPrimitive(primitive);
                     previewObjRef.current = { kind: 'primitive', primitive };
@@ -589,7 +612,36 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
                        { time: time as Time, price }
                     );
                  }
+              } else {
+                 // Phase 1: show a dotted horizontal guide under the cursor so the
+                 // user can see where the first anchor will be placed.
+                 if (!previewObjRef.current || previewObjRef.current.kind !== 'priceline') {
+                    if (previewObjRef.current && previewObjRef.current.kind === 'primitive') {
+                       try { series.detachPrimitive(previewObjRef.current.primitive); } catch(e) {}
+                    }
+                    const line = series.createPriceLine({
+                       price,
+                       color: PREVIEW_COLOR,
+                       lineWidth: 1,
+                       lineStyle: LineStyle.Dotted,
+                       axisLabelVisible: false,
+                       title: "",
+                    });
+                    previewObjRef.current = { kind: 'priceline', line };
+                 } else {
+                    previewObjRef.current.line.applyOptions({ price });
+                 }
               }
+           }
+        } else {
+           // No tool active — ensure any lingering preview is cleaned up
+           if (previewObjRef.current) {
+              if (previewObjRef.current.kind === 'priceline') {
+                 try { series.removePriceLine(previewObjRef.current.line); } catch(e) {}
+              } else {
+                 try { series.detachPrimitive(previewObjRef.current.primitive); } catch(e) {}
+              }
+              previewObjRef.current = null;
            }
         }
       };
@@ -597,6 +649,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
       chart.subscribeCrosshairMove(handler);
       return () => chart.unsubscribeCrosshairMove(handler);
     }, [symbol, interval, chartType, seriesKind]);
+
 
     // Pointer down handler for Drag Initiation
     useEffect(() => {
