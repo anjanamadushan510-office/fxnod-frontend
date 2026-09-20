@@ -146,7 +146,7 @@ export function ChartPanel({
   const changePct = anchor !== 0 ? (change / anchor) * 100 : 0;
 
   return (
-    <div className="flex flex-1 flex-col min-h-0 min-w-0">
+    <div className="flex flex-col w-full h-full overflow-hidden">
       {/* Market pill row — relative so the picker can anchor to it */}
       <div className="relative px-4 pt-3">
         <MarketPill
@@ -170,7 +170,7 @@ export function ChartPanel({
       </div>
 
       {/* Chart body: [toolbar] [live canvas] */}
-      <div className="relative flex flex-1 flex-row min-h-0 min-w-0 gap-0 px-3 pt-2">
+      <div className="relative flex flex-row flex-1 min-w-0 h-full gap-0 px-3 pt-2">
         {/* Left Toolbars */}
         <div className="w-[44px] flex-shrink-0 flex flex-col gap-2 z-20">
           <ChartToolbar
@@ -186,7 +186,7 @@ export function ChartPanel({
         </div>
 
         {/* Live Canvas Area */}
-        <div className="relative flex-1 min-w-0 h-full overflow-hidden">
+        <div className="flex-1 min-w-0 h-full relative overflow-hidden">
           <LiveChart
             ref={chartRef}
             symbol={marketId}
