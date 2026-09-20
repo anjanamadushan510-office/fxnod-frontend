@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/cn";
 
 /**
@@ -39,21 +39,53 @@ export function OptionsShell({
 }: OptionsShellProps) {
   // Theme as local state so the sidebar's sun/moon toggle can flip it later.
   const [theme, _setTheme] = useState<"light" | "dark">(themeProp ?? "light");
+  const [orderWidth, setOrderWidth] = useState(340);
+  const [isResizing, setIsResizing] = useState(false);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+  };
+
+  useEffect(() => {
+    if (!isResizing) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      let newWidth = window.innerWidth - e.clientX;
+      if (newWidth < 280) newWidth = 280;
+      if (newWidth > 500) newWidth = 500;
+      setOrderWidth(newWidth);
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isResizing]);
 
   return (
     <div
       data-app="options"
       data-opt-theme={theme}
+      style={{
+        gridTemplateColumns: drawerOpen
+          ? `76px 360px 1fr ${orderWidth}px`
+          : `76px 0px 1fr ${orderWidth}px`,
+      }}
       className={cn(
         "fixed inset-0 grid overflow-hidden",
         // rows: topbar 64 / rest
         "grid-rows-[64px_1fr]",
         // cols: sidebar 76 / drawer 0↔360 / chart 1fr / order 340 — animated.
-        "transition-[grid-template-columns] duration-300 ease-out",
-        drawerOpen
-          ? "grid-cols-[76px_360px_1fr_340px]"
-          : "grid-cols-[76px_0px_1fr_340px]",
+        !isResizing && "transition-[grid-template-columns] duration-300 ease-out",
         "bg-opt-bg font-sans text-opt-ink",
+        isResizing && "cursor-col-resize select-none"
       )}
     >
       {/* Sidebar — spans both rows */}
@@ -75,7 +107,12 @@ export function OptionsShell({
       </div>
 
       {/* Right-side order panel */}
-      <aside className="col-start-4 row-start-2 flex min-h-0 flex-col overflow-y-auto border-l border-opt-line bg-opt-bg-elev">
+      <aside className="relative col-start-4 row-start-2 flex min-h-0 flex-col border-l border-opt-line bg-opt-bg-elev">
+        {/* Resizer Handle */}
+        <div
+          onMouseDown={handleMouseDown}
+          className="absolute -left-1.5 top-0 bottom-0 w-3 cursor-col-resize z-50 hover:bg-opt-ink/10 transition-colors"
+        />
         {order}
       </aside>
     </div>
