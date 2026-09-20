@@ -41,10 +41,17 @@ export function OptionsShell({
   const [theme, _setTheme] = useState<"light" | "dark">(themeProp ?? "light");
   const [orderWidth, setOrderWidth] = useState(340);
   const [isResizing, setIsResizing] = useState(false);
+  const [drawerWidth, setDrawerWidth] = useState(360);
+  const [isResizingDrawer, setIsResizingDrawer] = useState(false);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
     setIsResizing(true);
+  };
+
+  const handleDrawerMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizingDrawer(true);
   };
 
   useEffect(() => {
@@ -69,13 +76,35 @@ export function OptionsShell({
     };
   }, [isResizing]);
 
+  useEffect(() => {
+    if (!isResizingDrawer) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      let newWidth = e.clientX - 76;
+      if (newWidth < 250) newWidth = 250;
+      if (newWidth > 500) newWidth = 500;
+      setDrawerWidth(newWidth);
+    };
+
+    const handleMouseUp = () => {
+      setIsResizingDrawer(false);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isResizingDrawer]);
+
   return (
     <div
       data-app="options"
       data-opt-theme={theme}
       style={{
         gridTemplateColumns: drawerOpen
-          ? `76px 360px 1fr ${orderWidth}px`
+          ? `76px ${drawerWidth}px 1fr ${orderWidth}px`
           : `76px 0px 1fr ${orderWidth}px`,
       }}
       className={cn(
@@ -83,9 +112,9 @@ export function OptionsShell({
         // rows: topbar 64 / rest
         "grid-rows-[64px_1fr]",
         // cols: sidebar 76 / drawer 0↔360 / chart 1fr / order 340 — animated.
-        !isResizing && "transition-[grid-template-columns] duration-300 ease-out",
+        !(isResizing || isResizingDrawer) && "transition-[grid-template-columns] duration-300 ease-out",
         "bg-opt-bg font-sans text-opt-ink",
-        isResizing && "cursor-col-resize select-none"
+        (isResizing || isResizingDrawer) && "cursor-col-resize select-none"
       )}
     >
       {/* Sidebar — spans both rows */}
@@ -99,7 +128,15 @@ export function OptionsShell({
       </div>
 
       {/* Positions drawer column — clipped to its (animating) width */}
-      <div className="col-start-2 row-start-2 overflow-hidden">{drawer}</div>
+      <div className="relative col-start-2 row-start-2 overflow-hidden">
+        {drawerOpen && (
+          <div
+            onMouseDown={handleDrawerMouseDown}
+            className="absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize z-50 hover:bg-opt-ink/10 transition-colors"
+          />
+        )}
+        {drawer}
+      </div>
 
       {/* Chart column — 1fr, compresses as the drawer column grows */}
       <div className="col-start-3 row-start-2 flex min-h-0 min-w-0 flex-col">
