@@ -40,13 +40,17 @@ export function OpenPositions() {
               <div className="h-6 w-6 rounded bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-xs text-gray-600 dark:text-gray-300">V</div>
               <div className="flex flex-col">
                 <span className="font-medium text-xs truncate max-w-[150px]">{pos.marketName}</span>
-                <span className={pos.side === "rise" || pos.side === "up" ? "text-emerald-500 text-[11px]" : "text-red-500 text-[11px]"}>
+                <span className={pos.side === "rise" || pos.side === "up" ? "text-green-700 dark:text-green-400 text-[11px]" : "text-red-600 dark:text-red-400 text-[11px]"}>
                   {pos.side.charAt(0).toUpperCase() + pos.side.slice(1)}
                 </span>
               </div>
             </div>
             <div className="text-gray-600 dark:text-zinc-300">{pos.contractId ?? pos.id}</div>
-            <div className="text-gray-600 dark:text-zinc-300">USD</div>
+            <div>
+              <span className="bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300 px-2 py-0.5 rounded text-[11px] font-bold">
+                USD
+              </span>
+            </div>
             <div className="text-gray-600 dark:text-zinc-300 whitespace-nowrap">
               {pos.startTime ? new Date(pos.startTime * 1000).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }) : "-"}
             </div>
@@ -55,7 +59,7 @@ export function OpenPositions() {
             <div className="text-right text-gray-600 dark:text-zinc-300">
               {pos.contractValue > 0 ? pos.contractValue.toFixed(2) : "-"}
             </div>
-            <div className={`text-right font-medium ${pos.pnl >= 0 ? "text-emerald-500" : "text-red-500"}`}>
+            <div className={`text-right font-medium ${pos.pnl >= 0 ? "text-green-700 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
               {pos.pnl >= 0 ? "+" : "-"}{Math.abs(pos.pnl).toFixed(2)}
             </div>
           </div>

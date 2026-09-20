@@ -198,7 +198,7 @@ export function Statement() {
                 </div>
                 <div className="text-gray-600 dark:text-zinc-300">{item.id}</div>
                 <div>
-                  <span className="bg-gray-700/50 text-gray-300 px-2 py-0.5 rounded text-[11px] font-bold">
+                  <span className="bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300 px-2 py-0.5 rounded text-[11px] font-bold">
                     {item.currency}
                   </span>
                 </div>
@@ -208,12 +208,12 @@ export function Statement() {
                 </div>
                 <div className="font-medium">
                   {item.transactionType === "Buy" ? (
-                    <span className="text-red-500">Buy</span>
+                    <span className="text-red-600 dark:text-red-400">Buy</span>
                   ) : (
-                    <span className="text-emerald-500">Sell</span>
+                    <span className="text-green-700 dark:text-green-400">Sell</span>
                   )}
                 </div>
-                <div className={`text-right font-medium ${item.creditDebit >= 0 ? "text-emerald-500" : "text-red-500"}`}>
+                <div className={`text-right font-medium ${item.creditDebit >= 0 ? "text-green-700 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
                   {cdSign}{cdValue}
                 </div>
                 <div className="text-right font-medium text-gray-900 dark:text-white">{item.balance}</div>

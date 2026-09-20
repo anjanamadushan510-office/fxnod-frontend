@@ -75,7 +75,7 @@ export function TradeTable() {
       <div className="flex-1 overflow-y-auto">
         {isLoading ? (
           <div className="flex h-full flex-col items-center justify-center p-8 text-center text-gray-400 dark:text-zinc-500">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-green-700 dark:border-green-400 border-t-transparent" />
           </div>
         ) : filteredTrades.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center p-8 text-center text-gray-400 dark:text-zinc-500">
@@ -123,7 +123,7 @@ export function TradeTable() {
                   </div>
                   <div className="text-gray-600 dark:text-zinc-300">{trade.deriv_contract_id}</div>
                   <div>
-                    <span className="bg-gray-700/50 text-gray-300 px-2 py-0.5 rounded text-[11px] font-bold">
+                    <span className="bg-gray-200 text-gray-800 dark:bg-gray-700/50 dark:text-gray-300 px-2 py-0.5 rounded text-[11px] font-bold">
                       {trade.currency}
                     </span>
                   </div>
@@ -137,7 +137,7 @@ export function TradeTable() {
                     {sellTimeStr && <span className="text-gray-400 dark:text-zinc-500">{sellTimeStr} GMT</span>}
                   </div>
                   <div className="text-right text-gray-600 dark:text-zinc-300">{payout.toFixed(2)}</div>
-                  <div className={`text-right font-medium ${isWin ? "text-emerald-500" : "text-red-500"}`}>
+                  <div className={`text-right font-medium ${isWin ? "text-green-700 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
                     {plSign}{plValue}
                   </div>
                 </div>
@@ -150,7 +150,7 @@ export function TradeTable() {
       {/* Footer */}
       <div className="flex items-center justify-between border-t border-gray-200 dark:border-gray-800 p-4 font-medium">
         <div className="text-gray-500 dark:text-zinc-400">Profit/loss on the last 50 contracts</div>
-        <div className={`text-[16px] ${totalProfitLoss >= 0 ? "text-emerald-500" : "text-red-500"}`}>
+        <div className={`text-[16px] ${totalProfitLoss >= 0 ? "text-green-700 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
           {totalProfitLoss >= 0 ? "+" : "-"}{Math.abs(totalProfitLoss).toFixed(2)} USD
         </div>
       </div>

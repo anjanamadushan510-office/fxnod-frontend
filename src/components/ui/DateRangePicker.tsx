@@ -86,14 +86,14 @@ export function DateRangePicker({ value, onChange }: DateRangePickerProps) {
       <style>{cssOverrides}</style>
       <Popover.Root open={isOpen} onOpenChange={setIsOpen}>
         <Popover.Trigger asChild>
-          <button className="flex items-center gap-2 outline-none group">
-            <div className="flex items-center gap-2 rounded border border-gray-700 bg-transparent px-3 py-1.5 text-white group-hover:bg-gray-800/50 transition-colors text-[14px]">
-              <CalendarIcon className="h-4 w-4 text-zinc-400" />
+          <button className="flex items-center gap-2 outline-none group text-gray-900 dark:text-gray-100">
+            <div className="flex items-center gap-2 rounded border border-gray-300 dark:border-gray-700 bg-transparent px-3 py-1.5 group-hover:bg-gray-100 dark:group-hover:bg-gray-800/50 transition-colors text-[14px]">
+              <CalendarIcon className="h-4 w-4 text-gray-500 dark:text-zinc-400" />
               <span>{fromText}</span>
             </div>
-            <span className="text-zinc-500">-</span>
-            <div className="flex items-center gap-2 rounded border border-gray-700 bg-transparent px-3 py-1.5 text-white group-hover:bg-gray-800/50 transition-colors text-[14px]">
-              <CalendarIcon className="h-4 w-4 text-zinc-400" />
+            <span className="text-gray-500 dark:text-zinc-500">-</span>
+            <div className="flex items-center gap-2 rounded border border-gray-300 dark:border-gray-700 bg-transparent px-3 py-1.5 group-hover:bg-gray-100 dark:group-hover:bg-gray-800/50 transition-colors text-[14px]">
+              <CalendarIcon className="h-4 w-4 text-gray-500 dark:text-zinc-400" />
               <span>{toText}</span>
             </div>
           </button>
@@ -101,46 +101,46 @@ export function DateRangePicker({ value, onChange }: DateRangePickerProps) {
         
         <Popover.Portal>
           <Popover.Content 
-            className="z-[110] flex rounded-lg border border-gray-800 bg-panel shadow-2xl overflow-hidden mt-2 text-[14px] text-zinc-300 outline-none"
+            className="z-[110] flex rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#111928] shadow-2xl overflow-hidden mt-2 text-[14px] text-gray-900 dark:text-gray-100 outline-none"
             align="end"
             sideOffset={4}
           >
             {/* Left Sidebar: Quick Filters */}
-            <div className="w-[160px] border-r border-gray-800 bg-[#151a24] p-2 flex flex-col gap-1">
+            <div className="w-[160px] border-r border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 p-2 flex flex-col gap-1 text-gray-900 dark:text-gray-100">
               <button 
                 onClick={() => handleQuickSelect("all_time")}
-                className="text-left px-3 py-2 rounded hover:bg-gray-800 transition-colors"
+                className="text-left px-3 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
               >
                 All time
               </button>
               <button 
                 onClick={() => handleQuickSelect("last_7")}
-                className="text-left px-3 py-2 rounded hover:bg-gray-800 transition-colors"
+                className="text-left px-3 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
               >
                 Last 7 days
               </button>
               <button 
                 onClick={() => handleQuickSelect("last_30")}
-                className="text-left px-3 py-2 rounded hover:bg-gray-800 transition-colors"
+                className="text-left px-3 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
               >
                 Last 30 days
               </button>
               <button 
                 onClick={() => handleQuickSelect("last_60")}
-                className="text-left px-3 py-2 rounded hover:bg-gray-800 transition-colors"
+                className="text-left px-3 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
               >
                 Last 60 days
               </button>
               <button 
                 onClick={() => handleQuickSelect("last_quarter")}
-                className="text-left px-3 py-2 rounded hover:bg-gray-800 transition-colors"
+                className="text-left px-3 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
               >
                 Last quarter
               </button>
             </div>
             
             {/* Right Content: Calendar */}
-            <div className="p-4 bg-panel">
+            <div className="p-4 bg-white dark:bg-[#111928]">
               <DayPicker
                 mode="range"
                 selected={value}
