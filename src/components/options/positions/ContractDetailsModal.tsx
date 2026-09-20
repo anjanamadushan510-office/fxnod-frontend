@@ -35,6 +35,27 @@ export function ContractDetailsModal() {
     setTarget(document.querySelector('[data-app="options"]') ?? document.body);
   }, []);
 
+  // Shallow-route to /contract/[id] when detail opens; revert on close.
+  useEffect(() => {
+    if (!detail) return;
+
+    const prevPath = window.location.pathname + window.location.search;
+    window.history.pushState({ contractId: detail.id }, '', `/contract/${detail.id}`);
+
+    const onPopState = () => {
+      close();
+    };
+    window.addEventListener('popstate', onPopState);
+
+    return () => {
+      window.removeEventListener('popstate', onPopState);
+      // Only revert if we are still on /contract/... (user didn't already navigate away)
+      if (window.location.pathname.startsWith('/contract')) {
+        window.history.replaceState(null, '', prevPath);
+      }
+    };
+  }, [detail?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (!detail) return;
     const onKey = (e: KeyboardEvent) => {

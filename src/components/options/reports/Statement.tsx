@@ -8,6 +8,8 @@ import { DateRangePicker } from "@/components/ui/DateRangePicker";
 import type { DateRange } from "react-day-picker";
 import type { TradeHistoryEntry } from "@/services/api/model/tradeHistoryEntry";
 import * as Popover from "@radix-ui/react-popover";
+import { useContractDetails } from "@/stores/useContractDetails";
+import { historyToDetail } from "@/components/options/positions/contractDetail";
 
 export function Statement() {
   const searchParams = useSearchParams();
@@ -17,6 +19,8 @@ export function Statement() {
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [transactionType, setTransactionType] = useState("All transactions");
   const [isTypeOpen, setIsTypeOpen] = useState(false);
+
+  const openDetail = useContractDetails((s) => s.open);
 
   const { data: trades, isLoading } = useGetTradeHistory({
     request: {
@@ -55,6 +59,7 @@ export function Statement() {
       transactionType: "Buy" | "Sell";
       creditDebit: number;
       balance: string;
+      trade: TradeHistoryEntry;
     }> = [];
 
     filteredTrades.forEach((trade: TradeHistoryEntry) => {
@@ -74,7 +79,8 @@ export function Statement() {
         time: buyDate,
         transactionType: "Buy",
         creditDebit: -stake,
-        balance: "-",
+        balance: "-", // Need API for real balance
+        trade: trade,
       });
 
       // Sell transaction if settled with a payout
@@ -90,6 +96,7 @@ export function Statement() {
           transactionType: "Sell",
           creditDebit: payout,
           balance: "-",
+          trade: trade,
         });
       }
     });
@@ -176,8 +183,9 @@ export function Statement() {
 
             return (
               <div 
-                key={`${item.id}-${item.transactionType}-${idx}`}
-                className="grid grid-cols-[2fr_1.5fr_1fr_1.5fr_1.5fr_1.5fr_1.5fr] gap-4 border-b border-gray-800/50 p-4 items-center hover:bg-gray-800/20 transition-colors"
+                key={`${item.id}-${item.transactionType}`} 
+                className="grid grid-cols-[2fr_1.5fr_1fr_1.5fr_1.5fr_1.5fr_1.5fr] gap-4 border-b border-gray-800/50 p-4 items-center hover:bg-gray-800/20 transition-colors cursor-pointer"
+                onClick={() => openDetail(historyToDetail(item.trade))}
               >
                 <div className="flex items-center gap-2 text-white" title={marketName}>
                   <div className="h-6 w-6 rounded bg-gray-800 flex items-center justify-center text-xs">V</div>

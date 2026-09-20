@@ -87,7 +87,12 @@ function OptionsPageInner() {
   // post-replace render — now with params — can't re-trigger it, so there's no
   // redirect loop.
   useEffect(() => {
-    if (reportsOpen || pathname.startsWith("/reports") || (typeof window !== "undefined" && window.location.pathname.startsWith("/reports"))) return;
+    if (
+      reportsOpen ||
+      pathname.startsWith("/reports") ||
+      (typeof window !== "undefined" && window.location.pathname.startsWith("/reports")) ||
+      (typeof window !== "undefined" && window.location.pathname.startsWith("/contract"))
+    ) return;
     
     if (searchParams.toString() === "") {
       router.replace(`/options/dtrader${DEFAULT_OPTIONS_QUERY}` as Route, {

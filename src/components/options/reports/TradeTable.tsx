@@ -6,6 +6,8 @@ import { getContractDisplay } from "./utils";
 import { DateRangePicker } from "@/components/ui/DateRangePicker";
 import type { DateRange } from "react-day-picker";
 import type { TradeHistoryEntry } from "@/services/api/model/tradeHistoryEntry";
+import { useContractDetails } from "@/stores/useContractDetails";
+import { historyToDetail } from "@/components/options/positions/contractDetail";
 
 export function TradeTable() {
   const searchParams = useSearchParams();
@@ -13,6 +15,8 @@ export function TradeTable() {
 
   // Default to all time (empty)
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
+
+  const openDetail = useContractDetails((s) => s.open);
 
   const { data: trades, isLoading } = useGetTradeHistory({
     request: {
@@ -104,7 +108,8 @@ export function TradeTable() {
             return (
               <div 
                 key={trade.id} 
-                className="grid grid-cols-[2fr_1.5fr_1fr_1.5fr_1fr_1.5fr_1fr_1.5fr] gap-4 border-b border-gray-800/50 p-4 items-center hover:bg-gray-800/20 transition-colors"
+                className="grid grid-cols-[2fr_1.5fr_1fr_1.5fr_1fr_1.5fr_1fr_1.5fr] gap-4 border-b border-gray-800/50 p-4 items-center hover:bg-gray-800/20 transition-colors cursor-pointer"
+                onClick={() => openDetail(historyToDetail(trade))}
               >
                 <div className="flex items-center gap-2 text-white" title={marketName}>
                   <div className="h-6 w-6 rounded bg-gray-800 flex items-center justify-center text-xs">V</div>
