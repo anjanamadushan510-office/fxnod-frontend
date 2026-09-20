@@ -1,6 +1,7 @@
 "use client";
 
 import { CONTRACT_TYPES, type ContractTypeId } from "../layout/contractTypes";
+import { ChartFooter } from "../chart/ChartFooter";
 import { AccumulatorsPanel } from "./panels/AccumulatorsPanel";
 import { ComingSoonPanel } from "./panels/ComingSoonPanel";
 import { EvenOddPanel } from "./panels/EvenOddPanel";
@@ -29,8 +30,13 @@ interface OrderPanelProps {
  */
 export function OrderPanel({ contractType, symbol }: OrderPanelProps) {
   return (
-    <div key={contractType} className="flex h-full flex-col">
-      {renderForType(contractType, symbol)}
+    <div key={contractType} className="flex h-full flex-col overflow-hidden">
+      <div className="flex-1 overflow-y-auto">
+        {renderForType(contractType, symbol)}
+      </div>
+      <div className="mt-auto shrink-0 border-t border-opt-line bg-opt-bg-elev">
+        <ChartFooter />
+      </div>
     </div>
   );
 }

@@ -90,7 +90,7 @@ export function TurbosPanel({ symbol }: TurbosPanelProps) {
       {errorMsg && (
         <p className="px-1 text-[11px] leading-snug text-opt-fall">{errorMsg}</p>
       )}
-      <div className="mt-auto">
+      <div className="mt-4">
         <BuyButton
           side={side}
           disabled={!canBuy}

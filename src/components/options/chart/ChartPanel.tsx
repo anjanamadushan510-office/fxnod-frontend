@@ -15,7 +15,6 @@ function formatBarrierTitle(offset: number): string {
 import type { PriceLineSpec } from "./LiveChart";
 import { CHART_COLORS } from "./chartColors";
 import { MarketPicker } from "../market/MarketPicker";
-import { ChartFooter } from "./ChartFooter";
 import { ChartToolbar, ChartNavControls } from "./ChartToolbar";
 import { DrawingToolbar } from "./DrawingToolbar";
 import { LiveChart, type LiveChartHandle } from "./LiveChart";
@@ -204,8 +203,6 @@ export function ChartPanel({
           )}
         </div>
       </div>
-
-      <ChartFooter />
     </div>
   );
 }
