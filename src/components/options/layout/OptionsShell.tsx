@@ -41,46 +41,13 @@ export function OptionsShell({
   theme: themeProp,
 }: OptionsShellProps) {
   const [theme, _setTheme] = useState<"light" | "dark">(themeProp ?? "light");
-  const [drawerWidth, setDrawerWidth] = useState(360);
-  const [isResizingDrawer, setIsResizingDrawer] = useState(false);
-
-  // ── Hydrate persisted widths (client-only to avoid SSR mismatch) ──────────
-  useEffect(() => {
-    const savedDrawer = localStorage.getItem("fxnod_left_drawer_width");
-    if (savedDrawer) setDrawerWidth(Number(savedDrawer));
-  }, []);
-
-  // ── Left drawer resizer ───────────────────────────────────────────────────
-  useEffect(() => {
-    if (!isResizingDrawer) return;
-    const onMove = (e: MouseEvent) => {
-      let w = e.clientX - 76; // 76px = icon sidebar width
-      if (w < 250) w = 250;
-      if (w > 500) w = 500;
-      setDrawerWidth(w);
-    };
-    const onUp = (e: MouseEvent) => {
-      // Persist the final width so it survives a page reload.
-      const w = e.clientX - 76;
-      const clamped = Math.min(500, Math.max(250, w));
-      localStorage.setItem("fxnod_left_drawer_width", String(clamped));
-      setIsResizingDrawer(false);
-    };
-    document.addEventListener("mousemove", onMove);
-    document.addEventListener("mouseup", onUp);
-    return () => {
-      document.removeEventListener("mousemove", onMove);
-      document.removeEventListener("mouseup", onUp);
-    };
-  }, [isResizingDrawer]);
 
   return (
     <div
       data-app="options"
       data-opt-theme={theme}
       className={cn(
-        "fixed inset-0 flex flex-row overflow-hidden bg-opt-bg font-sans text-opt-ink",
-        isResizingDrawer && "cursor-col-resize select-none"
+        "fixed inset-0 flex flex-row overflow-hidden bg-opt-bg font-sans text-opt-ink"
       )}
     >
       {/* ── Icon Sidebar (flex-none) ── */}
@@ -103,20 +70,11 @@ export function OptionsShell({
           <div
             className={cn(
               "flex-none h-full relative z-20 bg-opt-bg overflow-hidden",
-              drawerOpen && "border-r border-opt-line"
+              drawerOpen ? "w-[280px] border-r border-opt-line" : "w-0"
             )}
-            style={{
-              width: drawerOpen ? drawerWidth : 0,
-              transition: isResizingDrawer ? "none" : "width 300ms ease-out",
-            }}
+            style={{ transition: "width 300ms ease-out" }}
           >
-            {drawerOpen && (
-              <div
-                onMouseDown={(e) => { e.preventDefault(); setIsResizingDrawer(true); }}
-                className="absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize z-30 hover:bg-opt-ink/10 transition-colors"
-              />
-            )}
-            <div className="w-full h-full overflow-hidden" style={{ minWidth: drawerOpen ? 250 : 0 }}>
+            <div className="w-full h-full overflow-hidden min-w-[280px]">
               {drawer}
             </div>
           </div>
@@ -126,8 +84,8 @@ export function OptionsShell({
             {main}
           </div>
 
-          {/* Right Order Panel (flex-none fixed width) */}
-          <div className="flex-none w-[280px] h-full relative z-20 bg-opt-bg-elev border-l border-opt-line flex flex-col">
+          {/* Right Order Panel (flex-none) */}
+          <div className="flex-none h-full w-[280px] relative z-20 bg-opt-bg-elev border-l border-opt-line flex flex-col">
             {order}
           </div>
 
