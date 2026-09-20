@@ -207,11 +207,11 @@ export function ChartNavControls({
     if (!chart) return;
     const range = chart.timeScale().getVisibleLogicalRange();
     if (!range) return;
-    const len = range.to - range.from;
-    const shrink = len * 0.15;
+    const length = range.to - range.from;
+    // Shrink from the left only — right edge (live price) stays anchored.
     chart.timeScale().setVisibleLogicalRange({
-      from: range.from + shrink,
-      to: range.to - shrink,
+      from: range.from + length * 0.2,
+      to: range.to,
     });
   };
 
@@ -220,11 +220,11 @@ export function ChartNavControls({
     if (!chart) return;
     const range = chart.timeScale().getVisibleLogicalRange();
     if (!range) return;
-    const len = range.to - range.from;
-    const expand = len * 0.15;
+    const length = range.to - range.from;
+    // Expand to the left only — right edge (live price) stays anchored.
     chart.timeScale().setVisibleLogicalRange({
-      from: range.from - expand,
-      to: range.to + expand,
+      from: range.from - length * 0.2,
+      to: range.to,
     });
   };
 
