@@ -27,6 +27,10 @@ class EndPriceLineRenderer implements IPrimitivePaneRenderer {
         this._price = price;
     }
 
+    updateColor(color: string) {
+        this._color = color;
+    }
+
     draw(target: any) {
         if (!this._chart || !this._series || this._time === null || this._price === null) return;
 
@@ -46,7 +50,7 @@ class EndPriceLineRenderer implements IPrimitivePaneRenderer {
             ctx.moveTo(xPos, yPos);
             ctx.lineTo(scope.bitmapSize.width, yPos); // Draw to the right edge
             ctx.strokeStyle = this._color;
-            ctx.lineWidth = 1 * scope.verticalPixelRatio;
+            ctx.lineWidth = 2 * scope.verticalPixelRatio;
             // set dashed line style
             // ctx.setLineDash([4 * scope.horizontalPixelRatio, 4 * scope.horizontalPixelRatio]);
             ctx.stroke();
@@ -64,6 +68,10 @@ class EndPriceLinePaneView implements IPrimitivePaneView {
 
     update(chart: IChartApi, series: ISeriesApi<SeriesType>, time: Time | null, price: number | null) {
         this._renderer.update(chart, series, time, price);
+    }
+
+    updateColor(color: string) {
+        this._renderer.updateColor(color);
     }
 
     renderer() {
@@ -103,6 +111,11 @@ export class EndPriceLinePlugin implements ISeriesPrimitive {
             this._paneViews[0].update(this._chart, this._series, this._time, this._price);
             if (this._requestUpdate) this._requestUpdate();
         }
+    }
+
+    updateColor(color: string) {
+        this._paneViews[0].updateColor(color);
+        if (this._requestUpdate) this._requestUpdate();
     }
 
     paneViews() {
