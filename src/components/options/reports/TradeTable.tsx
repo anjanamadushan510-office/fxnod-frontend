@@ -22,7 +22,7 @@ export function TradeTable() {
         chart_type: undefined,
         interval: undefined,
         date_from: dateRange?.from ? Math.floor(dateRange.from.getTime() / 1000) : undefined,
-        date_to: dateRange?.to ? Math.floor(dateRange.to.getTime() / 1000) : undefined,
+        date_to: dateRange?.to ? Math.floor(new Date(dateRange.to).setHours(23, 59, 59, 999) / 1000) : undefined,
       }
     }
   });
