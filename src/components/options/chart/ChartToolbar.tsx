@@ -199,7 +199,7 @@ export function ChartNavControls() {
   const [crosshair, setCrosshair] = useState(true);
 
   return (
-    <div className="flex flex-col gap-1 rounded-lg border border-opt-line bg-opt-bg-elev/90 p-1 shadow-[0_2px_8px_rgba(0,0,0,0.08)] backdrop-blur-sm">
+    <div className="flex flex-row gap-1 rounded-lg border border-opt-line bg-opt-bg-elev/90 p-1 shadow-[0_2px_8px_rgba(0,0,0,0.12)] backdrop-blur-sm">
       <NavButton label="Zoom in" onClick={() => undefined}>
         <PlusIcon className="h-4 w-4" />
       </NavButton>

@@ -174,8 +174,7 @@ export function ChartPanel({
             onPrice={handlePrice}
           />
 
-          {/* Floating lower-left controls */}
-          <div className="pointer-events-none absolute bottom-10 left-3 z-10 flex items-end gap-3">
+          <div className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3">
             <div className="pointer-events-auto">
               <ChartNavControls />
             </div>
