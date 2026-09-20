@@ -86,17 +86,17 @@ export function DateRangePicker({ value, onChange }: DateRangePickerProps) {
       <style>{cssOverrides}</style>
       <Popover.Root open={isOpen} onOpenChange={setIsOpen}>
         <Popover.Trigger asChild>
-          <div className="flex items-center gap-2 cursor-pointer">
-            <div className="flex items-center gap-2 rounded border border-gray-800 bg-panel px-3 py-1.5 text-white hover:bg-gray-800 transition-colors text-[14px]">
+          <button className="flex items-center gap-2 outline-none group">
+            <div className="flex items-center gap-2 rounded border border-gray-700 bg-transparent px-3 py-1.5 text-white group-hover:bg-gray-800/50 transition-colors text-[14px]">
               <CalendarIcon className="h-4 w-4 text-zinc-400" />
               <span>{fromText}</span>
             </div>
             <span className="text-zinc-500">-</span>
-            <div className="flex items-center gap-2 rounded border border-gray-800 bg-panel px-3 py-1.5 text-white hover:bg-gray-800 transition-colors text-[14px]">
+            <div className="flex items-center gap-2 rounded border border-gray-700 bg-transparent px-3 py-1.5 text-white group-hover:bg-gray-800/50 transition-colors text-[14px]">
               <CalendarIcon className="h-4 w-4 text-zinc-400" />
               <span>{toText}</span>
             </div>
-          </div>
+          </button>
         </Popover.Trigger>
         
         <Popover.Portal>
