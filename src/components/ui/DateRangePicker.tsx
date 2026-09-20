@@ -69,16 +69,16 @@ export function DateRangePicker({ value, onChange }: DateRangePickerProps) {
     setIsOpen(false);
   };
 
-  // Format the display text for the trigger
-  let displayText = "All time";
+  // Format the display text for the triggers
+  const formatStr = "MMM, dd yyyy";
+  let fromText = "Date from";
+  let toText = "Today";
+
   if (value?.from) {
-    if (value.to) {
-      const fromStr = format(value.from, "dd MMM yyyy");
-      const toStr = format(value.to, "dd MMM yyyy");
-      displayText = fromStr === toStr ? fromStr : `${fromStr} - ${toStr}`;
-    } else {
-      displayText = format(value.from, "dd MMM yyyy");
-    }
+    fromText = format(value.from, formatStr);
+  }
+  if (value?.to) {
+    toText = format(value.to, formatStr);
   }
 
   return (
@@ -86,10 +86,17 @@ export function DateRangePicker({ value, onChange }: DateRangePickerProps) {
       <style>{cssOverrides}</style>
       <Popover.Root open={isOpen} onOpenChange={setIsOpen}>
         <Popover.Trigger asChild>
-          <button className="flex items-center gap-2 rounded border border-gray-800 bg-panel px-3 py-1.5 text-white hover:bg-gray-800 transition-colors text-[14px]">
-            <CalendarIcon className="h-4 w-4" />
-            <span>{displayText}</span>
-          </button>
+          <div className="flex items-center gap-2 cursor-pointer">
+            <div className="flex items-center gap-2 rounded border border-gray-800 bg-panel px-3 py-1.5 text-white hover:bg-gray-800 transition-colors text-[14px]">
+              <CalendarIcon className="h-4 w-4 text-zinc-400" />
+              <span>{fromText}</span>
+            </div>
+            <span className="text-zinc-500">-</span>
+            <div className="flex items-center gap-2 rounded border border-gray-800 bg-panel px-3 py-1.5 text-white hover:bg-gray-800 transition-colors text-[14px]">
+              <CalendarIcon className="h-4 w-4 text-zinc-400" />
+              <span>{toText}</span>
+            </div>
+          </div>
         </Popover.Trigger>
         
         <Popover.Portal>
