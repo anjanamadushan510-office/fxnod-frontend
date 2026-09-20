@@ -19,7 +19,9 @@ import {
 import { ChartTypesModal } from "./ChartTypesModal";
 import { DrawingToolsPanel } from "./DrawingToolsPanel";
 import { IndicatorsModal } from "./IndicatorsModal";
+import { DownloadModal } from "./DownloadModal";
 import { useChartIndicators } from "@/stores/useChartIndicators";
+import type { LiveChartHandle } from "./LiveChart";
 
 interface ChartToolbarProps {
   symbol: string;
@@ -29,6 +31,7 @@ interface ChartToolbarProps {
   tickOnly: boolean;
   onChartTypeChange: (id: ChartTypeId) => void;
   onIntervalChange: (id: IntervalId) => void;
+  chartRef: React.RefObject<LiveChartHandle | null>;
 }
 
 /**
@@ -48,9 +51,54 @@ export function ChartToolbar({
   const [typesOpen, setTypesOpen] = useState(false);
   const [drawOpen, setDrawOpen] = useState(false);
   const [indicatorsOpen, setIndicatorsOpen] = useState(false);
+  const [downloadOpen, setDownloadOpen] = useState(false);
   const [activePlaceholder, setActivePlaceholder] = useState<string | null>(null);
 
   const activeIndicatorsCount = useChartIndicators((s) => s.indicators.filter((i) => i.symbol === symbol).length);
+
+  const handleDownloadPNG = () => {
+    const chart = chartRef.current?.getChart();
+    if (!chart) return;
+    const canvas = chart.takeScreenshot();
+    const dataUrl = canvas.toDataURL("image/png");
+    const a = document.createElement("a");
+    a.href = dataUrl;
+    a.download = `${symbol}_chart.png`;
+    a.click();
+  };
+
+  const handleDownloadCSV = () => {
+    const handle = chartRef.current;
+    if (!handle) return;
+    const ticks = handle.getTicks();
+    const candles = handle.getCandles();
+    
+    let csvStr = "";
+    
+    if (candles && candles.length > 0) {
+      csvStr += "Time,Open,High,Low,Close\n";
+      candles.forEach(c => {
+        const d = new Date((c.time as number) * 1000).toISOString();
+        csvStr += `${d},${c.open},${c.high},${c.low},${c.close}\n`;
+      });
+    } else if (ticks && ticks.length > 0) {
+      csvStr += "Time,Price\n";
+      ticks.forEach(t => {
+        const d = new Date((t.time as number) * 1000).toISOString();
+        csvStr += `${d},${t.value}\n`;
+      });
+    } else {
+      return;
+    }
+    
+    const blob = new Blob([csvStr], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${symbol}_data.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="flex flex-col items-center gap-1 pl-1 pt-2">
@@ -111,8 +159,8 @@ export function ChartToolbar({
         <PencilIcon className="h-4 w-4" />
       </ToolbarButton>
 
-      {/* 5 — Download (placeholder) */}
-      <ToolbarButton label="Download" active={false} onClick={() => undefined}>
+      {/* 5 — Download */}
+      <ToolbarButton label="Download" active={downloadOpen} onClick={() => setDownloadOpen(true)}>
         <DownloadIcon className="h-4 w-4" />
       </ToolbarButton>
 
@@ -131,6 +179,12 @@ export function ChartToolbar({
         <IndicatorsModal symbol={symbol} interval={interval} onClose={() => setIndicatorsOpen(false)} />
       )}
       {drawOpen && <DrawingToolsPanel onClose={() => setDrawOpen(false)} />}
+      <DownloadModal
+        isOpen={downloadOpen}
+        onClose={() => setDownloadOpen(false)}
+        onDownloadPNG={handleDownloadPNG}
+        onDownloadCSV={handleDownloadCSV}
+      />
     </div>
   );
 }

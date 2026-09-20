@@ -104,6 +104,8 @@ export interface LiveChartHandle {
     | ISeriesApi<"Candlestick">
     | ISeriesApi<"Bar">
     | null;
+  getTicks: () => FeedTick[];
+  getCandles: () => FeedCandle[];
 }
 
 function distanceToSegment(px: number, py: number, x1: number, y1: number, x2: number, y2: number) {
@@ -1074,6 +1076,8 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
         },
         getChart: () => chartRef.current,
         getSeries: () => seriesRef.current,
+        getTicks: () => ticksRef.current,
+        getCandles: () => candlesRef.current,
       }),
       [],
     );

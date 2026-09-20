@@ -179,6 +179,7 @@ export function ChartPanel({
           tickOnly={tickOnly}
           onChartTypeChange={setChartType}
           onIntervalChange={setInterval}
+          chartRef={chartRef}
         />
 
         <DrawingToolbar />
