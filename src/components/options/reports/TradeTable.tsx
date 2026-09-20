@@ -41,7 +41,6 @@ export function TradeTable() {
       {/* Top filters */}
       <div className="flex items-center border-b border-gray-800 p-4">
         <div className="flex items-center gap-2 ml-auto">
-          <span className="text-zinc-400">Date from</span>
           <DateRangePicker value={dateRange} onChange={setDateRange} />
         </div>
       </div>

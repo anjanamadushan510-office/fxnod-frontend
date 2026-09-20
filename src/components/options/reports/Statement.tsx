@@ -101,7 +101,6 @@ export function Statement() {
         </div>
 
         <div className="flex items-center gap-2 ml-auto">
-          <span className="text-zinc-400">Date from</span>
           <DateRangePicker value={dateRange} onChange={setDateRange} />
         </div>
       </div>
