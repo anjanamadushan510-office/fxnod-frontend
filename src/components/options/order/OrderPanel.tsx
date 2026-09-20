@@ -34,7 +34,7 @@ export function OrderPanel({ contractType, symbol }: OrderPanelProps) {
       <div className="flex-1 overflow-y-auto">
         {renderForType(contractType, symbol)}
       </div>
-      <div className="mt-auto shrink-0 border-t border-opt-line bg-opt-bg-elev">
+      <div className="mt-auto shrink-0">
         <ChartFooter />
       </div>
     </div>

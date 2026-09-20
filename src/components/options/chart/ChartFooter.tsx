@@ -12,23 +12,23 @@ import { ExpandIcon } from "@/components/ui/Icons";
 export function ChartFooter() {
   const now = useNowGMT();
   return (
-    <div className="flex h-7 items-center justify-end gap-3 px-4 text-[11px] text-opt-ink-3">
-      <span className="flex items-center gap-1.5">
+    <div className="flex h-10 items-center justify-end gap-3 px-4 text-[13px] font-medium text-gray-600 dark:text-gray-300 bg-opt-bg-elev border-t border-opt-line">
+      <div className="flex items-center gap-1.5 border-r border-opt-line pr-3">
         <span className="h-1.5 w-1.5 rounded-full bg-opt-rise" />
-        <span className="font-mono tabular-nums">
+        <span className="tabular-nums">
           {formatDate(now)}
         </span>
-      </span>
-      <span className="font-mono tabular-nums text-opt-ink">
-        {formatTime(now)} GMT
-      </span>
-      <button
-        type="button"
-        aria-label="Fullscreen"
-        className="grid h-5 w-5 place-items-center rounded text-opt-ink-3 hover:text-opt-ink"
-      >
-        <ExpandIcon className="h-3.5 w-3.5" />
-      </button>
+      </div>
+      <div className="flex items-center gap-2 tabular-nums">
+        <span>{formatTime(now)} GMT</span>
+        <button
+          type="button"
+          aria-label="Fullscreen"
+          className="grid h-6 w-6 place-items-center rounded hover:bg-opt-bg-sunk text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors"
+        >
+          <ExpandIcon className="h-4 w-4" />
+        </button>
+      </div>
     </div>
   );
 }
