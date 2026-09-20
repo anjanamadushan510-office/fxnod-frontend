@@ -74,13 +74,13 @@ export function DrawingToolsPanel({ onClose }: { onClose: () => void }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="absolute bottom-0 left-12 z-[70] flex items-center justify-center"
       role="dialog"
       aria-modal="true"
       aria-label="Drawing tools"
     >
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className="fixed inset-0 bg-transparent"
         onClick={onClose}
       />
 

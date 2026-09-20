@@ -218,12 +218,12 @@ export function IndicatorsModal({ symbol, interval, onClose }: IndicatorsModalPr
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="absolute bottom-0 left-12 z-[70] flex items-center justify-center"
       role="dialog"
       aria-modal="true"
       aria-label="Indicators"
     >
-      <div className="absolute inset-0 bg-transparent" onClick={onClose} />
+      <div className="fixed inset-0 bg-transparent" onClick={onClose} />
 
       <div className="relative z-10 flex h-[480px] w-[min(720px,calc(100vw-32px))] overflow-hidden rounded-md border border-opt-line bg-opt-bg-elev shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
         

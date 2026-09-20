@@ -171,7 +171,7 @@ export function ChartPanel({
         </div>
 
         {/* Chart toolbar + drawing toolbar — floating bottom-left over canvas */}
-        <div className="pointer-events-none absolute bottom-16 left-4 z-40 flex flex-col items-center gap-1">
+        <div className="pointer-events-none absolute bottom-16 left-4 z-[60] flex flex-col items-center gap-1">
           <div className="pointer-events-auto">
             <ChartToolbar
               symbol={marketId}

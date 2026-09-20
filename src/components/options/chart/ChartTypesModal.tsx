@@ -59,13 +59,13 @@ export function ChartTypesModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="absolute bottom-0 left-12 z-[70] flex items-center justify-center"
       role="dialog"
       aria-modal="true"
       aria-label="Chart types"
     >
       <div
-        className="absolute inset-0 bg-transparent"
+        className="fixed inset-0 bg-transparent"
         onClick={onClose}
       />
 
