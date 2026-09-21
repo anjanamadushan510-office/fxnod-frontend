@@ -119,7 +119,7 @@ export function IconSidebar({
   ];
 
   const secondary: NavItem[] = [
-    { key: "help", label: "Help", icon: <HelpIcon className="h-[18px] w-[18px]" />, href: "https://deriv.com/help-centre/deriv-trader", external: true },
+    { key: "help", label: "Help", icon: <HelpIcon className="h-7 w-7" />, href: "https://deriv.com/help-centre/deriv-trader", external: true },
   ];
 
   const isActive = (item: NavItem) => {
@@ -145,29 +145,25 @@ export function IconSidebar({
 
       <NavRail items={primary} isActive={isActive} onSelect={setActiveKey} />
 
-      <div className="flex-1" />
+      <div className="mt-auto flex flex-col gap-2 pb-8">
+        <NavRail items={secondary} isActive={isActive} onSelect={setActiveKey} />
 
-      <NavRail items={secondary} isActive={isActive} onSelect={setActiveKey} />
+        <NavButton
+          label={theme === "dark" ? "Light mode" : "Dark mode"}
+          icon={
+            theme === "dark" ? (
+              <SunIcon className="h-7 w-7" />
+            ) : (
+              <MoonIcon className="h-7 w-7" />
+            )
+          }
+          active={false}
+          onClick={onThemeToggle}
+        />
 
-      <NavButton
-        label={theme === "dark" ? "Light mode" : "Dark mode"}
-        icon={
-          theme === "dark" ? (
-            <SunIcon className="h-[18px] w-[18px]" />
-          ) : (
-            <MoonIcon className="h-[18px] w-[18px]" />
-          )
-        }
-        active={false}
-        onClick={onThemeToggle}
-      />
-
-
-
-      <div className="mt-auto pt-2">
         <NavButton
           label="Disconnect Deriv"
-          icon={<LogOut className="h-[18px] w-[18px]" />}
+          icon={<LogOut className="h-7 w-7" />}
           active={false}
           onClick={disconnectDeriv}
         />
