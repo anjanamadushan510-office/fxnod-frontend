@@ -10,6 +10,7 @@ import { cn } from "@/lib/cn";
 // Helper for dynamic title
 function getRouteTitle(pathname: string) {
   if (pathname.startsWith("/home")) return { title: "Home", subtitle: "dTrader · dBot on Deriv" };
+  if (pathname.startsWith("/option")) return { title: "Options", subtitle: "dTrader · dBot on Deriv" };
   if (pathname.startsWith("/tools")) return { title: "Tools", subtitle: "Active Tools" };
   if (pathname.startsWith("/subscriptions")) return { title: "Subscriptions", subtitle: "Manage Subscriptions" };
   if (pathname.startsWith("/venues")) return { title: "Venues", subtitle: "Live APIs" };
