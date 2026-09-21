@@ -189,13 +189,7 @@ export function LoginForm() {
             </div>
 
             <div className="space-y-2.5">
-              <button
-                type="button"
-                className="w-full h-10 rounded-xl text-sm font-medium flex items-center justify-center gap-2.5 bg-[#152238] border border-[#24344F] hover:bg-[#1A3358] transition-colors"
-                onClick={() => toast.info("Demo login coming soon.")}
-              >
-                Continue as demo
-              </button>
+
               <button
                 type="button"
                 className="w-full h-10 rounded-xl text-sm font-medium flex items-center justify-center gap-2.5 bg-[#152238] border border-[#24344F] hover:bg-[#1A3358] transition-colors"
