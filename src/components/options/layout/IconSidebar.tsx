@@ -120,7 +120,6 @@ export function IconSidebar({
 
   const secondary: NavItem[] = [
     { key: "help", label: "Help", icon: <HelpIcon className="h-[18px] w-[18px]" />, href: "https://deriv.com/help-centre/deriv-trader", external: true },
-    { key: "language", label: "Language", icon: <GlobeIcon className="h-[18px] w-[18px]" /> },
   ];
 
   const isActive = (item: NavItem) => {
