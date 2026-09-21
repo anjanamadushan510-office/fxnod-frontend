@@ -65,17 +65,29 @@ function LiveClock() {
   const [timeStr, setTimeStr] = useState("");
 
   useEffect(() => {
-    const updateTime = () => {
-      setTimeStr(
-        new Intl.DateTimeFormat("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-          hour12: false,
-          timeZoneName: "short",
-        }).format(new Date())
-      );
+    let offset = 0;
+
+    const syncTime = async () => {
+      try {
+        const res = await fetch("https://worldtimeapi.org/api/timezone/Etc/UTC");
+        const data = await res.json();
+        const serverTime = new Date(data.utc_datetime).getTime();
+        offset = serverTime - Date.now();
+      } catch (err) {
+        console.warn("Failed to sync true time", err);
+      }
     };
+
+    syncTime();
+
+    const updateTime = () => {
+      const now = new Date(Date.now() + offset);
+      const hh = String(now.getUTCHours()).padStart(2, "0");
+      const mm = String(now.getUTCMinutes()).padStart(2, "0");
+      const ss = String(now.getUTCSeconds()).padStart(2, "0");
+      setTimeStr(`${hh}:${mm}:${ss} UTC`);
+    };
+
     updateTime(); // Initial
     const timer = setInterval(updateTime, 1000);
     return () => clearInterval(timer);
