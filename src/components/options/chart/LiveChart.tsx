@@ -966,6 +966,69 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
 
     const activeDrawingId = useChartDrawings((s) => s.activeDrawingId);
 
+    // ── Continuous Toolbar Positioning ───────────────────────────────────────
+    useEffect(() => {
+      let raf: number;
+      const loop = () => {
+        const store = useChartDrawings.getState();
+        const activeId = store.activeDrawingId;
+        if (!activeId) {
+           raf = requestAnimationFrame(loop);
+           return;
+        }
+        
+        const chart = chartRef.current;
+        const series = seriesRef.current;
+        const el = containerRef.current;
+        if (!chart || !series || !el) {
+           raf = requestAnimationFrame(loop);
+           return;
+        }
+
+        const d = store.drawings.find(x => x.id === activeId);
+        if (!d) {
+           raf = requestAnimationFrame(loop);
+           return;
+        }
+
+        let midX = 0;
+        let midY = 0;
+        const w = el.clientWidth;
+        const h = el.clientHeight;
+
+        try {
+           if (d.tool === "horizontal" && d.price != null) {
+              midY = series.priceToCoordinate(d.price) ?? 0;
+              midX = w / 2;
+              midY -= 50; // offset above line
+           } else if (d.tool === "vertical" && d.time != null) {
+              const lx = chart.timeScale().timeToCoordinate(d.time as any);
+              midX = lx !== null ? lx : getExtrapolatedX(chart as any, series as any, d.time as any) ?? 0;
+              midY = h / 2;
+              midX += 50; // offset to right
+           } else if (d.tool === "trend" && d.points) {
+              const [p1, p2] = d.points;
+              const x1 = chart.timeScale().timeToCoordinate(p1.time as any) ?? getExtrapolatedX(chart as any, series as any, p1.time as any) ?? 0;
+              const y1 = series.priceToCoordinate(p1.price) ?? 0;
+              const x2 = chart.timeScale().timeToCoordinate(p2.time as any) ?? getExtrapolatedX(chart as any, series as any, p2.time as any) ?? 0;
+              const y2 = series.priceToCoordinate(p2.price) ?? 0;
+              midX = (x1 + x2) / 2;
+              midY = Math.min(y1, y2) - 50; // offset above highest point
+           }
+        } catch (e) {}
+
+        const currentPos = store.activeDrawingScreenPos;
+        if (!currentPos || Math.abs(currentPos.x - midX) > 1 || Math.abs(currentPos.y - midY) > 1) {
+           store.setActiveDrawingScreenPos({ x: midX, y: midY });
+        }
+
+        raf = requestAnimationFrame(loop);
+      };
+      
+      raf = requestAnimationFrame(loop);
+      return () => cancelAnimationFrame(raf);
+    }, []);
+
     // Re-render drawings whenever the store set for this symbol changes.
     useEffect(() => {
       if (seriesRef.current) {

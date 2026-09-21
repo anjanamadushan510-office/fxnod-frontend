@@ -31,43 +31,6 @@ export function DrawingToolbar() {
     
   const activeDrawingScreenPos = useChartDrawings((s) => s.activeDrawingScreenPos);
 
-  // Draggable State
-  const [position, setPosition] = useState({ x: 80, y: 20 });
-  const [isDragging, setIsDragging] = useState(false);
-  const dragRef = useRef<{ startX: number; startY: number; initX: number; initY: number } | null>(null);
-
-  useEffect(() => {
-    // Basic centering when a new drawing is selected if we haven't dragged
-    if (activeDrawingScreenPos) {
-       setPosition({ x: activeDrawingScreenPos.x + 10, y: activeDrawingScreenPos.y - 35 });
-    }
-  }, [activeDrawingScreenPos, activeDrawingId]);
-
-  useEffect(() => {
-    const handlePointerMove = (e: PointerEvent) => {
-      if (!isDragging || !dragRef.current) return;
-      const dx = e.clientX - dragRef.current.startX;
-      const dy = e.clientY - dragRef.current.startY;
-      setPosition({
-        x: dragRef.current.initX + dx,
-        y: dragRef.current.initY + dy,
-      });
-    };
-
-    const handlePointerUp = () => {
-      setIsDragging(false);
-    };
-
-    if (isDragging) {
-      window.addEventListener("pointermove", handlePointerMove);
-      window.addEventListener("pointerup", handlePointerUp);
-    }
-    return () => {
-      window.removeEventListener("pointermove", handlePointerMove);
-      window.removeEventListener("pointerup", handlePointerUp);
-    };
-  }, [isDragging]);
-
   const [thicknessOpen, setThicknessOpen] = useState(false);
   const [colorOpen, setColorOpen] = useState(false);
 
@@ -91,30 +54,12 @@ export function DrawingToolbar() {
   return (
     <div
       ref={toolbarRef}
-      className="absolute z-[100] flex items-center gap-2 rounded-md border border-[#24344F] bg-[#10141f] px-1.5 py-1 shadow-xl text-xs"
+      className="absolute z-[100] flex items-center gap-2 rounded-md border border-[#24344F] bg-[#10141f] px-2 py-1 shadow-xl text-xs -translate-x-1/2"
       style={{
-        left: position.x,
-        top: position.y,
-        // Make sure it doesn't block clicks from passing through if not clicked exactly on buttons
+        left: activeDrawingScreenPos?.x ?? -9999,
+        top: activeDrawingScreenPos?.y ?? -9999,
       }}
     >
-      {/* Drag Handle */}
-      <button
-        onPointerDown={(e) => {
-          setIsDragging(true);
-          dragRef.current = {
-            startX: e.clientX,
-            startY: e.clientY,
-            initX: position.x,
-            initY: position.y,
-          };
-          e.currentTarget.setPointerCapture(e.pointerId);
-        }}
-        className="flex h-6 w-5 cursor-grab items-center justify-center rounded text-zinc-500 hover:text-white active:cursor-grabbing"
-        title="Drag toolbar"
-      >
-        <GripVertical className="h-4 w-4" />
-      </button>
 
       {/* Thickness Selector */}
       <div className="relative">

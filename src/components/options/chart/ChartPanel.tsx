@@ -170,7 +170,7 @@ export function ChartPanel({
           )}
         </div>
 
-        {/* Chart toolbar + drawing toolbar — floating bottom-left over canvas */}
+        {/* Chart toolbar — floating bottom-left over canvas */}
         <div className="pointer-events-none absolute bottom-16 left-4 z-[60] flex flex-col items-center gap-1">
           <div className="pointer-events-auto">
             <ChartToolbar
@@ -183,9 +183,13 @@ export function ChartPanel({
               chartRef={chartRef}
             />
           </div>
-          <div className="pointer-events-auto">
-            <DrawingToolbar />
-          </div>
+        </div>
+        
+        {/* Drawing property toolbox — absolute positioned relative to chart canvas */}
+        <div className="pointer-events-none absolute inset-0 z-[100]">
+           <div className="pointer-events-auto h-full w-full">
+              <DrawingToolbar />
+           </div>
         </div>
       </div>
 
