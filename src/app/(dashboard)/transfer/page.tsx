@@ -80,7 +80,7 @@ export default function TransferPage() {
         </div>
       </div>
       
-      {/* Top Grid */}
+      {/*
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <article className="bg-surface border border-line rounded-2xl p-6 min-w-0">
           <p className="text-xs uppercase tracking-[0.14em] text-ink-3 mb-3">FXNOD Wallet</p>
@@ -110,9 +110,7 @@ export default function TransferPage() {
         </article>
       </div>
 
-      {/* Bottom Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Form */}
         <div className="lg:col-span-2 space-y-6">
           <article className="bg-surface border border-line rounded-2xl p-6">
             <h3 className="font-display text-sm font-semibold text-ink mb-4">Select Venue</h3>
@@ -177,7 +175,6 @@ export default function TransferPage() {
           </article>
         </div>
 
-        {/* Info Card */}
         <div className="space-y-6">
           <article className="bg-surface border border-line rounded-2xl p-6">
             <p className="text-xs uppercase tracking-[0.14em] text-ink-3 mb-4">How it works</p>
@@ -195,6 +192,12 @@ export default function TransferPage() {
             </div>
           </article>
         </div>
+      </div>
+      */}
+
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+        <h2 className="text-3xl font-bold text-ink mb-2">Coming Soon</h2>
+        <p className="text-ink-3">The transfer feature is currently under development.</p>
       </div>
     </section>
   );
