@@ -485,6 +485,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
                    }
                }
            }
+           store.setActiveDrawingScreenPos({ x: point.x, y: point.y });
            return;
         }
 
@@ -760,7 +761,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
             dragStartPosRef.current = { x: clientX, y: clientY };
             
             const store = useChartDrawings.getState();
-            store.setActiveDrawingScreenPos(null); // Hide toolbar while dragging
+            // Toolbar stays visible and follows cursor during drag
             
             const d = store.drawings.find(x => x.id === hoveredDrawingIdRef.current);
             dragTempStateRef.current = {};
