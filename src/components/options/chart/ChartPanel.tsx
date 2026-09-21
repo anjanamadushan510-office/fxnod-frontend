@@ -187,9 +187,7 @@ export function ChartPanel({
         
         {/* Drawing property toolbox — absolute positioned relative to chart canvas */}
         <div className="pointer-events-none absolute inset-0 z-[100]">
-           <div className="pointer-events-auto h-full w-full">
-              <DrawingToolbar />
-           </div>
+           <DrawingToolbar />
         </div>
       </div>
 

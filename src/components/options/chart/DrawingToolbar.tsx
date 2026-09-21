@@ -54,7 +54,7 @@ export function DrawingToolbar() {
   return (
     <div
       ref={toolbarRef}
-      className="absolute z-[100] flex items-center gap-2 rounded-md border border-[#24344F] bg-[#10141f] px-2 py-1 shadow-xl text-xs -translate-x-1/2"
+      className="pointer-events-auto absolute z-[100] flex items-center gap-2 rounded-md border border-[#24344F] bg-[#10141f] px-2 py-1 shadow-xl text-xs -translate-x-1/2"
       style={{
         left: activeDrawingScreenPos?.x ?? -9999,
         top: activeDrawingScreenPos?.y ?? -9999,
