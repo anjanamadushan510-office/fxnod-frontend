@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Crosshair } from "lucide-react";
+import { derivWsUrl } from "@/services/deriv/derivSymbols";
 import {
   AreaChartIcon,
   DownloadIcon,
