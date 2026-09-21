@@ -119,7 +119,7 @@ export function IconSidebar({
   ];
 
   const secondary: NavItem[] = [
-    { key: "help", label: "Help", icon: <HelpIcon className="h-7 w-7" />, href: "https://deriv.com/help-centre/deriv-trader", external: true },
+    { key: "help", label: "Help", icon: <HelpIcon className="h-5 w-5" />, href: "https://deriv.com/help-centre/deriv-trader", external: true },
   ];
 
   const isActive = (item: NavItem) => {
@@ -152,9 +152,9 @@ export function IconSidebar({
           label={theme === "dark" ? "Light mode" : "Dark mode"}
           icon={
             theme === "dark" ? (
-              <SunIcon className="h-7 w-7" />
+              <SunIcon className="h-5 w-5" />
             ) : (
-              <MoonIcon className="h-7 w-7" />
+              <MoonIcon className="h-5 w-5" />
             )
           }
           active={false}
@@ -163,7 +163,7 @@ export function IconSidebar({
 
         <NavButton
           label="Disconnect Deriv"
-          icon={<LogOut className="h-7 w-7" />}
+          icon={<LogOut className="h-5 w-5" />}
           active={false}
           onClick={disconnectDeriv}
         />
