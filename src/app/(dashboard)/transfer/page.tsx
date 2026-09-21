@@ -8,7 +8,6 @@ import { fmtUSD } from "@/lib/format";
 import { customInstance } from "@/services/api/mutator/custom-instance";
 import { useRouter } from "next/navigation";
 import { useDerivListAccounts } from "@/services/api/endpoints/trading/trading";
-import { Sparkles, ArrowLeft } from "lucide-react";
 
 interface TransferPayload {
   amount: number;
@@ -196,33 +195,9 @@ export default function TransferPage() {
       </div>
       */}
 
-      <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <div className="relative overflow-hidden flex flex-col items-center justify-center max-w-md w-full p-8 md:p-12 text-center bg-surface border border-line rounded-3xl shadow-sm">
-          {/* Subtle gradient blob background for effect */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] h-[200px] bg-blue-500/20 rounded-full blur-[80px] pointer-events-none" />
-          
-          <div className="relative z-10">
-            <div className="mx-auto flex items-center justify-center w-16 h-16 rounded-full bg-blue-500/10 text-blue-500 mb-6">
-              <Sparkles className="w-8 h-8 animate-pulse" />
-            </div>
-            
-            <h2 className="text-3xl md:text-4xl font-display font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">
-              Coming Soon
-            </h2>
-            
-            <p className="text-ink-2 mb-8 leading-relaxed">
-              We're working hard to bring you a seamless transfer experience. Stay tuned!
-            </p>
-            
-            <button
-              onClick={() => router.push("/")}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-surface-2 border border-line text-ink font-medium hover:border-line-strong transition-colors shadow-sm"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Dashboard
-            </button>
-          </div>
-        </div>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+        <h2 className="text-3xl font-bold text-ink mb-2">Coming Soon...</h2>
+        <p className="text-ink-3">The transfer feature is currently under development.</p>
       </div>
     </section>
   );
