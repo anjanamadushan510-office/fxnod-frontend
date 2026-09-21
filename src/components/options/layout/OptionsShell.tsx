@@ -7,7 +7,7 @@ import { cn } from "@/lib/cn";
  * Top-level layout for /options.
  *
  * Strict Flexbox — NO CSS Grid:
- *   [icon sidebar flex-none 76px]
+ *   [icon sidebar flex-none 56px]
  *   [main col flex-1]
  *     [topbar flex-none 64px]
  *     [content row flex-1]
@@ -82,14 +82,14 @@ export function OptionsShell({
   useEffect(() => {
     if (!isResizingDrawer) return;
     const onMove = (e: MouseEvent) => {
-      let w = e.clientX - 76; // 76px = icon sidebar width
+      let w = e.clientX - 56; // 56px = icon sidebar width
       if (w < 250) w = 250;
       if (w > 500) w = 500;
       setDrawerWidth(w);
     };
     const onUp = (e: MouseEvent) => {
       // Persist the final width so it survives a page reload.
-      const w = e.clientX - 76;
+      const w = e.clientX - 56;
       const clamped = Math.min(500, Math.max(250, w));
       localStorage.setItem("fxnod_left_drawer_width", String(clamped));
       setIsResizingDrawer(false);
@@ -112,7 +112,7 @@ export function OptionsShell({
       )}
     >
       {/* ── Icon Sidebar (flex-none) ── */}
-      <div className="flex-none w-[76px] h-full relative z-50 border-r border-opt-line bg-opt-bg-elev">
+      <div className="flex-none w-14 h-full relative z-50 border-r border-opt-line bg-opt-bg-elev">
         {sidebar}
       </div>
 
