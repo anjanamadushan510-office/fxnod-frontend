@@ -23,6 +23,7 @@ export default function BlogPage() {
           <nav className="hidden md:flex items-center gap-8 text-sm text-zinc-400">
             <Link href={"/#product" as Route} className="hover:text-white transition">Product</Link>
             <Link href={"/blog" as Route} className="text-white">Guides</Link>
+            <Link href={"/blog" as Route} className="hover:text-white transition">Blog</Link>
           </nav>
           <div className="flex items-center gap-2 shrink-0">
             <Link href={"/auth/login" as Route} className="hidden md:inline-flex h-9 px-4 items-center rounded-full text-sm text-zinc-300 hover:text-white transition">Log in</Link>
@@ -44,6 +45,7 @@ export default function BlogPage() {
           <nav className="md:hidden border-b border-line bg-panel p-4 flex flex-col gap-4 text-sm" aria-label="Mobile">
             <Link href={"/#product" as Route} onClick={() => setIsMobileMenuOpen(false)}>Product</Link>
             <Link href={"/blog" as Route} onClick={() => setIsMobileMenuOpen(false)}>Guides</Link>
+            <Link href={"/blog" as Route} onClick={() => setIsMobileMenuOpen(false)}>Blog</Link>
             <hr className="border-line" />
             <Link href={"/auth/login" as Route} onClick={() => setIsMobileMenuOpen(false)}>Log in</Link>
             <Link href={"/auth/register" as Route} className="text-accent font-semibold" onClick={() => setIsMobileMenuOpen(false)}>Get started</Link>

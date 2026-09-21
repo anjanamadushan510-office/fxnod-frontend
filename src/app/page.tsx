@@ -63,6 +63,7 @@ export default function LandingPage() {
             <a href="#venues" className="hover:text-white transition">Venues</a>
             <a href="#access" className="hover:text-white transition">Access</a>
             <Link href={"/blog" as Route} className="hover:text-white transition">Guides</Link>
+            <Link href={"/blog" as Route} className="hover:text-white transition">Blog</Link>
           </nav>
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <Link href={"/auth/login" as Route} className="hidden md:inline-flex h-9 px-3 sm:px-4 items-center rounded-full text-sm text-zinc-300 hover:text-white transition">Log in</Link>
@@ -87,6 +88,7 @@ export default function LandingPage() {
             <a href="#venues" onClick={() => setIsMobileMenuOpen(false)}>Venues</a>
             <a href="#access" onClick={() => setIsMobileMenuOpen(false)}>Access</a>
             <Link href={"/blog" as Route} onClick={() => setIsMobileMenuOpen(false)}>Guides</Link>
+            <Link href={"/blog" as Route} onClick={() => setIsMobileMenuOpen(false)}>Blog</Link>
             <hr className="border-line" />
             <Link href={"/auth/login" as Route} onClick={() => setIsMobileMenuOpen(false)}>Log in</Link>
             <Link href={"/auth/register" as Route} className="text-accent font-semibold" onClick={() => setIsMobileMenuOpen(false)}>Get started</Link>
