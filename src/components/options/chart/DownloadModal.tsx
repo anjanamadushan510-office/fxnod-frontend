@@ -6,9 +6,10 @@ interface DownloadModalProps {
   onClose: () => void;
   onDownloadPNG: () => void;
   onDownloadCSV: () => void;
+  isDownloadingCSV?: boolean;
 }
 
-export function DownloadModal({ isOpen, onClose, onDownloadPNG, onDownloadCSV }: DownloadModalProps) {
+export function DownloadModal({ isOpen, onClose, onDownloadPNG, onDownloadCSV, isDownloadingCSV }: DownloadModalProps) {
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <Dialog.Portal>
@@ -45,13 +46,19 @@ export function DownloadModal({ isOpen, onClose, onDownloadPNG, onDownloadCSV }:
 
             <button
               onClick={() => {
-                onDownloadCSV();
-                onClose();
+                if (!isDownloadingCSV) {
+                  onDownloadCSV();
+                }
               }}
-              className="flex flex-col items-center justify-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#1f2937] p-6 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400"
+              disabled={isDownloadingCSV}
+              className="flex flex-col items-center justify-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#1f2937] p-6 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <FileText className="h-8 w-8 text-gray-500 dark:text-gray-400" />
-              <span className="font-semibold text-sm">CSV</span>
+              {isDownloadingCSV ? (
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-500 border-t-transparent dark:border-gray-400 dark:border-t-transparent" />
+              ) : (
+                <FileText className="h-8 w-8 text-gray-500 dark:text-gray-400" />
+              )}
+              <span className="font-semibold text-sm">CSV (Last 1 Hour)</span>
             </button>
           </div>
         </Dialog.Content>

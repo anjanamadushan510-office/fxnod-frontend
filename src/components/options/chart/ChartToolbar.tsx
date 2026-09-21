@@ -58,48 +58,73 @@ export function ChartToolbar({
 
   const activeIndicatorsCount = useChartIndicators((s) => s.indicators.filter((i) => i.symbol === symbol).length);
 
+  const [isDownloadingCSV, setIsDownloadingCSV] = useState(false);
+
   const handleDownloadPNG = () => {
     const chart = chartRef.current?.getChart();
     if (!chart) return;
     const canvas = chart.takeScreenshot();
+    
     const dataUrl = canvas.toDataURL("image/png");
     const a = document.createElement("a");
     a.href = dataUrl;
     a.download = `${symbol}_chart.png`;
     a.click();
+    setDownloadOpen(false);
   };
 
   const handleDownloadCSV = () => {
-    const handle = chartRef.current;
-    if (!handle) return;
-    const ticks = handle.getTicks();
-    const candles = handle.getCandles();
+    if (isDownloadingCSV) return;
+    setIsDownloadingCSV(true);
+
+    const ws = new WebSocket(derivWsUrl());
     
-    let csvStr = "";
+    ws.onopen = () => {
+      ws.send(JSON.stringify({
+        ticks_history: symbol,
+        end: "latest",
+        start: Math.floor(Date.now() / 1000) - 3600, // 1 hour ago
+        style: "ticks"
+      }));
+    };
+
+    ws.onmessage = (msg) => {
+      const data = JSON.parse(msg.data);
+      if (data.history) {
+        const { prices, times } = data.history;
+        let csvStr = "Date,Time,Epoch,Price\n";
+        for (let i = 0; i < prices.length; i++) {
+          const t = times[i];
+          const p = prices[i];
+          const d = new Date(t * 1000);
+          const dateStr = d.toISOString().split("T")[0];
+          const timeStr = d.toISOString().split("T")[1].replace("Z", "");
+          csvStr += `${dateStr},${timeStr},${t},${p}\n`;
+        }
+        
+        const blob = new Blob([csvStr], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${symbol}_1H_Ticks.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        setIsDownloadingCSV(false);
+        setDownloadOpen(false);
+        ws.close();
+      } else if (data.error) {
+        console.error("Download Error:", data.error);
+        setIsDownloadingCSV(false);
+        ws.close();
+      }
+    };
     
-    if (candles && candles.length > 0) {
-      csvStr += "Time,Open,High,Low,Close\n";
-      candles.forEach((c: any) => {
-        const d = new Date((c.time as number) * 1000).toISOString();
-        csvStr += `${d},${c.open},${c.high},${c.low},${c.close}\n`;
-      });
-    } else if (ticks && ticks.length > 0) {
-      csvStr += "Time,Price\n";
-      ticks.forEach((t: any) => {
-        const d = new Date((t.time as number) * 1000).toISOString();
-        csvStr += `${d},${t.value}\n`;
-      });
-    } else {
-      return;
-    }
-    
-    const blob = new Blob([csvStr], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${symbol}_data.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    ws.onerror = (err) => {
+      console.error("WS Error:", err);
+      setIsDownloadingCSV(false);
+      ws.close();
+    };
   };
 
   return (
@@ -186,6 +211,7 @@ export function ChartToolbar({
         onClose={() => setDownloadOpen(false)}
         onDownloadPNG={handleDownloadPNG}
         onDownloadCSV={handleDownloadCSV}
+        isDownloadingCSV={isDownloadingCSV}
       />
     </div>
   );
