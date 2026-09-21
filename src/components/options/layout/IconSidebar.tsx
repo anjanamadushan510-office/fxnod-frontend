@@ -162,12 +162,7 @@ export function IconSidebar({
         onClick={onThemeToggle}
       />
 
-      <NavButton
-        label="Account"
-        icon={<UserIcon className="h-[18px] w-[18px]" />}
-        active={false}
-        onClick={() => undefined}
-      />
+
 
       <div className="mt-auto pt-2">
         <NavButton
