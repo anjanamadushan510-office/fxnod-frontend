@@ -16,7 +16,7 @@ const guidesData: Record<string, {
     date: '11 SEP 2026',
     readTime: '6 MIN READ',
     title: 'How FXNOD Bot runs strategies on Deriv',
-    image: '/assets/fxnod-bot-strategies.jpg', // <-- UPDATE this to match your actual public folder image name
+    image: '/assets/login-slide-1.jpg',
     intro: 'FXNOD Bot is the strategy desk inside the FXNOD terminal. It is built for Deriv first: you design rules, pick a market, set a stake, and run the strategy through the Deriv API.',
     sections: [
       {
@@ -39,7 +39,7 @@ const guidesData: Record<string, {
     date: '11 SEP 2026',
     readTime: '5 MIN READ',
     title: 'Send FXNOD Wallet funds onto Deriv',
-    image: '/assets/send-wallet-funds.jpg', // <-- UPDATE this to match your actual public folder image name
+    image: '/assets/login-slide-2.jpg',
     intro: 'The FXNOD Wallet is not only for paying monthly tools. Transfer lets you move a balance from FXNOD onto a trading venue. Deriv is the first live destination.',
     sections: [
       {
@@ -61,7 +61,7 @@ const guidesData: Record<string, {
     date: '10 SEP 2026',
     readTime: '5 MIN READ',
     title: 'Free API markup vs monthly wallet plans',
-    image: '/assets/free-vs-monthly.jpg', // <-- UPDATE this to match your actual public folder image name
+    image: '/assets/login-slide-3.jpg',
     intro: 'Every FXNOD tool is either free or monthly. The terminal is the same. The difference is who owns the venue API and how FXNOD is paid.',
     sections: [
       { heading: 'Free — markup on the API', text: 'You pay no monthly fee. Orders route through FXNOD\'s connection to Deriv, Bybit or Binance. FXNOD earns a markup on volume. FXNOD Bot is in this group: you can build Deriv strategies without a subscription.' },
