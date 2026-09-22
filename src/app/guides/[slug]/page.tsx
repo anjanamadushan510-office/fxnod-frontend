@@ -9,7 +9,6 @@ const guidesData: Record<string, {
   title: string;
   intro: string;
   sections: { heading?: string; text: string; link?: { label: string; href: string } }[];
-  image: string;
 }> = {
   'fxnod-bot-strategies': {
     tag: 'PRODUCT',
@@ -17,57 +16,54 @@ const guidesData: Record<string, {
     readTime: '6 MIN READ',
     title: 'How FXNOD Bot runs strategies on Deriv',
     intro: 'FXNOD Bot is the strategy desk inside the FXNOD terminal. It is built for Deriv first: you design rules, pick a market, set a stake, and run the strategy through the Deriv API.',
-    image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
     sections: [
-      {
-        heading: 'What you can do',
-        text: 'Create as many strategies as you need. Each one is yours — not a single locked session bot. That is the difference between FXNOD Bot and a one-shot "start/stop" tool.\nChoose a Deriv market (synthetics and options sit in the same venue).\nSet rules and stake.\nRun it on Deriv while FXNOD stays the control layer.'
+      { 
+        heading: 'What you can do', 
+        text: 'Create as many strategies as you need. Each one is yours — not a single locked session bot. That is the difference between FXNOD Bot and a one-shot "start/stop" tool.\nChoose a Deriv market (synthetics and options sit in the same venue).\nSet rules and stake.\nRun it on Deriv while FXNOD stays the control layer.' 
       },
-      {
-        heading: 'How access works',
-        text: 'FXNOD Bot is free to use. FXNOD earns a markup on the Deriv API. If you later subscribe to a monthly Deriv tool, you can switch to your own keys and drop the markup.'
+      { 
+        heading: 'How access works', 
+        text: 'FXNOD Bot is free to use. FXNOD earns a markup on the Deriv API. If you later subscribe to a monthly Deriv tool, you can switch to your own keys and drop the markup.' 
       },
-      {
-        heading: 'Where it lives',
+      { 
+        heading: 'Where it lives', 
         text: 'Open the terminal, go to Tools, activate FXNOD Bot, then open it from Subscriptions. The workspace is empty until you add a strategy — that editor is the next layer of the product.',
-        link: { label: 'Send FXNOD Wallet funds onto Deriv', href: '/guides/send-fxnod-wallet-funds-onto-deriv' }
+        link: { label: 'Send FXNOD Wallet funds onto Deriv', href: '/guides/send-wallet-funds' }
       }
     ]
   },
-  'send-fxnod-wallet-funds-onto-deriv': {
+  'send-wallet-funds': {
     tag: 'WALLET',
     date: '11 SEP 2026',
     readTime: '5 MIN READ',
     title: 'Send FXNOD Wallet funds onto Deriv',
     intro: 'The FXNOD Wallet is not only for paying monthly tools. Transfer lets you move a balance from FXNOD onto a trading venue. Deriv is the first live destination.',
-    image: 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&w=1200&q=80',
     sections: [
-      {
-        heading: 'The flow',
-        text: 'Top up the FXNOD Wallet through the payment gateway.\nOpen Transfer, keep Deriv selected.\nChoose $25, $50, $100, Max, or a custom amount.\nConfirm. The wallet debit is recorded and the Deriv balance on this account goes up.'
+      { 
+        heading: 'The flow', 
+        text: 'Top up the FXNOD Wallet through the payment gateway.\nOpen Transfer, keep Deriv selected.\nChoose $25, $50, $100, Max, or a custom amount.\nConfirm. The wallet debit is recorded and the Deriv balance on this account goes up.' 
       },
-      {
-        heading: 'If the wallet is short',
-        text: 'The send button becomes a top-up prompt. Fund the wallet first, then send. Activity shows as "Transfer · Deriv" next to ordinary top-ups and subscriptions.'
+      { 
+        heading: 'If the wallet is short', 
+        text: 'The send button becomes a top-up prompt. Fund the wallet first, then send. Activity shows as "Transfer · Deriv" next to ordinary top-ups and subscriptions.' 
       },
-      {
-        heading: 'What is live vs next',
-        text: 'Deriv is live. Binance and Bybit show as soon on the Transfer page. The same wallet will route to those venues when those rails are on.\nThis demo stores the debit and the Deriv credit on your device. A production payout would hit the connected Deriv account through FXNOD\'s venue integration.'
+      { 
+        heading: 'What is live vs next', 
+        text: 'Deriv is live. Binance and Bybit show as soon on the Transfer page. The same wallet will route to those venues when those rails are on.\nThis demo stores the debit and the Deriv credit on your device. A production payout would hit the connected Deriv account through FXNOD\'s venue integration.' 
       }
     ]
   },
-  'free-api-markup-vs-monthly-wallet-plans': {
+  'free-vs-monthly': {
     tag: 'ACCESS',
     date: '10 SEP 2026',
     readTime: '5 MIN READ',
     title: 'Free API markup vs monthly wallet plans',
     intro: 'Every FXNOD tool is either free or monthly. The terminal is the same. The difference is who owns the venue API and how FXNOD is paid.',
-    image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80',
     sections: [
       { heading: 'Free — markup on the API', text: 'You pay no monthly fee. Orders route through FXNOD\'s connection to Deriv, Bybit or Binance. FXNOD earns a markup on volume. FXNOD Bot is in this group: you can build Deriv strategies without a subscription.' },
       { heading: 'Monthly — pay from the wallet, use your keys', text: 'You top up the FXNOD Wallet, subscribe, and connect your own API keys. There is no markup on that flow. The charge renews monthly from the same wallet you also use to send funds to Deriv.' },
-      {
-        heading: 'Which to pick',
+      { 
+        heading: 'Which to pick', 
         text: 'Start free if you want to run volume without a plan. Move to monthly when you want direct keys and a cleaner execution cost. Both sit under Tools; active ones collect in Subscriptions.',
         link: { label: 'Read next: How FXNOD Bot runs strategies on Deriv.', href: '/guides/fxnod-bot-strategies' }
       }
@@ -84,7 +80,7 @@ export default function GuideDetailPage({ params }: { params: { slug: string } }
       <div className="max-w-3xl mx-auto">
         {/* Meta info */}
         <div className="flex items-center gap-3 text-xs tracking-wider text-zinc-400 mb-4 font-mono">
-          <span className="text-[#C9A08C] font-semibold">{guide.tag}</span>
+          <span className="text-zinc-300 font-semibold">{guide.tag}</span>
           <span>·</span>
           <span>{guide.date}</span>
           <span>·</span>
@@ -96,12 +92,7 @@ export default function GuideDetailPage({ params }: { params: { slug: string } }
           {guide.title}
         </h1>
 
-        {/* Image/Visual banner */}
-        <div className="rounded-2xl overflow-hidden border border-[#24344F] bg-[#101827] mb-10 aspect-video relative">
-          <img src={guide.image} alt={guide.title} className="w-full h-full object-cover opacity-80" />
-        </div>
-
-        {/* Intro & Sections */}
+        {/* Intro & Sections (No Image, matching clean layout) */}
         <div className="space-y-6 text-zinc-300 leading-relaxed text-base">
           <p className="text-zinc-200">{guide.intro}</p>
 
