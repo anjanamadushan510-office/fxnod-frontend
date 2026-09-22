@@ -1,10 +1,20 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Route } from "next";
-import { mockPosts } from "../page";
+import type { BlogPost } from "../page";
 
-export default function SingleBlogPage({ params }: { params: { slug: string } }) {
-  const post = mockPosts.find((p) => p.slug === params.slug);
+export default async function SingleBlogPage({ params }: { params: { slug: string } }) {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
+  let post: BlogPost | null = null;
+  
+  try {
+    const res = await fetch(`${apiUrl}/api/v1/blogs/${params.slug}`, { next: { revalidate: 60 } });
+    if (res.ok) {
+      post = await res.json();
+    }
+  } catch (error) {
+    console.error("Failed to fetch blog:", error);
+  }
 
   if (!post) {
     notFound();
@@ -36,14 +46,18 @@ export default function SingleBlogPage({ params }: { params: { slug: string } })
         
         <article className="bg-panel border border-line rounded-3xl overflow-hidden shadow-xl">
           <div className="w-full h-64 sm:h-96 bg-line overflow-hidden relative">
-            <img 
-              src={post.coverImage} 
-              alt={post.title} 
-              className="w-full h-full object-cover"
-            />
+            {post.cover_image && (
+              <img 
+                src={post.cover_image.startsWith('http') ? post.cover_image : `${apiUrl}${post.cover_image}`} 
+                alt={post.title} 
+                className="w-full h-full object-cover"
+              />
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
             <div className="absolute bottom-0 left-0 p-6 sm:p-10 w-full">
-              <p className="text-[11px] uppercase tracking-wider text-gold mb-3">{post.tag} &middot; {post.date} &middot; {post.read}</p>
+              <p className="text-[11px] uppercase tracking-wider text-gold mb-3">
+                {(post.tags && post.tags.length > 0) ? post.tags[0] : "GUIDE"} &middot; {new Date(post.created_at).toLocaleDateString()}
+              </p>
               <h1 className="font-display text-3xl sm:text-5xl font-semibold text-white leading-tight">{post.title}</h1>
             </div>
           </div>
