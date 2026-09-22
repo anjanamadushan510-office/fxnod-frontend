@@ -62,7 +62,7 @@ export default function LandingPage() {
             <a href="#product" className="hover:text-white transition">Product</a>
             <a href="#venues" className="hover:text-white transition">Venues</a>
             <a href="#access" className="hover:text-white transition">Access</a>
-            <Link href={"/blog" as Route} className="hover:text-white transition">Guides</Link>
+            <Link href={"/guides" as Route} className="hover:text-white transition">Guides</Link>
             <Link href={"/blog" as Route} className="hover:text-white transition">Blog</Link>
           </nav>
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
@@ -87,7 +87,7 @@ export default function LandingPage() {
             <a href="#product" onClick={() => setIsMobileMenuOpen(false)}>Product</a>
             <a href="#venues" onClick={() => setIsMobileMenuOpen(false)}>Venues</a>
             <a href="#access" onClick={() => setIsMobileMenuOpen(false)}>Access</a>
-            <Link href={"/blog" as Route} onClick={() => setIsMobileMenuOpen(false)}>Guides</Link>
+            <Link href={"/guides" as Route} onClick={() => setIsMobileMenuOpen(false)}>Guides</Link>
             <Link href={"/blog" as Route} onClick={() => setIsMobileMenuOpen(false)}>Blog</Link>
             <hr className="border-line" />
             <Link href={"/auth/login" as Route} onClick={() => setIsMobileMenuOpen(false)}>Log in</Link>
@@ -235,11 +235,11 @@ export default function LandingPage() {
                 <p className="text-[11px] uppercase tracking-[0.18em] text-gold mb-3">Guides</p>
                 <h2 id="guides-heading" className="font-display text-3xl sm:text-4xl font-semibold">How the tools work.</h2>
               </div>
-              <Link href={"/blog" as Route} className="text-sm text-accent hover:underline shrink-0">All guides</Link>
+              <Link href={"/guides" as Route} className="text-sm text-accent hover:underline shrink-0">All guides</Link>
             </div>
             <div id="home-posts" className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {posts.map((p) => (
-                <Link key={p.slug} href={`/blog/${p.slug}` as Route} className="bg-panel border border-line rounded-2xl p-6 hover:border-zinc-600 transition flex flex-col min-h-[220px]">
+                <Link key={p.slug} href={`/guides/${p.slug}` as Route} className="bg-panel border border-line rounded-2xl p-6 hover:border-zinc-600 transition flex flex-col min-h-[220px]">
                   <p className="text-[11px] uppercase tracking-wider text-gold mb-3">{p.tag} &middot; {p.date}</p>
                   <h3 className="font-display text-lg font-semibold mb-2">{p.title}</h3>
                   <p className="text-sm text-zinc-400 leading-relaxed">{p.excerpt}</p>
@@ -315,7 +315,7 @@ export default function LandingPage() {
           <div>
             <p className="text-xs uppercase tracking-wider text-zinc-500 mb-3">Company</p>
             <ul className="space-y-2 text-sm text-zinc-400">
-              <li><Link href={"/blog" as Route} className="hover:text-white transition">Guides</Link></li>
+              <li><Link href={"/guides" as Route} className="hover:text-white transition">Guides</Link></li>
               <li><Link href={"/auth/login" as Route} className="hover:text-white transition">Log in</Link></li>
             </ul>
           </div>

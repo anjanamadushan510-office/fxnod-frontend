@@ -29,8 +29,8 @@ export default async function SingleBlogPage({ params }: { params: { slug: strin
           </Link>
           <nav className="hidden md:flex items-center gap-8 text-sm text-zinc-400">
             <Link href={"/#product" as Route} className="hover:text-white transition">Product</Link>
-            <Link href={"/blog" as Route} className="text-white">Guides</Link>
-            <Link href={"/blog" as Route} className="hover:text-white transition">Blog</Link>
+            <Link href={"/guides" as Route} className="hover:text-white transition">Guides</Link>
+            <Link href={"/blog" as Route} className="text-white">Blog</Link>
           </nav>
           <div className="flex items-center gap-2 shrink-0">
             <Link href={"/auth/login" as Route} className="hidden md:inline-flex h-9 px-4 items-center rounded-full text-sm text-zinc-300 hover:text-white transition">Log in</Link>
@@ -41,7 +41,7 @@ export default async function SingleBlogPage({ params }: { params: { slug: strin
 
       <main className="flex-1 w-full max-w-4xl mx-auto px-5 sm:px-8 py-10 sm:py-20">
         <Link href={"/blog" as Route} className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition mb-8">
-          ← Back to Guides
+          ← Back to Blog
         </Link>
         
         <article className="bg-panel border border-line rounded-3xl overflow-hidden shadow-xl">
@@ -56,7 +56,7 @@ export default async function SingleBlogPage({ params }: { params: { slug: strin
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
             <div className="absolute bottom-0 left-0 p-6 sm:p-10 w-full">
               <p className="text-[11px] uppercase tracking-wider text-gold mb-3">
-                {(post.tags && post.tags.length > 0) ? post.tags[0] : "GUIDE"} &middot; {new Date(post.created_at).toLocaleDateString()}
+                {(post.tags && post.tags.length > 0) ? post.tags[0] : "POST"} &middot; {new Date(post.created_at).toLocaleDateString()}
               </p>
               <h1 className="font-display text-3xl sm:text-5xl font-semibold text-white leading-tight">{post.title}</h1>
             </div>

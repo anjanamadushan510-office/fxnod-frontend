@@ -42,8 +42,8 @@ export default function BlogPage() {
           </Link>
           <nav className="hidden md:flex items-center gap-8 text-sm text-zinc-400">
             <Link href={"/#product" as Route} className="hover:text-white transition">Product</Link>
-            <Link href={"/blog" as Route} className="text-white">Guides</Link>
-            <Link href={"/blog" as Route} className="hover:text-white transition">Blog</Link>
+            <Link href={"/guides" as Route} className="hover:text-white transition">Guides</Link>
+            <Link href={"/blog" as Route} className="text-white">Blog</Link>
           </nav>
           <div className="flex items-center gap-2 shrink-0">
             <Link href={"/auth/login" as Route} className="hidden md:inline-flex h-9 px-4 items-center rounded-full text-sm text-zinc-300 hover:text-white transition">Log in</Link>
@@ -64,7 +64,7 @@ export default function BlogPage() {
         {isMobileMenuOpen && (
           <nav className="md:hidden border-b border-line bg-panel p-4 flex flex-col gap-4 text-sm" aria-label="Mobile">
             <Link href={"/#product" as Route} onClick={() => setIsMobileMenuOpen(false)}>Product</Link>
-            <Link href={"/blog" as Route} onClick={() => setIsMobileMenuOpen(false)}>Guides</Link>
+            <Link href={"/guides" as Route} onClick={() => setIsMobileMenuOpen(false)}>Guides</Link>
             <Link href={"/blog" as Route} onClick={() => setIsMobileMenuOpen(false)}>Blog</Link>
             <hr className="border-line" />
             <Link href={"/auth/login" as Route} onClick={() => setIsMobileMenuOpen(false)}>Log in</Link>
@@ -75,10 +75,10 @@ export default function BlogPage() {
 
       <main className="px-5 sm:px-8 lg:px-12 py-10 sm:py-20 flex-1">
         <div className="max-w-6xl mx-auto">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-gold mb-3">Guides</p>
-          <h1 className="font-display text-3xl sm:text-5xl font-semibold mb-4">How FXNOD tools work.</h1>
-          <p className="text-zinc-400 max-w-xl mb-12 leading-relaxed">Official guides from FXNOD — dTrader, dBot, Wallet, and Deriv. Written here so you can find the hub, learn a tool, and open an account.</p>
-          <p className="text-sm text-zinc-500 mb-8">Latest guides</p>
+          <p className="text-[11px] uppercase tracking-[0.18em] text-gold mb-3">Blog</p>
+          <h1 className="font-display text-3xl sm:text-5xl font-semibold mb-4">Latest updates from FXNOD.</h1>
+          <p className="text-zinc-400 max-w-xl mb-12 leading-relaxed">Company news, feature releases, and engineering updates. Read about what we're building and how we're improving the platform.</p>
+          <p className="text-sm text-zinc-500 mb-8">Latest posts</p>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {loading ? (
@@ -99,7 +99,7 @@ export default function BlogPage() {
                   </div>
                   <div className="p-6 sm:p-8 flex-1 flex flex-col">
                     <p className="text-[10px] uppercase tracking-wider text-gold mb-3 font-semibold">
-                      {(post.tags && post.tags.length > 0) ? post.tags[0] : "GUIDE"} &middot; {new Date(post.created_at).toLocaleDateString()}
+                      {(post.tags && post.tags.length > 0) ? post.tags[0] : "POST"} &middot; {new Date(post.created_at).toLocaleDateString()}
                     </p>
                     <h2 className="text-xl font-display font-semibold text-white leading-snug mb-3 group-hover:text-accent transition">
                       {post.title}
@@ -108,7 +108,7 @@ export default function BlogPage() {
                       {post.excerpt}
                     </p>
                     <div className="mt-auto text-sm font-semibold text-white group-hover:text-accent transition flex items-center gap-2">
-                      Read guide <span className="text-lg leading-none">→</span>
+                      Read post <span className="text-lg leading-none">→</span>
                     </div>
                   </div>
                 </Link>
