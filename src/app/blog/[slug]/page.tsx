@@ -4,7 +4,7 @@ import { Route } from "next";
 import type { BlogPost } from "../page";
 
 export default async function SingleBlogPage({ params }: { params: { slug: string } }) {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
+  const apiUrl = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/+$/, "");
   let post: BlogPost | null = null;
   
   try {
@@ -48,7 +48,7 @@ export default async function SingleBlogPage({ params }: { params: { slug: strin
           <div className="w-full h-64 sm:h-96 bg-line overflow-hidden relative">
             {post.cover_image && (
               <img 
-                src={post.cover_image.startsWith('http') ? post.cover_image : `${apiUrl}${post.cover_image}`} 
+                src={post.cover_image.startsWith('http') ? post.cover_image : `${apiUrl}${post.cover_image.startsWith('/') ? '' : '/'}${post.cover_image}`} 
                 alt={post.title} 
                 className="w-full h-full object-cover"
               />

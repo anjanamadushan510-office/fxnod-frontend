@@ -22,7 +22,7 @@ export default function BlogPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
+    const apiUrl = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/+$/, "");
     fetch(`${apiUrl}/api/v1/blogs`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch blogs");
@@ -91,7 +91,7 @@ export default function BlogPage() {
                   <div className="h-48 bg-line overflow-hidden relative">
                     {post.cover_image && (
                       <img 
-                        src={post.cover_image.startsWith('http') ? post.cover_image : `${process.env.NEXT_PUBLIC_API_URL || ''}${post.cover_image}`} 
+                        src={post.cover_image.startsWith('http') ? post.cover_image : `${(process.env.NEXT_PUBLIC_API_URL || '').replace(/\/+$/, '')}${post.cover_image.startsWith('/') ? '' : '/'}${post.cover_image}`} 
                         alt={post.title} 
                         className="w-full h-full object-cover transition duration-500 group-hover:scale-105"
                       />
