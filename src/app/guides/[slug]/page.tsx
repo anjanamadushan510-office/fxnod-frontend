@@ -119,7 +119,7 @@ export default function GuideDetailPage({ params }: { params: { slug: string } }
           {/* Banner Image */}
           {guide.image && (
             <div className="rounded-2xl overflow-hidden border border-[#24344F] bg-[#101827] mb-10">
-              <img src={guide.image} alt={guide.title} className="w-full h-auto object-cover" />
+              <img src={guide.image} alt={guide.title} className="w-full h-64 sm:h-80 md:h-96 object-cover object-center" />
             </div>
           )}
 
