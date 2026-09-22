@@ -65,7 +65,7 @@ export type PositionsServerMessage =
   /** Terminal — contract settled; `data.status` is "won" | "lost". */
   | { type: "closed"; data: PositionFrame }
   /** Live account balance pushed down from Deriv. */
-  | { type: "balance"; data: { balance: number; currency: string } }
+  | { type: "balance"; data: { balance: number; currency: string; id?: string; loginid?: string } }
   /** Keepalive reply. */
   | { type: "pong" };
 

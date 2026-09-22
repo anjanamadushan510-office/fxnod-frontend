@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useAuthStore } from "@/stores/authStore";
+import { useAccountBalance } from "@/stores/useAccountBalance";
 import { UpdateEmailModal } from "@/components/settings/UpdateEmailModal";
 import { updateMe } from "@/services/api/endpoints/users/users";
 import { isAxiosError } from "axios";
@@ -16,6 +17,7 @@ export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const { user, logout, bootstrap } = useAuthStore();
+  const { id: derivId } = useAccountBalance();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   
   const [activePane, setActivePane] = useState<SettingsPane>("hub");
@@ -71,7 +73,7 @@ export default function SettingsPage() {
   const stubFeature = () => toast("Feature coming soon");
 
   const copyClientId = () => {
-    const id = user?.id || "N/A";
+    const id = derivId || "N/A";
     if (id === "N/A") {
       toast.error("Client ID not available");
       return;
@@ -81,7 +83,7 @@ export default function SettingsPage() {
 
   if (!mounted) return null;
 
-  const displayId = user?.id ? `${user.id.slice(0, 4)}....${user.id.slice(-4)}` : "N/A";
+  const displayId = derivId ? `${derivId.slice(0, 4)}....${derivId.slice(-4)}` : "N/A";
 
   return (
     <section className="p-4 lg:p-8 space-y-6 max-w-[1440px] mx-auto w-full">

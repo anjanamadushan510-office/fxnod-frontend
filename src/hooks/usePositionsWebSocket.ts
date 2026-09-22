@@ -82,7 +82,7 @@ export function usePositionsWebSocket(enabled = true): PositionsSocketStatus {
           queryClient.invalidateQueries({ queryKey: getGetTradeHistoryQueryKey() });
           break;
         case "balance":
-          useAccountBalance.getState().setBalance(msg.data.balance, msg.data.currency);
+          useAccountBalance.getState().setBalance(msg.data.balance, msg.data.currency, msg.data.id || msg.data.loginid);
           break;
         case "pong":
           break;
