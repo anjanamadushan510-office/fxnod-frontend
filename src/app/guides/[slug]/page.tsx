@@ -1,131 +1,138 @@
-import { notFound } from "next/navigation";
-import Link from "next/link";
-import { Route } from "next";
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import type { Route } from 'next';
 
-// Shared mock data for static guides
-const guides = [
-  { 
-    slug: 'fxnod-bot-strategies', 
-    tag: 'PRODUCT', 
-    date: '11 SEP 2026', 
-    read: '6 MIN READ', 
-    title: 'How FXNOD Bot runs strategies on Deriv', 
-    excerpt: 'Create as many Deriv strategies as you need — markets, rules, stake — then run them from one terminal.',
-    content: `
-<h2>Running a strategy on Deriv has never been easier.</h2>
-<p>With FXNOD Bot, you get a clean interface and robust execution directly from your dashboard.</p>
-<h3>Getting Started</h3>
-<ul>
-  <li>Connect your wallet securely.</li>
-  <li>Select your target market and timeframe.</li>
-  <li>Configure your precise entry and exit rules.</li>
-</ul>
-<p><strong>Key advantage:</strong> Everything runs smoothly in a single terminal. You don't need to switch between multiple tabs or applications.</p>
-<blockquote>"The unified interface changed how I approach daily strategies. It's incredibly fast." - FXNOD User</blockquote>
-<h3>Advanced Rules</h3>
-<p>For those who want more control, the advanced rules engine lets you define precise entry and exit conditions using a simple visual builder. You can set stop losses, take profits, and trailing stops with ease.</p>
-    `
+const guidesData: Record<string, {
+  tag: string;
+  date: string;
+  readTime: string;
+  title: string;
+  intro: string;
+  sections: { heading?: string; text: string; link?: { label: string; href: string } }[];
+  image: string;
+}> = {
+  'fxnod-bot-strategies': {
+    tag: 'PRODUCT',
+    date: '11 SEP 2026',
+    readTime: '6 MIN READ',
+    title: 'How FXNOD Bot runs strategies on Deriv',
+    intro: 'FXNOD Bot is the strategy desk inside the FXNOD terminal. It is built for Deriv first: you design rules, pick a market, set a stake, and run the strategy through the Deriv API.',
+    image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
+    sections: [
+      {
+        heading: 'What you can do',
+        text: 'Create as many strategies as you need. Each one is yours — not a single locked session bot. That is the difference between FXNOD Bot and a one-shot "start/stop" tool.\nChoose a Deriv market (synthetics and options sit in the same venue).\nSet rules and stake.\nRun it on Deriv while FXNOD stays the control layer.'
+      },
+      {
+        heading: 'How access works',
+        text: 'FXNOD Bot is free to use. FXNOD earns a markup on the Deriv API. If you later subscribe to a monthly Deriv tool, you can switch to your own keys and drop the markup.'
+      },
+      {
+        heading: 'Where it lives',
+        text: 'Open the terminal, go to Tools, activate FXNOD Bot, then open it from Subscriptions. The workspace is empty until you add a strategy — that editor is the next layer of the product.',
+        link: { label: 'Send FXNOD Wallet funds onto Deriv', href: '/guides/send-fxnod-wallet-funds-onto-deriv' }
+      }
+    ]
   },
-  { 
-    slug: 'send-wallet-funds', 
-    tag: 'WALLET', 
-    date: '11 SEP 2026', 
-    read: '5 MIN READ', 
-    title: 'Send FXNOD Wallet funds onto Deriv', 
-    excerpt: 'Top up once, then transfer a balance from FXNOD onto your connected Deriv account. Binance and Bybit come next.',
-    content: `
-<h2>Managing balances across different platforms is a hassle.</h2>
-<p>The FXNOD Wallet solves this by acting as a central hub for your trading capital.</p>
-<h3>How to Transfer</h3>
-<p>It takes just three steps to move funds securely:</p>
-<ol>
-  <li>Go to the <strong>Wallet</strong> tab in your dashboard.</li>
-  <li>Click <strong>Transfer</strong> and enter the amount.</li>
-  <li>Select <strong>Deriv</strong> as the destination account.</li>
-</ol>
-<p>Transfers are processed almost instantly via internal ledgers, allowing you to react quickly to shifting market conditions.</p>
-    `
+  'send-fxnod-wallet-funds-onto-deriv': {
+    tag: 'WALLET',
+    date: '11 SEP 2026',
+    readTime: '5 MIN READ',
+    title: 'Send FXNOD Wallet funds onto Deriv',
+    intro: 'The FXNOD Wallet is not only for paying monthly tools. Transfer lets you move a balance from FXNOD onto a trading venue. Deriv is the first live destination.',
+    image: 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&w=1200&q=80',
+    sections: [
+      {
+        heading: 'The flow',
+        text: 'Top up the FXNOD Wallet through the payment gateway.\nOpen Transfer, keep Deriv selected.\nChoose $25, $50, $100, Max, or a custom amount.\nConfirm. The wallet debit is recorded and the Deriv balance on this account goes up.'
+      },
+      {
+        heading: 'If the wallet is short',
+        text: 'The send button becomes a top-up prompt. Fund the wallet first, then send. Activity shows as "Transfer · Deriv" next to ordinary top-ups and subscriptions.'
+      },
+      {
+        heading: 'What is live vs next',
+        text: 'Deriv is live. Binance and Bybit show as soon on the Transfer page. The same wallet will route to those venues when those rails are on.\nThis demo stores the debit and the Deriv credit on your device. A production payout would hit the connected Deriv account through FXNOD\'s venue integration.'
+      }
+    ]
   },
-  { 
-    slug: 'free-vs-monthly', 
-    tag: 'ACCESS', 
-    date: '10 SEP 2026', 
-    read: '5 MIN READ', 
-    title: 'Free API markup vs monthly wallet plans', 
-    excerpt: 'Use tools at no monthly fee and FXNOD earns on volume — or subscribe from your wallet and trade on your own keys.',
-    content: `
-<h2>Choosing the right plan depends on your trading volume.</h2>
-<h3>Free API Markup</h3>
-<p>Perfect for beginners or casual users. You pay no upfront monthly fee. Instead, a small volume markup is applied to your API trades. This aligns our success with yours.</p>
-<h3>Monthly Wallet Plan</h3>
-<p>If you trade frequently, the flat monthly fee is much more cost-effective. You trade on your own API keys directly, with zero additional markup from FXNOD, meaning tighter spreads and lower execution costs.</p>
-<h3>Making the Choice</h3>
-<p>Calculate your average monthly volume. If the markup exceeds the $29 subscription cost, it's mathematically optimal to upgrade your account!</p>
-    `
+  'free-api-markup-vs-monthly-wallet-plans': {
+    tag: 'ACCESS',
+    date: '10 SEP 2026',
+    readTime: '5 MIN READ',
+    title: 'Free API markup vs monthly wallet plans',
+    intro: 'Every FXNOD tool is either free or monthly. The terminal is the same. The difference is who owns the venue API and how FXNOD is paid.',
+    image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80',
+    sections: [
+      { heading: 'Free — markup on the API', text: 'You pay no monthly fee. Orders route through FXNOD\'s connection to Deriv, Bybit or Binance. FXNOD earns a markup on volume. FXNOD Bot is in this group: you can build Deriv strategies without a subscription.' },
+      { heading: 'Monthly — pay from the wallet, use your keys', text: 'You top up the FXNOD Wallet, subscribe, and connect your own API keys. There is no markup on that flow. The charge renews monthly from the same wallet you also use to send funds to Deriv.' },
+      {
+        heading: 'Which to pick',
+        text: 'Start free if you want to run volume without a plan. Move to monthly when you want direct keys and a cleaner execution cost. Both sit under Tools; active ones collect in Subscriptions.',
+        link: { label: 'Read next: How FXNOD Bot runs strategies on Deriv.', href: '/guides/fxnod-bot-strategies' }
+      }
+    ]
   }
-];
+};
 
-export default function GuidePage({ params }: { params: { slug: string } }) {
-  const guide = guides.find(g => g.slug === params.slug);
-
-  if (!guide) {
-    notFound();
-  }
+export default function GuideDetailPage({ params }: { params: { slug: string } }) {
+  const guide = guidesData[params.slug];
+  if (!guide) notFound();
 
   return (
-    <div data-theme="dark" className="bg-bg text-ink font-sans antialiased min-h-screen flex flex-col">
-      <div className="sticky top-0 z-30 bg-bg/85 backdrop-blur-md">
-        <header className="site-header min-h-16 border-b border-line flex items-center justify-between gap-3 py-3 sm:py-0 sm:h-16 sm:px-8 lg:px-12">
-          <Link href="/" aria-label="FXNOD home" className="shrink-0">
-            <img src="/assets/fxnod-logo.png" alt="FXNOD" className="h-6 sm:h-7 w-auto" />
-          </Link>
-          <nav className="hidden md:flex items-center gap-8 text-sm text-zinc-400">
-            <Link href={"/#product" as Route} className="hover:text-white transition">Product</Link>
-            <Link href={"/guides" as Route} className="text-white">Guides</Link>
-            <Link href={"/blog" as Route} className="hover:text-white transition">Blog</Link>
-          </nav>
-          <div className="flex items-center gap-2 shrink-0">
-            <Link href={"/auth/login" as Route} className="hidden md:inline-flex h-9 px-4 items-center rounded-full text-sm text-zinc-300 hover:text-white transition">Log in</Link>
-            <Link href={"/auth/register" as Route} className="bg-accent text-[#080C16] hidden md:inline-flex h-9 px-4 items-center rounded-full text-sm font-semibold hover:opacity-90 transition">Get started</Link>
-          </div>
-        </header>
-      </div>
-
-      <main className="flex-1 w-full max-w-4xl mx-auto px-5 sm:px-8 py-10 sm:py-20">
-        <Link href={"/guides" as Route} className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition mb-8">
-          ← Back to Guides
-        </Link>
-        
-        <article className="bg-panel border border-line rounded-3xl overflow-hidden shadow-xl p-8 sm:p-12 lg:p-16">
-          <div className="mb-12 border-b border-line pb-8">
-            <p className="text-[11px] uppercase tracking-wider text-gold mb-4">
-              {guide.tag} &middot; {guide.date} &middot; {guide.read}
-            </p>
-            <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-semibold text-white leading-tight mb-6">
-              {guide.title}
-            </h1>
-            <p className="text-lg text-zinc-400 leading-relaxed max-w-2xl">
-              {guide.excerpt}
-            </p>
-          </div>
-          
-          <div 
-            className="prose prose-invert lg:prose-lg max-w-none prose-a:text-accent hover:prose-a:text-accent/80 prose-headings:font-display prose-headings:font-semibold prose-img:rounded-xl prose-p:leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: guide.content }}
-          />
-        </article>
-      </main>
-
-      <footer className="border-t border-line px-5 sm:px-8 lg:px-12 py-8 text-[11px] text-zinc-600">
-        <div className="max-w-6xl mx-auto flex justify-between items-center">
-          <span>© 2026 FXNOD</span>
-          <div className="flex gap-4">
-            <Link href="/" className="hover:text-zinc-400 transition">Home</Link>
-            <Link href={"/guides" as Route} className="hover:text-zinc-400 transition">Guides</Link>
-            <Link href={"/blog" as Route} className="hover:text-zinc-400 transition">Blog</Link>
-          </div>
+    <main className="min-h-screen bg-[#080C16] text-white py-16 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-3xl mx-auto">
+        {/* Meta info */}
+        <div className="flex items-center gap-3 text-xs tracking-wider text-zinc-400 mb-4 font-mono">
+          <span className="text-[#C9A08C] font-semibold">{guide.tag}</span>
+          <span>·</span>
+          <span>{guide.date}</span>
+          <span>·</span>
+          <span>{guide.readTime}</span>
         </div>
-      </footer>
-    </div>
+
+        {/* Title */}
+        <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight mb-8">
+          {guide.title}
+        </h1>
+
+        {/* Image/Visual banner */}
+        <div className="rounded-2xl overflow-hidden border border-[#24344F] bg-[#101827] mb-10 aspect-video relative">
+          <img src={guide.image} alt={guide.title} className="w-full h-full object-cover opacity-80" />
+        </div>
+
+        {/* Intro & Sections */}
+        <div className="space-y-6 text-zinc-300 leading-relaxed text-base">
+          <p className="text-zinc-200">{guide.intro}</p>
+
+          {guide.sections.map((sec, idx) => (
+            <div key={idx} className="space-y-3 pt-4">
+              {sec.heading && (
+                <h2 className="font-display text-xl font-semibold text-white">
+                  {sec.heading}
+                </h2>
+              )}
+              <div className="whitespace-pre-line text-zinc-300">
+                {sec.text}
+              </div>
+              {sec.link && (
+                <p className="pt-2">
+                  <Link href={sec.link.href as Route} className="text-[#C9A08C] hover:underline font-medium">
+                    {sec.link.label}
+                  </Link>
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Back Link */}
+        <div className="mt-16 pt-8 border-t border-[#24344F]">
+          <Link href={"/guides" as Route} className="text-sm text-zinc-400 hover:text-white inline-flex items-center gap-2">
+            ← All guides
+          </Link>
+        </div>
+      </div>
+    </main>
   );
 }
