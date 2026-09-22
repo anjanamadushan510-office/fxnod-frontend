@@ -161,3 +161,18 @@ a {
 .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #6b7280; border-radius: 10px; }
 .dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #374151; }
 
+
+/* Settings Page Styles */
+.settings-hero {
+  background: linear-gradient(165deg, #1A3358 0%, #0B1220 62%);
+}
+[data-theme='light'] .settings-hero {
+  background: linear-gradient(165deg, #152238 0%, #0E1A2E 70%);
+}
+.settings-row:hover { background: rgba(255,255,255,0.03); }
+[data-theme='light'] .settings-row:hover { background: rgba(21, 34, 56, 0.04); }
+.surface-hover { transition: border-color .15s ease; }
+.surface-hover:hover { border-color: #3a3a3a; }
+[data-theme='light'] .surface-hover:hover { border-color: #9AA8BD; }
+.row-hover:hover { background: rgba(255,255,255,0.03); }
+[data-theme='light'] .row-hover:hover { background: rgba(21, 34, 56, 0.04); }
