@@ -71,7 +71,7 @@ export default function SettingsPage() {
   const stubFeature = () => toast("Feature coming soon");
 
   const copyClientId = () => {
-    const id = user?.client_id || "N/A";
+    const id = user?.id || "N/A";
     if (id === "N/A") {
       toast.error("Client ID not available");
       return;
@@ -80,6 +80,8 @@ export default function SettingsPage() {
   };
 
   if (!mounted) return null;
+
+  const displayId = user?.id ? `${user.id.slice(0, 4)}....${user.id.slice(-4)}` : "N/A";
 
   return (
     <section className="p-4 lg:p-8 space-y-6 max-w-[1440px] mx-auto w-full">
@@ -99,7 +101,7 @@ export default function SettingsPage() {
                 onClick={copyClientId}
                 aria-label="Copy client ID"
               >
-                <span className="tabular">{user?.client_id || "N/A"}</span>
+                <span className="tabular">{displayId}</span>
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M8 8V6.5A1.5 1.5 0 019.5 5h8A1.5 1.5 0 0119 6.5v8a1.5 1.5 0 01-1.5 1.5H16M5 9.5A1.5 1.5 0 016.5 8h8A1.5 1.5 0 0116 9.5v8a1.5 1.5 0 01-1.5 1.5h-8A1.5 1.5 0 015 17.5v-8z"/></svg>
               </button>
             </div>
