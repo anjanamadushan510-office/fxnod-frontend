@@ -10,6 +10,7 @@ import { api } from "./api";
 
 export interface UserPublic {
   id: string;
+  client_id?: string;
   email: string;
   full_name: string | null;
   avatar_url: string | null;
