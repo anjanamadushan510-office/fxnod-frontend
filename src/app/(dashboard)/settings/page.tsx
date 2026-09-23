@@ -114,6 +114,14 @@ export default function SettingsPage() {
     }
   };
 
+  const handleNextToAddress = () => {
+    if (!firstName || !lastName || !dateOfBirth || !country) {
+      toast.error("Please fill in all personal details.");
+      return;
+    }
+    setActivePane("address");
+  };
+
   const handleSaveProfile = () => {
     if (!firstName || !lastName || !dateOfBirth || !country || !streetAddress || !city || !postalCode) {
       toast.error("Please fill in all fields.");
@@ -318,11 +326,10 @@ export default function SettingsPage() {
             {!clientRecord && (
               <button
                 type="button"
-                className="h-10 px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 disabled:opacity-50 mt-4"
-                onClick={handleSaveProfile}
-                disabled={isSavingProfile}
+                className="h-10 px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 mt-4"
+                onClick={handleNextToAddress}
               >
-                {isSavingProfile ? "Saving..." : "Save Profile"}
+                Next: Home Address
               </button>
             )}
           </article>
@@ -352,14 +359,24 @@ export default function SettingsPage() {
             </div>
 
             {!clientRecord && (
-              <button
-                type="button"
-                className="h-10 px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 disabled:opacity-50 mt-4"
-                onClick={handleSaveProfile}
-                disabled={isSavingProfile}
-              >
-                {isSavingProfile ? "Saving..." : "Save Profile"}
-              </button>
+              <div className="flex items-center gap-3 mt-4">
+                <button
+                  type="button"
+                  className="h-10 px-5 rounded-lg bg-transparent text-white border border-line text-sm font-medium hover:bg-zinc-800 disabled:opacity-50"
+                  onClick={() => setActivePane("personal")}
+                  disabled={isSavingProfile}
+                >
+                  Back
+                </button>
+                <button
+                  type="button"
+                  className="h-10 px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 disabled:opacity-50"
+                  onClick={handleSaveProfile}
+                  disabled={isSavingProfile}
+                >
+                  {isSavingProfile ? "Saving..." : "Save Complete Profile"}
+                </button>
+              </div>
             )}
           </article>
         </div>
