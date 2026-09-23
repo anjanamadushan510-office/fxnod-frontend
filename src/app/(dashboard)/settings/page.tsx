@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useAuthStore } from "@/stores/authStore";
 import { UpdateEmailModal } from "@/components/settings/UpdateEmailModal";
-import { updateMe, useGetClientRecord, useCreateClientRecord, useUpdatePassword } from "@/services/api/endpoints/users/users";
+import { useUpdateMe, useGetClientRecord, useCreateClientRecord, useUpdatePassword } from "@/services/api/endpoints/users/users";
 import { useCreateTicket, useListMyTickets } from "@/services/api/endpoints/tickets/tickets";
 import { TicketTopic, TicketStatus } from "@/services/api/model";
 import { isAxiosError } from "axios";
@@ -25,6 +25,38 @@ export default function SettingsPage() {
   const [activePane, setActivePane] = useState<SettingsPane>("hub");
 
   const [isUpdateEmailModalOpen, setIsUpdateEmailModalOpen] = useState(false);
+
+  // Phone number
+  const [phone, setPhone] = useState(user?.phone ?? "");
+  // Sync phone once user loads from bootstrap
+  useEffect(() => {
+    if (user?.phone != null) setPhone(user.phone);
+  }, [user?.phone]);
+  const { mutate: savePhone, isPending: isSavingPhone } = useUpdateMe({
+    mutation: {
+      onSuccess: (data) => {
+        toast.success("Phone number updated successfully");
+        // Sync the value back in case the server normalised it
+        setPhone(data.phone ?? "");
+      },
+      onError: (err) => {
+        if (isAxiosError(err) && err.response?.data?.detail) {
+          const detail = err.response.data.detail;
+          toast.error(typeof detail === "string" ? detail : "Failed to update phone number");
+        } else {
+          toast.error("Failed to update phone number");
+        }
+      },
+    },
+  });
+
+  const handleSavePhone = () => {
+    if (!phone.trim()) {
+      toast.error("Please enter a phone number");
+      return;
+    }
+    savePhone({ data: { phone: phone.trim() } });
+  };
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -464,8 +496,25 @@ export default function SettingsPage() {
         <div className="space-y-4">
           <button type="button" className="text-sm text-zinc-400 hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
           <article className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-4">
-            <label className="block"><span className="text-xs text-zinc-500">Phone number</span><input type="tel" placeholder="+94 …" className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500" /></label>
-            <button type="button" className="h-10 px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200" onClick={stubFeature}>Save</button>
+            <label className="block">
+              <span className="text-xs text-zinc-500">Phone number</span>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="+94 71 234 5678"
+                className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500"
+              />
+              <span className="block mt-1 text-xs text-zinc-600">Include the country code (e.g. +1, +44, +94)</span>
+            </label>
+            <button
+              type="button"
+              disabled={isSavingPhone}
+              className="h-10 px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 disabled:opacity-50"
+              onClick={handleSavePhone}
+            >
+              {isSavingPhone ? "Saving..." : "Save"}
+            </button>
           </article>
         </div>
       )}
