@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { cn } from "@/lib/cn";
 
-type SettingsPane = "hub" | "profile" | "password" | "email" | "phone" | "2fa" | "close" | "theme" | "language" | "ticket";
+type SettingsPane = "hub" | "personal" | "address" | "password" | "email" | "phone" | "2fa" | "close" | "theme" | "language" | "ticket";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -175,11 +175,19 @@ export default function SettingsPage() {
             <div className="break-inside-avoid mb-6">
               <p className="px-1 mb-2 text-xs font-medium text-zinc-500">About you</p>
               <div className="bg-panel border border-line rounded-2xl overflow-hidden">
-                <button type="button" className="settings-row w-full flex items-center gap-3 px-4 py-3 text-left" onClick={() => setActivePane("profile")}>
+                <button type="button" className="settings-row w-full flex items-center gap-3 px-4 py-3 text-left" onClick={() => setActivePane("personal")}>
                   <svg className="w-5 h-5 text-zinc-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.118a7.5 7.5 0 0115 0"/></svg>
                   <span className="flex-1 min-w-0">
-                    <span className="block text-sm">Client profile</span>
-                    <span className="block text-xs text-zinc-500 mt-0.5 truncate">Personal details & home address</span>
+                    <span className="block text-sm">Personal details</span>
+                    <span className="block text-xs text-zinc-500 mt-0.5 truncate">{user?.full_name || "Name, country, date of birth"}</span>
+                  </span>
+                  <svg className="w-4 h-4 text-zinc-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
+                </button>
+                <button type="button" className="settings-row w-full flex items-center gap-3 px-4 py-3 text-left border-t border-line" onClick={() => setActivePane("address")}>
+                  <svg className="w-5 h-5 text-zinc-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75"/></svg>
+                  <span className="flex-1 min-w-0">
+                    <span className="block text-sm">Home address</span>
+                    <span className="block text-xs text-zinc-500 mt-0.5 truncate">Used for wallet and venue checks</span>
                   </span>
                   <svg className="w-4 h-4 text-zinc-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
                 </button>
@@ -272,7 +280,7 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {activePane === "profile" && (
+      {activePane === "personal" && (
         <div className="space-y-4">
           <button type="button" className="text-sm text-zinc-400 hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
           <article className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-4">
@@ -306,6 +314,26 @@ export default function SettingsPage() {
                 </select>
               </label>
             </div>
+
+            {!clientRecord && (
+              <button
+                type="button"
+                className="h-10 px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 disabled:opacity-50 mt-4"
+                onClick={handleSaveProfile}
+                disabled={isSavingProfile}
+              >
+                {isSavingProfile ? "Saving..." : "Save Profile"}
+              </button>
+            )}
+          </article>
+        </div>
+      )}
+
+      {activePane === "address" && (
+        <div className="space-y-4">
+          <button type="button" className="text-sm text-zinc-400 hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
+          <article className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-4">
+            <p className="text-sm text-zinc-400 leading-relaxed">We use this address on wallet payouts and venue transfers. <strong>Once saved, these details cannot be changed.</strong></p>
 
             <label className="block">
               <span className="text-xs text-zinc-500">Street address</span>
