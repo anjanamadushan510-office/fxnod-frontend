@@ -25,7 +25,7 @@ They are not intended to be called from the browser; exclude the `Internal`
 tag when generating the public frontend client.
 
 Monetary / percentage values are represented as JSON **strings**
-(`format: decimal`) to preserve precision — parse them with a decimal
+(`format: decimal`) to preserve precision â€” parse them with a decimal
 library, not a float.
 
  * OpenAPI spec version: 0.1.0
@@ -37,7 +37,7 @@ export interface BotPreset {
   /** @maxLength 100 */
   name: string;
   strategy_id: string;
-  /** Strategy parameters, shaped by the strategy. Opaque here on purpose — each bot defines its own, and pinning one shape in the contract would make adding a bot a spec change. */
+  /** Strategy parameters, shaped by the strategy. Opaque here on purpose â€” each bot defines its own, and pinning one shape in the contract would make adding a bot a spec change. */
   config: BotPresetConfig;
   created_at: string;
   updated_at: string;

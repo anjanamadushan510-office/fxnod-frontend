@@ -25,7 +25,7 @@ They are not intended to be called from the browser; exclude the `Internal`
 tag when generating the public frontend client.
 
 Monetary / percentage values are represented as JSON **strings**
-(`format: decimal`) to preserve precision — parse them with a decimal
+(`format: decimal`) to preserve precision â€” parse them with a decimal
 library, not a float.
 
  * OpenAPI spec version: 0.1.0
@@ -261,7 +261,7 @@ export function useGetMySubscription<TData = Awaited<ReturnType<typeof getMySubs
 
 
 /**
- * Charges the caller's wallet, grants or extends the entitlement, and records the purchase — one transaction, so a charge cannot stand without the subscription it paid for.
+ * Charges the caller's wallet, grants or extends the entitlement, and records the purchase â€” one transaction, so a charge cannot stand without the subscription it paid for.
 
 Buying while a subscription is still running EXTENDS it from its current expiry, not from now: renewing early must not throw away time already paid for. Lifetime supersedes everything and cannot be extended.
 

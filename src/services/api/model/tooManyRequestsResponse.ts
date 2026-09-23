@@ -25,7 +25,7 @@ They are not intended to be called from the browser; exclude the `Internal`
 tag when generating the public frontend client.
 
 Monetary / percentage values are represented as JSON **strings**
-(`format: decimal`) to preserve precision — parse them with a decimal
+(`format: decimal`) to preserve precision â€” parse them with a decimal
 library, not a float.
 
  * OpenAPI spec version: 0.1.0
@@ -33,6 +33,6 @@ library, not a float.
 import type { Error } from './error';
 
 /**
- * Per-user rate limit exceeded. `Retry-After` says how many seconds to wait. The limits are generous enough that no honest use meets them — they stop one account filling the manual review queue or hammering a paid provider.
+ * Per-user rate limit exceeded. `Retry-After` says how many seconds to wait. The limits are generous enough that no honest use meets them â€” they stop one account filling the manual review queue or hammering a paid provider.
  */
 export type TooManyRequestsResponse = Error;

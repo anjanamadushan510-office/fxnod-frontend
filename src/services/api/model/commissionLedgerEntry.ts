@@ -25,7 +25,7 @@ They are not intended to be called from the browser; exclude the `Internal`
 tag when generating the public frontend client.
 
 Monetary / percentage values are represented as JSON **strings**
-(`format: decimal`) to preserve precision — parse them with a decimal
+(`format: decimal`) to preserve precision â€” parse them with a decimal
 library, not a float.
 
  * OpenAPI spec version: 0.1.0
@@ -50,7 +50,7 @@ export interface CommissionLedgerEntry {
   source_email?: string | null;
   source_email_masked?: boolean;
   source_type: CommissionSourceType;
-  /** The thing that earned it — a trade id for trade_markup, a subscription purchase id for dbot_subscription. */
+  /** The thing that earned it â€” a trade id for trade_markup, a subscription purchase id for dbot_subscription. */
   trade_id: string;
   platform: string;
   level: number;
@@ -66,7 +66,7 @@ export interface CommissionLedgerEntry {
    * @nullable
    */
   payable_at?: string | null;
-  /** Held back from automatic settlement until a person has looked at it. Not an accusation and not a reversal — the amount is unchanged and the row is still accrued. */
+  /** Held back from automatic settlement until a person has looked at it. Not an accusation and not a reversal â€” the amount is unchanged and the row is still accrued. */
   review_required: boolean;
   /**
    * Machine-readable, e.g. shared_funding_source.

@@ -6,8 +6,12 @@ import { useTheme } from "next-themes";
 import { useAuthStore } from "@/stores/authStore";
 import { UpdateEmailModal } from "@/components/settings/UpdateEmailModal";
 import { updateMe } from "@/services/api/endpoints/users/users";
+import { useCreateTicket, useListMyTickets } from "@/services/api/endpoints/tickets/tickets";
+import { TicketTopic, TicketStatus } from "@/services/api/model";
 import { isAxiosError } from "axios";
 import { toast } from "sonner";
+import { format } from "date-fns";
+import { cn } from "@/lib/cn";
 
 type SettingsPane = "hub" | "personal" | "address" | "password" | "email" | "phone" | "2fa" | "close" | "theme" | "language" | "ticket";
 
@@ -26,6 +30,42 @@ export default function SettingsPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [isSavingPersonal, setIsSavingPersonal] = useState(false);
+
+  // Ticket Form
+  const [ticketTopic, setTicketTopic] = useState<TicketTopic>(TicketTopic.GENERAL);
+  const [ticketSubject, setTicketSubject] = useState("");
+  const [ticketMessage, setTicketMessage] = useState("");
+
+  const { data: tickets, refetch: refetchTickets, isLoading: isLoadingTickets } = useListMyTickets();
+  const { mutate: createTicket, isPending: isCreatingTicket } = useCreateTicket({
+    mutation: {
+      onSuccess: () => {
+        setTicketSubject("");
+        setTicketMessage("");
+        setTicketTopic(TicketTopic.GENERAL);
+        refetchTickets();
+        toast.success("Ticket submitted successfully");
+      },
+      onError: (err) => {
+        console.error(err);
+        toast.error("Failed to submit ticket");
+      }
+    }
+  });
+
+  const handleCreateTicket = () => {
+    if (!ticketSubject.trim() || !ticketMessage.trim()) {
+      toast.error("Subject and message are required");
+      return;
+    }
+    createTicket({
+      data: {
+        topic: ticketTopic,
+        subject: ticketSubject,
+        message: ticketMessage,
+      }
+    });
+  };
 
   useEffect(() => setMounted(true), []);
 
@@ -359,31 +399,80 @@ export default function SettingsPage() {
               <p className="text-sm text-zinc-400 leading-relaxed">Tell us what is blocked. We reply to the email on this account.</p>
               <label className="block">
                 <span className="text-xs text-zinc-500">Topic</span>
-                <select className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500">
-                  <option value="Wallet">Wallet</option>
-                  <option value="Venues">Venues</option>
-                  <option value="dBot">dBot</option>
-                  <option value="dTrader">dTrader</option>
-                  <option value="Account">Account</option>
-                  <option value="Other">Other</option>
+                <select 
+                  value={ticketTopic}
+                  onChange={(e) => setTicketTopic(e.target.value as TicketTopic)}
+                  className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500"
+                >
+                  <option value={TicketTopic.GENERAL}>General Inquiry</option>
+                  <option value={TicketTopic.BILLING}>Billing & Payments</option>
+                  <option value={TicketTopic.TECHNICAL}>Technical Issue</option>
+                  <option value={TicketTopic.KYC}>Account Verification (KYC)</option>
                 </select>
               </label>
               <label className="block">
                 <span className="text-xs text-zinc-500">Subject</span>
-                <input maxLength={120} placeholder="Short summary" className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500" />
+                <input 
+                  maxLength={120} 
+                  placeholder="Short summary" 
+                  value={ticketSubject}
+                  onChange={(e) => setTicketSubject(e.target.value)}
+                  className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500" 
+                />
               </label>
               <label className="block">
                 <span className="text-xs text-zinc-500">Message</span>
-                <textarea rows={5} maxLength={1000} placeholder="What happened, and what should we look at?" className="mt-1.5 w-full px-3 py-2.5 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500 resize-y min-h-[8rem]"></textarea>
+                <textarea 
+                  rows={5} 
+                  maxLength={1000} 
+                  placeholder="What happened, and what should we look at?" 
+                  value={ticketMessage}
+                  onChange={(e) => setTicketMessage(e.target.value)}
+                  className="mt-1.5 w-full px-3 py-2.5 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500 resize-y min-h-[8rem]"
+                ></textarea>
               </label>
-              <button type="button" className="h-10 px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200" onClick={stubFeature}>Send ticket</button>
+              <button 
+                type="button" 
+                className="h-10 px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 disabled:opacity-50" 
+                onClick={handleCreateTicket}
+                disabled={isCreatingTicket}
+              >
+                {isCreatingTicket ? "Sending..." : "Send ticket"}
+              </button>
             </article>
             <article className="bg-panel border border-line rounded-2xl overflow-hidden min-w-0">
               <div className="px-5 py-4 border-b border-line">
                 <h3 className="font-display text-sm font-semibold">Your tickets</h3>
               </div>
               <div className="divide-y divide-line">
-                <p className="px-5 py-8 text-sm text-zinc-500">No tickets yet.</p>
+                {isLoadingTickets ? (
+                  <p className="px-5 py-8 text-sm text-zinc-500">Loading tickets...</p>
+                ) : !tickets || tickets.length === 0 ? (
+                  <p className="px-5 py-8 text-sm text-zinc-500">No tickets yet.</p>
+                ) : (
+                  tickets.map(ticket => (
+                    <div key={ticket.id} className="p-5 space-y-2">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="font-medium text-sm text-white truncate">{ticket.subject}</span>
+                        <span className={cn(
+                          "px-2 py-0.5 text-[10px] font-medium rounded-full uppercase tracking-wider shrink-0",
+                          ticket.status === TicketStatus.OPEN ? "bg-blue-500/10 text-blue-500" :
+                          ticket.status === TicketStatus.IN_PROGRESS ? "bg-yellow-500/10 text-yellow-500" :
+                          ticket.status === TicketStatus.RESOLVED ? "bg-green-500/10 text-green-500" :
+                          "bg-zinc-500/10 text-zinc-400"
+                        )}>
+                          {ticket.status.replace("_", " ")}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-zinc-500">
+                        <span className="uppercase">{ticket.topic}</span>
+                        <span>•</span>
+                        <span>{format(new Date(ticket.created_at), "MMM d, yyyy")}</span>
+                      </div>
+                      <p className="text-sm text-zinc-400 mt-2 whitespace-pre-wrap">{ticket.message}</p>
+                    </div>
+                  ))
+                )}
               </div>
             </article>
           </div>

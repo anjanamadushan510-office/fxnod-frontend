@@ -25,7 +25,7 @@ They are not intended to be called from the browser; exclude the `Internal`
 tag when generating the public frontend client.
 
 Monetary / percentage values are represented as JSON **strings**
-(`format: decimal`) to preserve precision — parse them with a decimal
+(`format: decimal`) to preserve precision â€” parse them with a decimal
 library, not a float.
 
  * OpenAPI spec version: 0.1.0
@@ -314,11 +314,11 @@ export function useGetReferralStats<TData = Awaited<ReturnType<typeof getReferra
 
 
 /**
- * The partner dashboard's headline. Two axes, because a partner asks two different questions: LEVEL is who they were to the earner (level 1 is someone they invited, level 2 is that person's invitee — what "master affiliate" means here, a position rather than a role), and SOURCE is what that person did.
+ * The partner dashboard's headline. Two axes, because a partner asks two different questions: LEVEL is who they were to the earner (level 1 is someone they invited, level 2 is that person's invitee â€” what "master affiliate" means here, a position rather than a role), and SOURCE is what that person did.
 
 `matrix` is the finest cut; `by_level`, `by_source` and `total` are folds of exactly it, so a breakdown can never contradict the headline. Every figure is already summed server-side: the client renders these and must never add them up, because parsing decimal strings to add them in JavaScript turns commission into a float.
 
-`source_type` is open. A client that meets an unrecognised value should display it rather than drop it — the money is real either way, and new paid products are expected to appear here without a release.
+`source_type` is open. A client that meets an unrecognised value should display it rather than drop it â€” the money is real either way, and new paid products are expected to appear here without a release.
  * @summary The caller's commission, cut by level and by product
  */
 export const getPartnerEarnings = (
@@ -411,7 +411,7 @@ export function useGetPartnerEarnings<TData = Awaited<ReturnType<typeof getPartn
 
 
 /**
- * Sorted by earnings, then by join date — "who is actually producing" is the question this list is opened to answer.
+ * Sorted by earnings, then by join date â€” "who is actually producing" is the question this list is opened to answer.
 
 Email is full at level 1, whom the partner invited personally, and masked below it. A partner's invitee's invitee is a stranger to them, and a working address is enough to contact one.
 

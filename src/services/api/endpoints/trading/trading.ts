@@ -25,7 +25,7 @@ They are not intended to be called from the browser; exclude the `Internal`
 tag when generating the public frontend client.
 
 Monetary / percentage values are represented as JSON **strings**
-(`format: decimal`) to preserve precision — parse them with a decimal
+(`format: decimal`) to preserve precision â€” parse them with a decimal
 library, not a float.
 
  * OpenAPI spec version: 0.1.0
@@ -88,7 +88,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 Storing the set here is what makes the rest safe: selecting an account can only choose from what Deriv confirmed, so no request can assert that a real account is virtual.
 
-The authorize URL itself is built client-side with PKCE — there is no server endpoint for it, and this spec used to document one that the router has never registered.
+The authorize URL itself is built client-side with PKCE â€” there is no server endpoint for it, and this spec used to document one that the router has never registered.
 
 Deriv's access token is NOT returned. It can trade the user's real account and nothing in the browser needs it; it used to be returned and posted back to /oauth/link, which ignored it.
  * @summary Exchange a Deriv authorization code for the account list
@@ -313,7 +313,7 @@ export function useDerivListAccounts<TData = Awaited<ReturnType<typeof derivList
 
 
 /**
- * Demo/real switching. A database flag, not another OAuth round-trip — the token already covers both, and re-authorising to change accounts is why switching felt broken.
+ * Demo/real switching. A database flag, not another OAuth round-trip â€” the token already covers both, and re-authorising to change accounts is why switching felt broken.
 
 The response reports `is_virtual` as the SERVER has it, from what Deriv said when the account was linked. It is not taken from the request, and a request cannot change it: that field decides whether a bot run needs a paid subscription.
  * @summary Switch which linked Deriv account is being traded
@@ -567,7 +567,7 @@ export function useDerivListConnections<TData = Awaited<ReturnType<typeof derivL
 
 
 /**
- * Revokes this grant, its accounts, and any dBot app consent that reaches them. A grant for a different Deriv login is untouched — that login is still connected. To remove every one of them, use DELETE /api/v1/deriv/oauth.
+ * Revokes this grant, its accounts, and any dBot app consent that reaches them. A grant for a different Deriv login is untouched â€” that login is still connected. To remove every one of them, use DELETE /api/v1/deriv/oauth.
  * @summary Disconnect one Deriv login
  */
 export const derivDisconnect = (
@@ -991,8 +991,8 @@ export const useConfirmProposal = <TError = ErrorType<Error | UnauthorizedRespon
  * Convenience endpoint that runs the proposal and buy steps back-to-back
 with no confirmation window. Same request body as /orders/proposal; same
 response as /orders/confirm. The buy is still capped at the freshly
-quoted ask price, but there is no displayed-quote step — prefer the
-two-phase /orders/proposal → /orders/confirm flow when you want to show
+quoted ask price, but there is no displayed-quote step â€” prefer the
+two-phase /orders/proposal â†’ /orders/confirm flow when you want to show
 the user the payout before committing.
 
  * @summary Place a single-shot trade (proposal + immediate buy)
@@ -1060,7 +1060,7 @@ export const usePlaceTrade = <TError = ErrorType<Error | UnauthorizedResponse>,
     }
     /**
  * Closes a position early at Deriv's current bid. `price` is an optional
-minimum acceptable proceeds — omit it to accept whatever Deriv quotes.
+minimum acceptable proceeds â€” omit it to accept whatever Deriv quotes.
 
  * @summary Sell an open contract before expiry
  */

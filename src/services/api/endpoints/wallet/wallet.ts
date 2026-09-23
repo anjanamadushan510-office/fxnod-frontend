@@ -25,7 +25,7 @@ They are not intended to be called from the browser; exclude the `Internal`
 tag when generating the public frontend client.
 
 Monetary / percentage values are represented as JSON **strings**
-(`format: decimal`) to preserve precision — parse them with a decimal
+(`format: decimal`) to preserve precision â€” parse them with a decimal
 library, not a float.
 
  * OpenAPI spec version: 0.1.0
@@ -421,7 +421,7 @@ export function useListChainDeposits<TData = Awaited<ReturnType<typeof listChain
 
 
 /**
- * Records an intent to pay. Creates no balance — payment is confirmed only by a signed callback from Binance on /api/v1/webhooks/binancepay, never by the client reporting success.
+ * Records an intent to pay. Creates no balance â€” payment is confirmed only by a signed callback from Binance on /api/v1/webhooks/binancepay, never by the client reporting success.
 
 `prepay_id` and `checkout_url` are null until the Binance order API is wired up. Returns 503 while the integration is unconfigured.
  * @summary Open a Binance Pay order
@@ -488,7 +488,7 @@ export const useCreateBinancePayOrder = <TError = ErrorType<Error | Unauthorized
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * Fallback for deposits the chain monitor did not detect. Creates a request for operator review — never a credit. `amount` is the user's unverified claim; what is actually paid out is decided at approval.
+ * Fallback for deposits the chain monitor did not detect. Creates a request for operator review â€” never a credit. `amount` is the user's unverified claim; what is actually paid out is decided at approval.
 
 Rejects a transaction hash the monitor has already seen, which would otherwise be a route to being credited twice for one transfer.
  * @summary Submit a manual deposit claim

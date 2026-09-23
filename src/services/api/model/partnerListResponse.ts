@@ -25,7 +25,7 @@ They are not intended to be called from the browser; exclude the `Internal`
 tag when generating the public frontend client.
 
 Monetary / percentage values are represented as JSON **strings**
-(`format: decimal`) to preserve precision — parse them with a decimal
+(`format: decimal`) to preserve precision â€” parse them with a decimal
 library, not a float.
 
  * OpenAPI spec version: 0.1.0
@@ -35,6 +35,6 @@ import type { PartnerNode } from './partnerNode';
 export interface PartnerListResponse {
   items: PartnerNode[];
   total: number;
-  /** How many have generated anything — a different question from how many signed up, and the one a partner actually asks. */
+  /** How many have generated anything â€” a different question from how many signed up, and the one a partner actually asks. */
   earning_count: number;
 }

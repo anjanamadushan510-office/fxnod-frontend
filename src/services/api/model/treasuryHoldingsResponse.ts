@@ -25,7 +25,7 @@ They are not intended to be called from the browser; exclude the `Internal`
 tag when generating the public frontend client.
 
 Monetary / percentage values are represented as JSON **strings**
-(`format: decimal`) to preserve precision — parse them with a decimal
+(`format: decimal`) to preserve precision â€” parse them with a decimal
 library, not a float.
 
  * OpenAPI spec version: 0.1.0
@@ -38,7 +38,7 @@ export interface TreasuryHoldingsResponse {
   currency: string;
   /** Across the whole chain, not just the returned page. */
   funded_address_count: number;
-  /** Summed across every funded address, including any beyond `limit` — a truncated list must not make the total look smaller than it is. */
+  /** Summed across every funded address, including any beyond `limit` â€” a truncated list must not make the total look smaller than it is. */
   total_received: DecimalString;
   addresses: TreasuryAddressHolding[];
 }

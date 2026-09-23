@@ -25,7 +25,7 @@ They are not intended to be called from the browser; exclude the `Internal`
 tag when generating the public frontend client.
 
 Monetary / percentage values are represented as JSON **strings**
-(`format: decimal`) to preserve precision — parse them with a decimal
+(`format: decimal`) to preserve precision â€” parse them with a decimal
 library, not a float.
 
  * OpenAPI spec version: 0.1.0
@@ -462,7 +462,7 @@ export const useDeleteBotPreset = <TError = ErrorType<UnauthorizedResponse | Not
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * The configuration is encrypted with a key derived from `password`. The password is never stored in recoverable form — losing it means losing the package.
+ * The configuration is encrypted with a key derived from `password`. The password is never stored in recoverable form â€” losing it means losing the package.
  * @summary Export a bot as a password-protected, one-time licensed package
  */
 export const createBotPackage = (
@@ -1118,7 +1118,7 @@ export function useListBotRuns<TData = Awaited<ReturnType<typeof listBotRuns>>, 
 
 
 /**
- * Validates and queues a run. Over-cap risk limits are CLAMPED rather than rejected, and the reductions are returned in `limit_adjustments` — the caller must surface them, because the user would otherwise believe the number they typed was honoured.
+ * Validates and queues a run. Over-cap risk limits are CLAMPED rather than rejected, and the reductions are returned in `limit_adjustments` â€” the caller must surface them, because the user would otherwise believe the number they typed was honoured.
 
 A session stop loss is mandatory: there is no representation of a run without one, because a bot with no loss bound can empty an account while the user is asleep.
 
@@ -1278,7 +1278,7 @@ export function useGetBotRun<TData = Awaited<ReturnType<typeof getBotRun>>, TErr
 
 
 /**
- * Newest first. The `summary` covers the WHOLE run, not the requested page — a win rate computed over one page would be actively misleading.
+ * Newest first. The `summary` covers the WHOLE run, not the requested page â€” a win rate computed over one page would be actively misleading.
 
 `profit_loss` and `outcome` are absent while a contract is still open. Reporting a profit of 0 for an unsettled contract would read as break-even, which is a different claim from "not yet known".
 
@@ -1382,7 +1382,7 @@ export function useListBotRunTrades<TData = Awaited<ReturnType<typeof listBotRun
 
 
 /**
- * A request, not a kill. A claimed run enters `stopping` so the worker can wind down open contracts; an unclaimed one completes immediately. Idempotent — stopping an already-stopping run succeeds.
+ * A request, not a kill. A claimed run enters `stopping` so the worker can wind down open contracts; an unclaimed one completes immediately. Idempotent â€” stopping an already-stopping run succeeds.
 
  * @summary Stop a bot run
  */
@@ -1446,7 +1446,7 @@ export const useStopBotRun = <TError = ErrorType<void>,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * Stops new orders. Open contracts are left to settle — closing them early would realise losses the user never asked to realise.
+ * Stops new orders. Open contracts are left to settle â€” closing them early would realise losses the user never asked to realise.
 
  * @summary Pause a bot run
  */

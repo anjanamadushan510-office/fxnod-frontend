@@ -25,7 +25,7 @@ They are not intended to be called from the browser; exclude the `Internal`
 tag when generating the public frontend client.
 
 Monetary / percentage values are represented as JSON **strings**
-(`format: decimal`) to preserve precision — parse them with a decimal
+(`format: decimal`) to preserve precision â€” parse them with a decimal
 library, not a float.
 
  * OpenAPI spec version: 0.1.0
@@ -37,7 +37,7 @@ export interface TreasuryAddressHolding {
   chain: string;
   currency: string;
   /**
-   * Position under m/44'/195'/0'/0 — how the offline sweeper derives this address's key.
+   * Position under m/44'/195'/0'/0 â€” how the offline sweeper derives this address's key.
    * @nullable
    */
   derivation_index?: number | null;

@@ -25,7 +25,7 @@ They are not intended to be called from the browser; exclude the `Internal`
 tag when generating the public frontend client.
 
 Monetary / percentage values are represented as JSON **strings**
-(`format: decimal`) to preserve precision — parse them with a decimal
+(`format: decimal`) to preserve precision â€” parse them with a decimal
 library, not a float.
 
  * OpenAPI spec version: 0.1.0
@@ -33,7 +33,7 @@ library, not a float.
 import type { UpdateBotPresetRequestConfig } from './updateBotPresetRequestConfig';
 
 /**
- * Partial — omitted fields are left unchanged.
+ * Partial â€” omitted fields are left unchanged.
  */
 export interface UpdateBotPresetRequest {
   /**

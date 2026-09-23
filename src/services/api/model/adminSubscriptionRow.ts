@@ -25,7 +25,7 @@ They are not intended to be called from the browser; exclude the `Internal`
 tag when generating the public frontend client.
 
 Monetary / percentage values are represented as JSON **strings**
-(`format: decimal`) to preserve precision — parse them with a decimal
+(`format: decimal`) to preserve precision â€” parse them with a decimal
 library, not a float.
 
  * OpenAPI spec version: 0.1.0
@@ -47,7 +47,7 @@ export interface AdminSubscriptionRow {
   /** @nullable */
   expires_at: string | null;
   is_lifetime: boolean;
-  /** Summed from purchase receipts. A GRANTED subscription has none, so this is "0" — the honest figure, and what stops comped accounts reading as revenue. */
+  /** Summed from purchase receipts. A GRANTED subscription has none, so this is "0" â€” the honest figure, and what stops comped accounts reading as revenue. */
   paid_total: DecimalString;
   purchase_count: number;
   /** @nullable */

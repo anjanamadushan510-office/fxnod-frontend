@@ -25,7 +25,7 @@ They are not intended to be called from the browser; exclude the `Internal`
 tag when generating the public frontend client.
 
 Monetary / percentage values are represented as JSON **strings**
-(`format: decimal`) to preserve precision — parse them with a decimal
+(`format: decimal`) to preserve precision â€” parse them with a decimal
 library, not a float.
 
  * OpenAPI spec version: 0.1.0
@@ -36,7 +36,7 @@ export interface EarningsAmounts {
   accrued: DecimalString;
   settled: DecimalString;
   cancelled: DecimalString;
-  /** A SUBSET of `accrued`, not a total beside it — the money is still accrued, a person is looking at it first. Adding this to accrued counts it twice. */
+  /** A SUBSET of `accrued`, not a total beside it â€” the money is still accrued, a person is looking at it first. Adding this to accrued counts it twice. */
   pending_review: DecimalString;
   /** How many ledger rows are behind these figures. */
   count: number;

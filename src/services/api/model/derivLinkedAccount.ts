@@ -25,7 +25,7 @@ They are not intended to be called from the browser; exclude the `Internal`
 tag when generating the public frontend client.
 
 Monetary / percentage values are represented as JSON **strings**
-(`format: decimal`) to preserve precision — parse them with a decimal
+(`format: decimal`) to preserve precision â€” parse them with a decimal
 library, not a float.
 
  * OpenAPI spec version: 0.1.0
@@ -34,12 +34,12 @@ library, not a float.
 export interface DerivLinkedAccount {
   deriv_account_id: string;
   currency: string;
-  /** As DERIV reported it when the account was linked. Never taken from a client — it decides whether a bot run needs a paid subscription. */
+  /** As DERIV reported it when the account was linked. Never taken from a client â€” it decides whether a bot run needs a paid subscription. */
   is_virtual: boolean;
   /** Whether trades currently go to this account. */
   is_selected: boolean;
   /** The Deriv login this account belongs to. A user may authorise several, and the accounts of each are only switchable within the grant that covers them. */
   connection_id: string;
-  /** The grant behind this account has expired. Resolved against the SERVER clock — the browser is never asked to decide it from a timestamp of its own. */
+  /** The grant behind this account has expired. Resolved against the SERVER clock â€” the browser is never asked to decide it from a timestamp of its own. */
   needs_reconnect: boolean;
 }

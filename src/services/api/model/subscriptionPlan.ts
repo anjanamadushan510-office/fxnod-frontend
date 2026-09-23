@@ -25,7 +25,7 @@ They are not intended to be called from the browser; exclude the `Internal`
 tag when generating the public frontend client.
 
 Monetary / percentage values are represented as JSON **strings**
-(`format: decimal`) to preserve precision — parse them with a decimal
+(`format: decimal`) to preserve precision â€” parse them with a decimal
 library, not a float.
 
  * OpenAPI spec version: 0.1.0
@@ -49,6 +49,6 @@ export interface SubscriptionPlan {
    * @nullable
    */
   compare_at_price_usd?: SubscriptionPlanCompareAtPriceUsd;
-  /** What the wallet is actually debited in. The field is named `price_usd` because the figure IS dollars — USDT is a dollar stablecoin and FXNod treats them 1:1 — but the price list and the receipt must say the same word, and they did not. */
+  /** What the wallet is actually debited in. The field is named `price_usd` because the figure IS dollars â€” USDT is a dollar stablecoin and FXNod treats them 1:1 â€” but the price list and the receipt must say the same word, and they did not. */
   currency: string;
 }

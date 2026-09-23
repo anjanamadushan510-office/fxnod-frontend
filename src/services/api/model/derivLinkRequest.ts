@@ -25,14 +25,14 @@ They are not intended to be called from the browser; exclude the `Internal`
 tag when generating the public frontend client.
 
 Monetary / percentage values are represented as JSON **strings**
-(`format: decimal`) to preserve precision — parse them with a decimal
+(`format: decimal`) to preserve precision â€” parse them with a decimal
 library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
 
 /**
- * `currency` and `is_virtual` are accepted for compatibility with older clients and then IGNORED. Both are read from the row stored during the code exchange, from what Deriv itself reported. They used to be believed, which let an authenticated caller post a REAL account marked virtual — harmless while everything cost the same, and a free real-money bot once demo access became free.
+ * `currency` and `is_virtual` are accepted for compatibility with older clients and then IGNORED. Both are read from the row stored during the code exchange, from what Deriv itself reported. They used to be believed, which let an authenticated caller post a REAL account marked virtual â€” harmless while everything cost the same, and a free real-money bot once demo access became free.
  */
 export interface DerivLinkRequest {
   /** Deriv loginid (e.g. CR123456). */
