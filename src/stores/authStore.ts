@@ -29,6 +29,8 @@ interface AuthState {
   loginWithDeriv: (payload: DerivLoginPayload) => Promise<void>;
   logout: () => Promise<void>;
   bootstrap: () => Promise<void>;
+  /** Patch the in-memory user object after a profile mutation. */
+  setUser: (patch: Partial<UserPublic>) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => {
@@ -40,6 +42,12 @@ export const useAuthStore = create<AuthState>((set) => {
   return {
     user: null,
     status: "idle",
+
+    setUser(patch) {
+      set((state) => ({
+        user: state.user ? { ...state.user, ...patch } : state.user,
+      }));
+    },
 
     async login(email, password) {
       set({ status: "loading" });
