@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useAuthStore } from "@/stores/authStore";
 import { UpdateEmailModal } from "@/components/settings/UpdateEmailModal";
-import { updateMe, useGetClientRecord, useCreateClientRecord } from "@/services/api/endpoints/users/users";
+import { updateMe, useGetClientRecord, useCreateClientRecord, useUpdatePassword } from "@/services/api/endpoints/users/users";
 import { useCreateTicket, useListMyTickets } from "@/services/api/endpoints/tickets/tickets";
 import { TicketTopic, TicketStatus } from "@/services/api/model";
 import { isAxiosError } from "axios";
@@ -25,6 +25,44 @@ export default function SettingsPage() {
   const [activePane, setActivePane] = useState<SettingsPane>("hub");
 
   const [isUpdateEmailModalOpen, setIsUpdateEmailModalOpen] = useState(false);
+
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const { mutate: changePassword, isPending: isUpdatingPassword } = useUpdatePassword({
+    mutation: {
+      onSuccess: () => {
+        toast.success("Password updated successfully");
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+        setActivePane("hub");
+      },
+      onError: (err) => {
+        if (isAxiosError(err) && err.response?.data?.detail) {
+          toast.error(err.response.data.detail);
+        } else {
+          toast.error("Failed to update password");
+        }
+      }
+    }
+  });
+
+  const handleUpdatePassword = () => {
+    if (!currentPassword) {
+      toast.error("Please enter your current password");
+      return;
+    }
+    if (newPassword.length < 8) {
+      toast.error("New password must be at least 8 characters");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("New passwords do not match");
+      return;
+    }
+    changePassword({ data: { current_password: currentPassword, new_password: newPassword } });
+  };
 
   // Client Profile Forms
   const [firstName, setFirstName] = useState("");
@@ -386,9 +424,23 @@ export default function SettingsPage() {
         <div className="space-y-4">
           <button type="button" className="text-sm text-zinc-400 hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
           <article className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-4">
-            <label className="block"><span className="text-xs text-zinc-500">New password</span><input type="password" minLength={4} className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500" /></label>
-            <label className="block"><span className="text-xs text-zinc-500">Confirm password</span><input type="password" minLength={4} className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500" /></label>
-            <button type="button" className="h-10 px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200" onClick={stubFeature}>Update password</button>
+            <label className="block">
+              <span className="text-xs text-zinc-500">Current password</span>
+              <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500" placeholder="Enter current password" />
+            </label>
+            <div className="pt-2 border-t border-line">
+              <label className="block mb-4">
+                <span className="text-xs text-zinc-500">New password</span>
+                <input type="password" minLength={8} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500" placeholder="At least 8 characters" />
+              </label>
+              <label className="block">
+                <span className="text-xs text-zinc-500">Confirm new password</span>
+                <input type="password" minLength={8} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500" placeholder="Repeat new password" />
+              </label>
+            </div>
+            <button type="button" disabled={isUpdatingPassword} className="h-10 px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 disabled:opacity-50" onClick={handleUpdatePassword}>
+              {isUpdatingPassword ? "Updating..." : "Update password"}
+            </button>
           </article>
         </div>
       )}

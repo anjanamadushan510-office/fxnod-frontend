@@ -57,9 +57,12 @@ import type {
   Error,
   KYCStatusResponse,
   KYCSubmission,
+  PasswordUpdateRequest,
   PasswordVerifyRequest,
   RequestEmailUpdate200,
   UnauthorizedResponse,
+  UpdatePassword200,
+  UpdatePassword400,
   UserPublic,
   UserUpdate,
   ValidationErrorResponse,
@@ -735,6 +738,69 @@ export const useCreateClientRecord = <TError = ErrorType<unknown>,
       > => {
 
       const mutationOptions = getCreateClientRecordMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * @summary Update password
+ */
+export const updatePassword = (
+    passwordUpdateRequest: BodyType<PasswordUpdateRequest>,
+ options?: SecondParameter<typeof customInstance>,) => {
+      
+      
+      return customInstance<UpdatePassword200>(
+      {url: `/api/v1/users/me/password`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: passwordUpdateRequest
+    },
+      options);
+    }
+  
+
+
+export const getUpdatePasswordMutationOptions = <TError = ErrorType<UpdatePassword400>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePassword>>, TError,{data: BodyType<PasswordUpdateRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof updatePassword>>, TError,{data: BodyType<PasswordUpdateRequest>}, TContext> => {
+
+const mutationKey = ['updatePassword'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updatePassword>>, {data: BodyType<PasswordUpdateRequest>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  updatePassword(data,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdatePasswordMutationResult = NonNullable<Awaited<ReturnType<typeof updatePassword>>>
+    export type UpdatePasswordMutationBody = BodyType<PasswordUpdateRequest>
+    export type UpdatePasswordMutationError = ErrorType<UpdatePassword400>
+
+    /**
+ * @summary Update password
+ */
+export const useUpdatePassword = <TError = ErrorType<UpdatePassword400>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePassword>>, TError,{data: BodyType<PasswordUpdateRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof updatePassword>>,
+        TError,
+        {data: BodyType<PasswordUpdateRequest>},
+        TContext
+      > => {
+
+      const mutationOptions = getUpdatePasswordMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
