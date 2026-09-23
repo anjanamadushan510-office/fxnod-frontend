@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useAuthStore } from "@/stores/authStore";
 import { UpdateEmailModal } from "@/components/settings/UpdateEmailModal";
-import { updateMe } from "@/services/api/endpoints/users/users";
+import { updateMe, useGetClientRecord, useCreateClientRecord } from "@/services/api/endpoints/users/users";
 import { useCreateTicket, useListMyTickets } from "@/services/api/endpoints/tickets/tickets";
 import { TicketTopic, TicketStatus } from "@/services/api/model";
 import { isAxiosError } from "axios";
@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { cn } from "@/lib/cn";
 
-type SettingsPane = "hub" | "personal" | "address" | "password" | "email" | "phone" | "2fa" | "close" | "theme" | "language" | "ticket";
+type SettingsPane = "hub" | "profile" | "password" | "email" | "phone" | "2fa" | "close" | "theme" | "language" | "ticket";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -26,10 +26,29 @@ export default function SettingsPage() {
 
   const [isUpdateEmailModalOpen, setIsUpdateEmailModalOpen] = useState(false);
 
-  // Forms
+  // Client Profile Forms
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [isSavingPersonal, setIsSavingPersonal] = useState(false);
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [country, setCountry] = useState("");
+  const [streetAddress, setStreetAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+
+  const { data: clientRecord, isLoading: isLoadingProfile, refetch: refetchProfile } = useGetClientRecord();
+  const { mutate: createProfile, isPending: isSavingProfile } = useCreateClientRecord({
+    mutation: {
+      onSuccess: () => {
+        toast.success("Profile saved successfully");
+        refetchProfile();
+      },
+      onError: (err) => {
+        const detail = (err as any).response?.data?.detail;
+        const msg = Array.isArray(detail) ? detail.map((e: any) => e.msg).join(', ') : detail || "Failed to save profile";
+        toast.error("Error: " + msg);
+      }
+    }
+  });
 
   // Ticket Form
   const [ticketTopic, setTicketTopic] = useState<TicketTopic>(TicketTopic.GENERAL);
@@ -70,12 +89,20 @@ export default function SettingsPage() {
   useEffect(() => setMounted(true), []);
 
   useEffect(() => {
-    if (user?.full_name) {
+    if (clientRecord) {
+      setFirstName(clientRecord.first_name);
+      setLastName(clientRecord.last_name);
+      setDateOfBirth(clientRecord.date_of_birth);
+      setCountry(clientRecord.country);
+      setStreetAddress(clientRecord.street_address);
+      setCity(clientRecord.city);
+      setPostalCode(clientRecord.postal_code);
+    } else if (user?.full_name) {
       const parts = user.full_name.trim().split(/\s+/);
       setFirstName(parts[0] || "");
       setLastName(parts.slice(1).join(" ") || "");
     }
-  }, [user?.full_name]);
+  }, [clientRecord, user?.full_name]);
 
   const handleLogout = async () => {
     try {
@@ -87,25 +114,22 @@ export default function SettingsPage() {
     }
   };
 
-  const handleSavePersonal = async () => {
-    const newName = [firstName, lastName].filter(Boolean).join(" ").trim();
-    if (!newName || newName === user?.full_name) return;
-
-    setIsSavingPersonal(true);
-    try {
-      await updateMe({ full_name: newName });
-      toast.success("Personal details saved");
-      await bootstrap();
-    } catch (err) {
-      if (isAxiosError(err) && err.response?.data?.detail) {
-        const detail = err.response.data.detail;
-        toast.error(typeof detail === "string" ? detail : (detail[0]?.msg || "An unexpected error occurred."));
-      } else {
-        toast.error("An unexpected error occurred.");
-      }
-    } finally {
-      setIsSavingPersonal(false);
+  const handleSaveProfile = () => {
+    if (!firstName || !lastName || !dateOfBirth || !country || !streetAddress || !city || !postalCode) {
+      toast.error("Please fill in all fields.");
+      return;
     }
+    createProfile({
+      data: {
+        first_name: firstName,
+        last_name: lastName,
+        date_of_birth: dateOfBirth,
+        country: country,
+        street_address: streetAddress,
+        city: city,
+        postal_code: postalCode,
+      }
+    });
   };
 
   const stubFeature = () => toast("Feature coming soon");
@@ -151,19 +175,11 @@ export default function SettingsPage() {
             <div className="break-inside-avoid mb-6">
               <p className="px-1 mb-2 text-xs font-medium text-zinc-500">About you</p>
               <div className="bg-panel border border-line rounded-2xl overflow-hidden">
-                <button type="button" className="settings-row w-full flex items-center gap-3 px-4 py-3 text-left" onClick={() => setActivePane("personal")}>
+                <button type="button" className="settings-row w-full flex items-center gap-3 px-4 py-3 text-left" onClick={() => setActivePane("profile")}>
                   <svg className="w-5 h-5 text-zinc-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.118a7.5 7.5 0 0115 0"/></svg>
                   <span className="flex-1 min-w-0">
-                    <span className="block text-sm">Personal details</span>
-                    <span className="block text-xs text-zinc-500 mt-0.5 truncate">{user?.full_name || "Name, country, date of birth"}</span>
-                  </span>
-                  <svg className="w-4 h-4 text-zinc-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
-                </button>
-                <button type="button" className="settings-row w-full flex items-center gap-3 px-4 py-3 text-left border-t border-line" onClick={() => setActivePane("address")}>
-                  <svg className="w-5 h-5 text-zinc-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75"/></svg>
-                  <span className="flex-1 min-w-0">
-                    <span className="block text-sm">Home address</span>
-                    <span className="block text-xs text-zinc-500 mt-0.5 truncate">Used for wallet and venue checks</span>
+                    <span className="block text-sm">Client profile</span>
+                    <span className="block text-xs text-zinc-500 mt-0.5 truncate">Personal details & home address</span>
                   </span>
                   <svg className="w-4 h-4 text-zinc-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
                 </button>
@@ -256,54 +272,67 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {activePane === "personal" && (
+      {activePane === "profile" && (
         <div className="space-y-4">
           <button type="button" className="text-sm text-zinc-400 hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
           <article className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-4">
-            <p className="text-sm text-zinc-400 leading-relaxed">These details sit on your FXNOD client record — used for wallet payouts and venue transfer.</p>
+            <p className="text-sm text-zinc-400 leading-relaxed">These details sit on your FXNOD client record — used for wallet payouts and venue transfer. <strong>Once saved, these details cannot be changed.</strong></p>
+            
             <div className="grid sm:grid-cols-2 gap-4">
               <label className="block">
                 <span className="text-xs text-zinc-500">First name</span>
-                <input value={firstName} onChange={(e) => setFirstName(e.target.value)} className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500" />
+                <input disabled={!!clientRecord} value={firstName} onChange={(e) => setFirstName(e.target.value)} className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500 disabled:opacity-50" />
               </label>
               <label className="block">
                 <span className="text-xs text-zinc-500">Last name</span>
-                <input value={lastName} onChange={(e) => setLastName(e.target.value)} className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500" />
+                <input disabled={!!clientRecord} value={lastName} onChange={(e) => setLastName(e.target.value)} className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500 disabled:opacity-50" />
               </label>
             </div>
-            <label className="block">
-              <span className="text-xs text-zinc-500">Date of birth</span>
-              <input type="date" disabled className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500 disabled:opacity-50" />
-            </label>
-            <label className="block">
-              <span className="text-xs text-zinc-500">Country of residence</span>
-              <select disabled className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500 disabled:opacity-50">
-                <option>Sri Lanka</option><option>United Kingdom</option><option>United Arab Emirates</option><option>Singapore</option><option>Other</option>
-              </select>
-            </label>
-            <button
-              type="button"
-              className="h-10 px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 disabled:opacity-50"
-              onClick={handleSavePersonal}
-              disabled={isSavingPersonal}
-            >
-              {isSavingPersonal ? "Saving..." : "Save"}
-            </button>
-          </article>
-        </div>
-      )}
-
-      {activePane === "address" && (
-        <div className="space-y-4">
-          <button type="button" className="text-sm text-zinc-400 hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
-          <article className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-4">
-            <p className="text-sm text-zinc-400 leading-relaxed">We use this address on wallet payouts and venue transfers.</p>
-            <label className="block"><span className="text-xs text-zinc-500">Street address</span><input disabled className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500 disabled:opacity-50" /></label>
+            
             <div className="grid sm:grid-cols-2 gap-4">
-              <label className="block"><span className="text-xs text-zinc-500">City</span><input disabled className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500 disabled:opacity-50" /></label>
-              <label className="block"><span className="text-xs text-zinc-500">Postal code</span><input disabled className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500 disabled:opacity-50" /></label>
+              <label className="block">
+                <span className="text-xs text-zinc-500">Date of birth</span>
+                <input type="date" disabled={!!clientRecord} value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500 disabled:opacity-50" />
+              </label>
+              <label className="block">
+                <span className="text-xs text-zinc-500">Country of residence</span>
+                <select disabled={!!clientRecord} value={country} onChange={(e) => setCountry(e.target.value)} className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500 disabled:opacity-50">
+                  <option value="">Select a country...</option>
+                  <option value="Sri Lanka">Sri Lanka</option>
+                  <option value="United Kingdom">United Kingdom</option>
+                  <option value="United Arab Emirates">United Arab Emirates</option>
+                  <option value="Singapore">Singapore</option>
+                  <option value="Other">Other</option>
+                </select>
+              </label>
             </div>
-            <button type="button" className="h-10 px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200" onClick={stubFeature}>Save</button>
+
+            <label className="block">
+              <span className="text-xs text-zinc-500">Street address</span>
+              <input disabled={!!clientRecord} value={streetAddress} onChange={(e) => setStreetAddress(e.target.value)} className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500 disabled:opacity-50" />
+            </label>
+            
+            <div className="grid sm:grid-cols-2 gap-4">
+              <label className="block">
+                <span className="text-xs text-zinc-500">City</span>
+                <input disabled={!!clientRecord} value={city} onChange={(e) => setCity(e.target.value)} className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500 disabled:opacity-50" />
+              </label>
+              <label className="block">
+                <span className="text-xs text-zinc-500">Postal code</span>
+                <input disabled={!!clientRecord} value={postalCode} onChange={(e) => setPostalCode(e.target.value)} className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500 disabled:opacity-50" />
+              </label>
+            </div>
+
+            {!clientRecord && (
+              <button
+                type="button"
+                className="h-10 px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 disabled:opacity-50 mt-4"
+                onClick={handleSaveProfile}
+                disabled={isSavingProfile}
+              >
+                {isSavingProfile ? "Saving..." : "Save Profile"}
+              </button>
+            )}
           </article>
         </div>
       )}

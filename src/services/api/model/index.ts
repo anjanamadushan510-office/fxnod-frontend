@@ -87,6 +87,8 @@ export * from './chainDepositStatus';
 export * from './claimBotPackageRequest';
 export * from './claimBotPackageResponse';
 export * from './claimBotPackageResponseConfig';
+export * from './clientRecordCreate';
+export * from './clientRecordPublic';
 export * from './commissionHistoryResponse';
 export * from './commissionLedgerEntry';
 export * from './commissionSourceType';
