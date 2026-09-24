@@ -26,6 +26,7 @@ export default function SettingsPage() {
   const [activePane, setActivePane] = useState<SettingsPane>("hub");
 
   const [isUpdateEmailModalOpen, setIsUpdateEmailModalOpen] = useState(false);
+  const [isDisableModalOpen, setIsDisableModalOpen] = useState(false);
 
   // Phone number
   const [phone, setPhone] = useState(user?.phone ?? "");
@@ -174,9 +175,13 @@ export default function SettingsPage() {
         setUser({ is_email_2fa_enabled: false });
         setIsTwoFASetupStarted(false);
         setTwoFAOTP("");
+        setIsDisableModalOpen(false);
         toast.success("Two-factor authentication disabled.");
       },
-      onError: () => toast.error("Failed to disable 2FA"),
+      onError: () => {
+        setIsDisableModalOpen(false);
+        toast.error("Failed to disable 2FA");
+      },
     }
   });
 
@@ -193,9 +198,7 @@ export default function SettingsPage() {
   };
 
   const handleDisable2FA = () => {
-    if (confirm("Are you sure you want to disable two-factor authentication?")) {
-      disable2FA();
-    }
+    setIsDisableModalOpen(true);
   };
 
   // Ticket Form
@@ -794,6 +797,37 @@ export default function SettingsPage() {
         isOpen={isUpdateEmailModalOpen}
         onClose={() => setIsUpdateEmailModalOpen(false)}
       />
+
+      {isDisableModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-panel border border-line rounded-2xl overflow-hidden shadow-2xl">
+            <div className="p-6 space-y-4">
+              <h2 className="text-lg font-semibold text-white">Disable Two-Factor Authentication</h2>
+              <p className="text-sm text-zinc-400">
+                Are you sure you want to turn off 2FA? This will reduce your account's security.
+              </p>
+            </div>
+            <div className="p-6 pt-0 flex items-center justify-end gap-3 border-t border-line/50 mt-4">
+              <button
+                type="button"
+                className="px-4 py-2 text-sm font-medium text-white bg-transparent border border-line rounded-lg hover:bg-white/5 transition-colors"
+                onClick={() => setIsDisableModalOpen(false)}
+                disabled={isDisabling2FA}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 flex items-center gap-2"
+                onClick={() => disable2FA()}
+                disabled={isDisabling2FA}
+              >
+                {isDisabling2FA ? "Turning off..." : "Turn Off"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
