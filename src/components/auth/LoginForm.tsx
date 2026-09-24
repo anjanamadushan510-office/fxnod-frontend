@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 
-import { useLogin } from "@/services/api/endpoints/auth/auth";
+import { useLogin, useVerifyTwoFALogin } from "@/services/api/endpoints/auth/auth";
 import { setAccessToken } from "@/services/authToken";
 import { useAuthStore } from "@/stores/authStore";
 import { parseApiError } from "@/lib/apiError";
@@ -26,6 +26,10 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   
+  // 2FA state
+  const [pendingToken, setPendingToken] = useState<string | null>(null);
+  const [otpCode, setOtpCode] = useState("");
+  
   // Slider state
   const [currentSlide, setCurrentSlide] = useState(0);
   
@@ -38,11 +42,21 @@ export function LoginForm() {
 
   const loginMut = useLogin({
     mutation: {
-      onSuccess: async (data) => {
-        setAccessToken(data.access_token);
-        await bootstrap(); // GET /users/me → store user + status: authenticated
-        toast.success("Welcome back");
-        router.push("/home" as Route);
+      onSuccess: async (data, variables, context) => {
+        // If data has requires_2fa, it's the 202 response
+        if ("requires_2fa" in data && data.requires_2fa) {
+          setPendingToken(data.pending_token);
+          toast.info("Please enter the 2FA code sent to your email.");
+          return;
+        }
+        
+        // Otherwise it's a normal TokenPair
+        if ("access_token" in data) {
+          setAccessToken(data.access_token);
+          await bootstrap(); // GET /users/me → store user + status: authenticated
+          toast.success("Welcome back");
+          router.push("/home" as Route);
+        }
       },
       onError: (err) => {
         const parsed = parseApiError(err, "Login failed. Please try again.");
@@ -52,14 +66,39 @@ export function LoginForm() {
     },
   });
 
+  const verify2FAMut = useVerifyTwoFALogin({
+    mutation: {
+      onSuccess: async (data) => {
+        setAccessToken(data.access_token);
+        await bootstrap();
+        toast.success("Welcome back");
+        router.push("/home" as Route);
+      },
+      onError: (err) => {
+        const parsed = parseApiError(err, "Invalid code. Please try again.");
+        setFieldErrors(parsed.fieldErrors);
+        toast.error(parsed.message);
+      },
+    }
+  });
+
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setFieldErrors({});
-    loginMut.mutate({ data: { email, password } });
+    
+    if (pendingToken) {
+      if (!otpCode.trim()) {
+        setFieldErrors({ otp: "Please enter the code." });
+        return;
+      }
+      verify2FAMut.mutate({ data: { pending_token: pendingToken, code: otpCode.trim() } });
+    } else {
+      loginMut.mutate({ data: { email, password } });
+    }
   }
 
   // Find the first error string to display in the single <p id="auth-error"> element
-  const generalError = fieldErrors.detail || fieldErrors.email || fieldErrors.password || "";
+  const generalError = fieldErrors.detail || fieldErrors.email || fieldErrors.password || fieldErrors.otp || fieldErrors.code || "";
 
   return (
     <div className="h-[100dvh] overflow-hidden grid lg:grid-cols-2 bg-[#080C16] text-white font-sans antialiased">
@@ -130,56 +169,92 @@ export function LoginForm() {
           </Link>
 
           <div className="bg-[#101827] border border-[#24344F] rounded-2xl p-4 sm:p-6">
-            <h1 id="auth-title" className="font-display text-[28px] font-semibold tracking-tight mb-6">Log in</h1>
+            <h1 id="auth-title" className="font-display text-[28px] font-semibold tracking-tight mb-6">
+              {pendingToken ? "Check your email" : "Log in"}
+            </h1>
 
             <form id="auth-form" className="space-y-3" noValidate onSubmit={onSubmit}>
-              <label className="block">
-                <span className="text-sm text-zinc-300">Email</span>
-                <input
-                  id="auth-email"
-                  type="email"
-                  autoComplete="username"
-                  required
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="mt-2 w-full h-10 px-3.5 rounded-xl bg-[#0B1220] border border-[#24344F] focus:border-[#C9A08C] focus:outline-none transition-colors"
-                />
-              </label>
-              <label className="block">
-                <span className="text-sm text-zinc-300">Password</span>
-                <input
-                  id="auth-pass"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  minLength={4}
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="mt-2 w-full h-10 px-3.5 rounded-xl bg-[#0B1220] border border-[#24344F] focus:border-[#C9A08C] focus:outline-none transition-colors"
-                />
-              </label>
-              <button
-                type="button"
-                id="forgot-btn"
-                className="text-sm text-zinc-400 hover:text-white"
-                onClick={() => toast.info("Forgot password flow coming soon.")}
-              >
-                Forgot your password?
-              </button>
+              {!pendingToken ? (
+                <>
+                  <label className="block">
+                    <span className="text-sm text-zinc-300">Email</span>
+                    <input
+                      id="auth-email"
+                      type="email"
+                      autoComplete="username"
+                      required
+                      placeholder="Enter your email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="mt-2 w-full h-10 px-3.5 rounded-xl bg-[#0B1220] border border-[#24344F] focus:border-[#C9A08C] focus:outline-none transition-colors"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-sm text-zinc-300">Password</span>
+                    <input
+                      id="auth-pass"
+                      type="password"
+                      autoComplete="current-password"
+                      required
+                      minLength={4}
+                      placeholder="Enter your password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="mt-2 w-full h-10 px-3.5 rounded-xl bg-[#0B1220] border border-[#24344F] focus:border-[#C9A08C] focus:outline-none transition-colors"
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    id="forgot-btn"
+                    className="text-sm text-zinc-400 hover:text-white"
+                    onClick={() => toast.info("Forgot password flow coming soon.")}
+                  >
+                    Forgot your password?
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-zinc-300 mb-2">We sent a 6-digit code to {email}.</p>
+                  <label className="block">
+                    <span className="text-sm text-zinc-300">Two-Factor Code</span>
+                    <input
+                      id="auth-otp"
+                      type="text"
+                      autoComplete="one-time-code"
+                      required
+                      placeholder="123456"
+                      value={otpCode}
+                      onChange={(e) => setOtpCode(e.target.value)}
+                      className="mt-2 w-full h-10 px-3.5 rounded-xl text-center tracking-[0.5em] font-mono bg-[#0B1220] border border-[#24344F] focus:border-[#C9A08C] focus:outline-none transition-colors"
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    className="text-sm text-zinc-400 hover:text-white"
+                    onClick={() => {
+                      setPendingToken(null);
+                      setOtpCode("");
+                      setFieldErrors({});
+                    }}
+                  >
+                    Back to login
+                  </button>
+                </>
+              )}
+              
               <p id="auth-error" className="text-xs text-red-400 min-h-[1rem]">
                 {generalError}
               </p>
               <button
                 type="submit"
                 id="auth-submit"
-                disabled={loginMut.isPending}
+                disabled={loginMut.isPending || verify2FAMut.isPending}
                 className="w-full h-10 rounded-xl bg-white text-black text-sm font-medium hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {loginMut.isPending ? "Logging in..." : "Log in"}
+                {loginMut.isPending || verify2FAMut.isPending ? "Please wait..." : (pendingToken ? "Verify Code" : "Log in")}
               </button>
             </form>
+
 
             <div className="relative my-4">
               <div className="h-px bg-[#24344F]"></div>

@@ -20,6 +20,7 @@ export interface UserPublic {
   kyc_status: string;
   created_at: string;
   updated_at: string;
+  is_email_2fa_enabled: boolean;
 }
 
 export interface LoginResponse {

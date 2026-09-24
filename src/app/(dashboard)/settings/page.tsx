@@ -6,6 +6,7 @@ import { useTheme } from "next-themes";
 import { useAuthStore } from "@/stores/authStore";
 import { UpdateEmailModal } from "@/components/settings/UpdateEmailModal";
 import { useUpdateMe, useGetClientRecord, useCreateClientRecord, useUpdatePassword } from "@/services/api/endpoints/users/users";
+import { useSetupEmail2FA, useVerifyEmail2FASetup, useDisableEmail2FA } from "@/services/api/endpoints/auth/auth";
 import { useCreateTicket, useListMyTickets } from "@/services/api/endpoints/tickets/tickets";
 import { TicketTopic, TicketStatus } from "@/services/api/model";
 import { isAxiosError } from "axios";
@@ -134,6 +135,68 @@ export default function SettingsPage() {
       }
     }
   });
+
+  // 2FA State
+  const [twoFAOTP, setTwoFAOTP] = useState("");
+  const [isTwoFASetupStarted, setIsTwoFASetupStarted] = useState(false);
+
+  const { mutate: setup2FA, isPending: isSettingUp2FA } = useSetupEmail2FA({
+    mutation: {
+      onSuccess: () => {
+        setIsTwoFASetupStarted(true);
+        toast.success("Check your email for the 6-digit setup code.");
+      },
+      onError: () => toast.error("Failed to start 2FA setup"),
+    }
+  });
+
+  const { mutate: verify2FA, isPending: isVerifying2FA } = useVerifyEmail2FASetup({
+    mutation: {
+      onSuccess: () => {
+        setUser({ is_email_2fa_enabled: true });
+        setIsTwoFASetupStarted(false);
+        setTwoFAOTP("");
+        toast.success("Two-factor authentication enabled.");
+      },
+      onError: (err) => {
+        if (isAxiosError(err) && (err.response?.data as any)?.detail) {
+          toast.error(String((err.response.data as any).detail));
+        } else {
+          toast.error("Invalid code. Please try again.");
+        }
+      }
+    }
+  });
+
+  const { mutate: disable2FA, isPending: isDisabling2FA } = useDisableEmail2FA({
+    mutation: {
+      onSuccess: () => {
+        setUser({ is_email_2fa_enabled: false });
+        setIsTwoFASetupStarted(false);
+        setTwoFAOTP("");
+        toast.success("Two-factor authentication disabled.");
+      },
+      onError: () => toast.error("Failed to disable 2FA"),
+    }
+  });
+
+  const handleStart2FASetup = () => {
+    setup2FA();
+  };
+
+  const handleVerify2FASetup = () => {
+    if (!twoFAOTP.trim() || twoFAOTP.trim().length < 4) {
+      toast.error("Please enter the code from your email.");
+      return;
+    }
+    verify2FA({ data: { code: twoFAOTP.trim() } });
+  };
+
+  const handleDisable2FA = () => {
+    if (confirm("Are you sure you want to disable two-factor authentication?")) {
+      disable2FA();
+    }
+  };
 
   // Ticket Form
   const [ticketTopic, setTicketTopic] = useState<TicketTopic>(TicketTopic.GENERAL);
@@ -315,7 +378,7 @@ export default function SettingsPage() {
                   <svg className="w-5 h-5 text-zinc-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
                   <span className="flex-1 min-w-0">
                     <span className="block text-sm">Two-factor authentication</span>
-                    <span className="block text-xs text-zinc-500 mt-0.5">Off</span>
+                    <span className="block text-xs text-zinc-500 mt-0.5">{user?.is_email_2fa_enabled ? "On" : "Off"}</span>
                   </span>
                   <svg className="w-4 h-4 text-zinc-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
                 </button>
@@ -523,10 +586,66 @@ export default function SettingsPage() {
 
       {activePane === "2fa" && (
         <div className="space-y-4">
-          <button type="button" className="text-sm text-zinc-400 hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
+          <button type="button" className="text-sm text-zinc-400 hover:text-white" onClick={() => { setActivePane("hub"); setIsTwoFASetupStarted(false); setTwoFAOTP(""); }}>← Settings</button>
           <article className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-4">
-            <p className="text-sm text-zinc-400 leading-relaxed">Add an authenticator step when you log in to FXNOD.</p>
-            <button type="button" className="h-10 px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200" onClick={stubFeature}>Turn on 2FA</button>
+            <p className="text-sm text-zinc-400 leading-relaxed">Add an authenticator step when you log in to FXNOD. We will email you a 6-digit code.</p>
+            
+            {user?.is_email_2fa_enabled ? (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 text-green-500 text-sm font-medium">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
+                  Email 2FA is currently enabled
+                </div>
+                <button 
+                  type="button" 
+                  disabled={isDisabling2FA}
+                  className="h-10 px-5 rounded-lg bg-transparent text-red-500 border border-red-500/30 text-sm font-medium hover:bg-red-500/10 disabled:opacity-50" 
+                  onClick={handleDisable2FA}
+                >
+                  {isDisabling2FA ? "Disabling..." : "Turn off 2FA"}
+                </button>
+              </div>
+            ) : !isTwoFASetupStarted ? (
+              <button 
+                type="button" 
+                disabled={isSettingUp2FA}
+                className="h-10 px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 disabled:opacity-50" 
+                onClick={handleStart2FASetup}
+              >
+                {isSettingUp2FA ? "Starting setup..." : "Turn on 2FA"}
+              </button>
+            ) : (
+              <div className="space-y-4 pt-2">
+                <p className="text-sm text-zinc-300">We've sent a code to <strong className="text-white">{user?.email}</strong>.</p>
+                <label className="block max-w-[240px]">
+                  <span className="text-xs text-zinc-500">Enter setup code</span>
+                  <input
+                    type="text"
+                    value={twoFAOTP}
+                    onChange={(e) => setTwoFAOTP(e.target.value)}
+                    placeholder="123456"
+                    className="mt-1.5 w-full h-10 px-3 rounded-lg text-center tracking-[0.5em] font-mono bg-bg border border-line text-sm outline-none focus:border-zinc-500"
+                  />
+                </label>
+                <div className="flex gap-2">
+                  <button 
+                    type="button" 
+                    disabled={isVerifying2FA}
+                    className="h-10 px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 disabled:opacity-50" 
+                    onClick={handleVerify2FASetup}
+                  >
+                    {isVerifying2FA ? "Verifying..." : "Verify & Enable"}
+                  </button>
+                  <button 
+                    type="button" 
+                    className="h-10 px-5 rounded-lg text-sm text-zinc-400 hover:text-white" 
+                    onClick={() => { setIsTwoFASetupStarted(false); setTwoFAOTP(""); }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
           </article>
         </div>
       )}
