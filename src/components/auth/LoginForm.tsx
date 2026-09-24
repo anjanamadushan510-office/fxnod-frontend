@@ -79,7 +79,12 @@ export function LoginForm() {
         setFieldErrors(parsed.fieldErrors);
         toast.error(parsed.message);
       },
-    }
+    },
+    request: {
+      headers: {
+        Authorization: pendingToken ? `Bearer ${pendingToken}` : "",
+      },
+    },
   });
 
   function onSubmit(e: React.FormEvent) {
