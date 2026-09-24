@@ -160,7 +160,7 @@ export default function SettingsPage() {
       },
       onError: (err) => {
         if (isAxiosError(err) && (err.response?.data as any)?.detail) {
-          toast.error(String((err.response.data as any).detail));
+          toast.error(String((err.response?.data as any).detail));
         } else {
           toast.error("Invalid code. Please try again.");
         }
