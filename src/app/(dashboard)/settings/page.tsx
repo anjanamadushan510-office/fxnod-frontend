@@ -799,18 +799,22 @@ export default function SettingsPage() {
       />
 
       {isDisableModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-panel border border-line rounded-2xl overflow-hidden shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div 
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => !isDisabling2FA && setIsDisableModalOpen(false)}
+          />
+          <div className="relative w-full max-w-md bg-surface border border-line rounded-2xl overflow-hidden shadow-xl">
             <div className="p-6 space-y-4">
-              <h2 className="text-lg font-semibold text-white">Disable Two-Factor Authentication</h2>
-              <p className="text-sm text-zinc-400">
+              <h2 className="text-lg font-semibold text-ink">Disable Two-Factor Authentication</h2>
+              <p className="text-sm text-ink-2">
                 Are you sure you want to turn off 2FA? This will reduce your account's security.
               </p>
             </div>
-            <div className="p-6 pt-0 flex items-center justify-end gap-3 border-t border-line/50 mt-4">
+            <div className="p-6 pt-0 flex items-center justify-end gap-3 mt-2">
               <button
                 type="button"
-                className="px-4 py-2 text-sm font-medium text-white bg-transparent border border-line rounded-lg hover:bg-white/5 transition-colors"
+                className="h-10 px-4 text-sm font-medium text-ink-2 bg-transparent rounded-lg hover:text-ink hover:bg-surface-2 transition-colors disabled:opacity-50"
                 onClick={() => setIsDisableModalOpen(false)}
                 disabled={isDisabling2FA}
               >
@@ -818,7 +822,7 @@ export default function SettingsPage() {
               </button>
               <button
                 type="button"
-                className="px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 flex items-center gap-2"
+                className="h-10 px-4 text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 flex items-center gap-2"
                 onClick={() => disable2FA()}
                 disabled={isDisabling2FA}
               >
