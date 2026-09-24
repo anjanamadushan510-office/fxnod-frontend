@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useAuthStore } from "@/stores/authStore";
 import { UpdateEmailModal } from "@/components/settings/UpdateEmailModal";
-import { useUpdateMe, useGetClientRecord, useCreateClientRecord, useUpdatePassword } from "@/services/api/endpoints/users/users";
+import { useUpdateMe, useGetClientRecord, useCreateClientRecord, useUpdatePassword, useCloseAccount } from "@/services/api/endpoints/users/users";
 import { useSetupEmail2FA, useVerifyEmail2FASetup, useDisableEmail2FA } from "@/services/api/endpoints/auth/auth";
 import { useCreateTicket, useListMyTickets } from "@/services/api/endpoints/tickets/tickets";
 import { TicketTopic, TicketStatus } from "@/services/api/model";
@@ -27,6 +27,30 @@ export default function SettingsPage() {
 
   const [isUpdateEmailModalOpen, setIsUpdateEmailModalOpen] = useState(false);
   const [isDisableModalOpen, setIsDisableModalOpen] = useState(false);
+
+  const [closeConfirm, setCloseConfirm] = useState("");
+  const { mutate: closeAccount, isPending: isClosingAccount } = useCloseAccount({
+    mutation: {
+      onSuccess: () => {
+        toast.success("Account closed successfully");
+        logout();
+        router.push("/auth/login");
+      },
+      onError: (err) => {
+        if (isAxiosError(err) && (err.response?.data as any)?.detail) {
+          toast.error(String((err.response?.data as any).detail));
+        } else {
+          toast.error("Failed to close account");
+        }
+      }
+    }
+  });
+
+  const handleCloseAccount = () => {
+    if (closeConfirm === "CLOSE") {
+      closeAccount();
+    }
+  };
 
   // Phone number
   const [phone, setPhone] = useState(user?.phone ?? "");
@@ -658,8 +682,22 @@ export default function SettingsPage() {
           <button type="button" className="text-sm text-zinc-400 hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
           <article className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-4">
             <p className="text-sm text-zinc-400 leading-relaxed">Closing wipes this demo session on the device. Wallet, bots, and transfers stored here are removed.</p>
-            <label className="block"><span className="text-xs text-zinc-500">Type CLOSE to confirm</span><input className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500" /></label>
-            <button type="button" className="h-10 px-5 rounded-lg bg-red-500 text-white text-sm font-medium hover:bg-red-400" onClick={stubFeature}>Close account</button>
+            <label className="block">
+              <span className="text-xs text-zinc-500">Type CLOSE to confirm</span>
+              <input 
+                value={closeConfirm}
+                onChange={(e) => setCloseConfirm(e.target.value)}
+                className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500" 
+              />
+            </label>
+            <button 
+              type="button" 
+              className="h-10 px-5 rounded-lg bg-red-500 text-white text-sm font-medium hover:bg-red-400 disabled:opacity-50" 
+              onClick={handleCloseAccount}
+              disabled={closeConfirm !== "CLOSE" || isClosingAccount}
+            >
+              {isClosingAccount ? "Closing..." : "Close account"}
+            </button>
           </article>
         </div>
       )}
@@ -804,17 +842,17 @@ export default function SettingsPage() {
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => !isDisabling2FA && setIsDisableModalOpen(false)}
           />
-          <div className="relative w-full max-w-md bg-surface border border-line rounded-2xl overflow-hidden shadow-xl">
-            <div className="p-6 space-y-4">
-              <h2 className="text-lg font-semibold text-ink">Disable Two-Factor Authentication</h2>
-              <p className="text-sm text-ink-2">
+          <div className="relative w-full max-w-md bg-panel border border-line rounded-2xl overflow-hidden shadow-xl">
+            <div className="p-5 sm:p-6 space-y-4">
+              <h2 className="text-lg font-semibold text-white">Disable Two-Factor Authentication</h2>
+              <p className="text-sm text-zinc-400 leading-relaxed">
                 Are you sure you want to turn off 2FA? This will reduce your account's security.
               </p>
             </div>
-            <div className="p-6 pt-0 flex items-center justify-end gap-3 mt-2">
+            <div className="p-5 sm:p-6 pt-0 flex items-center justify-end gap-3 mt-2">
               <button
                 type="button"
-                className="h-10 px-4 text-sm font-medium text-ink-2 bg-transparent rounded-lg hover:text-ink hover:bg-surface-2 transition-colors disabled:opacity-50"
+                className="h-10 px-5 rounded-lg text-sm text-zinc-400 hover:text-white transition-colors disabled:opacity-50"
                 onClick={() => setIsDisableModalOpen(false)}
                 disabled={isDisabling2FA}
               >
@@ -822,7 +860,7 @@ export default function SettingsPage() {
               </button>
               <button
                 type="button"
-                className="h-10 px-4 text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 flex items-center gap-2"
+                className="h-10 px-5 rounded-lg bg-red-500 text-white text-sm font-medium hover:bg-red-400 transition-colors disabled:opacity-50 flex items-center gap-2"
                 onClick={() => disable2FA()}
                 disabled={isDisabling2FA}
               >

@@ -52,6 +52,7 @@ import type {
 import type {
   ClientRecordCreate,
   ClientRecordPublic,
+  CloseAccount200,
   EmailUpdateConfirmRequest,
   EmailUpdateRequest,
   Error,
@@ -230,6 +231,67 @@ export const useUpdateMe = <TError = ErrorType<UnauthorizedResponse | Validation
       > => {
 
       const mutationOptions = getUpdateMeMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * @summary Close Account
+ */
+export const closeAccount = (
+    
+ options?: SecondParameter<typeof customInstance>,) => {
+      
+      
+      return customInstance<CloseAccount200>(
+      {url: `/api/v1/users/me`, method: 'DELETE'
+    },
+      options);
+    }
+  
+
+
+export const getCloseAccountMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof closeAccount>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof closeAccount>>, TError,void, TContext> => {
+
+const mutationKey = ['closeAccount'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof closeAccount>>, void> = () => {
+          
+
+          return  closeAccount(requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CloseAccountMutationResult = NonNullable<Awaited<ReturnType<typeof closeAccount>>>
+    
+    export type CloseAccountMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Close Account
+ */
+export const useCloseAccount = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof closeAccount>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof closeAccount>>,
+        TError,
+        void,
+        TContext
+      > => {
+
+      const mutationOptions = getCloseAccountMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
