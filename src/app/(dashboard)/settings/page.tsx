@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useAuthStore } from "@/stores/authStore";
@@ -442,11 +443,11 @@ export default function SettingsPage() {
             <div className="break-inside-avoid mb-6">
               <p className="px-1 mb-2 text-xs font-medium text-zinc-500">Support</p>
               <div className="bg-panel border border-line rounded-2xl overflow-hidden">
-                <a href="/blog" className="settings-row flex items-center gap-3 px-4 py-3">
+                <Link href="/guides" className="settings-row flex items-center gap-3 px-4 py-3">
                   <svg className="w-5 h-5 text-zinc-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
                   <span className="flex-1 text-sm">Guides</span>
                   <svg className="w-4 h-4 text-zinc-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M7 17L17 7M7 7h10v10"/></svg>
-                </a>
+                </Link>
                 <button type="button" className="settings-row w-full flex items-center gap-3 px-4 py-3 text-left border-t border-line" onClick={() => setActivePane("ticket")}>
                   <svg className="w-5 h-5 text-zinc-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z"/></svg>
                   <span className="flex-1 min-w-0">
@@ -665,7 +666,7 @@ export default function SettingsPage() {
                   </button>
                   <button 
                     type="button" 
-                    className="h-10 px-5 rounded-lg text-sm text-zinc-400 hover:text-white" 
+                    className="h-10 px-5 rounded-lg text-sm text-gray-900 hover:bg-gray-100 dark:text-zinc-400 dark:hover:bg-transparent dark:hover:text-white" 
                     onClick={() => { setIsTwoFASetupStarted(false); setTwoFAOTP(""); }}
                   >
                     Cancel
