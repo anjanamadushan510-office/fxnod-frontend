@@ -465,7 +465,7 @@ export default function SettingsPage() {
 
       {activePane === "personal" && (
         <div className="space-y-4">
-          <button type="button" className="text-sm text-zinc-400 hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
+          <button type="button" className="text-sm text-gray-900 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
           <article className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-4">
             <p className="text-sm text-zinc-400 leading-relaxed">These details sit on your FXNOD client record — used for wallet payouts and venue transfer. <strong>Once saved, these details cannot be changed.</strong></p>
             
@@ -513,7 +513,7 @@ export default function SettingsPage() {
 
       {activePane === "address" && (
         <div className="space-y-4">
-          <button type="button" className="text-sm text-zinc-400 hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
+          <button type="button" className="text-sm text-gray-900 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
           <article className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-4">
             <p className="text-sm text-zinc-400 leading-relaxed">We use this address on wallet payouts and venue transfers. <strong>Once saved, these details cannot be changed.</strong></p>
 
@@ -545,7 +545,7 @@ export default function SettingsPage() {
                 </button>
                 <button
                   type="button"
-                  className="h-10 px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 disabled:opacity-50"
+                  className="h-10 px-5 rounded-lg bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-sm font-medium disabled:opacity-50"
                   onClick={handleSaveProfile}
                   disabled={isSavingProfile}
                 >
@@ -559,7 +559,7 @@ export default function SettingsPage() {
 
       {activePane === "password" && (
         <div className="space-y-4">
-          <button type="button" className="text-sm text-zinc-400 hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
+          <button type="button" className="text-sm text-gray-900 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
           <article className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-4">
             <label className="block">
               <span className="text-xs text-zinc-500">Current password</span>
@@ -577,7 +577,7 @@ export default function SettingsPage() {
                 {passwordMatchError && <span className="block mt-1 text-xs text-red-500">{passwordMatchError}</span>}
               </label>
             </div>
-            <button type="button" disabled={isUpdatingPassword} className="h-10 px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 disabled:opacity-50" onClick={handleUpdatePassword}>
+            <button type="button" disabled={isUpdatingPassword} className="h-10 px-5 rounded-lg bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-sm font-medium disabled:opacity-50" onClick={handleUpdatePassword}>
               {isUpdatingPassword ? "Updating..." : "Update password"}
             </button>
           </article>
@@ -586,7 +586,7 @@ export default function SettingsPage() {
 
       {activePane === "phone" && (
         <div className="space-y-4">
-          <button type="button" className="text-sm text-zinc-400 hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
+          <button type="button" className="text-sm text-gray-900 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
           <article className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-4">
             <label className="block">
               <span className="text-xs text-zinc-500">Phone number</span>
@@ -602,7 +602,7 @@ export default function SettingsPage() {
             <button
               type="button"
               disabled={isSavingPhone}
-              className="h-10 px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 disabled:opacity-50"
+              className="h-10 px-5 rounded-lg bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-sm font-medium disabled:opacity-50"
               onClick={handleSavePhone}
             >
               {isSavingPhone ? "Saving..." : "Save"}
@@ -613,7 +613,7 @@ export default function SettingsPage() {
 
       {activePane === "2fa" && (
         <div className="space-y-4">
-          <button type="button" className="text-sm text-zinc-400 hover:text-white" onClick={() => { setActivePane("hub"); setIsTwoFASetupStarted(false); setTwoFAOTP(""); }}>← Settings</button>
+          <button type="button" className="text-sm text-gray-900 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-white" onClick={() => { setActivePane("hub"); setIsTwoFASetupStarted(false); setTwoFAOTP(""); }}>← Settings</button>
           <article className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-4">
             <p className="text-sm text-zinc-400 leading-relaxed">Add an authenticator step when you log in to FXNOD. We will email you a 6-digit code.</p>
             
@@ -636,7 +636,7 @@ export default function SettingsPage() {
               <button 
                 type="button" 
                 disabled={isSettingUp2FA}
-                className="h-10 px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 disabled:opacity-50" 
+                className="h-10 px-5 rounded-lg bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-sm font-medium disabled:opacity-50" 
                 onClick={handleStart2FASetup}
               >
                 {isSettingUp2FA ? "Starting setup..." : "Turn on 2FA"}
@@ -658,7 +658,7 @@ export default function SettingsPage() {
                   <button 
                     type="button" 
                     disabled={isVerifying2FA}
-                    className="h-10 px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 disabled:opacity-50" 
+                    className="h-10 px-5 rounded-lg bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-sm font-medium disabled:opacity-50" 
                     onClick={handleVerify2FASetup}
                   >
                     {isVerifying2FA ? "Verifying..." : "Verify & Enable"}
@@ -679,7 +679,7 @@ export default function SettingsPage() {
 
       {activePane === "close" && (
         <div className="space-y-4">
-          <button type="button" className="text-sm text-zinc-400 hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
+          <button type="button" className="text-sm text-gray-900 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
           <article className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-4">
             <p className="text-sm text-zinc-400 leading-relaxed">Closing wipes this demo session on the device. Wallet, bots, and transfers stored here are removed.</p>
             <label className="block">
@@ -704,7 +704,7 @@ export default function SettingsPage() {
 
       {activePane === "theme" && (
         <div className="space-y-4">
-          <button type="button" className="text-sm text-zinc-400 hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
+          <button type="button" className="text-sm text-gray-900 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
           <article className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-4">
             <p className="text-sm text-zinc-400">Switch the terminal between dark and light.</p>
             <div className="grid grid-cols-2 gap-2">
@@ -729,7 +729,7 @@ export default function SettingsPage() {
 
       {activePane === "language" && (
         <div className="space-y-4">
-          <button type="button" className="text-sm text-zinc-400 hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
+          <button type="button" className="text-sm text-gray-900 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
           <article className="bg-panel border border-line rounded-2xl overflow-hidden">
             <button type="button" className="settings-row w-full flex items-center justify-between px-4 py-3 text-left">
               <span className="text-sm">English</span>
@@ -745,7 +745,7 @@ export default function SettingsPage() {
 
       {activePane === "ticket" && (
         <div className="space-y-4">
-          <button type="button" className="text-sm text-zinc-400 hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
+          <button type="button" className="text-sm text-gray-900 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
           <div className="grid lg:grid-cols-2 gap-4 items-start">
             <article className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-4">
               <p className="text-sm text-zinc-400 leading-relaxed">Tell us what is blocked. We reply to the email on this account.</p>
@@ -785,7 +785,7 @@ export default function SettingsPage() {
               </label>
               <button 
                 type="button" 
-                className="h-10 px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 disabled:opacity-50" 
+                className="h-10 px-5 rounded-lg bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-sm font-medium disabled:opacity-50" 
                 onClick={handleCreateTicket}
                 disabled={isCreatingTicket}
               >

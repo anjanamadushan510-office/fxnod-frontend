@@ -166,7 +166,7 @@ export function UpdateEmailModal({ isOpen, onClose }: UpdateEmailModalProps) {
               <button
                 type="submit"
                 disabled={!password || isLoading}
-                className="w-full h-10 mt-2 rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                className="w-full h-10 mt-2 rounded-lg bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200 text-sm font-medium transition-opacity disabled:opacity-50"
               >
                 {isLoading ? "Verifying..." : "Verify Identity"}
               </button>
@@ -194,7 +194,7 @@ export function UpdateEmailModal({ isOpen, onClose }: UpdateEmailModalProps) {
               <button
                 type="submit"
                 disabled={!newEmail || isLoading}
-                className="w-full h-10 mt-2 rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                className="w-full h-10 mt-2 rounded-lg bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200 text-sm font-medium transition-opacity disabled:opacity-50"
               >
                 {isLoading ? "Sending..." : "Send Verification Code"}
               </button>
@@ -223,7 +223,7 @@ export function UpdateEmailModal({ isOpen, onClose }: UpdateEmailModalProps) {
               <button
                 type="submit"
                 disabled={otp.length !== 6 || isLoading}
-                className="w-full h-10 mt-2 rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                className="w-full h-10 mt-2 rounded-lg bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200 text-sm font-medium transition-opacity disabled:opacity-50"
               >
                 {isLoading ? "Confirming..." : "Confirm Email Update"}
               </button>
