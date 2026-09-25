@@ -137,9 +137,9 @@ export function Sidebar({
         )}
       >
         <div className="flex h-16 items-center justify-between border-b border-line px-5">
-          <a href="/home" className="flex items-center text-ink">
+          <Link href="/" className="flex items-center text-ink">
             <img src="/assets/fxnod-logo.png" alt="FXNOD" className="h-8 w-auto invert dark:invert-0" />
-          </a>
+          </Link>
           <button 
             className="text-ink-2 hover:text-ink lg:hidden" 
             onClick={onClose}
