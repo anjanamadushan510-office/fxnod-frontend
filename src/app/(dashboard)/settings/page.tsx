@@ -711,14 +711,14 @@ export default function SettingsPage() {
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
-                className={`h-9 px-3 rounded-lg border text-sm font-medium transition-colors ${theme === 'dark' ? 'border-white bg-white text-black' : 'border-line text-zinc-300 hover:text-white'}`}
+                className={`h-9 px-3 rounded-lg text-sm font-medium transition-colors ${theme === 'dark' ? 'bg-slate-900 text-white dark:bg-white dark:text-black' : 'border border-gray-200 text-gray-700 hover:bg-gray-50 dark:border-zinc-800 dark:text-zinc-400 dark:hover:text-white'}`}
                 onClick={() => setTheme("dark")}
               >
                 Dark
               </button>
               <button
                 type="button"
-                className={`h-9 px-3 rounded-lg border text-sm font-medium transition-colors ${theme === 'light' ? 'border-white bg-white text-black' : 'border-line text-zinc-300 hover:text-white'}`}
+                className={`h-9 px-3 rounded-lg text-sm font-medium transition-colors ${theme === 'light' ? 'bg-slate-900 text-white dark:bg-white dark:text-black' : 'border border-gray-200 text-gray-700 hover:bg-gray-50 dark:border-zinc-800 dark:text-zinc-400 dark:hover:text-white'}`}
                 onClick={() => setTheme("light")}
               >
                 Light
