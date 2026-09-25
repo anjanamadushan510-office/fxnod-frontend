@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Route } from "next";
 import type { BlogPost } from "../page";
+import { PublicHeader } from "@/components/layout/PublicHeader";
 
 export default async function SingleBlogPage({ params }: { params: { slug: string } }) {
   const apiUrl = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/+$/, "");
@@ -22,22 +23,7 @@ export default async function SingleBlogPage({ params }: { params: { slug: strin
 
   return (
     <div data-theme="dark" className="bg-bg text-ink font-sans antialiased min-h-screen flex flex-col">
-      <div className="sticky top-0 z-30 bg-bg/85 backdrop-blur-md">
-        <header className="site-header min-h-16 border-b border-line flex items-center justify-between gap-3 py-3 sm:py-0 sm:h-16 sm:px-8 lg:px-12">
-          <Link href="/" aria-label="FXNOD home" className="shrink-0">
-            <img src="/assets/fxnod-logo.png" alt="FXNOD" className="h-6 sm:h-7 w-auto" />
-          </Link>
-          <nav className="hidden md:flex items-center gap-8 text-sm text-zinc-400">
-            <Link href={"/#product" as Route} className="hover:text-white transition">Product</Link>
-            <Link href={"/guides" as Route} className="hover:text-white transition">Guides</Link>
-            <Link href={"/blog" as Route} className="text-white">Blog</Link>
-          </nav>
-          <div className="flex items-center gap-2 shrink-0">
-            <Link href={"/auth/login" as Route} className="hidden md:inline-flex h-9 px-4 items-center rounded-full text-sm text-zinc-300 hover:text-white transition">Log in</Link>
-            <Link href={"/auth/register" as Route} className="bg-accent text-[#080C16] hidden md:inline-flex h-9 px-4 items-center rounded-full text-sm font-semibold hover:opacity-90 transition">Get started</Link>
-          </div>
-        </header>
-      </div>
+      <PublicHeader />
 
       <main className="flex-1 w-full max-w-4xl mx-auto px-5 sm:px-8 py-10 sm:py-20">
         <Link href={"/blog" as Route} className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition mb-8">
