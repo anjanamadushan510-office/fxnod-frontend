@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ExpandIcon } from "@/components/ui/Icons";
+import { Maximize, Minimize } from "lucide-react";
 
 /**
  * Bottom-right strip — green status dot, current date and a live GMT clock.
@@ -11,6 +11,24 @@ import { ExpandIcon } from "@/components/ui/Icons";
  */
 export function ChartFooter() {
   const now = useNowGMT();
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    function onFullscreenChange() {
+      setIsFullscreen(!!document.fullscreenElement);
+    }
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", onFullscreenChange);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  };
+
   return (
     <div className="flex h-10 items-center justify-end gap-3 px-4 text-[13px] font-medium text-gray-600 dark:text-gray-300 bg-opt-bg-elev border-t border-opt-line">
       <div className="flex items-center gap-1.5 border-r border-opt-line pr-3">
@@ -23,10 +41,15 @@ export function ChartFooter() {
         <span>{formatTime(now)} GMT</span>
         <button
           type="button"
+          onClick={toggleFullscreen}
           aria-label="Fullscreen"
           className="grid h-6 w-6 place-items-center rounded hover:bg-opt-bg-sunk text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors"
         >
-          <ExpandIcon className="h-4 w-4" />
+          {isFullscreen ? (
+            <Minimize className="h-4 w-4" />
+          ) : (
+            <Maximize className="h-4 w-4" />
+          )}
         </button>
       </div>
     </div>
