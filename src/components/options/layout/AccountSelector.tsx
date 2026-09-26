@@ -169,10 +169,10 @@ export function AccountSelector({
                     isSelected ? "bg-opt-bg-sunk" : "hover:bg-opt-bg-sunk"
                   )}
                 >
-                  <span className="text-sm text-zinc-400">
+                  <span className="text-sm text-zinc-600 dark:text-zinc-400">
                     {accountTypeLabel}
                   </span>
-                  <span className="font-bold text-white">
+                  <span className="font-bold text-gray-900 dark:text-white">
                     {formattedBalance} {account.currency}
                   </span>
                 </button>
