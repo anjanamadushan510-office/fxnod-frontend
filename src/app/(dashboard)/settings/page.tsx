@@ -6,8 +6,9 @@ import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useAuthStore } from "@/stores/authStore";
 import { UpdateEmailModal } from "@/components/settings/UpdateEmailModal";
-import { useUpdateMe, useGetClientRecord, useCreateClientRecord, useUpdatePassword, useCloseAccount } from "@/services/api/endpoints/users/users";
-import { useSetupEmail2FA, useVerifyEmail2FASetup, useDisableEmail2FA } from "@/services/api/endpoints/auth/auth";
+import { useUpdateMe, useGetClientRecord, useCreateClientRecord, useUpdatePassword, useCloseAccount, useRequestAccountClosure } from "@/services/api/endpoints/users/users";
+import { useSetupEmail2FA, useVerifyEmail2FASetup, useDisableEmail2FA, useRequestDisableEmail2FA } from "@/services/api/endpoints/auth/auth";
+import { parseApiError } from "@/lib/apiError";
 import { useCreateTicket, useListMyTickets } from "@/services/api/endpoints/tickets/tickets";
 import { TicketTopic, TicketStatus } from "@/services/api/model";
 import { isAxiosError } from "axios";
@@ -29,7 +30,24 @@ export default function SettingsPage() {
   const [isUpdateEmailModalOpen, setIsUpdateEmailModalOpen] = useState(false);
   const [isDisableModalOpen, setIsDisableModalOpen] = useState(false);
 
+  // Closing is confirmed twice: typing CLOSE guards against a slip, and the
+  // emailed code proves it is the account owner rather than whoever holds
+  // this session.
   const [closeConfirm, setCloseConfirm] = useState("");
+  const [closeCodeSent, setCloseCodeSent] = useState(false);
+  const [closeCode, setCloseCode] = useState("");
+  const [closeReason, setCloseReason] = useState("");
+
+  const { mutate: requestClosure, isPending: isRequestingClosure } = useRequestAccountClosure({
+    mutation: {
+      onSuccess: () => {
+        setCloseCodeSent(true);
+        toast.success("We emailed you a confirmation code.");
+      },
+      onError: (err) => toast.error(parseApiError(err, "Could not start account closure").message),
+    }
+  });
+
   const { mutate: closeAccount, isPending: isClosingAccount } = useCloseAccount({
     mutation: {
       onSuccess: () => {
@@ -37,20 +55,20 @@ export default function SettingsPage() {
         logout();
         router.push("/auth/login");
       },
-      onError: (err) => {
-        if (isAxiosError(err) && (err.response?.data as any)?.detail) {
-          toast.error(String((err.response?.data as any).detail));
-        } else {
-          toast.error("Failed to close account");
-        }
-      }
+      onError: (err) => toast.error(parseApiError(err, "Failed to close account").message),
     }
   });
 
   const handleCloseAccount = () => {
-    if (closeConfirm === "CLOSE") {
-      closeAccount();
+    if (!closeCodeSent) {
+      if (closeConfirm === "CLOSE") requestClosure();
+      return;
     }
+    if (closeCode.trim().length < 4) {
+      toast.error("Enter the code from your email.");
+      return;
+    }
+    closeAccount({ data: { code: closeCode.trim(), reason: closeReason.trim() || null } });
   };
 
   // Phone number
@@ -194,21 +212,52 @@ export default function SettingsPage() {
     }
   });
 
+  // Turning 2FA off needs a code from the email it protects: the session
+  // alone must never be enough to remove a second factor.
+  const [disableCodeSent, setDisableCodeSent] = useState(false);
+  const [disableCode, setDisableCode] = useState("");
+
+  const closeDisableModal = () => {
+    setIsDisableModalOpen(false);
+    setDisableCodeSent(false);
+    setDisableCode("");
+  };
+
+  const { mutate: requestDisable2FA, isPending: isRequestingDisable } = useRequestDisableEmail2FA({
+    mutation: {
+      onSuccess: () => {
+        setDisableCodeSent(true);
+        toast.success("We emailed you a confirmation code.");
+      },
+      onError: (err) => toast.error(parseApiError(err, "Could not send a code").message),
+    }
+  });
+
   const { mutate: disable2FA, isPending: isDisabling2FA } = useDisableEmail2FA({
     mutation: {
       onSuccess: () => {
         setUser({ is_email_2fa_enabled: false });
         setIsTwoFASetupStarted(false);
         setTwoFAOTP("");
-        setIsDisableModalOpen(false);
+        closeDisableModal();
         toast.success("Two-factor authentication disabled.");
       },
-      onError: () => {
-        setIsDisableModalOpen(false);
-        toast.error("Failed to disable 2FA");
-      },
+      // The modal stays open so a mistyped code can be corrected.
+      onError: (err) => toast.error(parseApiError(err, "Failed to disable 2FA").message),
     }
   });
+
+  const handleConfirmDisable2FA = () => {
+    if (!disableCodeSent) {
+      requestDisable2FA();
+      return;
+    }
+    if (disableCode.trim().length < 4) {
+      toast.error("Enter the code from your email.");
+      return;
+    }
+    disable2FA({ data: { code: disableCode.trim() } });
+  };
 
   const handleStart2FASetup = () => {
     setup2FA();
@@ -682,22 +731,59 @@ export default function SettingsPage() {
         <div className="space-y-4">
           <button type="button" className="text-sm text-gray-900 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
           <article className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-4">
-            <p className="text-sm text-zinc-400 leading-relaxed">Closing wipes this demo session on the device. Wallet, bots, and transfers stored here are removed.</p>
-            <label className="block">
-              <span className="text-xs text-zinc-500">Type CLOSE to confirm</span>
-              <input 
-                value={closeConfirm}
-                onChange={(e) => setCloseConfirm(e.target.value)}
-                className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500" 
-              />
-            </label>
-            <button 
-              type="button" 
-              className="h-10 px-5 rounded-lg bg-red-500 text-white text-sm font-medium hover:bg-red-400 disabled:opacity-50" 
+            <p className="text-sm text-zinc-400 leading-relaxed">
+              Closing your account signs you out everywhere and removes your profile. You cannot close it while your wallet holds a balance, so withdraw it first.
+            </p>
+            <p className="text-sm text-zinc-400 leading-relaxed">
+              As a regulated financial service, we keep your identity, verification and support records for the period the law requires, then delete them.
+            </p>
+            {!closeCodeSent ? (
+              <label className="block">
+                <span className="text-xs text-zinc-500">Type CLOSE to confirm</span>
+                <input
+                  value={closeConfirm}
+                  onChange={(e) => setCloseConfirm(e.target.value)}
+                  className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500"
+                />
+              </label>
+            ) : (
+              <>
+                <p className="text-sm text-zinc-300">We sent a confirmation code to <strong className="text-ink">{user?.email}</strong>.</p>
+                <label className="block max-w-[240px]">
+                  <span className="text-xs text-zinc-500">Confirmation code</span>
+                  <input
+                    value={closeCode}
+                    onChange={(e) => setCloseCode(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    placeholder="123456"
+                    className="mt-1.5 w-full h-10 px-3 rounded-lg text-center tracking-[0.5em] font-mono bg-bg border border-line text-sm outline-none focus:border-zinc-500"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-xs text-zinc-500">Why are you leaving? (optional)</span>
+                  <textarea
+                    value={closeReason}
+                    onChange={(e) => setCloseReason(e.target.value.slice(0, 1000))}
+                    rows={3}
+                    className="mt-1.5 w-full px-3 py-2 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500"
+                  />
+                </label>
+              </>
+            )}
+            <button
+              type="button"
+              className="h-10 px-5 rounded-lg bg-red-500 text-white text-sm font-medium hover:bg-red-400 disabled:opacity-50"
               onClick={handleCloseAccount}
-              disabled={closeConfirm !== "CLOSE" || isClosingAccount}
+              disabled={
+                closeCodeSent
+                  ? isClosingAccount
+                  : closeConfirm !== "CLOSE" || isRequestingClosure
+              }
             >
-              {isClosingAccount ? "Closing..." : "Close account"}
+              {!closeCodeSent
+                ? isRequestingClosure ? "Sending code..." : "Send confirmation code"
+                : isClosingAccount ? "Closing..." : "Close account permanently"}
             </button>
           </article>
         </div>
@@ -839,22 +925,36 @@ export default function SettingsPage() {
 
       {isDisableModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div 
+          <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => !isDisabling2FA && setIsDisableModalOpen(false)}
+            onClick={() => !isDisabling2FA && closeDisableModal()}
           />
           <div className="relative w-full max-w-md bg-panel border border-line rounded-2xl overflow-hidden shadow-xl">
             <div className="p-5 sm:p-6 space-y-4">
               <h2 className="text-lg font-semibold text-white">Disable Two-Factor Authentication</h2>
-              <p className="text-sm text-zinc-400 leading-relaxed">
-                Are you sure you want to turn off 2FA? This will reduce your account's security.
-              </p>
+              {!disableCodeSent ? (
+                <p className="text-sm text-zinc-400 leading-relaxed">
+                  Are you sure you want to turn off 2FA? This will reduce your account's security. We will email you a code to confirm.
+                </p>
+              ) : (
+                <label className="block">
+                  <span className="text-sm text-zinc-400">Enter the code we sent to {user?.email}</span>
+                  <input
+                    value={disableCode}
+                    onChange={(e) => setDisableCode(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    placeholder="123456"
+                    className="mt-2 w-full h-10 px-3 rounded-lg text-center tracking-[0.5em] font-mono bg-bg border border-line text-sm outline-none focus:border-zinc-500"
+                  />
+                </label>
+              )}
             </div>
             <div className="p-5 sm:p-6 pt-0 flex items-center justify-end gap-3 mt-2">
               <button
                 type="button"
                 className="h-10 px-5 rounded-lg text-sm text-zinc-400 hover:text-white transition-colors disabled:opacity-50"
-                onClick={() => setIsDisableModalOpen(false)}
+                onClick={closeDisableModal}
                 disabled={isDisabling2FA}
               >
                 Cancel
@@ -862,10 +962,12 @@ export default function SettingsPage() {
               <button
                 type="button"
                 className="h-10 px-5 rounded-lg bg-red-500 text-white text-sm font-medium hover:bg-red-400 transition-colors disabled:opacity-50 flex items-center gap-2"
-                onClick={() => disable2FA()}
-                disabled={isDisabling2FA}
+                onClick={handleConfirmDisable2FA}
+                disabled={isDisabling2FA || isRequestingDisable}
               >
-                {isDisabling2FA ? "Turning off..." : "Turn Off"}
+                {!disableCodeSent
+                  ? isRequestingDisable ? "Sending code..." : "Send code"
+                  : isDisabling2FA ? "Turning off..." : "Turn Off"}
               </button>
             </div>
           </div>
