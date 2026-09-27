@@ -5,12 +5,13 @@ import { useStartDerivOAuth } from "@/hooks/useStartDerivOAuth";
 import { cn } from "@/lib/cn";
 
 /**
- * Shown when a real-money bot needs its one-time Deriv approval.
+ * Shown when a bot needs its one-time Deriv approval.
  *
  * Each bot trades through its own FXNod app on Deriv, and Deriv only lets an
  * app trade with a permission the user gave that app. So the first time a
- * user runs a bot on real money, Deriv has to be asked once. The user never
- * chooses anything here — the server decided which app — they only allow it.
+ * user runs a bot — on demo or real, which take the same path — Deriv has to
+ * be asked once. The user never chooses anything here — the server decided
+ * which app — they only allow it.
  *
  * Nothing starts on the way back: the user returns to the saved bot and
  * presses Start themselves, because a real-money run should never begin as a
@@ -52,8 +53,8 @@ export function DerivAppConsentModal({ appKey, returnTo, onClose }: DerivAppCons
 
         <p className="m-0 mt-2 text-[13px] leading-relaxed text-opt-ink-2">
           {expired
-            ? "Deriv’s permission for this bot has expired. Allow it again to keep trading on your real account."
-            : "Bots trade on your real account through FXNod’s automated-trading connection. Deriv asks you to allow it once."}
+            ? "Deriv’s permission for this bot has expired. Allow it again to keep trading."
+            : "Bots trade on your Deriv account, demo or real, through FXNod’s automated-trading connection. Deriv asks you to allow it once."}
         </p>
 
         <p className="m-0 mt-4 rounded-[var(--opt-radius-sm)] bg-opt-bg-sunk px-3 py-2.5 text-[12px] leading-relaxed text-opt-ink-2">
