@@ -7,7 +7,7 @@ import { SiteFooter } from "@/components/layout/SiteFooter";
 export const metadata: Metadata = {
   title: "Partner programme — FXNod",
   description:
-    "Earn on what the people you invite subscribe to and trade, and on what their invitees do.",
+    "Earn on what the people you invite trade, and on what their invitees do.",
 };
 
 /**
@@ -28,19 +28,16 @@ const TIERS = [
   {
     level: "Affiliate",
     who: "Someone you invited yourself",
-    dbot: "30%",
     trading: "30%",
   },
   {
     level: "Master affiliate",
     who: "Someone your affiliate invited",
-    dbot: "10%",
     trading: "10%",
   },
   {
     level: "Tier 3",
     who: "One step further down",
-    dbot: "—",
     trading: "5%",
   },
 ];
@@ -55,9 +52,10 @@ export default function PartnerProgrammePage() {
           Earn with FXNod
         </h1>
         <p className="m-0 mt-4 max-w-[60ch] text-lg leading-relaxed text-[#0a0f1c]/65">
-          Invite people to FXNod and earn a share of what they pay for — dBot
-          subscriptions today, and every paid product we add. You also earn on
-          the people they invite.
+          Invite people to FXNod and earn a share of what FXNod earns from them —
+          the markup on their dBot trades today, and every paid product we add.
+          dBot itself is free, so there is nothing for them to buy first. You
+          also earn on the people they invite.
         </p>
 
         <div className="mt-8 flex flex-wrap gap-3">
@@ -90,9 +88,6 @@ export default function PartnerProgrammePage() {
                     Who that is
                   </th>
                   <th scope="col" className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wide text-[#0a0f1c]/40">
-                    dBot
-                  </th>
-                  <th scope="col" className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wide text-[#0a0f1c]/40">
                     Trading
                   </th>
                 </tr>
@@ -107,9 +102,6 @@ export default function PartnerProgrammePage() {
                       {tier.level}
                     </th>
                     <td className="px-6 py-4 text-[#0a0f1c]/60">{tier.who}</td>
-                    <td className="px-6 py-4 text-right font-bold tabular-nums text-[#0a0f1c]">
-                      {tier.dbot}
-                    </td>
                     <td className="px-6 py-4 text-right font-bold tabular-nums text-[#0a0f1c]">
                       {tier.trading}
                     </td>
@@ -149,9 +141,8 @@ export default function PartnerProgrammePage() {
               signup and never moved.
             </li>
             <li>
-              <strong className="text-[#0a0f1c]">Subscription commission is held briefly.</strong>{" "}
-              A few days after the purchase, then it is released. Trading
-              commission is paid once the broker settles the month.
+              <strong className="text-[#0a0f1c]">Trading commission follows the broker.</strong>{" "}
+              It is paid once the broker settles the month.
             </li>
             <li>
               <strong className="text-[#0a0f1c]">You cannot earn from yourself.</strong>{" "}

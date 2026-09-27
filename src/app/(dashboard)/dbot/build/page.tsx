@@ -7,7 +7,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { DerivAppConsentModal } from "@/components/bot/DerivAppConsentModal";
-import { SubscriptionGateModal } from "@/components/bot/SubscriptionGateModal";
 import { useMarketStore } from "@/components/options/market/marketStore";
 import { findMethod } from "@/components/bot/builder/catalog";
 import {
@@ -97,7 +96,6 @@ function BotBuilder() {
   const [step, setStep] = useState<StepKey>(
     presetId && params.get("step") === "review" ? "review" : "method",
   );
-  const [gateReason, setGateReason] = useState<string | null>(null);
   // A real-money bot waiting on its one-time Deriv approval, and the saved
   // bot to come back to afterwards.
   const [consent, setConsent] = useState<{ appKey: string; returnTo: string } | null>(null);
@@ -230,11 +228,6 @@ function BotBuilder() {
       await queryClient.invalidateQueries({ queryKey: getListBotRunsQueryKey() });
       router.push((res.run ? `/dbot/runs/${res.run.run_id}` : "/dbot") as Route);
     } catch (err) {
-      const reason = subscriptionRefusal(err);
-      if (reason) {
-        setGateReason(reason);
-        return;
-      }
       const appKey = consentRequired(err);
       if (appKey) {
         setConsent({ appKey, returnTo: `/dbot/build?preset=${savedId}&step=review` });
@@ -336,11 +329,6 @@ function BotBuilder() {
 
       {/* The modal is styled for the options scope; give it that scope here. */}
       <div data-app="options" data-opt-theme="dark" className="contents">
-        <SubscriptionGateModal
-          open={gateReason !== null}
-          reason={gateReason ?? undefined}
-          onClose={() => setGateReason(null)}
-        />
         <DerivAppConsentModal
           appKey={consent?.appKey ?? null}
           returnTo={consent?.returnTo ?? ""}
@@ -397,19 +385,4 @@ function consentRequired(err: unknown): string | null {
     return null;
   }
   return data.data.app_key ?? null;
-}
-
-/**
- * A refusal the pricing page answers, as opposed to a real error. The engine
- * returns its reason codes verbatim; a 403 also covers an unlinked account and
- * a missing risk acknowledgement, which no subscription fixes.
- */
-function subscriptionRefusal(err: unknown): string | null {
-  const detail = (err as { response?: { data?: { detail?: unknown } } })?.response?.data?.detail;
-  if (typeof detail !== "string") return null;
-  return (
-    ["no_subscription", "subscription_expired", "subscription_cancelled"].find((r) =>
-      detail.includes(r),
-    ) ?? null
-  );
 }

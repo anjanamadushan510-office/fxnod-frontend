@@ -43,6 +43,6 @@ export interface DerivLinkedAccount {
   connection_id: string;
   /** The grant behind this account has expired. Resolved against the SERVER clock â€” the browser is never asked to decide it from a timestamp of its own. */
   needs_reconnect: boolean;
-  /** Last balance Deriv reported for this account. Absent until Deriv has sent one. */
+  /** Last balance Deriv reported for this account. Absent until Deriv has sent one; never a guessed zero. */
   balance?: DecimalString;
 }

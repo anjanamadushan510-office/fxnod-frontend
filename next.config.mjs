@@ -49,11 +49,9 @@ const nextConfig = {
     return [
       { source: "/options/dbot", destination: "/dbot", permanent: false },
       { source: "/options/dbot/history", destination: "/dbot", permanent: false },
-      {
-        source: "/options/dbot/subscription",
-        destination: "/dbot/subscription",
-        permanent: false,
-      },
+      // The plans page is gone (dBot is free); old links land on dBot itself.
+      { source: "/options/dbot/subscription", destination: "/dbot", permanent: false },
+      { source: "/dbot/subscription", destination: "/dbot", permanent: false },
     ];
   },
 

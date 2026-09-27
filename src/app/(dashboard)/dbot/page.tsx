@@ -11,7 +11,6 @@ import { BotPackageModal } from "@/components/bot/BotPackageModal";
 import { EmergencyStopButton } from "@/components/bot/EmergencyStopButton";
 import { DerivAppConsentModal } from "@/components/bot/DerivAppConsentModal";
 import { RunSavedBotDialog } from "@/components/bot/RunSavedBotDialog";
-import { SubscriptionGateModal } from "@/components/bot/SubscriptionGateModal";
 import { DerivConnectionMenu } from "@/components/deriv/DerivConnectionMenu";
 import { defaultFormState } from "@/components/bot/formState";
 import {
@@ -97,7 +96,6 @@ export default function DBotDashboardPage() {
   const [packageModal, setPackageModal] = useState<PackageModalState | null>(null);
   const [confirmRemove, setConfirmRemove] = useState<string | null>(null);
   const [runPreset, setRunPreset] = useState<BotPreset | null>(null);
-  const [gateReason, setGateReason] = useState<string | null>(null);
   const [consent, setConsent] = useState<{ appKey: string; returnTo: string } | null>(null);
   const [accountFilter, setAccountFilter] = useState<AccountFilter>("all");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -173,12 +171,6 @@ export default function DBotDashboardPage() {
       setRunPreset(null);
       router.push((res.run ? `/dbot/runs/${res.run.run_id}` : "/dbot") as Route);
     } catch (err) {
-      const reason = subscriptionRefusal(err);
-      if (reason) {
-        setRunPreset(null);
-        setGateReason(reason);
-        return;
-      }
       const appKey = consentRequired(err);
       if (appKey) {
         setRunPreset(null);
@@ -209,12 +201,6 @@ export default function DBotDashboardPage() {
           <p className="text-sm text-ink-2 mt-1">Build a bot in plain language</p>
         </div>
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:gap-3">
-          <Link
-            href={"/dbot/subscription" as Route}
-            className="inline-flex h-10 w-full items-center justify-center rounded-lg border border-line px-4 text-sm text-ink-2 transition hover:text-ink sm:w-auto"
-          >
-            Subscription
-          </Link>
           {/* A bot cannot trade without a Deriv account, and this was the one
               screen that never said so — the first anyone heard of it was a
               run refusing to start. */}
@@ -522,11 +508,6 @@ export default function DBotDashboardPage() {
       )}
 
       <div data-app="options" data-opt-theme="dark" className="contents">
-        <SubscriptionGateModal
-          open={gateReason !== null}
-          reason={gateReason ?? undefined}
-          onClose={() => setGateReason(null)}
-        />
         <DerivAppConsentModal
           appKey={consent?.appKey ?? null}
           returnTo={consent?.returnTo ?? "/dbot"}
@@ -637,16 +618,6 @@ function consentRequired(err: unknown): string | null {
     return null;
   }
   return data.data.app_key ?? null;
-}
-
-function subscriptionRefusal(err: unknown): string | null {
-  const detail = (err as { response?: { data?: { detail?: unknown } } })?.response?.data?.detail;
-  if (typeof detail !== "string") return null;
-  return (
-    ["no_subscription", "subscription_expired", "subscription_cancelled"].find((reason) =>
-      detail.includes(reason),
-    ) ?? null
-  );
 }
 
 function SavedBotMenu({
