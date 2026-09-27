@@ -3,10 +3,12 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import type { Route } from "next";
+import { useAuthStore } from "@/stores/authStore";
 
 export default function LandingPage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
+  const status = useAuthStore((s) => s.status);
 
   useEffect(() => {
     let lastScrollY = window.scrollY;
@@ -66,8 +68,14 @@ export default function LandingPage() {
             <Link href={"/blog" as Route} className="hover:text-white transition">Blog</Link>
           </nav>
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            <Link href={"/auth/login" as Route} className="hidden md:inline-flex h-9 px-3 sm:px-4 items-center rounded-full text-sm text-zinc-300 hover:text-white transition">Log in</Link>
-            <Link href={"/auth/register" as Route} className="bg-accent text-[#080C16] hidden md:inline-flex h-9 px-4 items-center rounded-full text-sm font-semibold hover:opacity-90 transition">Get started</Link>
+            {status === "authenticated" ? (
+              <Link href={"/home" as Route} className="bg-accent text-[#080C16] hidden md:inline-flex h-9 px-4 items-center rounded-full text-sm font-semibold hover:opacity-90 transition">Go to Dashboard</Link>
+            ) : (
+              <>
+                <Link href={"/auth/login" as Route} className="hidden md:inline-flex h-9 px-3 sm:px-4 items-center rounded-full text-sm text-zinc-300 hover:text-white transition">Log in</Link>
+                <Link href={"/auth/register" as Route} className="bg-accent text-[#080C16] hidden md:inline-flex h-9 px-4 items-center rounded-full text-sm font-semibold hover:opacity-90 transition">Get started</Link>
+              </>
+            )}
             <button 
               type="button" 
               className="md:hidden p-2 text-zinc-400 hover:text-white"
@@ -90,8 +98,14 @@ export default function LandingPage() {
             <Link href={"/guides" as Route} onClick={() => setIsMobileMenuOpen(false)}>Guides</Link>
             <Link href={"/blog" as Route} onClick={() => setIsMobileMenuOpen(false)}>Blog</Link>
             <hr className="border-line" />
-            <Link href={"/auth/login" as Route} onClick={() => setIsMobileMenuOpen(false)}>Log in</Link>
-            <Link href={"/auth/register" as Route} className="text-accent font-semibold" onClick={() => setIsMobileMenuOpen(false)}>Get started</Link>
+            {status === "authenticated" ? (
+              <Link href={"/home" as Route} className="text-accent font-semibold" onClick={() => setIsMobileMenuOpen(false)}>Go to Dashboard</Link>
+            ) : (
+              <>
+                <Link href={"/auth/login" as Route} onClick={() => setIsMobileMenuOpen(false)}>Log in</Link>
+                <Link href={"/auth/register" as Route} className="text-accent font-semibold" onClick={() => setIsMobileMenuOpen(false)}>Get started</Link>
+              </>
+            )}
           </nav>
         )}
       </div>
@@ -102,8 +116,14 @@ export default function LandingPage() {
             <h1 className="font-display text-[2.15rem] sm:text-5xl lg:text-7xl font-semibold tracking-tight leading-[1.08] mb-6">Trade, fund, and run.<br className="hidden sm:block" /> All in one hub.</h1>
             <p className="text-base sm:text-xl text-zinc-400 max-w-2xl mx-auto leading-relaxed mb-8">Access the trading terminal built for Deriv, Bybit and Binance — with FXNOD Bot, a wallet, and venue tools in one place.</p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-12">
-              <Link href={"/auth/register" as Route} className="bg-accent text-[#080C16] hover:opacity-90 transition h-12 px-8 inline-flex items-center justify-center rounded-full text-sm font-semibold w-full sm:w-auto">Get started</Link>
-              <Link href={"/auth/login" as Route} className="h-12 px-8 inline-flex items-center justify-center rounded-full border border-line text-sm text-zinc-300 hover:text-white hover:border-zinc-500 transition w-full sm:w-auto">Log in</Link>
+              {status === "authenticated" ? (
+                <Link href={"/home" as Route} className="bg-accent text-[#080C16] hover:opacity-90 transition h-12 px-8 inline-flex items-center justify-center rounded-full text-sm font-semibold w-full sm:w-auto">Go to Dashboard</Link>
+              ) : (
+                <>
+                  <Link href={"/auth/register" as Route} className="bg-accent text-[#080C16] hover:opacity-90 transition h-12 px-8 inline-flex items-center justify-center rounded-full text-sm font-semibold w-full sm:w-auto">Get started</Link>
+                  <Link href={"/auth/login" as Route} className="h-12 px-8 inline-flex items-center justify-center rounded-full border border-line text-sm text-zinc-300 hover:text-white hover:border-zinc-500 transition w-full sm:w-auto">Log in</Link>
+                </>
+              )}
             </div>
           </div>
         </section>
@@ -292,7 +312,11 @@ export default function LandingPage() {
             <div className="relative">
               <h2 className="font-display text-3xl sm:text-5xl font-semibold mb-4">Open the terminal.</h2>
               <p className="text-zinc-300 max-w-md mx-auto mb-8 leading-relaxed">Run FXNOD Bot, move funds to Deriv, and manage tools from one hub.</p>
-              <Link href={"/auth/register" as Route} className="bg-accent text-[#080C16] hover:opacity-90 transition inline-flex items-center justify-center h-12 px-8 rounded-full text-sm font-semibold">Get started</Link>
+              {status === "authenticated" ? (
+                <Link href={"/home" as Route} className="bg-accent text-[#080C16] hover:opacity-90 transition inline-flex items-center justify-center h-12 px-8 rounded-full text-sm font-semibold">Go to Dashboard</Link>
+              ) : (
+                <Link href={"/auth/register" as Route} className="bg-accent text-[#080C16] hover:opacity-90 transition inline-flex items-center justify-center h-12 px-8 rounded-full text-sm font-semibold">Get started</Link>
+              )}
             </div>
           </div>
         </section>
@@ -322,8 +346,14 @@ export default function LandingPage() {
           <div>
             <p className="text-xs uppercase tracking-wider text-zinc-500 mb-3">Account</p>
             <ul className="space-y-2 text-sm text-zinc-400">
-              <li><Link href={"/auth/register" as Route} className="hover:text-white transition">Sign up</Link></li>
-              <li><Link href={"/auth/login" as Route} className="hover:text-white transition">Log in</Link></li>
+              {status === "authenticated" ? (
+                <li><Link href={"/home" as Route} className="hover:text-white transition">Dashboard</Link></li>
+              ) : (
+                <>
+                  <li><Link href={"/auth/register" as Route} className="hover:text-white transition">Sign up</Link></li>
+                  <li><Link href={"/auth/login" as Route} className="hover:text-white transition">Log in</Link></li>
+                </>
+              )}
             </ul>
           </div>
         </div>

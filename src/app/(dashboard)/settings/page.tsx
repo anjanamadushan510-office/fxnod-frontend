@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useAuthStore } from "@/stores/authStore";
 import { UpdateEmailModal } from "@/components/settings/UpdateEmailModal";
-import { useUpdateMe, useGetClientRecord, useCreateClientRecord, useUpdatePassword, useCloseAccount } from "@/services/api/endpoints/users/users";
-import { useSetupEmail2FA, useVerifyEmail2FASetup, useDisableEmail2FA } from "@/services/api/endpoints/auth/auth";
+import { useUpdateMe, useGetClientRecord, useCreateClientRecord, useUpdatePassword, useCloseAccount, useRequestAccountClosure } from "@/services/api/endpoints/users/users";
+import { useSetupEmail2FA, useVerifyEmail2FASetup, useDisableEmail2FA, useRequestDisableEmail2FA } from "@/services/api/endpoints/auth/auth";
+import { parseApiError } from "@/lib/apiError";
 import { useCreateTicket, useListMyTickets } from "@/services/api/endpoints/tickets/tickets";
 import { TicketTopic, TicketStatus } from "@/services/api/model";
 import { isAxiosError } from "axios";
@@ -28,7 +30,24 @@ export default function SettingsPage() {
   const [isUpdateEmailModalOpen, setIsUpdateEmailModalOpen] = useState(false);
   const [isDisableModalOpen, setIsDisableModalOpen] = useState(false);
 
+  // Closing is confirmed twice: typing CLOSE guards against a slip, and the
+  // emailed code proves it is the account owner rather than whoever holds
+  // this session.
   const [closeConfirm, setCloseConfirm] = useState("");
+  const [closeCodeSent, setCloseCodeSent] = useState(false);
+  const [closeCode, setCloseCode] = useState("");
+  const [closeReason, setCloseReason] = useState("");
+
+  const { mutate: requestClosure, isPending: isRequestingClosure } = useRequestAccountClosure({
+    mutation: {
+      onSuccess: () => {
+        setCloseCodeSent(true);
+        toast.success("We emailed you a confirmation code.");
+      },
+      onError: (err) => toast.error(parseApiError(err, "Could not start account closure").message),
+    }
+  });
+
   const { mutate: closeAccount, isPending: isClosingAccount } = useCloseAccount({
     mutation: {
       onSuccess: () => {
@@ -36,20 +55,20 @@ export default function SettingsPage() {
         logout();
         router.push("/auth/login");
       },
-      onError: (err) => {
-        if (isAxiosError(err) && (err.response?.data as any)?.detail) {
-          toast.error(String((err.response?.data as any).detail));
-        } else {
-          toast.error("Failed to close account");
-        }
-      }
+      onError: (err) => toast.error(parseApiError(err, "Failed to close account").message),
     }
   });
 
   const handleCloseAccount = () => {
-    if (closeConfirm === "CLOSE") {
-      closeAccount();
+    if (!closeCodeSent) {
+      if (closeConfirm === "CLOSE") requestClosure();
+      return;
     }
+    if (closeCode.trim().length < 4) {
+      toast.error("Enter the code from your email.");
+      return;
+    }
+    closeAccount({ data: { code: closeCode.trim(), reason: closeReason.trim() || null } });
   };
 
   // Phone number
@@ -193,21 +212,52 @@ export default function SettingsPage() {
     }
   });
 
+  // Turning 2FA off needs a code from the email it protects: the session
+  // alone must never be enough to remove a second factor.
+  const [disableCodeSent, setDisableCodeSent] = useState(false);
+  const [disableCode, setDisableCode] = useState("");
+
+  const closeDisableModal = () => {
+    setIsDisableModalOpen(false);
+    setDisableCodeSent(false);
+    setDisableCode("");
+  };
+
+  const { mutate: requestDisable2FA, isPending: isRequestingDisable } = useRequestDisableEmail2FA({
+    mutation: {
+      onSuccess: () => {
+        setDisableCodeSent(true);
+        toast.success("We emailed you a confirmation code.");
+      },
+      onError: (err) => toast.error(parseApiError(err, "Could not send a code").message),
+    }
+  });
+
   const { mutate: disable2FA, isPending: isDisabling2FA } = useDisableEmail2FA({
     mutation: {
       onSuccess: () => {
         setUser({ is_email_2fa_enabled: false });
         setIsTwoFASetupStarted(false);
         setTwoFAOTP("");
-        setIsDisableModalOpen(false);
+        closeDisableModal();
         toast.success("Two-factor authentication disabled.");
       },
-      onError: () => {
-        setIsDisableModalOpen(false);
-        toast.error("Failed to disable 2FA");
-      },
+      // The modal stays open so a mistyped code can be corrected.
+      onError: (err) => toast.error(parseApiError(err, "Failed to disable 2FA").message),
     }
   });
+
+  const handleConfirmDisable2FA = () => {
+    if (!disableCodeSent) {
+      requestDisable2FA();
+      return;
+    }
+    if (disableCode.trim().length < 4) {
+      toast.error("Enter the code from your email.");
+      return;
+    }
+    disable2FA({ data: { code: disableCode.trim() } });
+  };
 
   const handleStart2FASetup = () => {
     setup2FA();
@@ -442,11 +492,11 @@ export default function SettingsPage() {
             <div className="break-inside-avoid mb-6">
               <p className="px-1 mb-2 text-xs font-medium text-zinc-500">Support</p>
               <div className="bg-panel border border-line rounded-2xl overflow-hidden">
-                <a href="/blog" className="settings-row flex items-center gap-3 px-4 py-3">
+                <Link href="/guides" className="settings-row flex items-center gap-3 px-4 py-3">
                   <svg className="w-5 h-5 text-zinc-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
                   <span className="flex-1 text-sm">Guides</span>
                   <svg className="w-4 h-4 text-zinc-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M7 17L17 7M7 7h10v10"/></svg>
-                </a>
+                </Link>
                 <button type="button" className="settings-row w-full flex items-center gap-3 px-4 py-3 text-left border-t border-line" onClick={() => setActivePane("ticket")}>
                   <svg className="w-5 h-5 text-zinc-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z"/></svg>
                   <span className="flex-1 min-w-0">
@@ -465,7 +515,7 @@ export default function SettingsPage() {
 
       {activePane === "personal" && (
         <div className="space-y-4">
-          <button type="button" className="text-sm text-zinc-400 hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
+          <button type="button" className="text-sm text-gray-900 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
           <article className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-4">
             <p className="text-sm text-zinc-400 leading-relaxed">These details sit on your FXNOD client record — used for wallet payouts and venue transfer. <strong>Once saved, these details cannot be changed.</strong></p>
             
@@ -513,7 +563,7 @@ export default function SettingsPage() {
 
       {activePane === "address" && (
         <div className="space-y-4">
-          <button type="button" className="text-sm text-zinc-400 hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
+          <button type="button" className="text-sm text-gray-900 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
           <article className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-4">
             <p className="text-sm text-zinc-400 leading-relaxed">We use this address on wallet payouts and venue transfers. <strong>Once saved, these details cannot be changed.</strong></p>
 
@@ -545,7 +595,7 @@ export default function SettingsPage() {
                 </button>
                 <button
                   type="button"
-                  className="h-10 px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 disabled:opacity-50"
+                  className="h-10 px-5 rounded-lg bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-sm font-medium disabled:opacity-50"
                   onClick={handleSaveProfile}
                   disabled={isSavingProfile}
                 >
@@ -559,7 +609,7 @@ export default function SettingsPage() {
 
       {activePane === "password" && (
         <div className="space-y-4">
-          <button type="button" className="text-sm text-zinc-400 hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
+          <button type="button" className="text-sm text-gray-900 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
           <article className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-4">
             <label className="block">
               <span className="text-xs text-zinc-500">Current password</span>
@@ -577,7 +627,7 @@ export default function SettingsPage() {
                 {passwordMatchError && <span className="block mt-1 text-xs text-red-500">{passwordMatchError}</span>}
               </label>
             </div>
-            <button type="button" disabled={isUpdatingPassword} className="h-10 px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 disabled:opacity-50" onClick={handleUpdatePassword}>
+            <button type="button" disabled={isUpdatingPassword} className="h-10 px-5 rounded-lg bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-sm font-medium disabled:opacity-50" onClick={handleUpdatePassword}>
               {isUpdatingPassword ? "Updating..." : "Update password"}
             </button>
           </article>
@@ -586,7 +636,7 @@ export default function SettingsPage() {
 
       {activePane === "phone" && (
         <div className="space-y-4">
-          <button type="button" className="text-sm text-zinc-400 hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
+          <button type="button" className="text-sm text-gray-900 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
           <article className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-4">
             <label className="block">
               <span className="text-xs text-zinc-500">Phone number</span>
@@ -602,7 +652,7 @@ export default function SettingsPage() {
             <button
               type="button"
               disabled={isSavingPhone}
-              className="h-10 px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 disabled:opacity-50"
+              className="h-10 px-5 rounded-lg bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-sm font-medium disabled:opacity-50"
               onClick={handleSavePhone}
             >
               {isSavingPhone ? "Saving..." : "Save"}
@@ -613,7 +663,7 @@ export default function SettingsPage() {
 
       {activePane === "2fa" && (
         <div className="space-y-4">
-          <button type="button" className="text-sm text-zinc-400 hover:text-white" onClick={() => { setActivePane("hub"); setIsTwoFASetupStarted(false); setTwoFAOTP(""); }}>← Settings</button>
+          <button type="button" className="text-sm text-gray-900 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-white" onClick={() => { setActivePane("hub"); setIsTwoFASetupStarted(false); setTwoFAOTP(""); }}>← Settings</button>
           <article className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-4">
             <p className="text-sm text-zinc-400 leading-relaxed">Add an authenticator step when you log in to FXNOD. We will email you a 6-digit code.</p>
             
@@ -636,7 +686,7 @@ export default function SettingsPage() {
               <button 
                 type="button" 
                 disabled={isSettingUp2FA}
-                className="h-10 px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 disabled:opacity-50" 
+                className="h-10 px-5 rounded-lg bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-sm font-medium disabled:opacity-50" 
                 onClick={handleStart2FASetup}
               >
                 {isSettingUp2FA ? "Starting setup..." : "Turn on 2FA"}
@@ -658,14 +708,14 @@ export default function SettingsPage() {
                   <button 
                     type="button" 
                     disabled={isVerifying2FA}
-                    className="h-10 px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 disabled:opacity-50" 
+                    className="h-10 px-5 rounded-lg bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-sm font-medium disabled:opacity-50" 
                     onClick={handleVerify2FASetup}
                   >
                     {isVerifying2FA ? "Verifying..." : "Verify & Enable"}
                   </button>
                   <button 
                     type="button" 
-                    className="h-10 px-5 rounded-lg text-sm text-zinc-400 hover:text-white" 
+                    className="h-10 px-5 rounded-lg text-sm text-gray-900 hover:bg-gray-100 dark:text-zinc-400 dark:hover:bg-transparent dark:hover:text-white" 
                     onClick={() => { setIsTwoFASetupStarted(false); setTwoFAOTP(""); }}
                   >
                     Cancel
@@ -679,24 +729,61 @@ export default function SettingsPage() {
 
       {activePane === "close" && (
         <div className="space-y-4">
-          <button type="button" className="text-sm text-zinc-400 hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
+          <button type="button" className="text-sm text-gray-900 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
           <article className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-4">
-            <p className="text-sm text-zinc-400 leading-relaxed">Closing wipes this demo session on the device. Wallet, bots, and transfers stored here are removed.</p>
-            <label className="block">
-              <span className="text-xs text-zinc-500">Type CLOSE to confirm</span>
-              <input 
-                value={closeConfirm}
-                onChange={(e) => setCloseConfirm(e.target.value)}
-                className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500" 
-              />
-            </label>
-            <button 
-              type="button" 
-              className="h-10 px-5 rounded-lg bg-red-500 text-white text-sm font-medium hover:bg-red-400 disabled:opacity-50" 
+            <p className="text-sm text-zinc-400 leading-relaxed">
+              Closing your account signs you out everywhere and removes your profile. You cannot close it while your wallet holds a balance, so withdraw it first.
+            </p>
+            <p className="text-sm text-zinc-400 leading-relaxed">
+              As a regulated financial service, we keep your identity, verification and support records for the period the law requires, then delete them.
+            </p>
+            {!closeCodeSent ? (
+              <label className="block">
+                <span className="text-xs text-zinc-500">Type CLOSE to confirm</span>
+                <input
+                  value={closeConfirm}
+                  onChange={(e) => setCloseConfirm(e.target.value)}
+                  className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500"
+                />
+              </label>
+            ) : (
+              <>
+                <p className="text-sm text-zinc-300">We sent a confirmation code to <strong className="text-ink">{user?.email}</strong>.</p>
+                <label className="block max-w-[240px]">
+                  <span className="text-xs text-zinc-500">Confirmation code</span>
+                  <input
+                    value={closeCode}
+                    onChange={(e) => setCloseCode(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    placeholder="123456"
+                    className="mt-1.5 w-full h-10 px-3 rounded-lg text-center tracking-[0.5em] font-mono bg-bg border border-line text-sm outline-none focus:border-zinc-500"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-xs text-zinc-500">Why are you leaving? (optional)</span>
+                  <textarea
+                    value={closeReason}
+                    onChange={(e) => setCloseReason(e.target.value.slice(0, 1000))}
+                    rows={3}
+                    className="mt-1.5 w-full px-3 py-2 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500"
+                  />
+                </label>
+              </>
+            )}
+            <button
+              type="button"
+              className="h-10 px-5 rounded-lg bg-red-500 text-white text-sm font-medium hover:bg-red-400 disabled:opacity-50"
               onClick={handleCloseAccount}
-              disabled={closeConfirm !== "CLOSE" || isClosingAccount}
+              disabled={
+                closeCodeSent
+                  ? isClosingAccount
+                  : closeConfirm !== "CLOSE" || isRequestingClosure
+              }
             >
-              {isClosingAccount ? "Closing..." : "Close account"}
+              {!closeCodeSent
+                ? isRequestingClosure ? "Sending code..." : "Send confirmation code"
+                : isClosingAccount ? "Closing..." : "Close account permanently"}
             </button>
           </article>
         </div>
@@ -704,20 +791,20 @@ export default function SettingsPage() {
 
       {activePane === "theme" && (
         <div className="space-y-4">
-          <button type="button" className="text-sm text-zinc-400 hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
+          <button type="button" className="text-sm text-gray-900 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
           <article className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-4">
             <p className="text-sm text-zinc-400">Switch the terminal between dark and light.</p>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
-                className={`h-9 px-3 rounded-lg border text-sm font-medium transition-colors ${theme === 'dark' ? 'border-white bg-white text-black' : 'border-line text-zinc-300 hover:text-white'}`}
+                className={`h-9 px-3 rounded-lg text-sm font-medium transition-colors ${theme === 'dark' ? 'bg-slate-900 text-white dark:bg-white dark:text-black' : 'border border-gray-200 text-gray-700 hover:bg-gray-100 hover:text-black dark:border-zinc-800 dark:text-zinc-400 dark:hover:bg-gray-800 dark:hover:text-white'}`}
                 onClick={() => setTheme("dark")}
               >
                 Dark
               </button>
               <button
                 type="button"
-                className={`h-9 px-3 rounded-lg border text-sm font-medium transition-colors ${theme === 'light' ? 'border-white bg-white text-black' : 'border-line text-zinc-300 hover:text-white'}`}
+                className={`h-9 px-3 rounded-lg text-sm font-medium transition-colors ${theme === 'light' ? 'bg-slate-900 text-white dark:bg-white dark:text-black' : 'border border-gray-200 text-gray-700 hover:bg-gray-100 hover:text-black dark:border-zinc-800 dark:text-zinc-400 dark:hover:bg-gray-800 dark:hover:text-white'}`}
                 onClick={() => setTheme("light")}
               >
                 Light
@@ -729,7 +816,7 @@ export default function SettingsPage() {
 
       {activePane === "language" && (
         <div className="space-y-4">
-          <button type="button" className="text-sm text-zinc-400 hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
+          <button type="button" className="text-sm text-gray-900 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
           <article className="bg-panel border border-line rounded-2xl overflow-hidden">
             <button type="button" className="settings-row w-full flex items-center justify-between px-4 py-3 text-left">
               <span className="text-sm">English</span>
@@ -745,7 +832,7 @@ export default function SettingsPage() {
 
       {activePane === "ticket" && (
         <div className="space-y-4">
-          <button type="button" className="text-sm text-zinc-400 hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
+          <button type="button" className="text-sm text-gray-900 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
           <div className="grid lg:grid-cols-2 gap-4 items-start">
             <article className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-4">
               <p className="text-sm text-zinc-400 leading-relaxed">Tell us what is blocked. We reply to the email on this account.</p>
@@ -785,7 +872,7 @@ export default function SettingsPage() {
               </label>
               <button 
                 type="button" 
-                className="h-10 px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 disabled:opacity-50" 
+                className="h-10 px-5 rounded-lg bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-sm font-medium disabled:opacity-50" 
                 onClick={handleCreateTicket}
                 disabled={isCreatingTicket}
               >
@@ -838,22 +925,36 @@ export default function SettingsPage() {
 
       {isDisableModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div 
+          <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => !isDisabling2FA && setIsDisableModalOpen(false)}
+            onClick={() => !isDisabling2FA && closeDisableModal()}
           />
           <div className="relative w-full max-w-md bg-panel border border-line rounded-2xl overflow-hidden shadow-xl">
             <div className="p-5 sm:p-6 space-y-4">
               <h2 className="text-lg font-semibold text-white">Disable Two-Factor Authentication</h2>
-              <p className="text-sm text-zinc-400 leading-relaxed">
-                Are you sure you want to turn off 2FA? This will reduce your account's security.
-              </p>
+              {!disableCodeSent ? (
+                <p className="text-sm text-zinc-400 leading-relaxed">
+                  Are you sure you want to turn off 2FA? This will reduce your account's security. We will email you a code to confirm.
+                </p>
+              ) : (
+                <label className="block">
+                  <span className="text-sm text-zinc-400">Enter the code we sent to {user?.email}</span>
+                  <input
+                    value={disableCode}
+                    onChange={(e) => setDisableCode(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    placeholder="123456"
+                    className="mt-2 w-full h-10 px-3 rounded-lg text-center tracking-[0.5em] font-mono bg-bg border border-line text-sm outline-none focus:border-zinc-500"
+                  />
+                </label>
+              )}
             </div>
             <div className="p-5 sm:p-6 pt-0 flex items-center justify-end gap-3 mt-2">
               <button
                 type="button"
                 className="h-10 px-5 rounded-lg text-sm text-zinc-400 hover:text-white transition-colors disabled:opacity-50"
-                onClick={() => setIsDisableModalOpen(false)}
+                onClick={closeDisableModal}
                 disabled={isDisabling2FA}
               >
                 Cancel
@@ -861,10 +962,12 @@ export default function SettingsPage() {
               <button
                 type="button"
                 className="h-10 px-5 rounded-lg bg-red-500 text-white text-sm font-medium hover:bg-red-400 transition-colors disabled:opacity-50 flex items-center gap-2"
-                onClick={() => disable2FA()}
-                disabled={isDisabling2FA}
+                onClick={handleConfirmDisable2FA}
+                disabled={isDisabling2FA || isRequestingDisable}
               >
-                {isDisabling2FA ? "Turning off..." : "Turn Off"}
+                {!disableCodeSent
+                  ? isRequestingDisable ? "Sending code..." : "Send code"
+                  : isDisabling2FA ? "Turning off..." : "Turn Off"}
               </button>
             </div>
           </div>

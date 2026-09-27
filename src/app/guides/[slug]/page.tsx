@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Route } from 'next';
+import { PublicHeader } from "@/components/layout/PublicHeader";
 
 const guidesData: Record<string, {
   tag: string;
@@ -81,23 +82,7 @@ export default function GuideDetailPage({ params }: { params: { slug: string } }
 
   return (
     <div className="min-h-screen bg-[#080C16] text-white flex flex-col">
-      {/* Navbar Section */}
-      <header className="flex items-center justify-between px-6 sm:px-8 py-5 border-b border-[#24344F] lg:border-none">
-        <Link href="/" className="flex items-center gap-2">
-          {/* Ensure this logo path is correct for your public folder */}
-          <img src="/assets/fxnod-logo.png" alt="FXNOD" className="h-6 w-auto" />
-        </Link>
-        <nav className="hidden lg:block absolute left-1/2 -translate-x-1/2">
-          <Link href={"/guides" as Route} className="text-sm font-medium text-zinc-300 hover:text-white transition-colors">
-            Guides
-          </Link>
-        </nav>
-        <div className="flex items-center">
-          <Link href={"/login?mode=create" as Route} className="px-5 py-2 bg-[#4CE0D3] text-[#080C16] text-sm font-semibold rounded-full hover:bg-opacity-90 transition">
-            Get started
-          </Link>
-        </div>
-      </header>
+      <PublicHeader />
 
       {/* Main Content */}
       <main className="flex-1 py-12 px-4 sm:px-6 lg:px-8">

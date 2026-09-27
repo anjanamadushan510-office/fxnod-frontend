@@ -9,8 +9,9 @@ export interface ParsedApiError {
 
 /**
  * Normalize a backend error from the shared Axios instance into a toast message
- * plus per-field errors. Handles the two FastAPI shapes:
+ * plus per-field errors. Handles the three FastAPI shapes:
  *   - `{ detail: "Email is already registered" }`            (string)
+ *   - `{ detail: { code: "funds_remain", message: "..." } }` (structured)
  *   - `{ detail: [{ loc: ["body","email"], msg, type }] }`   (422 validation)
  */
 export function parseApiError(
@@ -25,6 +26,14 @@ export function parseApiError(
 
     if (typeof detail === "string") {
       return { message: detail, fieldErrors };
+    }
+
+    // Structured refusal: `{ detail: { code: "funds_remain", message } }`.
+    if (detail && typeof detail === "object" && !Array.isArray(detail)) {
+      const message = (detail as { message?: unknown }).message;
+      if (typeof message === "string") {
+        return { message, fieldErrors };
+      }
     }
 
     if (Array.isArray(detail)) {

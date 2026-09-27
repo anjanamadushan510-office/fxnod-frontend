@@ -125,18 +125,20 @@ export function OptionsShell({
         </div>
 
         {/* ── Content Row: Left Drawer | Chart | Right Order ── */}
-        <div className="flex flex-row flex-1 min-h-0 w-full overflow-hidden">
+        <div 
+          className="grid flex-1 min-h-0 w-full overflow-hidden"
+          style={{
+            gridTemplateColumns: `${drawerOpen ? drawerWidth : 0}px minmax(0, 1fr) ${orderWidth}px`,
+            transition: (isResizingDrawer || isResizing) ? "none" : "grid-template-columns 300ms ease-out"
+          }}
+        >
 
-          {/* Left Drawer Panel (flex-none) */}
+          {/* Left Drawer Panel */}
           <div
             className={cn(
-              "flex-none h-full relative z-20 bg-opt-bg overflow-hidden",
+              "h-full relative z-20 bg-opt-bg overflow-hidden",
               drawerOpen && "border-r border-opt-line"
             )}
-            style={{
-              width: drawerOpen ? drawerWidth : 0,
-              transition: isResizingDrawer ? "none" : "width 300ms ease-out",
-            }}
           >
             {drawerOpen && (
               <div
@@ -149,19 +151,13 @@ export function OptionsShell({
             </div>
           </div>
 
-          {/* Chart Area (flex-1 min-w-0) — NEVER absolute, NEVER hardcoded width */}
-          <div className="flex-1 min-w-0 h-full relative z-10 overflow-hidden">
+          {/* Chart Area — dynamically adjusts width via 1fr */}
+          <div className="h-full relative z-10 overflow-hidden">
             {main}
           </div>
 
-          {/* Right Order Panel (flex-none) */}
-          <div
-            className="flex-none h-full relative z-20 bg-opt-bg-elev border-l border-opt-line flex flex-col"
-            style={{
-              width: orderWidth,
-              transition: isResizing ? "none" : "width 300ms ease-out",
-            }}
-          >
+          {/* Right Order Panel */}
+          <div className="h-full relative z-20 bg-opt-bg-elev border-l border-opt-line flex flex-col">
             <div
               onMouseDown={(e) => { e.preventDefault(); setIsResizing(true); }}
               className="absolute -left-1.5 top-0 bottom-0 w-3 cursor-col-resize z-30 hover:bg-opt-ink/10 transition-colors"

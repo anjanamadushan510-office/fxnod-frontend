@@ -6,18 +6,20 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 
-import { useRegister } from "@/services/api/endpoints/auth/auth";
+import { useRegister, useLogin } from "@/services/api/endpoints/auth/auth";
+import { setAccessToken } from "@/services/authToken";
+import { useAuthStore } from "@/stores/authStore";
 import { parseApiError } from "@/lib/apiError";
 import { clearReferralCode, readReferralCode } from "@/lib/referral";
 
 /**
  * Registration screen wired to the Orval `useRegister` mutation (POST
- * /api/v1/auth/register). On the 201 response we send the user to the login
- * page with a success toast (register returns a user, not a session — so the
- * user logs in explicitly).
+ * /api/v1/auth/register). On the 201 response, we immediately log the user in
+ * using the provided credentials via `useLogin` and redirect them to the dashboard.
  */
 export function RegisterForm() {
   const router = useRouter();
+  const bootstrap = useAuthStore((s) => s.bootstrap);
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -55,15 +57,33 @@ export function RegisterForm() {
     return () => clearInterval(timer);
   }, []);
 
+  const loginMut = useLogin({
+    mutation: {
+      onSuccess: async (data) => {
+        if ("access_token" in data) {
+          setAccessToken(data.access_token);
+          await bootstrap();
+          toast.success("Account created successfully!");
+          router.push("/home" as Route);
+        } else {
+          toast.success("Account created. Please log in.");
+          router.push("/auth/login" as Route);
+        }
+      },
+      onError: () => {
+        toast.success("Account created. Please log in.");
+        router.push("/auth/login" as Route);
+      },
+    },
+  });
+
   const registerMut = useRegister({
     mutation: {
       onSuccess: () => {
         // Spent. Leaving it would attribute a second account made in the same
         // browser session to the same affiliate.
         clearReferralCode();
-        toast.success("Account created — enter the code we emailed to verify.");
-        // Registration issues an OTP; continue to the verification screen.
-        router.push(`/auth/verify-otp?email=${encodeURIComponent(email)}` as Route);
+        loginMut.mutate({ data: { email, password } });
       },
       onError: (err) => {
         const parsed = parseApiError(err, "Registration failed. Please try again.");
@@ -238,10 +258,10 @@ export function RegisterForm() {
               <button
                 type="submit"
                 id="auth-submit"
-                disabled={registerMut.isPending}
+                disabled={registerMut.isPending || loginMut.isPending}
                 className="w-full h-10 rounded-xl bg-white text-black text-sm font-medium hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {registerMut.isPending ? "Creating account..." : "Create account"}
+                {registerMut.isPending || loginMut.isPending ? "Creating account..." : "Create account"}
               </button>
             </form>
 

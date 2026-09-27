@@ -58,6 +58,8 @@ export function UpdateEmailModal({ isOpen, onClose }: UpdateEmailModalProps) {
     return "An unexpected error occurred.";
   };
 
+  // The password is checked here for a fast answer, and sent again with the
+  // update request, which is where the server actually enforces it.
   const handleVerifyPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!password) return;
@@ -79,7 +81,7 @@ export function UpdateEmailModal({ isOpen, onClose }: UpdateEmailModalProps) {
 
     setIsLoading(true);
     try {
-      await requestEmailUpdate({ new_email: newEmail });
+      await requestEmailUpdate({ new_email: newEmail, current_password: password });
       toast.success("Verification code sent to " + newEmail);
       setStep("otp");
       setResendTimer(60);
@@ -94,7 +96,7 @@ export function UpdateEmailModal({ isOpen, onClose }: UpdateEmailModalProps) {
     if (resendTimer > 0) return;
     setIsLoading(true);
     try {
-      await requestEmailUpdate({ new_email: newEmail });
+      await requestEmailUpdate({ new_email: newEmail, current_password: password });
       toast.success("Verification code resent to " + newEmail);
       setResendTimer(60);
     } catch (err) {
@@ -166,7 +168,7 @@ export function UpdateEmailModal({ isOpen, onClose }: UpdateEmailModalProps) {
               <button
                 type="submit"
                 disabled={!password || isLoading}
-                className="w-full h-10 mt-2 rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                className="w-full h-10 mt-2 rounded-lg bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200 text-sm font-medium transition-opacity disabled:opacity-50"
               >
                 {isLoading ? "Verifying..." : "Verify Identity"}
               </button>
@@ -194,7 +196,7 @@ export function UpdateEmailModal({ isOpen, onClose }: UpdateEmailModalProps) {
               <button
                 type="submit"
                 disabled={!newEmail || isLoading}
-                className="w-full h-10 mt-2 rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                className="w-full h-10 mt-2 rounded-lg bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200 text-sm font-medium transition-opacity disabled:opacity-50"
               >
                 {isLoading ? "Sending..." : "Send Verification Code"}
               </button>
@@ -223,7 +225,7 @@ export function UpdateEmailModal({ isOpen, onClose }: UpdateEmailModalProps) {
               <button
                 type="submit"
                 disabled={otp.length !== 6 || isLoading}
-                className="w-full h-10 mt-2 rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                className="w-full h-10 mt-2 rounded-lg bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200 text-sm font-medium transition-opacity disabled:opacity-50"
               >
                 {isLoading ? "Confirming..." : "Confirm Email Update"}
               </button>
