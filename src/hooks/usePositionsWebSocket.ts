@@ -81,9 +81,28 @@ export function usePositionsWebSocket(enabled = true): PositionsSocketStatus {
           store.markClosed(msg.data);
           queryClient.invalidateQueries({ queryKey: getGetTradeHistoryQueryKey() });
           break;
-        case "balance":
-          useAccountBalance.getState().setBalance(msg.data.balance, msg.data.currency, msg.data.id || msg.data.loginid);
+        case "balance": {
+          const data = msg.data;
+          if (Array.isArray(data)) {
+            data.forEach((acc: any) => {
+              if (acc.balance !== undefined) {
+                useAccountBalance.getState().setBalance(acc.balance, acc.currency, acc.id || acc.loginid);
+              }
+            });
+          } else if (data) {
+            if (data.accounts && typeof data.accounts === "object") {
+              Object.entries(data.accounts).forEach(([loginid, acc]: [string, any]) => {
+                if (acc && acc.balance !== undefined) {
+                  useAccountBalance.getState().setBalance(acc.balance, acc.currency ?? data.currency, loginid);
+                }
+              });
+            }
+            if (data.balance !== undefined) {
+              useAccountBalance.getState().setBalance(data.balance, data.currency, data.id || data.loginid);
+            }
+          }
           break;
+        }
         case "pong":
           break;
       }
