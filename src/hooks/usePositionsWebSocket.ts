@@ -58,6 +58,11 @@ export function usePositionsWebSocket(enabled = true): PositionsSocketStatus {
       if (cancelledRef.current) return;
       attemptsRef.current = 0;
       setStatus("open");
+      
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ balance: 1, subscribe: 1 }));
+      }
+
       pingRef.current = setInterval(() => {
         if (ws.readyState === WebSocket.OPEN) {
           ws.send(JSON.stringify({ type: "ping" }));
