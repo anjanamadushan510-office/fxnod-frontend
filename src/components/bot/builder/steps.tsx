@@ -100,22 +100,24 @@ export function MethodStep({
 
 export function MarketsStep({ draft, onChange }: StepProps) {
   const strategyId = strategyIdFor(draft) ?? "";
-  const { markets: allowedIds, loading, source } = useMarketsForStrategy(strategyId);
+  const { markets: allowedIds, loading, source, retry } = useMarketsForStrategy(strategyId);
   const allMarkets = useMarketStore((s) => s.allMarkets);
   const selected = draft.form.symbols;
+  const live = source === "api" || source === "cache" || source === "stale_cache";
 
-  // Drop selections this method cannot trade — a Rise / Fall market carried over
+  // Drop selections this method cannot trade — a Rise/Fall market carried over
   // after switching to a digit method would be refused at start. Only once the
-  // live list has answered: the static fallback is a guess, not a verdict.
+  // live list has answered: a failed fetch is not a verdict.
   useEffect(() => {
-    if (loading || source === "fallback" || source === "initial") return;
+    if (!live) return;
     const allowed = new Set(allowedIds);
     const kept = selected.filter((s) => allowed.has(s));
     if (kept.length !== selected.length) onChange(patchForm(draft, { symbols: kept }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, source, allowedIds, strategyId]);
+  }, [live, allowedIds, strategyId]);
 
   const groups = useMemo(() => {
+    if (!live) return [];
     const byId = new Map(allMarkets.map((m) => [m.id, m]));
     const grouped = new Map<string, { label: string; markets: Market[] }>();
     for (const id of allowedIds) {
@@ -131,7 +133,7 @@ export function MarketsStep({ draft, onChange }: StepProps) {
       grouped.get(key)!.markets.push(market);
     }
     return [...grouped.values()];
-  }, [allMarkets, allowedIds]);
+  }, [allMarkets, allowedIds, live]);
 
   function toggle(id: string) {
     if (selected.includes(id)) {
@@ -149,12 +151,33 @@ export function MarketsStep({ draft, onChange }: StepProps) {
         title="Markets"
         subtitle={
           loading
-            ? "Loading the markets this method trades on…"
-            : `${selected.length} selected · tap to add or remove · up to ${MAX_MARKETS}`
+            ? "Asking Deriv which markets this method can trade right now…"
+            : live
+              ? `${selected.length} selected · tap to add or remove · up to ${MAX_MARKETS}`
+              : "Deriv did not return the markets for this method."
         }
       />
 
-      {selected.length > 1 && (
+      {!loading && !live && (
+        <div className="rounded-xl border border-line bg-surface-2 p-5">
+          <p className="text-sm text-ink-2">
+            The open markets could not be loaded. Nothing here is a guess — try again, and only markets Deriv is offering for this method will be listed.
+          </p>
+          <button
+            type="button"
+            onClick={retry}
+            className="mt-4 h-9 px-4 rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-80"
+          >
+            Try again
+          </button>
+        </div>
+      )}
+
+      {!loading && live && groups.length === 0 && (
+        <p className="text-sm text-ink-2">No markets are open for this method right now.</p>
+      )}
+
+      {live && selected.length > 1 && (
         <section className="mb-8">
           <GroupLabel>With several markets</GroupLabel>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">

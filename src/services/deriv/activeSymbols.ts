@@ -140,7 +140,10 @@ export interface MarketResolutionResult {
  * Resolve catalog market IDs for a given strategy directly using Deriv's
  * contract_type filter.
  */
-export async function getMarketsForStrategy(strategyId: string): Promise<MarketResolutionResult> {
+export async function getMarketsForStrategy(
+  strategyId: string,
+  opts?: { fresh?: boolean },
+): Promise<MarketResolutionResult> {
   // 1. Fresh cache
   const fresh = getCached(strategyId);
   if (fresh) {
@@ -159,15 +162,16 @@ export async function getMarketsForStrategy(strategyId: string): Promise<MarketR
   // To fix this, we need to cache the full `DerivActiveSymbol[]` array in `marketCache` instead of just IDs!
   // Let's modify `marketCache.ts` or just store it in memory here.
   
-  return fetchAndSetMarkets(strategyId);
+  return fetchAndSetMarkets(strategyId, opts?.fresh === true);
 }
 
 // Memory cache for the full objects
 const fullSymbolsCache = new Map<string, { timestamp: number, symbols: DerivActiveSymbol[] }>();
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
-async function fetchAndSetMarkets(strategyId: string): Promise<MarketResolutionResult> {
+async function fetchAndSetMarkets(strategyId: string, fresh = false): Promise<MarketResolutionResult> {
   try {
+    if (fresh) fullSymbolsCache.delete(strategyId);
     const cached = fullSymbolsCache.get(strategyId);
     let symbols: DerivActiveSymbol[];
     let source: "api" | "cache" = "api";
@@ -188,7 +192,10 @@ async function fetchAndSetMarkets(strategyId: string): Promise<MarketResolutionR
 
     for (const sym of symbols) {
       const suspended = sym.is_trading_suspended === 1 || sym.is_trading_suspended === true;
-      if (suspended) continue;
+      const closed = sym.exchange_is_open === 0 || sym.exchange_is_open === false;
+      // Only what can be traded at this moment. A closed or suspended symbol
+      // is not a choice, even if Deriv still lists it.
+      if (suspended || closed) continue;
       
       const catalogId = sym.symbol;
       if (!catalogId || seen.has(catalogId)) continue;
