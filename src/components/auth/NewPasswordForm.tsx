@@ -36,7 +36,7 @@ export function NewPasswordForm({ onSubmit, isLoading, buttonText = "Update pass
             minLength={8} 
             value={newPassword} 
             onChange={(e) => { setNewPassword(e.target.value); setPasswordMatchError(""); }} 
-            className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500" 
+            className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm text-ink outline-none focus:border-zinc-500" 
             placeholder="At least 8 characters" 
           />
         </label>
@@ -47,7 +47,7 @@ export function NewPasswordForm({ onSubmit, isLoading, buttonText = "Update pass
             minLength={8} 
             value={confirmPassword} 
             onChange={(e) => { setConfirmPassword(e.target.value); setPasswordMatchError(""); }} 
-            className={cn("mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border text-sm outline-none focus:border-zinc-500", passwordMatchError ? "border-red-500" : "border-line")} 
+            className={cn("mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border text-sm text-ink outline-none focus:border-zinc-500", passwordMatchError ? "border-red-500" : "border-line")} 
             placeholder="Repeat new password" 
           />
           {passwordMatchError && <span className="block mt-1 text-xs text-red-500">{passwordMatchError}</span>}
