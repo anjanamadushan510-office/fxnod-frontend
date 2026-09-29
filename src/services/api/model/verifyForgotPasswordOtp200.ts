@@ -31,14 +31,6 @@ library, not a float.
  * OpenAPI spec version: 0.1.0
  */
 
-export type GetClosedAccountsParams = {
-/**
- * @minimum 1
- * @maximum 200
- */
-limit?: number;
-/**
- * @minimum 0
- */
-offset?: number;
+export type VerifyForgotPasswordOtp200 = {
+  reset_token: string;
 };

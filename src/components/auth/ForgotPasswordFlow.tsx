@@ -1,7 +1,12 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { NewPasswordForm } from "./NewPasswordForm";
-import { customInstance } from "@/services/api/mutator/custom-instance";
+import { parseApiError } from "@/lib/apiError";
+import {
+  useForgotPassword,
+  useVerifyForgotPasswordOtp,
+  useResetPassword,
+} from "@/services/api/endpoints/users/users";
 
 interface ForgotPasswordFlowProps {
   onBackToLogin: () => void;
@@ -12,65 +17,60 @@ export function ForgotPasswordFlow({ onBackToLogin }: ForgotPasswordFlowProps) {
   const [email, setEmail] = useState("");
   const [otpCode, setOtpCode] = useState("");
   const [resetToken, setResetToken] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const forgotPassword = useForgotPassword({
+    mutation: {
+      onSuccess: () => {
+        setStep(2);
+        toast.success("OTP sent to your email");
+      },
+      onError: (err) => {
+        toast.error(parseApiError(err).message || "Failed to send OTP. Please check your email.");
+      }
+    }
+  });
 
-  const handleRequestEmail = async (e: React.FormEvent) => {
+  const verifyOtp = useVerifyForgotPasswordOtp({
+    mutation: {
+      onSuccess: (data) => {
+        setResetToken(data.reset_token);
+        setStep(3);
+        toast.success("OTP verified. Please enter your new password.");
+      },
+      onError: (err) => {
+        toast.error(parseApiError(err).message || "Invalid OTP");
+      }
+    }
+  });
+
+  const resetPassword = useResetPassword({
+    mutation: {
+      onSuccess: () => {
+        toast.success("Password reset successful. You can now log in.");
+        onBackToLogin();
+      },
+      onError: (err) => {
+        toast.error(parseApiError(err).message || "Failed to reset password");
+      }
+    }
+  });
+
+  const handleRequestEmail = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return toast.error("Please enter your email");
-    
-    setIsLoading(true);
-    try {
-      await customInstance({
-        url: "/api/v1/users/forgot-password",
-        method: "POST",
-        data: { email }
-      });
-      setStep(2);
-      toast.success("OTP sent to your email");
-    } catch (err: any) {
-      toast.error(err?.response?.data?.detail || "Failed to send OTP. Please check your email.");
-    } finally {
-      setIsLoading(false);
-    }
+    forgotPassword.mutate({ data: { email } });
   };
 
-  const handleVerifyOTP = async (e: React.FormEvent) => {
+  const handleVerifyOTP = (e: React.FormEvent) => {
     e.preventDefault();
     if (!otpCode) return toast.error("Please enter the OTP");
-    
-    setIsLoading(true);
-    try {
-      const res = await customInstance<{ reset_token: string }>({
-        url: "/api/v1/users/verify-otp",
-        method: "POST",
-        data: { email, code: otpCode }
-      });
-      setResetToken(res.reset_token);
-      setStep(3);
-      toast.success("OTP verified. Please enter your new password.");
-    } catch (err: any) {
-      toast.error(err?.response?.data?.detail || "Invalid OTP");
-    } finally {
-      setIsLoading(false);
-    }
+    verifyOtp.mutate({ data: { email, code: otpCode } });
   };
 
-  const handleResetPassword = async (newPassword: string) => {
-    setIsLoading(true);
-    try {
-      await customInstance({
-        url: "/api/v1/users/reset-password",
-        method: "POST",
-        data: { reset_token: resetToken, new_password: newPassword }
-      });
-      toast.success("Password reset successful. You can now log in.");
-      onBackToLogin();
-    } catch (err: any) {
-      toast.error(err?.response?.data?.detail || "Failed to reset password");
-    } finally {
-      setIsLoading(false);
-    }
+  const handleResetPassword = (newPassword: string) => {
+    resetPassword.mutate({ data: { reset_token: resetToken, new_password: newPassword } });
   };
+
+  const isLoading = forgotPassword.isPending || verifyOtp.isPending || resetPassword.isPending;
 
   return (
     <div className="flex flex-col gap-4">
