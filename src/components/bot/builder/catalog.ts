@@ -36,10 +36,13 @@ export interface MethodOption {
   /** The engine strategy that trades it. Absent: no bot exists for it yet. */
   strategyId?: string;
   /**
-   * Set when the method IS a side: "Matches" and "Differs" are one strategy
-   * with opposite predictions, but two distinct choices to a user.
+   * Set when the method IS a side: a saved "Differs" bot is the Matches/Differs
+   * strategy locked to that prediction. The step-1 card is the combined method;
+   * this one stays so those bots still open.
    */
   fixedDirection?: Exclude<Direction, "auto">;
+  /** Kept for saved bots and the strategy matrix, not offered on step 1. */
+  hidden?: boolean;
 }
 
 export interface MethodGroup {
@@ -49,44 +52,25 @@ export interface MethodGroup {
 
 export const METHOD_GROUPS: MethodGroup[] = [
   {
-    label: "Price direction",
+    label: "Options",
     methods: [
-      { key: "rise_fall", name: "Rise / Fall", strategyId: "rise_fall", description: "Will the price finish higher or lower than it started?" },
-      { key: "higher_lower", name: "Higher / Lower", strategyId: "higher_lower", description: "Will the price finish above or below a target you pick?" },
-    ],
-  },
-  {
-    label: "Barriers",
-    methods: [
-      { key: "touch_no_touch", name: "Touch / No Touch", strategyId: "touch_no_touch", description: "Will price touch a target at any moment before time is up?" },
-      { key: "ends_in_out", strategyId: "ends_in_out", name: "Ends In / Ends Out", description: "Will the price finish inside or outside two targets?" },
-    ],
-  },
-  {
-    label: "Last digit",
-    methods: [
-      { key: "even_odd", name: "Even / Odd", strategyId: "even_odd", description: "Will the last digit of the price be even (0, 2, 4, 6, 8) or odd (1, 3, 5, 7, 9)?" },
-      { key: "over_under", name: "Over / Under", strategyId: "over_under", description: "Will the last digit be higher or lower than a number you pick?" },
-      { key: "matches", name: "Matches", strategyId: "matches_differs", fixedDirection: "up", description: "Will the last digit be exactly the number you pick? Harder — larger payout." },
-      { key: "differs", name: "Differs", strategyId: "matches_differs", fixedDirection: "down", description: "Will the last digit be anything except the number you pick? Easier — smaller payout." },
-    ],
-  },
-  {
-    label: "Grow / leverage",
-    methods: [
-      { key: "accumulators", name: "Accumulators", strategyId: "accumulator", description: "Payout grows every tick the price stays inside a band. Ends if it hits the edge." },
+      { key: "rise_fall", name: "Rise/Fall", strategyId: "rise_fall", description: "Will the price finish higher or lower than it started?" },
+      { key: "higher_lower", name: "Higher/Lower", strategyId: "higher_lower", description: "Will the price finish above or below a target you pick?" },
+      { key: "matches", name: "Matches/Differs", strategyId: "matches_differs", description: "Will the last digit match the number you pick, or be anything else?" },
+      { key: "even_odd", name: "Even/Odd", strategyId: "even_odd", description: "Will the last digit be even (0, 2, 4, 6, 8) or odd (1, 3, 5, 7, 9)?" },
+      { key: "accumulators", name: "Accumulators", strategyId: "accumulator", description: "Payout grows every tick the price stays inside a band. Stops if it hits the edge." },
+      { key: "over_under", name: "Over/Under", strategyId: "over_under", description: "Will the last digit be higher or lower than a number you pick?" },
       { key: "multipliers", name: "Multipliers", strategyId: "multiplier", description: "Ride the price with a multiplier. You cannot lose more than your stake." },
-    ],
-  },
-  {
-    label: "More options",
-    methods: [
-      { key: "asians", strategyId: "asians", name: "Asians", description: "Win if the average price over the contract is higher or lower than the start." },
-      { key: "reset_call_put", strategyId: "reset_call_put", name: "Reset Call / Put", description: "Like Rise / Fall, but if price hits a reset level the starting price is replaced." },
-      { key: "only_ups_downs", strategyId: "only_ups_downs", name: "Only Ups / Only Downs", description: "Win if every tick in the contract moves only up, or only down." },
-      { key: "high_low_tick", strategyId: "high_low_ticks", name: "High Tick / Low Tick", description: "Pick which tick in the series will be the highest or the lowest." },
-      { key: "turbos", strategyId: "turbos", name: "Turbos", description: "Stay on your side of a barrier. Knocked out if price crosses it." },
-      { key: "vanillas", strategyId: "vanillas", name: "Vanillas", description: "Call or Put. Payout follows how far price finishes past the start." },
+      { key: "touch_no_touch", name: "Touch/No Touch", strategyId: "touch_no_touch", description: "Will price touch a target at any moment before time is up?" },
+      { key: "vanillas", name: "Vanillas", strategyId: "vanillas", description: "Call or Put. Payout follows how far price finishes past the start." },
+      { key: "turbos", name: "Turbos", strategyId: "turbos", description: "Stay on your side of a barrier. Knocked out if price crosses it." },
+      // Not on the step-1 list. Saved bots and the strategy matrix still resolve them.
+      { key: "differs", name: "Differs", strategyId: "matches_differs", fixedDirection: "down", hidden: true, description: "Will the last digit be anything except the number you pick?" },
+      { key: "ends_in_out", strategyId: "ends_in_out", name: "Ends In / Ends Out", hidden: true, description: "Will the price finish inside or outside two targets?" },
+      { key: "asians", strategyId: "asians", name: "Asians", hidden: true, description: "Win if the average price over the contract is higher or lower than the start." },
+      { key: "reset_call_put", strategyId: "reset_call_put", name: "Reset Call / Put", hidden: true, description: "Like Rise / Fall, but if price hits a reset level the starting price is replaced." },
+      { key: "only_ups_downs", strategyId: "only_ups_downs", name: "Only Ups / Only Downs", hidden: true, description: "Win if every tick in the contract moves only up, or only down." },
+      { key: "high_low_tick", strategyId: "high_low_ticks", name: "High Tick / Low Tick", hidden: true, description: "Pick which tick in the series will be the highest or the lowest." },
     ],
   },
 ];

@@ -62,7 +62,7 @@ export function MethodStep({
   return (
     <div className="w-full">
       <StepHeader
-        title="Trading method"
+        title="Options"
         subtitle={
           loading
             ? "Loading the bots available to you…"
@@ -70,20 +70,22 @@ export function MethodStep({
         }
       />
       {METHOD_GROUPS.map((group) => (
-        <section key={group.label} className="mb-8 last:mb-0">
-          <GroupLabel>{group.label}</GroupLabel>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-            {group.methods.map((method) => {
+        <section key={group.label}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
+            {group.methods.filter((method) => !method.hidden).map((method) => {
               const available = isMethodAvailable(method, strategies);
+              const active =
+                draft.method === method.key ||
+                (method.key === "matches" && draft.method === "differs");
               return (
                 <ChoiceCard
                   key={method.key}
                   title={method.name}
                   description={method.description}
                   badge={available || loading ? undefined : "Coming soon"}
-                  active={draft.method === method.key}
+                  active={active}
                   disabled={!available}
-                  onSelect={() => onChange(withMethod(draft, method.key))}
+                  onSelect={() => onChange(withMethod(draft, method.key === "matches" && draft.method === "differs" ? "differs" : method.key))}
                 />
               );
             })}
@@ -564,7 +566,12 @@ export function SetupStep({
 
         {shape.digit && (
           <PillPicker
-            label={method?.fixedDirection === "down" ? "Win unless the last digit is" : "Win if the last digit is"}
+            label={
+              method?.fixedDirection === "down" ||
+              (strategyId === "matches_differs" && form.direction === "down")
+                ? "Win unless the last digit is"
+                : "Win if the last digit is"
+            }
             options={DIGITS}
             value={form.digit}
             onChange={(digit) => set({ digit, autoDigit: false })}
