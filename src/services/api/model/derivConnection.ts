@@ -40,5 +40,9 @@ export interface DerivConnection {
   connected_at: string;
   expires_at: string;
   needs_reconnect: boolean;
+  /** Name of the person who owns this Deriv login, as Deriv reports it. */
+  owner_name?: string;
+  /** Deriv's id for that person, shared by the login's real and demo accounts. */
+  client_id?: string;
   accounts: DerivLinkedAccount[];
 }

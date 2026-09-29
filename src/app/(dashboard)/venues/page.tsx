@@ -6,6 +6,7 @@ import { type Route } from "next";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { cn } from "@/lib/cn";
+import { formatMoney } from "@/lib/decimal";
 import { parseApiError } from "@/lib/apiError";
 import { derivStatusKey, useDerivStatus } from "@/hooks/useDerivStatus";
 import { useStartDerivOAuth } from "@/hooks/useStartDerivOAuth";
@@ -200,7 +201,16 @@ function DerivLoginRow({ connection, index }: { connection: DerivConnection; ind
     <div className="rounded-xl border border-line bg-surface-2/40">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-3">
         <div className="flex items-center gap-2.5">
-          <span className="text-sm font-medium text-ink">Deriv login {index + 1}</span>
+          <div className="leading-tight">
+            <span className="text-sm font-medium text-ink">
+              {connection.owner_name?.trim() || `Deriv login ${index + 1}`}
+            </span>
+            {connection.client_id && (
+              <p className="mt-0.5 font-mono text-[11px] text-ink-3">
+                Client ID {connection.client_id}
+              </p>
+            )}
+          </div>
           {connection.needs_reconnect ? (
             <span className="inline-flex items-center rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-400 ring-1 ring-inset ring-amber-500/20">
               Session expired
@@ -263,6 +273,12 @@ function DerivLoginRow({ connection, index }: { connection: DerivConnection; ind
                   {account.is_virtual ? "Demo · virtual funds" : "Real money"} ·{" "}
                   {account.currency}
                 </p>
+                {account.balance && (
+                  <p className="mt-1 font-mono text-sm tabular-nums text-ink">
+                    {formatMoney(account.balance, account.currency === "USD" ? "$" : "")}
+                    {account.currency !== "USD" ? ` ${account.currency}` : ""}
+                  </p>
+                )}
               </div>
             </div>
             {account.is_selected ? (
