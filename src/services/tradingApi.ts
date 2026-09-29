@@ -29,6 +29,13 @@ export interface AccountStatus {
   is_virtual: boolean;
 }
 
+async function dTraderClientId(): Promise<string> {
+  const res = await api.get<{ client_id?: string }>("/api/v1/deriv/oauth/client");
+  const clientId = res.data.client_id?.trim();
+  if (!clientId) throw new Error("missing Deriv client id");
+  return clientId;
+}
+
 export const derivApi = {
   /** 
    * Start linking — Generates PKCE parameters, stores code_verifier in sessionStorage,
@@ -58,9 +65,10 @@ export const derivApi = {
     sessionStorage.setItem('pkce_code_verifier', codeVerifier);
     sessionStorage.setItem('oauth_state', state);
 
-    // A dBot app comes with its client id from the backend; dTrader uses the
-    // build-time one.
-    const clientId = app?.clientId ?? (process.env.NEXT_PUBLIC_DERIV_APP_ID || '1089');
+    // A dBot app comes with its client id from the apps list. dTrader's id is
+    // this environment's, from the API, so a staging build does not keep
+    // production's app.
+    const clientId = app?.clientId ?? (await dTraderClientId());
     const authUrl = new URL('https://auth.deriv.com/oauth2/auth');
     authUrl.searchParams.set('response_type', 'code');
     authUrl.searchParams.set('client_id', clientId);
