@@ -321,34 +321,36 @@ export function TradeTypesGuideModal({
         </div>
 
         {/* Horizontal Tabs */}
-        <div className="flex flex-nowrap overflow-x-auto w-full gap-2 border-b border-opt-line px-5 py-3 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-          {tradeTypeKeys.map((key) => {
-            const isSelected = activeTab === key;
-            const hasFire = key === "Rise/Fall" || key === "Accumulators";
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setActiveTab(key)}
-                className={cn(
-                  "flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-[14px] font-semibold transition-colors",
-                  isSelected
-                    ? "bg-opt-ink text-opt-bg"
-                    : "bg-opt-bg-sunk text-opt-ink-3 hover:text-opt-ink"
-                )}
-              >
-                {key}
-                {hasFire && (
-                  <DotLottiePlayer
-                    src="/trade-types/rise-fall/fire.lottie"
-                    autoplay
-                    loop
-                    className="w-4 h-4 ml-1"
-                  />
-                )}
-              </button>
-            );
-          })}
+        <div className="w-full max-w-full overflow-hidden border-b border-opt-line px-5 pt-3 pb-2">
+          <div className="flex w-full overflow-x-auto gap-2 snap-x [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            {tradeTypeKeys.map((key) => {
+              const isSelected = activeTab === key;
+              const hasFire = key === "Rise/Fall" || key === "Accumulators";
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setActiveTab(key)}
+                  className={cn(
+                    "flex flex-none snap-center items-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-[14px] font-semibold transition-colors",
+                    isSelected
+                      ? "bg-opt-ink text-opt-bg"
+                      : "bg-opt-bg-sunk text-opt-ink-3 hover:text-opt-ink"
+                  )}
+                >
+                  {key}
+                  {hasFire && (
+                    <DotLottiePlayer
+                      src="/trade-types/rise-fall/fire.lottie"
+                      autoplay
+                      loop
+                      className="w-4 h-4 ml-1"
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Scrollable body */}
