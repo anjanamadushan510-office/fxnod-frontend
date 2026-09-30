@@ -6,8 +6,8 @@ import { cn } from "@/lib/cn";
 import { useTheme } from "next-themes";
 import dynamic from "next/dynamic";
 
-const Player = dynamic(
-  () => import("@lottiefiles/react-lottie-player").then((mod) => mod.Player),
+const DotLottiePlayer = dynamic(
+  () => import("@dotlottie/react-player").then((mod) => mod.DotLottiePlayer),
   { ssr: false }
 );
 
@@ -307,7 +307,7 @@ export function HowToTradeModal({
               </p>
               {(s.darkAnim || s.lightAnim) ? (
                 <div className="relative flex-shrink-0 overflow-hidden rounded-xl border border-opt-line bg-opt-bg-sunk">
-                  <Player
+                  <DotLottiePlayer
                     src={(isDark ? s.darkAnim : s.lightAnim) as string}
                     autoplay
                     loop
