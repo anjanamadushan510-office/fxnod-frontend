@@ -45,6 +45,8 @@ const CONTENT: Record<
           </>
         ),
         exit: "1900.02",
+        darkAnim: "/trade-types/even-odd/even_dark.lottie",
+        lightAnim: "/trade-types/even-odd/even_light.lottie",
       },
       {
         title: "Odd",
@@ -55,6 +57,8 @@ const CONTENT: Record<
           </>
         ),
         exit: "1900.03",
+        darkAnim: "/trade-types/even-odd/odd_dark.lottie",
+        lightAnim: "/trade-types/even-odd/odd_light.lottie",
       },
     ],
   },
