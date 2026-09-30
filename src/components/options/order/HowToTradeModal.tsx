@@ -263,7 +263,7 @@ export function HowToTradeModal({
         onClick={onClose}
       />
 
-      <div className="relative z-10 flex h-[min(640px,calc(100vh-32px))] w-[min(460px,calc(100vw-32px))] flex-col overflow-hidden rounded-2xl border border-opt-line bg-opt-bg-elev shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
+      <div className="relative z-10 flex max-h-[80vh] w-[min(460px,calc(100vw-32px))] flex-col overflow-hidden rounded-2xl border border-opt-line bg-opt-bg-elev shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
         {/* Fixed header */}
         <div className="flex flex-shrink-0 items-center justify-between border-b border-opt-line px-5 py-4">
           <h2 className="text-[17px] font-bold text-opt-ink">{contractLabel}</h2>
@@ -323,7 +323,7 @@ function Glossary({ children }: { children: React.ReactNode }) {
 function DiagramPlaceholder({ label, exit }: { label: string; exit: string }) {
   const lastDigit = exit.slice(-1);
   return (
-    <div className="relative h-[120px] overflow-hidden rounded-xl border border-opt-line bg-opt-bg-sunk">
+    <div className="relative flex-shrink-0 h-[120px] overflow-hidden rounded-xl border border-opt-line bg-opt-bg-sunk">
       <span className="absolute left-3 top-2 text-[11px] font-semibold text-opt-ink-3">
         {label}
       </span>
@@ -347,7 +347,7 @@ function DiagramPlaceholder({ label, exit }: { label: string; exit: string }) {
 /** Embedded-video stand-in (Deriv-branded thumbnail + play button). */
 function VideoPlaceholder({ title }: { title: string }) {
   return (
-    <div className="relative grid h-[160px] place-items-center overflow-hidden rounded-xl bg-gradient-to-br from-[#0a1430] to-[#13204a]">
+    <div className="relative grid flex-shrink-0 h-[160px] place-items-center overflow-hidden rounded-xl bg-gradient-to-br from-[#0a1430] to-[#13204a]">
       <span className="absolute left-3 top-3 text-[12px] font-bold text-white/90">
         deriv
       </span>
