@@ -25,7 +25,7 @@ interface DirectionSection {
 /** Per-trade-type help content (Even/Odd fully fleshed out per §7.1). */
 const CONTENT: Record<
   string,
-  { intro: React.ReactNode; sections: DirectionSection[]; video: string }
+  { intro: React.ReactNode; sections: DirectionSection[] }
 > = {
   "Even/Odd": {
     intro: (
@@ -57,7 +57,6 @@ const CONTENT: Record<
         exit: "1900.03",
       },
     ],
-    video: "Digits Even",
   },
   "Rise/Fall": {
     intro: (
@@ -81,7 +80,6 @@ const CONTENT: Record<
         lightAnim: "/trade-types/rise-fall/fall_light.lottie",
       },
     ],
-    video: "/trade-types/rise-fall/video.mp4",
   },
   "Accumulators": {
     intro: (
@@ -96,7 +94,6 @@ const CONTENT: Record<
         exit: "1900.00",
       },
     ],
-    video: "Accumulators",
   },
   "Matches/Differs": {
     intro: (
@@ -116,7 +113,6 @@ const CONTENT: Record<
         exit: "1900.00",
       },
     ],
-    video: "Matches/Differs",
   },
   "Over/Under": {
     intro: (
@@ -136,7 +132,6 @@ const CONTENT: Record<
         exit: "1900.00",
       },
     ],
-    video: "Over/Under",
   },
   "Multipliers": {
     intro: (
@@ -156,7 +151,6 @@ const CONTENT: Record<
         exit: "1900.00",
       },
     ],
-    video: "Multipliers",
   },
   "Touch/No Touch": {
     intro: (
@@ -176,7 +170,6 @@ const CONTENT: Record<
         exit: "1900.00",
       },
     ],
-    video: "Touch/No Touch",
   },
   "Higher/Lower": {
     intro: (
@@ -196,7 +189,6 @@ const CONTENT: Record<
         exit: "1900.00",
       },
     ],
-    video: "Higher/Lower",
   },
   "Turbos": {
     intro: (
@@ -216,7 +208,6 @@ const CONTENT: Record<
         exit: "1900.00",
       },
     ],
-    video: "Turbos",
   },
   "Vanillas": {
     intro: (
@@ -236,7 +227,6 @@ const CONTENT: Record<
         exit: "1900.00",
       },
     ],
-    video: "Vanillas",
   },
 };
 
@@ -319,20 +309,6 @@ export function HowToTradeModal({
               )}
             </section>
           ))}
-
-          {content.video.startsWith("/") ? (
-            <video
-              src={content.video}
-              autoPlay
-              loop
-              muted
-              playsInline
-              controls
-              className="relative flex-shrink-0 w-full overflow-hidden rounded-xl object-cover"
-            />
-          ) : (
-            <VideoPlaceholder title={content.video} />
-          )}
         </div>
 
         {/* Fixed footer */}
@@ -383,25 +359,6 @@ function DiagramPlaceholder({ label, exit }: { label: string; exit: string }) {
   );
 }
 
-/** Embedded-video stand-in (Deriv-branded thumbnail + play button). */
-function VideoPlaceholder({ title }: { title: string }) {
-  return (
-    <div className="relative grid flex-shrink-0 h-[160px] place-items-center overflow-hidden rounded-xl bg-gradient-to-br from-[#0a1430] to-[#13204a]">
-      <span className="absolute left-3 top-3 text-[12px] font-bold text-white/90">
-        deriv
-      </span>
-      <span className="absolute right-4 top-4 h-6 w-6 rounded bg-[#00A79E]/70" />
-      <span className="absolute bottom-4 right-6 h-5 w-5 rounded bg-[#FF4444]/70" />
-      <span className="absolute left-4 bottom-4 text-[16px] font-bold text-white">
-        {title}
-      </span>
-      <span className="grid h-12 w-12 place-items-center rounded-full bg-black/70 text-white">
-        <Play className="h-5 w-5 translate-x-[1px]" fill="currentColor" />
-      </span>
-    </div>
-  );
-}
-
 function genericContent(label: string) {
   return {
     intro: (
@@ -410,6 +367,5 @@ function genericContent(label: string) {
     sections: [
       { title: label, description: <>Placeholder explainer for {label}.</>, exit: "1900.00" },
     ],
-    video: label,
   };
 }
