@@ -4,7 +4,12 @@ import { useEffect } from "react";
 import { Play, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useTheme } from "next-themes";
-import { Player } from "@lottiefiles/react-lottie-player";
+import dynamic from "next/dynamic";
+
+const Player = dynamic(
+  () => import("@lottiefiles/react-lottie-player").then((mod) => mod.Player),
+  { ssr: false }
+);
 
 const TEAL = "#00A79E";
 
