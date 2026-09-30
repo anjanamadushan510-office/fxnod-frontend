@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Play, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useTheme } from "next-themes";
@@ -287,10 +287,6 @@ export function HowToTradeModal({
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
 
-  const [activeTab, setActiveTab] = useState(() => 
-    Object.keys(CONTENT).includes(contractLabel) ? contractLabel : Object.keys(CONTENT)[0]
-  );
-
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -299,14 +295,14 @@ export function HowToTradeModal({
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const content = CONTENT[activeTab] ?? genericContent(activeTab);
+  const content = CONTENT[contractLabel] ?? genericContent(contractLabel);
 
   return (
     <div
       className="fixed inset-0 z-[60] flex items-start justify-center p-4 pt-[80px]"
       role="dialog"
       aria-modal="true"
-      aria-label="Trade types guide"
+      aria-label={`How to trade ${contractLabel}`}
     >
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
@@ -316,7 +312,7 @@ export function HowToTradeModal({
       <div className="relative z-10 flex max-h-[90vh] w-[min(460px,calc(100vw-32px))] flex-col overflow-hidden rounded-2xl border border-opt-line bg-opt-bg-elev shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
         {/* Fixed header */}
         <div className="flex flex-shrink-0 items-center justify-between border-b border-opt-line px-5 py-4">
-          <h2 className="text-[17px] font-bold text-opt-ink">Trade types</h2>
+          <h2 className="text-[17px] font-bold text-opt-ink">{contractLabel}</h2>
           <button
             type="button"
             aria-label="Close"
@@ -325,40 +321,6 @@ export function HowToTradeModal({
           >
             <X className="h-[18px] w-[18px]" />
           </button>
-        </div>
-
-        {/* Tab Navigation */}
-        <div className="flex flex-shrink-0 gap-6 overflow-x-auto border-b border-opt-line px-5 pt-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {Object.keys(CONTENT).map((tab) => {
-            const isActive = tab === activeTab;
-            const hasFire = tab === "Rise/Fall" || tab === "Accumulators";
-            return (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setActiveTab(tab)}
-                className={cn(
-                  "relative flex items-center gap-1.5 whitespace-nowrap pb-3 text-[14px] font-medium transition-colors",
-                  isActive ? "text-opt-ink" : "text-opt-ink-3 hover:text-opt-ink"
-                )}
-              >
-                {tab}
-                {hasFire && (
-                  <div className="flex h-[18px] w-[18px] items-center justify-center">
-                    <DotLottiePlayer
-                      src="/trade-types/rise-fall/fire.lottie"
-                      autoplay
-                      loop
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                )}
-                {isActive && (
-                  <span className="absolute inset-x-0 bottom-0 h-[2px] bg-[#FF4444]" />
-                )}
-              </button>
-            );
-          })}
         </div>
 
         {/* Scrollable body */}
