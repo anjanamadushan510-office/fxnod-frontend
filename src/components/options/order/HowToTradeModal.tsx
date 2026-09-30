@@ -253,7 +253,7 @@ export function HowToTradeModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-[5vh]"
       role="dialog"
       aria-modal="true"
       aria-label={`How to trade ${contractLabel}`}
