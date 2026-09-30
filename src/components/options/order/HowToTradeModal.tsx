@@ -90,8 +90,16 @@ const CONTENT: Record<
     sections: [
       {
         title: "Accumulators",
-        description: <>Your <Glossary>payout</Glossary> keeps growing as long as the spot price stays within a specified <Glossary>barrier</Glossary> range from the previous spot price at each interval.</>,
+        description: (
+          <>
+            Your <Glossary>payout</Glossary> keeps growing as long as the spot price stays within a specified <Glossary>barrier</Glossary> range from the previous spot price at each interval.
+            <span className="block mt-2"><strong>Take profit:</strong> You can close your trade early to secure your profit.</span>
+            <span className="block mt-2"><strong>Note:</strong> You are exposed to slippage risk if the market gaps.</span>
+          </>
+        ),
         exit: "1900.00",
+        darkAnim: "/trade-types/accumulators/accumulators_dark.lottie",
+        lightAnim: "/trade-types/accumulators/accumulators_light.lottie",
       },
     ],
   },
