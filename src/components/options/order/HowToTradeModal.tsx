@@ -263,7 +263,7 @@ export function HowToTradeModal({
         onClick={onClose}
       />
 
-      <div className="relative z-10 flex max-h-[80vh] w-[min(460px,calc(100vw-32px))] flex-col overflow-hidden rounded-2xl border border-opt-line bg-opt-bg-elev shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
+      <div className="relative z-10 flex max-h-[90vh] w-[min(460px,calc(100vw-32px))] flex-col overflow-hidden rounded-2xl border border-opt-line bg-opt-bg-elev shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
         {/* Fixed header */}
         <div className="flex flex-shrink-0 items-center justify-between border-b border-opt-line px-5 py-4">
           <h2 className="text-[17px] font-bold text-opt-ink">{contractLabel}</h2>
