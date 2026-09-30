@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Flame, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useTheme } from "next-themes";
@@ -282,6 +282,13 @@ export function TradeTypesGuideModal({
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const [activeTab, setActiveTab] = useState(initialTradeType);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollLeft += e.deltaY;
+    }
+  };
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -322,7 +329,11 @@ export function TradeTypesGuideModal({
 
         {/* Horizontal Tabs */}
         <div className="w-full max-w-full overflow-hidden border-b border-opt-line px-5 pt-3 pb-2">
-          <div className="flex w-full overflow-x-auto gap-2 snap-x [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <div
+            ref={scrollRef}
+            onWheel={handleWheel}
+            className="flex w-full overflow-x-auto gap-2 snap-x pb-2"
+          >
             {tradeTypeKeys.map((key) => {
               const isSelected = activeTab === key;
               const hasFire = key === "Rise/Fall" || key === "Accumulators";
