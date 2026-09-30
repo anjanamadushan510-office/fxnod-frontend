@@ -309,7 +309,7 @@ export function TradeTypesGuideModal({
       <div className="relative z-10 flex max-h-[90vh] w-[min(460px,calc(100vw-32px))] flex-col overflow-hidden rounded-2xl border border-opt-line bg-opt-bg-elev shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
         {/* Fixed header */}
         <div className="flex flex-shrink-0 items-center justify-between border-b border-opt-line px-5 py-4">
-          <h2 className="text-[17px] font-bold text-opt-ink">Guide</h2>
+          <h2 className="text-[17px] font-bold text-opt-ink">Trade types</h2>
           <button
             type="button"
             aria-label="Close"
@@ -321,36 +321,34 @@ export function TradeTypesGuideModal({
         </div>
 
         {/* Horizontal Tabs */}
-        <div className="flex flex-shrink-0 overflow-x-auto border-b border-opt-line px-2 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <div className="flex gap-2 px-3">
-            {tradeTypeKeys.map((key) => {
-              const isSelected = activeTab === key;
-              const hasFire = key === "Rise/Fall" || key === "Accumulators";
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => setActiveTab(key)}
-                  className={cn(
-                    "flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-[14px] font-semibold transition-colors",
-                    isSelected
-                      ? "bg-opt-ink text-opt-bg"
-                      : "bg-opt-bg-sunk text-opt-ink-3 hover:text-opt-ink"
-                  )}
-                >
-                  {hasFire && (
-                    <Flame
-                      className={cn(
-                        "h-4 w-4",
-                        isSelected ? "text-opt-bg" : "text-[#FF8800]"
-                      )}
-                    />
-                  )}
-                  {key}
-                </button>
-              );
-            })}
-          </div>
+        <div className="flex flex-shrink-0 gap-2 overflow-x-auto overflow-y-hidden whitespace-nowrap border-b border-opt-line px-5 py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {tradeTypeKeys.map((key) => {
+            const isSelected = activeTab === key;
+            const hasFire = key === "Rise/Fall" || key === "Accumulators";
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setActiveTab(key)}
+                className={cn(
+                  "flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-[14px] font-semibold transition-colors",
+                  isSelected
+                    ? "bg-opt-ink text-opt-bg"
+                    : "bg-opt-bg-sunk text-opt-ink-3 hover:text-opt-ink"
+                )}
+              >
+                {key}
+                {hasFire && (
+                  <DotLottiePlayer
+                    src="/trade-types/rise-fall/fire.lottie"
+                    autoplay
+                    loop
+                    className="w-4 h-4 ml-1"
+                  />
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {/* Scrollable body */}
