@@ -321,7 +321,7 @@ export function TradeTypesGuideModal({
         </div>
 
         {/* Horizontal Tabs */}
-        <div className="flex flex-shrink-0 gap-2 overflow-x-auto overflow-y-hidden whitespace-nowrap border-b border-opt-line px-5 py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex flex-nowrap overflow-x-auto w-full gap-2 border-b border-opt-line px-5 py-3 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {tradeTypeKeys.map((key) => {
             const isSelected = activeTab === key;
             const hasFire = key === "Rise/Fall" || key === "Accumulators";
@@ -331,7 +331,7 @@ export function TradeTypesGuideModal({
                 type="button"
                 onClick={() => setActiveTab(key)}
                 className={cn(
-                  "flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-[14px] font-semibold transition-colors",
+                  "flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-[14px] font-semibold transition-colors",
                   isSelected
                     ? "bg-opt-ink text-opt-bg"
                     : "bg-opt-bg-sunk text-opt-ink-3 hover:text-opt-ink"
