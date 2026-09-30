@@ -50,6 +50,181 @@ const CONTENT: Record<
     ],
     video: "Digits Even",
   },
+  "Rise/Fall": {
+    intro: (
+      <>
+        Rise/Fall lets you predict if the market price will end higher or lower than the <Glossary>entry spot</Glossary> at contract <Glossary>expiry</Glossary>.
+      </>
+    ),
+    sections: [
+      {
+        title: "Rise",
+        description: <>Earn a <Glossary>payout</Glossary> if the <Glossary>exit spot</Glossary> is strictly higher than the <Glossary>entry spot</Glossary>.</>,
+        exit: "1900.00",
+      },
+      {
+        title: "Fall",
+        description: <>Earn a <Glossary>payout</Glossary> if the <Glossary>exit spot</Glossary> is strictly lower than the <Glossary>entry spot</Glossary>.</>,
+        exit: "1900.00",
+      },
+    ],
+    video: "Rise/Fall",
+  },
+  "Accumulators": {
+    intro: (
+      <>
+        Accumulators allow you to predict how much an index can move and potentially grow your <Glossary>stake</Glossary> exponentially at a fixed growth rate. Your <Glossary>payout</Glossary> is the sum of your initial <Glossary>stake</Glossary> and profit. It keeps growing as long as the spot price stays within a specified <Glossary>barrier</Glossary> range from the previous spot price at each interval. If the spot price goes outside that range, you lose your <Glossary>stake</Glossary> and the trade is terminated.
+      </>
+    ),
+    sections: [
+      {
+        title: "Accumulators",
+        description: <>Your <Glossary>payout</Glossary> keeps growing as long as the spot price stays within a specified <Glossary>barrier</Glossary> range from the previous spot price at each interval.</>,
+        exit: "1900.00",
+      },
+    ],
+    video: "Accumulators",
+  },
+  "Matches/Differs": {
+    intro: (
+      <>
+        Matches/Differs lets you predict whether the last digit of the last tick&apos;s price will match your chosen number at contract <Glossary>expiry</Glossary> (<Glossary>exit spot</Glossary>).
+      </>
+    ),
+    sections: [
+      {
+        title: "Matches",
+        description: <>Earn a <Glossary>payout</Glossary> if the last digit of the <Glossary>exit spot</Glossary> matches your prediction.</>,
+        exit: "1900.00",
+      },
+      {
+        title: "Differs",
+        description: <>Earn a <Glossary>payout</Glossary> if the last digit of the <Glossary>exit spot</Glossary> differs from your prediction.</>,
+        exit: "1900.00",
+      },
+    ],
+    video: "Matches/Differs",
+  },
+  "Over/Under": {
+    intro: (
+      <>
+        Over/Under lets you predict if the last digit of the <Glossary>exit spot</Glossary> at contract <Glossary>expiry</Glossary> will be over or under your chosen number.
+      </>
+    ),
+    sections: [
+      {
+        title: "Over",
+        description: <>Earn a <Glossary>payout</Glossary> if the last digit of the <Glossary>exit spot</Glossary> is greater than your chosen number.</>,
+        exit: "1900.00",
+      },
+      {
+        title: "Under",
+        description: <>Earn a <Glossary>payout</Glossary> if the last digit of the <Glossary>exit spot</Glossary> is less than your chosen number.</>,
+        exit: "1900.00",
+      },
+    ],
+    video: "Over/Under",
+  },
+  "Multipliers": {
+    intro: (
+      <>
+        Multipliers let you amplify your potential profit or loss by applying a multiplier to the asset price movement.
+      </>
+    ),
+    sections: [
+      {
+        title: "Up",
+        description: <>Earn a profit if the asset price rises above the <Glossary>entry price</Glossary> at the time you close the trade.</>,
+        exit: "1900.00",
+      },
+      {
+        title: "Down",
+        description: <>Earn a profit if the asset price falls below the <Glossary>entry price</Glossary> at the time you close the trade.</>,
+        exit: "1900.00",
+      },
+    ],
+    video: "Multipliers",
+  },
+  "Touch/No Touch": {
+    intro: (
+      <>
+        Touch/No Touch lets you predict if the market price will reach a set <Glossary>barrier</Glossary> at any time during the contract period.
+      </>
+    ),
+    sections: [
+      {
+        title: "Touch",
+        description: <>Earn a <Glossary>payout</Glossary> if the market touches the <Glossary>barrier</Glossary> at any time before <Glossary>expiry</Glossary>.</>,
+        exit: "1900.00",
+      },
+      {
+        title: "No Touch",
+        description: <>Earn a <Glossary>payout</Glossary> if the market never touches the <Glossary>barrier</Glossary> before <Glossary>expiry</Glossary>.</>,
+        exit: "1900.00",
+      },
+    ],
+    video: "Touch/No Touch",
+  },
+  "Higher/Lower": {
+    intro: (
+      <>
+        Higher/Lower lets you predict if the market price will end higher or lower than a set <Glossary>barrier</Glossary> at contract <Glossary>expiry</Glossary> (<Glossary>exit spot</Glossary>).
+      </>
+    ),
+    sections: [
+      {
+        title: "Higher",
+        description: <>Earn a <Glossary>payout</Glossary> if the <Glossary>exit spot</Glossary> is strictly higher than the <Glossary>barrier</Glossary>.</>,
+        exit: "1900.00",
+      },
+      {
+        title: "Lower",
+        description: <>Earn a <Glossary>payout</Glossary> if the <Glossary>exit spot</Glossary> is strictly lower than the <Glossary>barrier</Glossary>.</>,
+        exit: "1900.00",
+      },
+    ],
+    video: "Higher/Lower",
+  },
+  "Turbos": {
+    intro: (
+      <>
+        Turbos allow you to predict the direction of the underlying asset&apos;s movements.
+      </>
+    ),
+    sections: [
+      {
+        title: "Up",
+        description: <>Earn a <Glossary>payout</Glossary> if the spot price never falls below the <Glossary>barrier</Glossary> during the contract period.</>,
+        exit: "1900.00",
+      },
+      {
+        title: "Down",
+        description: <>Earn a <Glossary>payout</Glossary> if the spot price never rises above the <Glossary>barrier</Glossary> during the contract period.</>,
+        exit: "1900.00",
+      },
+    ],
+    video: "Turbos",
+  },
+  "Vanillas": {
+    intro: (
+      <>
+        Vanillas allow you to predict if the underlying asset&apos;s price will be above or below the strike price at contract <Glossary>expiry</Glossary> (<Glossary>exit spot</Glossary>).
+      </>
+    ),
+    sections: [
+      {
+        title: "Call",
+        description: <>Earn a <Glossary>payout</Glossary> if the <Glossary>exit spot</Glossary> is above the strike price at <Glossary>expiry</Glossary>.</>,
+        exit: "1900.00",
+      },
+      {
+        title: "Put",
+        description: <>Earn a <Glossary>payout</Glossary> if the <Glossary>exit spot</Glossary> is below the strike price at <Glossary>expiry</Glossary>.</>,
+        exit: "1900.00",
+      },
+    ],
+    video: "Vanillas",
+  },
 };
 
 interface HowToTradeModalProps {
