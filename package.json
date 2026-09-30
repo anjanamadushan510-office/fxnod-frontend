@@ -10,6 +10,7 @@
     "gen:api": "orval --config orval.config.ts"
   },
   "dependencies": {
+    "@lottiefiles/react-lottie-player": "^3.6.0",
     "@radix-ui/react-dialog": "^1.1.23",
     "@radix-ui/react-popover": "^1.1.23",
     "@tailwindcss/typography": "^0.5.20",

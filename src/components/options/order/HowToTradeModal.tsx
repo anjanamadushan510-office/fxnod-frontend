@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import { Play, X } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { useTheme } from "next-themes";
+import { Player } from "@lottiefiles/react-lottie-player";
 
 const TEAL = "#00A79E";
 
@@ -11,6 +13,8 @@ interface DirectionSection {
   description: React.ReactNode;
   /** Exit price callout shown in the diagram placeholder (last digit bolded). */
   exit: string;
+  darkAnim?: string;
+  lightAnim?: string;
 }
 
 /** Per-trade-type help content (Even/Odd fully fleshed out per §7.1). */
@@ -61,14 +65,18 @@ const CONTENT: Record<
         title: "Rise",
         description: <>Earn a <Glossary>payout</Glossary> if the <Glossary>exit spot</Glossary> is strictly higher than the <Glossary>entry spot</Glossary>.</>,
         exit: "1900.00",
+        darkAnim: "/trade-types/rise-fall/rise_dark.lottie",
+        lightAnim: "/trade-types/rise-fall/rise_light.lottie",
       },
       {
         title: "Fall",
         description: <>Earn a <Glossary>payout</Glossary> if the <Glossary>exit spot</Glossary> is strictly lower than the <Glossary>entry spot</Glossary>.</>,
         exit: "1900.00",
+        darkAnim: "/trade-types/rise-fall/fall_dark.lottie",
+        lightAnim: "/trade-types/rise-fall/fall_light.lottie",
       },
     ],
-    video: "Rise/Fall",
+    video: "/trade-types/rise-fall/video.mp4",
   },
   "Accumulators": {
     intro: (
@@ -241,6 +249,9 @@ export function HowToTradeModal({
   contractLabel,
   onClose,
 }: HowToTradeModalProps) {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -289,11 +300,33 @@ export function HowToTradeModal({
               <p className="text-[13px] leading-relaxed text-opt-ink-2">
                 {s.description}
               </p>
-              <DiagramPlaceholder label={s.title} exit={s.exit} />
+              {(s.darkAnim || s.lightAnim) ? (
+                <div className="relative flex-shrink-0 overflow-hidden rounded-xl border border-opt-line bg-opt-bg-sunk">
+                  <Player
+                    src={(isDark ? s.darkAnim : s.lightAnim) as string}
+                    autoplay
+                    loop
+                    className="w-full h-auto"
+                  />
+                </div>
+              ) : (
+                <DiagramPlaceholder label={s.title} exit={s.exit} />
+              )}
             </section>
           ))}
 
-          <VideoPlaceholder title={content.video} />
+          {content.video.startsWith("/") ? (
+            <video
+              src={content.video}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="relative flex-shrink-0 w-full overflow-hidden rounded-xl object-cover"
+            />
+          ) : (
+            <VideoPlaceholder title={content.video} />
+          )}
         </div>
 
         {/* Fixed footer */}
