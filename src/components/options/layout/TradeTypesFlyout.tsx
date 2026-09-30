@@ -5,6 +5,8 @@ import { cn } from "@/lib/cn";
 import { CONTRACT_TYPES, type ContractTypeId } from "./contractTypes";
 import { TradeTypesGuideModal } from "../order/TradeTypesGuideModal";
 
+import { HowToTradeModal } from "../order/HowToTradeModal";
+
 /** Category grouping for the flyout (Deriv §11). */
 const CATEGORIES: { label: string; ids: ContractTypeId[] }[] = [
   {
@@ -32,6 +34,7 @@ interface TradeTypesFlyoutProps {
 export function TradeTypesFlyout({ activeType, onSelect }: TradeTypesFlyoutProps) {
   const [tab, setTab] = useState<"all" | "most">("all");
   const [showGuideModal, setShowGuideModal] = useState(false);
+  const [showHowToTradeModalFor, setShowHowToTradeModalFor] = useState<ContractTypeId | null>(null);
 
   const categories =
     tab === "all"
@@ -80,7 +83,10 @@ export function TradeTypesFlyout({ activeType, onSelect }: TradeTypesFlyoutProps
                   <button
                     key={id}
                     type="button"
-                    onClick={() => onSelect(id)}
+                    onClick={() => {
+                      onSelect(id);
+                      setShowHowToTradeModalFor(id);
+                    }}
                     className={cn(
                       "flex w-full items-center gap-1.5 rounded-lg px-2 py-2 text-left text-[14px] transition-colors",
                       active
@@ -102,6 +108,13 @@ export function TradeTypesFlyout({ activeType, onSelect }: TradeTypesFlyoutProps
         <TradeTypesGuideModal
           initialTradeType={byId(activeType).label}
           onClose={() => setShowGuideModal(false)}
+        />
+      )}
+
+      {showHowToTradeModalFor && (
+        <HowToTradeModal
+          contractLabel={byId(showHowToTradeModalFor).label}
+          onClose={() => setShowHowToTradeModalFor(null)}
         />
       )}
     </>
