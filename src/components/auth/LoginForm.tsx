@@ -10,6 +10,7 @@ import { useLogin, useVerifyTwoFALogin } from "@/services/api/endpoints/auth/aut
 import { setAccessToken } from "@/services/authToken";
 import { useAuthStore } from "@/stores/authStore";
 import { parseApiError } from "@/lib/apiError";
+import { ForgotPasswordFlow } from "./ForgotPasswordFlow";
 
 /**
  * Login screen wired to the Orval `useLogin` mutation (POST /api/v1/auth/login
@@ -25,6 +26,7 @@ export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   
   // 2FA state
   const [pendingToken, setPendingToken] = useState<string | null>(null);
@@ -174,9 +176,13 @@ export function LoginForm() {
           </Link>
 
           <div className="bg-[#101827] border border-[#24344F] rounded-2xl p-4 sm:p-6">
-            <h1 id="auth-title" className="font-display text-[28px] font-semibold tracking-tight mb-6">
-              {pendingToken ? "Check your email" : "Log in"}
-            </h1>
+            {isForgotPassword ? (
+              <ForgotPasswordFlow onBackToLogin={() => setIsForgotPassword(false)} />
+            ) : (
+              <>
+                <h1 id="auth-title" className="font-display text-[28px] font-semibold tracking-tight mb-6">
+                  {pendingToken ? "Check your email" : "Log in"}
+                </h1>
 
             <form id="auth-form" className="space-y-3" noValidate onSubmit={onSubmit}>
               {!pendingToken ? (
@@ -212,7 +218,7 @@ export function LoginForm() {
                     type="button"
                     id="forgot-btn"
                     className="text-sm text-zinc-400 hover:text-white"
-                    onClick={() => toast.info("Forgot password flow coming soon.")}
+                    onClick={() => setIsForgotPassword(true)}
                   >
                     Forgot your password?
                   </button>
@@ -294,6 +300,8 @@ export function LoginForm() {
                 Log in with Apple
               </button>
             </div>
+            </>
+            )}
           </div>
 
           <p id="auth-switch" className="text-sm text-zinc-500 text-center mt-6">

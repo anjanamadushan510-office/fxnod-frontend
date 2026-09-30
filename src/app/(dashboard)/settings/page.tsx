@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useAuthStore } from "@/stores/authStore";
 import { UpdateEmailModal } from "@/components/settings/UpdateEmailModal";
+import { NewPasswordForm } from "@/components/auth/NewPasswordForm";
 import { useUpdateMe, useGetClientRecord, useCreateClientRecord, useUpdatePassword, useCloseAccount, useRequestAccountClosure } from "@/services/api/endpoints/users/users";
 import { useSetupEmail2FA, useVerifyEmail2FASetup, useDisableEmail2FA, useRequestDisableEmail2FA } from "@/services/api/endpoints/auth/auth";
 import { parseApiError } from "@/lib/apiError";
@@ -106,20 +107,14 @@ export default function SettingsPage() {
   };
 
   const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [currentPasswordError, setCurrentPasswordError] = useState("");
-  const [passwordMatchError, setPasswordMatchError] = useState("");
 
   const { mutate: changePassword, isPending: isUpdatingPassword } = useUpdatePassword({
     mutation: {
       onSuccess: () => {
         toast.success("Password updated successfully");
         setCurrentPassword("");
-        setNewPassword("");
-        setConfirmPassword("");
         setCurrentPasswordError("");
-        setPasswordMatchError("");
         setActivePane("hub");
       },
       onError: (err) => {
@@ -137,20 +132,11 @@ export default function SettingsPage() {
     }
   });
 
-  const handleUpdatePassword = () => {
+  const handleUpdatePassword = (newPassword: string) => {
     setCurrentPasswordError("");
-    setPasswordMatchError("");
     
     if (!currentPassword) {
       setCurrentPasswordError("Please enter your current password");
-      return;
-    }
-    if (newPassword.length < 8) {
-      toast.error("New password must be at least 8 characters");
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      setPasswordMatchError("New passwords do not match");
       return;
     }
     changePassword({ data: { current_password: currentPassword, new_password: newPassword } });
@@ -616,20 +602,10 @@ export default function SettingsPage() {
               <input type="password" value={currentPassword} onChange={(e) => { setCurrentPassword(e.target.value); setCurrentPasswordError(""); }} className={cn("mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border text-sm outline-none focus:border-zinc-500", currentPasswordError ? "border-red-500" : "border-line")} placeholder="Enter current password" />
               {currentPasswordError && <span className="block mt-1 text-xs text-red-500">{currentPasswordError}</span>}
             </label>
-            <div className="pt-2 border-t border-line">
-              <label className="block mb-4">
-                <span className="text-xs text-zinc-500">New password</span>
-                <input type="password" minLength={8} value={newPassword} onChange={(e) => { setNewPassword(e.target.value); setPasswordMatchError(""); }} className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500" placeholder="At least 8 characters" />
-              </label>
-              <label className="block">
-                <span className="text-xs text-zinc-500">Confirm new password</span>
-                <input type="password" minLength={8} value={confirmPassword} onChange={(e) => { setConfirmPassword(e.target.value); setPasswordMatchError(""); }} className={cn("mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border text-sm outline-none focus:border-zinc-500", passwordMatchError ? "border-red-500" : "border-line")} placeholder="Repeat new password" />
-                {passwordMatchError && <span className="block mt-1 text-xs text-red-500">{passwordMatchError}</span>}
-              </label>
-            </div>
-            <button type="button" disabled={isUpdatingPassword} className="h-10 px-5 rounded-lg bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-sm font-medium disabled:opacity-50" onClick={handleUpdatePassword}>
-              {isUpdatingPassword ? "Updating..." : "Update password"}
-            </button>
+            <NewPasswordForm 
+              onSubmit={handleUpdatePassword} 
+              isLoading={isUpdatingPassword} 
+            />
           </article>
         </div>
       )}

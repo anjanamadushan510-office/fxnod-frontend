@@ -12,6 +12,7 @@ import {
   useDerivSelectAccount,
 } from "@/services/api/endpoints/trading/trading";
 import type { DerivLinkedAccount } from "@/services/api/model";
+import { useAccountBalance } from "@/stores/useAccountBalance";
 
 export type OptionsAccountMode = "real" | "demo";
 
@@ -39,6 +40,8 @@ export function AccountSelector({
   const accountsQuery = useDerivListAccounts({ query: { enabled: open && linked } });
   const selectMutation = useDerivSelectAccount();
   const [pendingAccount, setPendingAccount] = useState<DerivLinkedAccount | null>(null);
+  
+  const balances = useAccountBalance((s) => s.balances);
 
   useEffect(() => {
     if (!open) return;
@@ -151,7 +154,10 @@ export function AccountSelector({
             {accounts.map((account) => {
               const isSelected = account.is_selected;
               const accountTypeLabel = account.is_virtual ? "Demo account" : "Real account";
-              const itemBalance = isSelected ? balance : ((account as any).balance ?? 0);
+              
+              const storedBalance = balances[account.deriv_account_id]?.balance;
+              const itemBalance = storedBalance ?? (isSelected ? balance : ((account as any).balance ?? 0));
+              
               const formattedBalance = itemBalance.toLocaleString("en-US", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
