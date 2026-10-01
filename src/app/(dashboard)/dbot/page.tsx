@@ -77,7 +77,7 @@ export default function DBotDashboardPage() {
 
   const strategiesQuery = useListBotStrategies();
   const presetsQuery = useListBotPresets();
-  const runsQuery = useListBotRuns(RUNS_PARAMS, { query: { refetchInterval: 5000 } });
+  const runsQuery = useListBotRuns(RUNS_PARAMS, { query: { refetchInterval: 1000 } });
   const stopRun = useStopBotRun();
   const deletePreset = useDeleteBotPreset();
   const startRun = useStartBotRun();

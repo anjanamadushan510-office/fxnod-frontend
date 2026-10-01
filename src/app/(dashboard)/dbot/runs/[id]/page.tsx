@@ -58,7 +58,7 @@ export default function BotRunPage() {
     query: {
       // Only an active run changes; a finished one is a record.
       refetchInterval: (query) =>
-        ACTIVE_STATUSES.has(query.state.data?.status ?? "") ? 3000 : false,
+        ACTIVE_STATUSES.has(query.state.data?.status ?? "") ? 1000 : false,
       retry: false,
     },
   });
@@ -66,7 +66,7 @@ export default function BotRunPage() {
   const active = run ? ACTIVE_STATUSES.has(run.status) : false;
 
   const tradesQuery = useListBotRunTrades(runId, { limit: 100 }, {
-    query: { refetchInterval: active ? 3000 : false },
+    query: { refetchInterval: active ? 1000 : false },
   });
   const strategiesQuery = useListBotStrategies();
   const stop = useStopBotRun();
@@ -82,7 +82,6 @@ export default function BotRunPage() {
   }, [allMarkets, run?.symbols]);
 
   const trades = useMemo(() => toTradeRows(tradesQuery.data?.trades ?? []), [tradesQuery.data]);
-  const summary = tradesQuery.data?.summary;
 
   const strategyName =
     (strategiesQuery.data?.strategies ?? []).find((s) => s.strategy_id === run?.strategy_id)
@@ -127,10 +126,11 @@ export default function BotRunPage() {
     );
   }
 
-  // The summary is derived from the same rows the table shows, so the headline
-  // and the list cannot disagree. The run row is the fallback.
-  const pnl = summary?.realized_pnl ?? run.realized_pnl;
-  const staked = summary?.total_staked ?? run.total_staked;
+  // The headline is the run row. That is the number the engine updates in the
+  // same moment a contract settles, and it is the number the dashboard totals.
+  // The trade list can lag it by a moment while tick history is filled in.
+  const pnl = run.realized_pnl;
+  const staked = run.total_staked;
   const limits = (run.risk_limits ?? {}) as Record<string, unknown>;
   const stopLossLimit = limitAmount(limits.session_stop_loss);
   const targetLimit = limitAmount(limits.session_target_profit);
@@ -198,10 +198,10 @@ export default function BotRunPage() {
         <Stat label="Staked" value={formatMoney(staked)} />
         <Stat
           label="Trades"
-          value={`${summary?.won ?? run.trades_won}W / ${summary?.lost ?? run.trades_lost}L`}
-          hint={`${summary?.open ?? run.trades_open} open`}
+          value={`${run.trades_won}W / ${run.trades_lost}L`}
+          hint={`${run.trades_open} open`}
         />
-        <Stat label="Total" value={String(summary?.total ?? run.trades_total)} />
+        <Stat label="Total" value={String(run.trades_total)} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
@@ -227,7 +227,7 @@ export default function BotRunPage() {
         <div className="flex items-center justify-between border-b border-line px-5 py-3">
           <h2 className="text-sm font-medium text-ink">Trades</h2>
           <span className="text-xs text-ink-3">
-            {active ? "Updating every few seconds" : "Final"}
+            {active ? "Live" : "Final"}
           </span>
         </div>
 
