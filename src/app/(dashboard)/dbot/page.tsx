@@ -8,6 +8,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Activity, Cpu, DollarSign } from "lucide-react";
 import { BotPackageModal } from "@/components/bot/BotPackageModal";
+import { DerivAppConsentModal } from "@/components/bot/DerivAppConsentModal";
+import { RunSavedBotDialog } from "@/components/bot/RunSavedBotDialog";
+import { SubscriptionGateModal } from "@/components/bot/SubscriptionGateModal";
 import { DerivConnectionMenu } from "@/components/deriv/DerivConnectionMenu";
 import { defaultFormState } from "@/components/bot/formState";
 import {
@@ -16,6 +19,7 @@ import {
   findMethod,
 } from "@/components/bot/builder/catalog";
 import {
+  buildDraftRunRequest,
   draftFromPreset,
   strategyIdFor,
   toPresetRequest,
@@ -36,9 +40,21 @@ import {
   useListBotPresets,
   useListBotRuns,
   useListBotStrategies,
+  useStartBotRun,
   useStopBotRun,
 } from "@/services/api/endpoints/bots/bots";
-import type { BotPreset, BotRun } from "@/services/api/model";
+import {
+  getDerivListAccountsQueryKey,
+  useDerivListAccounts,
+  useDerivSelectAccount,
+} from "@/services/api/endpoints/trading/trading";
+import {
+  BotStartConflictCode,
+  type BotPreset,
+  type BotRun,
+  type BotStartConflict,
+  type DerivLinkedAccount,
+} from "@/services/api/model";
 
 const RUNS_PARAMS = { limit: 50 } as const;
 const ACTIVE_STATUSES = new Set(["pending", "running", "paused", "stopping"]);
@@ -64,9 +80,15 @@ export default function DBotDashboardPage() {
   const runsQuery = useListBotRuns(RUNS_PARAMS, { query: { refetchInterval: 5000 } });
   const stopRun = useStopBotRun();
   const deletePreset = useDeleteBotPreset();
+  const startRun = useStartBotRun();
+  const selectAccount = useDerivSelectAccount();
+  const accountsQuery = useDerivListAccounts();
 
   const [packageModal, setPackageModal] = useState<PackageModalState | null>(null);
   const [confirmRemove, setConfirmRemove] = useState<string | null>(null);
+  const [runPreset, setRunPreset] = useState<BotPreset | null>(null);
+  const [gateReason, setGateReason] = useState<string | null>(null);
+  const [consent, setConsent] = useState<{ appKey: string; returnTo: string } | null>(null);
 
   const strategies = useMemo(() => strategiesQuery.data?.strategies ?? [], [strategiesQuery.data]);
   const presets = useMemo(() => presetsQuery.data?.presets ?? [], [presetsQuery.data]);
@@ -101,6 +123,43 @@ export default function DBotDashboardPage() {
       toast.success("Stopping the bot");
     } catch (err) {
       toast.error(parseApiError(err, "Could not stop the bot.").message);
+    }
+  }
+
+  async function handleRun(preset: BotPreset, account: DerivLinkedAccount, riskAcknowledged: boolean) {
+    const draft = draftFromPreset(preset);
+    if (!draft) {
+      toast.error("This saved bot cannot be run.");
+      return;
+    }
+    const { request, errors } = buildDraftRunRequest(draft, strategies, riskAcknowledged);
+    if (!request) {
+      toast.error(errors[0] ?? "This bot is not ready to run.");
+      return;
+    }
+    try {
+      if (!account.is_selected) {
+        await selectAccount.mutateAsync({ data: { deriv_account_id: account.deriv_account_id } });
+        await queryClient.invalidateQueries({ queryKey: getDerivListAccountsQueryKey() });
+      }
+      const res = await startRun.mutateAsync({ data: request });
+      await queryClient.invalidateQueries({ queryKey: getListBotRunsQueryKey() });
+      setRunPreset(null);
+      router.push((res.run ? `/dbot/runs/${res.run.run_id}` : "/dbot") as Route);
+    } catch (err) {
+      const reason = subscriptionRefusal(err);
+      if (reason) {
+        setRunPreset(null);
+        setGateReason(reason);
+        return;
+      }
+      const appKey = consentRequired(err);
+      if (appKey) {
+        setRunPreset(null);
+        setConsent({ appKey, returnTo: "/dbot" });
+        return;
+      }
+      toast.error(parseApiError(err, "The bot could not be started.").message);
     }
   }
 
@@ -190,7 +249,7 @@ export default function DBotDashboardPage() {
         ) : runsQuery.isPending ? (
           <EmptyPanel text="Loading…" />
         ) : activeRuns.length === 0 ? (
-          <EmptyPanel text="No bots running. Open a saved bot and press Practise or Run." />
+          <EmptyPanel text="No bots running. Press Run on a saved bot and confirm the Deriv account." />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {activeRuns.map((run) => (
@@ -293,9 +352,17 @@ export default function DBotDashboardPage() {
                     <div className="flex flex-wrap gap-2">
                       <button
                         type="button"
+                        disabled={!draft || strategiesQuery.isPending}
+                        onClick={() => setRunPreset(preset)}
+                        className="flex-1 h-10 rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-80 transition disabled:opacity-45"
+                      >
+                        Run
+                      </button>
+                      <button
+                        type="button"
                         disabled={!draft}
                         onClick={() => router.push(`/dbot/build?preset=${preset.id}&step=review` as Route)}
-                        className="flex-1 h-10 rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-80 transition disabled:opacity-45"
+                        className="h-10 px-4 rounded-lg bg-surface-2 text-ink text-sm font-medium hover:bg-line transition disabled:opacity-45"
                       >
                         Open
                       </button>
@@ -407,6 +474,32 @@ export default function DBotDashboardPage() {
         </div>
       </div>
 
+      {runPreset && (
+        <RunSavedBotDialog
+          botName={runPreset.name}
+          accounts={accountsQuery.data?.accounts ?? []}
+          loading={accountsQuery.isPending}
+          busy={startRun.isPending || selectAccount.isPending}
+          onClose={() => {
+            if (!startRun.isPending && !selectAccount.isPending) setRunPreset(null);
+          }}
+          onConfirm={(account, acknowledged) => void handleRun(runPreset, account, acknowledged)}
+        />
+      )}
+
+      <div data-app="options" data-opt-theme="dark" className="contents">
+        <SubscriptionGateModal
+          open={gateReason !== null}
+          reason={gateReason ?? undefined}
+          onClose={() => setGateReason(null)}
+        />
+        <DerivAppConsentModal
+          appKey={consent?.appKey ?? null}
+          returnTo={consent?.returnTo ?? "/dbot"}
+          onClose={() => setConsent(null)}
+        />
+      </div>
+
       {packageModal && (
         // The modal is styled for the options scope; give it that scope here.
         <div data-app="options" data-opt-theme="dark" className="contents">
@@ -501,6 +594,24 @@ function Figure({ label, value, tone = 0 }: { label: string; value: string; tone
         {value}
       </dd>
     </div>
+  );
+}
+
+function consentRequired(err: unknown): string | null {
+  const data = (err as { response?: { status?: number; data?: BotStartConflict } })?.response;
+  if (data?.status !== 409 || data.data?.code !== BotStartConflictCode.deriv_app_consent_required) {
+    return null;
+  }
+  return data.data.app_key ?? null;
+}
+
+function subscriptionRefusal(err: unknown): string | null {
+  const detail = (err as { response?: { data?: { detail?: unknown } } })?.response?.data?.detail;
+  if (typeof detail !== "string") return null;
+  return (
+    ["no_subscription", "subscription_expired", "subscription_cancelled"].find((reason) =>
+      detail.includes(reason),
+    ) ?? null
   );
 }
 
