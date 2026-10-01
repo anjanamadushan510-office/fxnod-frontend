@@ -8,6 +8,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Activity, Cpu, DollarSign } from "lucide-react";
 import { BotPackageModal } from "@/components/bot/BotPackageModal";
+import { EmergencyStopButton } from "@/components/bot/EmergencyStopButton";
 import { DerivAppConsentModal } from "@/components/bot/DerivAppConsentModal";
 import { RunSavedBotDialog } from "@/components/bot/RunSavedBotDialog";
 import { SubscriptionGateModal } from "@/components/bot/SubscriptionGateModal";
@@ -132,7 +133,7 @@ export default function DBotDashboardPage() {
     try {
       await forceStop.mutateAsync({ id: run.run_id });
       await queryClient.invalidateQueries({ queryKey: getListBotRunsQueryKey() });
-      toast.success("Bot disconnected");
+      toast.success("Emergency stop sent");
     } catch (err) {
       toast.error(parseApiError(err, "Could not disconnect the bot.").message);
     }
@@ -293,14 +294,9 @@ export default function DBotDashboardPage() {
                   >
                     {run.status === "stopping" ? "Stopping…" : "Stop"}
                   </button>
-                  <button
-                    type="button"
-                    disabled={forceStop.isPending}
-                    onClick={() => handleForceStop(run)}
-                    className="h-10 px-4 rounded-lg bg-red-500 text-sm font-medium text-white hover:bg-red-400 transition disabled:opacity-45"
-                  >
-                    {forceStop.isPending ? "Disconnecting…" : "Disconnect now"}
-                  </button>
+                </div>
+                <div className="flex justify-end -mt-1">
+                  <EmergencyStopButton busy={forceStop.isPending} onConfirm={() => handleForceStop(run)} />
                 </div>
               </article>
             ))}

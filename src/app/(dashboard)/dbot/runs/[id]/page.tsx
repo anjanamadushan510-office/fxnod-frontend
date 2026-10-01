@@ -6,6 +6,7 @@ import type { Route } from "next";
 import { useParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { EmergencyStopButton } from "@/components/bot/EmergencyStopButton";
 import { TradeDetailsModal } from "@/components/bot/TradeDetailsModal";
 import { toTradeRows } from "@/components/bot/tradeRows";
 import type { BotTrade } from "@/components/bot/types";
@@ -146,7 +147,7 @@ export default function BotRunPage() {
         queryClient.invalidateQueries({ queryKey: getGetBotRunQueryKey(run.run_id) }),
         queryClient.invalidateQueries({ queryKey: getListBotRunsQueryKey() }),
       ]);
-      toast.success("Bot disconnected");
+      toast.success("Emergency stop sent");
     } catch (err) {
       toast.error(parseApiError(err, "Could not disconnect the bot.").message);
     }
@@ -203,14 +204,6 @@ export default function BotRunPage() {
               className="h-10 px-4 rounded-lg border border-red-500/50 text-sm text-red-300 hover:bg-red-500/10 transition disabled:opacity-45"
             >
               {run.status === "stopping" ? "Stopping…" : "Stop"}
-            </button>
-            <button
-              type="button"
-              disabled={forceStop.isPending}
-              onClick={() => disconnect(run)}
-              className="h-10 px-4 rounded-lg bg-red-500 text-sm font-medium text-white hover:bg-red-400 transition disabled:opacity-45"
-            >
-              {forceStop.isPending ? "Disconnecting…" : "Disconnect now"}
             </button>
           </div>
         )}
@@ -325,10 +318,13 @@ export default function BotRunPage() {
         )}
       </div>
 
-      <p className="mt-6 max-w-2xl text-xs leading-relaxed text-ink-3">
-        This bot runs on the server. Closing this page does not stop it, and equally cannot
-        disable its session limits.
-      </p>
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3 max-w-2xl">
+        <p className="text-xs leading-relaxed text-ink-3">
+          This bot runs on the server. Closing this page does not stop it, and equally cannot
+          disable its session limits.
+        </p>
+        {active && <EmergencyStopButton busy={forceStop.isPending} onConfirm={() => disconnect(run)} />}
+      </div>
 
       {/* The trade detail modal is styled for the options scope; give it that
           scope here rather than restyling a shared component. */}
