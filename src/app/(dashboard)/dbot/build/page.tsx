@@ -34,6 +34,7 @@ import {
 } from "@/components/bot/builder/steps";
 import { findTemplate } from "@/components/bot/builder/templates";
 import { useMarketsForStrategy } from "@/hooks/useMarketsForStrategy";
+import { riseFallDurationIssue, useRiseFallDurations } from "@/hooks/useRiseFallDurations";
 import { parseApiError } from "@/lib/apiError";
 import {
   getListBotPresetsQueryKey,
@@ -119,6 +120,7 @@ function BotBuilder() {
   // Loaded here rather than only on the Markets step: a saved bot opens straight
   // on Review, and the start request checks every symbol against this store.
   const markets = useMarketsForStrategy((draft && strategyIdFor(draft)) ?? "");
+  const durations = useRiseFallDurations(draft?.method === "rise_fall" ? draft.form.symbols : []);
   const allMarkets = useMarketStore((s) => s.allMarkets);
   const marketNames = useMemo(() => {
     const byId = new Map(allMarkets.map((m) => [m.id, m.name]));
@@ -156,6 +158,14 @@ function BotBuilder() {
 
   const strategy = strategies.find((s) => s.strategy_id === strategyIdFor(draft));
   const problems = strategiesQuery.isSuccess ? draftProblems(draft, strategies) : [];
+  const durationIssue = riseFallDurationIssue(
+    draft.method,
+    draft.form.duration,
+    draft.form.durationUnit,
+    draft.form.symbols,
+    durations,
+  );
+  if (durationIssue) problems.push(durationIssue);
   const ready = strategiesQuery.isSuccess && !markets.loading && problems.length === 0;
 
   // ── Actions ─────────────────────────────────────────────────────────────
@@ -282,7 +292,9 @@ function BotBuilder() {
           <MethodStep draft={draft} onChange={setDraft} strategies={strategies} loading={strategiesQuery.isPending} />
         )}
         {current === "markets" && <MarketsStep draft={draft} onChange={setDraft} />}
-        {current === "duration" && <DurationStep draft={draft} onChange={setDraft} />}
+        {current === "duration" && (
+          <DurationStep draft={draft} onChange={setDraft} durations={durations} />
+        )}
         {current === "indicators" && <IndicatorsStep draft={draft} onChange={setDraft} strategy={strategy} />}
         {current === "setup" && <SetupStep draft={draft} onChange={setDraft} strategy={strategy} />}
         {current === "entry" && <EntryRuleStep draft={draft} onChange={setDraft} strategy={strategy} />}
@@ -314,7 +326,7 @@ function BotBuilder() {
           <button
             type="button"
             onClick={() => setStep(steps[index + 1].key)}
-            disabled={current === "method" && !methodChosen}
+            disabled={(current === "method" && !methodChosen) || (current === "duration" && durationIssue !== null)}
             className="h-10 px-6 rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-80 disabled:opacity-50 transition"
           >
             Continue

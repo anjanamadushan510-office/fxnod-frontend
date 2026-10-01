@@ -182,19 +182,19 @@ export const EMPTY_PARAMS: MarketContractParams = {
  * Returns live contract parameters for a Deriv symbol.
  * Uses a 5-minute cache and deduplicates concurrent requests.
  */
-export async function getContractsFor(
-  derivSymbol: string
+async function readContractsFor(
+  derivSymbol: string,
+  fresh: boolean,
 ): Promise<MarketContractParams> {
   if (!derivSymbol) return EMPTY_PARAMS;
+  if (fresh) cache.delete(derivSymbol);
 
-  // Fresh cache hit
   const cached = cache.get(derivSymbol);
   if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
     return cached.params;
   }
 
-  // In-flight deduplication
-  if (inFlight.has(derivSymbol)) {
+  if (!fresh && inFlight.has(derivSymbol)) {
     return inFlight.get(derivSymbol)!;
   }
 
@@ -203,14 +203,29 @@ export async function getContractsFor(
       cache.set(derivSymbol, { timestamp: Date.now(), params });
       return params;
     })
-    .catch((err) => {
-      console.warn("[contractsFor] fetch failed, returning empty params:", err);
-      return EMPTY_PARAMS;
-    })
     .finally(() => {
       inFlight.delete(derivSymbol);
     });
 
   inFlight.set(derivSymbol, promise);
   return promise;
+}
+
+export async function getContractsFor(
+  derivSymbol: string
+): Promise<MarketContractParams> {
+  try {
+    return await readContractsFor(derivSymbol, false);
+  } catch (err) {
+    console.warn("[contractsFor] fetch failed, returning empty params:", err);
+    return EMPTY_PARAMS;
+  }
+}
+
+/** Same as getContractsFor, but a failed request is an error instead of an empty list. */
+export async function loadContractsFor(
+  derivSymbol: string,
+  opts?: { fresh?: boolean },
+): Promise<MarketContractParams> {
+  return readContractsFor(derivSymbol, Boolean(opts?.fresh));
 }

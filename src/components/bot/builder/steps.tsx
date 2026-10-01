@@ -5,6 +5,7 @@ import { useMarketStore } from "@/components/options/market/marketStore";
 import type { Market } from "@/components/options/market/catalog";
 import { useContractsFor } from "@/hooks/useContractsFor";
 import { useMarketsForStrategy } from "@/hooks/useMarketsForStrategy";
+import type { RiseFallDurationState } from "@/hooks/useRiseFallDurations";
 import type { BotIndicator, BotLimits, BotStrategy } from "@/services/api/model";
 import { BARRIER_SCALES, GROWTH_RATES, MULTIPLIER_STEPS, durationPresetsFor, formShapeFor } from "../botMeta";
 import type { BotFormState } from "../formState";
@@ -22,6 +23,10 @@ import {
   supportedEntryRules,
   supportsAutoDirection,
 } from "./catalog";
+import {
+  durationFits,
+  formatRanges,
+} from "./durationLimits";
 import {
   ChoiceCard,
   GroupLabel,
@@ -226,7 +231,127 @@ export function MarketsStep({ draft, onChange }: StepProps) {
 
 // ─── Duration (non-digit bots) ──────────────────────────────────────────────
 
-export function DurationStep({ draft, onChange }: StepProps) {
+export function DurationStep({
+  draft,
+  onChange,
+  durations,
+}: StepProps & { durations: RiseFallDurationState }) {
+  if (draft.method === "rise_fall") {
+    return <RiseFallDurationStep draft={draft} onChange={onChange} durations={durations} />;
+  }
+  return <PresetDurationStep draft={draft} onChange={onChange} />;
+}
+
+function RiseFallDurationStep({
+  draft,
+  onChange,
+  durations,
+}: StepProps & { durations: RiseFallDurationState }) {
+  const { form } = draft;
+  const { loading, failed, bands, retry } = durations;
+  const selected = bands.find((band) => band.unit === form.durationUnit);
+  const fallback = bands[0];
+  const offered = bands.map((band) => `${band.unit}:${formatRanges(band.ranges)}`).join("|");
+
+  // When the markets' offered units change, a stored length they do not sell
+  // moves to the shortest length they do. Typing an out-of-range number is
+  // left alone so the field can show why Continue is blocked.
+  useEffect(() => {
+    if (!fallback) return;
+    if (selected && durationFits(selected, form.duration)) return;
+    const next = selected ?? fallback;
+    onChange(patchForm(draft, { durationUnit: next.unit, duration: String(next.ranges[0].min) }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [offered]);
+
+  const inRange = durationFits(selected, form.duration);
+
+  return (
+    <div className="w-full">
+      <StepHeader
+        title="Duration"
+        subtitle="Enter how long each Rise/Fall contract lasts. Only a length Deriv sells on every selected market can be used."
+      />
+
+      {loading && <p className="text-sm text-ink-2">Asking Deriv which durations these markets sell…</p>}
+
+      {!loading && failed && (
+        <div className="rounded-xl border border-line bg-surface-2 p-5">
+          <p className="text-sm text-ink-2">
+            The valid durations could not be loaded. Nothing here is a guess — try again.
+          </p>
+          <button
+            type="button"
+            onClick={retry}
+            className="mt-4 h-9 px-4 rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-80"
+          >
+            Try again
+          </button>
+        </div>
+      )}
+
+      {!loading && !failed && bands.length === 0 && (
+        <p className="text-sm text-ink-2">
+          These markets do not share a Rise/Fall duration right now.
+        </p>
+      )}
+
+      {!loading && !failed && bands.length > 0 && (
+        <>
+          <GroupLabel>Unit</GroupLabel>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-8">
+            {bands.map((band) => (
+              <ChoiceCard
+                key={band.unit}
+                size="sm"
+                title={band.name}
+                description={formatRanges(band.ranges)}
+                active={form.durationUnit === band.unit}
+                onSelect={() =>
+                  onChange(patchForm(draft, {
+                    durationUnit: band.unit,
+                    duration: String(band.ranges[0].min),
+                  }))
+                }
+              />
+            ))}
+          </div>
+
+          {selected && (
+            <div className="max-w-xs">
+              <TextField
+                kind="integer"
+                label={selected.name}
+                value={form.duration}
+                placeholder={String(selected.ranges[0].min)}
+                hint={`Whole number, ${formatRanges(selected.ranges)}.`}
+                onChange={(duration) => onChange(patchForm(draft, { duration, durationUnit: selected.unit }))}
+              />
+              {form.duration.trim() !== "" && !inRange && (
+                <p className="mt-2 text-sm text-red-300">
+                  {/^\d+$/.test(form.duration)
+                    ? `Deriv sells ${formatRanges(selected.ranges)} ${selected.name.toLowerCase()} on these markets.`
+                    : "Enter a whole number."}
+                </p>
+              )}
+            </div>
+          )}
+
+          <div className="mt-8 max-w-md">
+            <InfoPanel title="Each contract">
+              <span className="text-ink font-medium">{inRange ? durationLabel(draft) ?? "—" : "—"}</span>
+              <span className="block mt-1">
+                The range is the overlap of every market selected in the previous step.
+              </span>
+            </InfoPanel>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function PresetDurationStep({ draft, onChange }: StepProps) {
   const { form } = draft;
   const method = findMethod(draft.method);
   // Only the lengths Deriv sells on the first market, when its list is in.
