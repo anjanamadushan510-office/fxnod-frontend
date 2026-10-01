@@ -1,0 +1,13 @@
+---
+description: All FXNOD development stays on the staging branch
+alwaysApply: true
+---
+
+# Staging only
+
+All development for this product happens on `staging`. That includes the frontend repo and the backend repo.
+
+- Before the first edit in a turn, run `git branch --show-current`. If it is not `staging`, switch to `staging` before changing files.
+- Commit and push only to `staging`, and only when the user asks.
+- Do not commit, push, merge, or open work on `main`. A pull request into `main` is not permission to keep developing there.
+- Do not commit `.cursor/` unless the user asks.
