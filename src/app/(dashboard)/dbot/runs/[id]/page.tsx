@@ -13,6 +13,7 @@ import { useMarketStore } from "@/components/options/market/marketStore";
 import { cn } from "@/lib/cn";
 import { decimalSign, formatMoney } from "@/lib/decimal";
 import { parseApiError } from "@/lib/apiError";
+import { useForceStopBotRun } from "@/services/forceStopBotRun";
 import {
   getGetBotRunQueryKey,
   getListBotRunsQueryKey,
@@ -70,6 +71,7 @@ export default function BotRunPage() {
   });
   const strategiesQuery = useListBotStrategies();
   const stop = useStopBotRun();
+  const forceStop = useForceStopBotRun();
   const pause = usePauseBotRun();
   const resume = useResumeBotRun();
 
@@ -135,7 +137,20 @@ export default function BotRunPage() {
   const stopLossLimit = limitAmount(limits.session_stop_loss);
   const targetLimit = limitAmount(limits.session_target_profit);
   const pnlNumber = Number.parseFloat(pnl) || 0;
-  const busy = stop.isPending || pause.isPending || resume.isPending;
+  const busy = stop.isPending || pause.isPending || resume.isPending || forceStop.isPending;
+
+  async function disconnect(run: BotRun) {
+    try {
+      await forceStop.mutateAsync({ id: run.run_id });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: getGetBotRunQueryKey(run.run_id) }),
+        queryClient.invalidateQueries({ queryKey: getListBotRunsQueryKey() }),
+      ]);
+      toast.success("Bot disconnected");
+    } catch (err) {
+      toast.error(parseApiError(err, "Could not disconnect the bot.").message);
+    }
+  }
 
   return (
     <Shell>
@@ -188,6 +203,14 @@ export default function BotRunPage() {
               className="h-10 px-4 rounded-lg border border-red-500/50 text-sm text-red-300 hover:bg-red-500/10 transition disabled:opacity-45"
             >
               {run.status === "stopping" ? "Stopping…" : "Stop"}
+            </button>
+            <button
+              type="button"
+              disabled={forceStop.isPending}
+              onClick={() => disconnect(run)}
+              className="h-10 px-4 rounded-lg bg-red-500 text-sm font-medium text-white hover:bg-red-400 transition disabled:opacity-45"
+            >
+              {forceStop.isPending ? "Disconnecting…" : "Disconnect now"}
             </button>
           </div>
         )}
