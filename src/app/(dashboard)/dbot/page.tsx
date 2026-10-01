@@ -60,6 +60,13 @@ import {
 
 const RUNS_PARAMS = { limit: 50 } as const;
 const ACTIVE_STATUSES = new Set(["pending", "running", "paused", "stopping"]);
+type AccountFilter = "all" | "demo" | "real";
+
+function matchesAccount(isVirtual: boolean, filter: AccountFilter): boolean {
+  if (filter === "demo") return isVirtual;
+  if (filter === "real") return !isVirtual;
+  return true;
+}
 
 type PackageModalState =
   | { tab: "import" }
@@ -92,16 +99,21 @@ export default function DBotDashboardPage() {
   const [runPreset, setRunPreset] = useState<BotPreset | null>(null);
   const [gateReason, setGateReason] = useState<string | null>(null);
   const [consent, setConsent] = useState<{ appKey: string; returnTo: string } | null>(null);
+  const [accountFilter, setAccountFilter] = useState<AccountFilter>("all");
 
   const strategies = useMemo(() => strategiesQuery.data?.strategies ?? [], [strategiesQuery.data]);
   const presets = useMemo(() => presetsQuery.data?.presets ?? [], [presetsQuery.data]);
+  const visibleRuns = useMemo(
+    () => (runsQuery.data?.runs ?? []).filter((r) => matchesAccount(r.is_virtual, accountFilter)),
+    [runsQuery.data, accountFilter],
+  );
   const activeRuns = useMemo(
-    () => (runsQuery.data?.runs ?? []).filter((r) => ACTIVE_STATUSES.has(r.status)),
-    [runsQuery.data],
+    () => visibleRuns.filter((r) => ACTIVE_STATUSES.has(r.status)),
+    [visibleRuns],
   );
   const finishedRuns = useMemo(
-    () => (runsQuery.data?.runs ?? []).filter((r) => !ACTIVE_STATUSES.has(r.status)).slice(0, 10),
-    [runsQuery.data],
+    () => visibleRuns.filter((r) => !ACTIVE_STATUSES.has(r.status)).slice(0, 10),
+    [visibleRuns],
   );
 
   // One currency across runs is the normal case; if it is not, a single total
@@ -209,6 +221,8 @@ export default function DBotDashboardPage() {
         </div>
       </div>
 
+      <AccountFilterControl value={accountFilter} onChange={setAccountFilter} />
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard
           icon={<Cpu className="h-5 w-5 text-ink" />}
@@ -219,13 +233,19 @@ export default function DBotDashboardPage() {
         <StatCard
           icon={<Activity className="h-5 w-5 text-ink" />}
           title="Running"
-          subtitle="Demo or real"
+          subtitle={accountFilter === "demo" ? "Demo" : accountFilter === "real" ? "Real" : "Demo or real"}
           value={runsQuery.isSuccess ? String(activeRuns.length) : "—"}
         />
         <StatCard
           icon={<DollarSign className="h-5 w-5 text-ink" />}
           title="Running P/L"
-          subtitle="Realised, across running bots"
+          subtitle={
+            accountFilter === "demo"
+              ? "Realised, demo bots"
+              : accountFilter === "real"
+                ? "Realised, real bots"
+                : "Realised, across running bots"
+          }
           value={runsQuery.isSuccess && runningPnl !== null ? formatMoney(runningPnl) : "—"}
           tone={runsQuery.isSuccess && runningPnl !== null ? decimalSign(runningPnl) : 0}
         />
@@ -262,7 +282,15 @@ export default function DBotDashboardPage() {
         ) : runsQuery.isPending ? (
           <EmptyPanel text="Loading…" />
         ) : activeRuns.length === 0 ? (
-          <EmptyPanel text="No bots running. Press Run on a saved bot and confirm the Deriv account." />
+          <EmptyPanel
+            text={
+              accountFilter === "demo"
+                ? "No demo bots running."
+                : accountFilter === "real"
+                  ? "No real bots running."
+                  : "No bots running. Press Run on a saved bot and confirm the Deriv account."
+            }
+          />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {activeRuns.map((run) => (
@@ -416,9 +444,12 @@ export default function DBotDashboardPage() {
         )}
       </div>
 
-      {finishedRuns.length > 0 && (
+      {(runsQuery.data?.runs ?? []).some((r) => !ACTIVE_STATUSES.has(r.status)) && (
         <div className="space-y-4">
           <SectionTitle title="Recent runs" subtitle="Finished sessions, newest first." />
+          {finishedRuns.length === 0 ? (
+            <EmptyPanel text={accountFilter === "real" ? "No finished real runs." : "No finished demo runs."} />
+          ) : (
           <div className="bg-surface border border-line rounded-2xl divide-y divide-line overflow-hidden">
             {finishedRuns.map((run) => (
               <Link
@@ -452,6 +483,7 @@ export default function DBotDashboardPage() {
               </Link>
             ))}
           </div>
+          )}
         </div>
       )}
 
@@ -628,6 +660,38 @@ function subscriptionRefusal(err: unknown): string | null {
     ["no_subscription", "subscription_expired", "subscription_cancelled"].find((reason) =>
       detail.includes(reason),
     ) ?? null
+  );
+}
+
+function AccountFilterControl({
+  value,
+  onChange,
+}: {
+  value: AccountFilter;
+  onChange: (next: AccountFilter) => void;
+}) {
+  const options: { id: AccountFilter; label: string }[] = [
+    { id: "all", label: "All" },
+    { id: "demo", label: "Demo" },
+    { id: "real", label: "Real" },
+  ];
+  return (
+    <div className="inline-flex rounded-lg border border-line p-0.5" role="group" aria-label="Account type">
+      {options.map((option) => (
+        <button
+          key={option.id}
+          type="button"
+          aria-pressed={value === option.id}
+          onClick={() => onChange(option.id)}
+          className={cn(
+            "h-8 px-3 rounded-md text-xs font-medium transition",
+            value === option.id ? "bg-ink text-surface" : "text-ink-2 hover:text-ink",
+          )}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
   );
 }
 
