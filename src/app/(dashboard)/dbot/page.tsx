@@ -1,12 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { type Route } from "next";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Activity, Cpu, DollarSign } from "lucide-react";
+import { Activity, Cpu, DollarSign, MoreVertical } from "lucide-react";
 import { BotPackageModal } from "@/components/bot/BotPackageModal";
 import { EmergencyStopButton } from "@/components/bot/EmergencyStopButton";
 import { DerivAppConsentModal } from "@/components/bot/DerivAppConsentModal";
@@ -100,6 +100,7 @@ export default function DBotDashboardPage() {
   const [gateReason, setGateReason] = useState<string | null>(null);
   const [consent, setConsent] = useState<{ appKey: string; returnTo: string } | null>(null);
   const [accountFilter, setAccountFilter] = useState<AccountFilter>("all");
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   const strategies = useMemo(() => strategiesQuery.data?.strategies ?? [], [strategiesQuery.data]);
   const presets = useMemo(() => presetsQuery.data?.presets ?? [], [presetsQuery.data]);
@@ -346,7 +347,13 @@ export default function DBotDashboardPage() {
               const draft = draftFromPreset(preset);
               const strategyId = draft ? strategyIdFor(draft) : undefined;
               return (
-                <article key={preset.id} className="bg-surface border border-line rounded-2xl p-5 flex flex-col justify-between">
+                <article
+                  key={preset.id}
+                  className={cn(
+                    "bg-surface border border-line rounded-2xl p-5 flex flex-col justify-between relative",
+                    openMenuId === preset.id && "z-20",
+                  )}
+                >
                   <div>
                     <div className="flex justify-between items-start gap-3 mb-1">
                       <h3 className="font-display text-lg font-semibold break-words text-ink">{preset.name}</h3>
@@ -393,7 +400,7 @@ export default function DBotDashboardPage() {
                       </button>
                     </div>
                   ) : (
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex items-center gap-2">
                       <button
                         type="button"
                         disabled={!draft || strategiesQuery.isPending}
@@ -402,39 +409,18 @@ export default function DBotDashboardPage() {
                       >
                         Run
                       </button>
-                      <button
-                        type="button"
-                        disabled={!draft}
-                        onClick={() => router.push(`/dbot/build?preset=${preset.id}&step=review` as Route)}
-                        className="h-10 px-4 rounded-lg bg-surface-2 text-ink text-sm font-medium hover:bg-line transition disabled:opacity-45"
-                      >
-                        Open
-                      </button>
-                      <button
-                        type="button"
-                        disabled={!draft}
-                        onClick={() => router.push(`/dbot/build?preset=${preset.id}` as Route)}
-                        className="h-10 px-4 rounded-lg bg-surface-2 text-ink text-sm font-medium hover:bg-line transition disabled:opacity-45"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        disabled={!draft || !strategyId}
-                        onClick={() => {
+                      <SavedBotMenu
+                        open={openMenuId === preset.id}
+                        canOpen={Boolean(draft)}
+                        canExport={Boolean(draft && strategyId)}
+                        onOpenChange={(open) => setOpenMenuId(open ? preset.id : null)}
+                        onOpen={() => router.push(`/dbot/build?preset=${preset.id}&step=review` as Route)}
+                        onEdit={() => router.push(`/dbot/build?preset=${preset.id}` as Route)}
+                        onExport={() => {
                           if (draft && strategyId) setPackageModal({ tab: "export", draft, strategyId });
                         }}
-                        className="h-10 px-4 rounded-lg bg-surface-2 text-ink text-sm font-medium hover:bg-line transition disabled:opacity-45"
-                      >
-                        Export
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setConfirmRemove(preset.id)}
-                        className="h-10 px-4 rounded-lg bg-surface-2 text-ink text-sm font-medium hover:bg-line transition"
-                      >
-                        Remove
-                      </button>
+                        onRemove={() => setConfirmRemove(preset.id)}
+                      />
                     </div>
                   )}
                 </article>
@@ -660,6 +646,98 @@ function subscriptionRefusal(err: unknown): string | null {
     ["no_subscription", "subscription_expired", "subscription_cancelled"].find((reason) =>
       detail.includes(reason),
     ) ?? null
+  );
+}
+
+function SavedBotMenu({
+  open,
+  canOpen,
+  canExport,
+  onOpenChange,
+  onOpen,
+  onEdit,
+  onExport,
+  onRemove,
+}: {
+  open: boolean;
+  canOpen: boolean;
+  canExport: boolean;
+  onOpenChange: (open: boolean) => void;
+  onOpen: () => void;
+  onEdit: () => void;
+  onExport: () => void;
+  onRemove: () => void;
+}) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const onOpenChangeRef = useRef(onOpenChange);
+  onOpenChangeRef.current = onOpenChange;
+
+  useEffect(() => {
+    if (!open) return;
+    function onPointer(event: PointerEvent) {
+      if (!rootRef.current?.contains(event.target as Node)) onOpenChangeRef.current(false);
+    }
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") onOpenChangeRef.current(false);
+    }
+    document.addEventListener("pointerdown", onPointer);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onPointer);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  const items: { label: string; disabled: boolean; danger?: boolean; onClick: () => void }[] = [
+    { label: "Open", disabled: !canOpen, onClick: onOpen },
+    { label: "Edit", disabled: !canOpen, onClick: onEdit },
+    { label: "Export", disabled: !canExport, onClick: onExport },
+    { label: "Remove", disabled: false, danger: true, onClick: onRemove },
+  ];
+
+  return (
+    <div ref={rootRef} className="relative shrink-0">
+      <button
+        type="button"
+        aria-label="Bot actions"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => onOpenChange(!open)}
+        className={cn(
+          "h-10 w-10 rounded-lg bg-surface-2 text-ink-2 hover:text-ink hover:bg-line transition flex items-center justify-center",
+          open && "bg-line text-ink",
+        )}
+      >
+        <MoreVertical className="h-4 w-4" />
+      </button>
+      {open && (
+        <div
+          role="menu"
+          className="absolute right-0 top-full z-20 mt-1.5 min-w-[9.5rem] overflow-hidden rounded-xl border border-line bg-surface-2 py-1 shadow-lg"
+        >
+          {items.map((item, index) => (
+            <div key={item.label}>
+              {item.danger && index > 0 && <div className="my-1 border-t border-line" />}
+              <button
+                type="button"
+                role="menuitem"
+                disabled={item.disabled}
+                onClick={() => {
+                  onOpenChange(false);
+                  item.onClick();
+                }}
+                className={cn(
+                  "w-full px-3 py-2 text-left text-sm transition disabled:pointer-events-none disabled:opacity-40",
+                  item.danger ? "text-red-300 hover:bg-red-500/10" : "text-ink hover:bg-line/70",
+                )}
+              >
+                {item.label}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
