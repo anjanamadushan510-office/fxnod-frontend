@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { useGetWalletBalance } from "@/services/api/endpoints/wallet/wallet";
 import { useGetReferralStats } from "@/services/api/endpoints/referrals/referrals";
 import { useDerivListAccounts } from "@/services/api/endpoints/trading/trading";
 import { fmtUSD } from "@/lib/format";
-import { cn } from "@/lib/cn";
+import { useActiveTools } from "@/hooks/useActiveTools";
 
 interface DashboardMetricsProps {
   onTopUp?: () => void;
@@ -23,6 +22,7 @@ export function DashboardMetrics({ onTopUp, onSend }: DashboardMetricsProps) {
   const { data: referralStats } = useGetReferralStats();
   const partnerEarnings = Number(referralStats?.settled_total || 0);
   const partnerTeamSize = referralStats?.total_team_size || 0;
+  const { activeTools } = useActiveTools();
 
   return (
     <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
@@ -43,8 +43,10 @@ export function DashboardMetrics({ onTopUp, onSend }: DashboardMetricsProps) {
           <p className="text-xs uppercase tracking-[0.14em] text-ink-3">Active tools</p>
           <span className="text-[11px] text-ink-2">On Deriv</span>
         </div>
-        <p className="font-display text-3xl font-semibold tabular-nums text-ink">2</p>
-        <p className="mt-1 text-xs text-ink-3">dTrader &middot; dBot</p>
+        <p className="font-display text-3xl font-semibold tabular-nums text-ink">{activeTools.length}</p>
+        <p className="mt-1 text-xs text-ink-3">
+          {activeTools.length > 0 ? activeTools.map((tool) => tool.name).join(" · ") : "None activated"}
+        </p>
       </article>
 
       <article className="bg-surface border border-line rounded-2xl p-6 lg:p-7 hover:bg-surface-2 cursor-pointer transition-colors">

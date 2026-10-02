@@ -6,6 +6,7 @@ import type { Route } from "next";
 import { useParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { EmergencyStopButton } from "@/components/bot/EmergencyStopButton";
 import { TradeDetailsModal } from "@/components/bot/TradeDetailsModal";
 import { toTradeRows } from "@/components/bot/tradeRows";
 import type { BotTrade } from "@/components/bot/types";
@@ -13,6 +14,7 @@ import { useMarketStore } from "@/components/options/market/marketStore";
 import { cn } from "@/lib/cn";
 import { decimalSign, formatMoney } from "@/lib/decimal";
 import { parseApiError } from "@/lib/apiError";
+import { useForceStopBotRun } from "@/services/forceStopBotRun";
 import {
   getGetBotRunQueryKey,
   getListBotRunsQueryKey,
@@ -58,7 +60,7 @@ export default function BotRunPage() {
     query: {
       // Only an active run changes; a finished one is a record.
       refetchInterval: (query) =>
-        ACTIVE_STATUSES.has(query.state.data?.status ?? "") ? 3000 : false,
+        ACTIVE_STATUSES.has(query.state.data?.status ?? "") ? 1000 : false,
       retry: false,
     },
   });
@@ -66,10 +68,11 @@ export default function BotRunPage() {
   const active = run ? ACTIVE_STATUSES.has(run.status) : false;
 
   const tradesQuery = useListBotRunTrades(runId, { limit: 100 }, {
-    query: { refetchInterval: active ? 3000 : false },
+    query: { refetchInterval: active ? 1000 : false },
   });
   const strategiesQuery = useListBotStrategies();
   const stop = useStopBotRun();
+  const forceStop = useForceStopBotRun();
   const pause = usePauseBotRun();
   const resume = useResumeBotRun();
 
@@ -82,7 +85,6 @@ export default function BotRunPage() {
   }, [allMarkets, run?.symbols]);
 
   const trades = useMemo(() => toTradeRows(tradesQuery.data?.trades ?? []), [tradesQuery.data]);
-  const summary = tradesQuery.data?.summary;
 
   const strategyName =
     (strategiesQuery.data?.strategies ?? []).find((s) => s.strategy_id === run?.strategy_id)
@@ -127,15 +129,29 @@ export default function BotRunPage() {
     );
   }
 
-  // The summary is derived from the same rows the table shows, so the headline
-  // and the list cannot disagree. The run row is the fallback.
-  const pnl = summary?.realized_pnl ?? run.realized_pnl;
-  const staked = summary?.total_staked ?? run.total_staked;
+  // The headline is the run row. That is the number the engine updates in the
+  // same moment a contract settles, and it is the number the dashboard totals.
+  // The trade list can lag it by a moment while tick history is filled in.
+  const pnl = run.realized_pnl;
+  const staked = run.total_staked;
   const limits = (run.risk_limits ?? {}) as Record<string, unknown>;
   const stopLossLimit = limitAmount(limits.session_stop_loss);
   const targetLimit = limitAmount(limits.session_target_profit);
   const pnlNumber = Number.parseFloat(pnl) || 0;
-  const busy = stop.isPending || pause.isPending || resume.isPending;
+  const busy = stop.isPending || pause.isPending || resume.isPending || forceStop.isPending;
+
+  async function disconnect(run: BotRun) {
+    try {
+      await forceStop.mutateAsync({ id: run.run_id });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: getGetBotRunQueryKey(run.run_id) }),
+        queryClient.invalidateQueries({ queryKey: getListBotRunsQueryKey() }),
+      ]);
+      toast.success("Emergency stop sent");
+    } catch (err) {
+      toast.error(parseApiError(err, "Could not disconnect the bot.").message);
+    }
+  }
 
   return (
     <Shell>
@@ -198,10 +214,10 @@ export default function BotRunPage() {
         <Stat label="Staked" value={formatMoney(staked)} />
         <Stat
           label="Trades"
-          value={`${summary?.won ?? run.trades_won}W / ${summary?.lost ?? run.trades_lost}L`}
-          hint={`${summary?.open ?? run.trades_open} open`}
+          value={`${run.trades_won}W / ${run.trades_lost}L`}
+          hint={`${run.trades_open} open`}
         />
-        <Stat label="Total" value={String(summary?.total ?? run.trades_total)} />
+        <Stat label="Total" value={String(run.trades_total)} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
@@ -227,7 +243,7 @@ export default function BotRunPage() {
         <div className="flex items-center justify-between border-b border-line px-5 py-3">
           <h2 className="text-sm font-medium text-ink">Trades</h2>
           <span className="text-xs text-ink-3">
-            {active ? "Updating every few seconds" : "Final"}
+            {active ? "Live" : "Final"}
           </span>
         </div>
 
@@ -302,10 +318,13 @@ export default function BotRunPage() {
         )}
       </div>
 
-      <p className="mt-6 max-w-2xl text-xs leading-relaxed text-ink-3">
-        This bot runs on the server. Closing this page does not stop it, and equally cannot
-        disable its session limits.
-      </p>
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3 max-w-2xl">
+        <p className="text-xs leading-relaxed text-ink-3">
+          This bot runs on the server. Closing this page does not stop it, and equally cannot
+          disable its session limits.
+        </p>
+        {active && <EmergencyStopButton busy={forceStop.isPending} onConfirm={() => disconnect(run)} />}
+      </div>
 
       {/* The trade detail modal is styled for the options scope; give it that
           scope here rather than restyling a shared component. */}

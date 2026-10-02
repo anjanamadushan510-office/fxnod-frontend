@@ -5,6 +5,7 @@ import { useMarketStore } from "@/components/options/market/marketStore";
 import type { Market } from "@/components/options/market/catalog";
 import { useContractsFor } from "@/hooks/useContractsFor";
 import { useMarketsForStrategy } from "@/hooks/useMarketsForStrategy";
+import type { RiseFallDurationState } from "@/hooks/useRiseFallDurations";
 import type { BotIndicator, BotLimits, BotStrategy } from "@/services/api/model";
 import { BARRIER_SCALES, GROWTH_RATES, MULTIPLIER_STEPS, durationPresetsFor, formShapeFor } from "../botMeta";
 import type { BotFormState } from "../formState";
@@ -22,6 +23,10 @@ import {
   supportedEntryRules,
   supportsAutoDirection,
 } from "./catalog";
+import {
+  durationFits,
+  formatRanges,
+} from "./durationLimits";
 import {
   ChoiceCard,
   GroupLabel,
@@ -62,7 +67,7 @@ export function MethodStep({
   return (
     <div className="w-full">
       <StepHeader
-        title="Trading method"
+        title="Options"
         subtitle={
           loading
             ? "Loading the bots available to you…"
@@ -70,20 +75,22 @@ export function MethodStep({
         }
       />
       {METHOD_GROUPS.map((group) => (
-        <section key={group.label} className="mb-8 last:mb-0">
-          <GroupLabel>{group.label}</GroupLabel>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-            {group.methods.map((method) => {
+        <section key={group.label}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
+            {group.methods.filter((method) => !method.hidden).map((method) => {
               const available = isMethodAvailable(method, strategies);
+              const active =
+                draft.method === method.key ||
+                (method.key === "matches" && draft.method === "differs");
               return (
                 <ChoiceCard
                   key={method.key}
                   title={method.name}
                   description={method.description}
                   badge={available || loading ? undefined : "Coming soon"}
-                  active={draft.method === method.key}
+                  active={active}
                   disabled={!available}
-                  onSelect={() => onChange(withMethod(draft, method.key))}
+                  onSelect={() => onChange(withMethod(draft, method.key === "matches" && draft.method === "differs" ? "differs" : method.key))}
                 />
               );
             })}
@@ -98,22 +105,24 @@ export function MethodStep({
 
 export function MarketsStep({ draft, onChange }: StepProps) {
   const strategyId = strategyIdFor(draft) ?? "";
-  const { markets: allowedIds, loading, source } = useMarketsForStrategy(strategyId);
+  const { markets: allowedIds, loading, source, retry } = useMarketsForStrategy(strategyId);
   const allMarkets = useMarketStore((s) => s.allMarkets);
   const selected = draft.form.symbols;
+  const live = source === "api" || source === "cache" || source === "stale_cache";
 
-  // Drop selections this method cannot trade — a Rise / Fall market carried over
+  // Drop selections this method cannot trade — a Rise/Fall market carried over
   // after switching to a digit method would be refused at start. Only once the
-  // live list has answered: the static fallback is a guess, not a verdict.
+  // live list has answered: a failed fetch is not a verdict.
   useEffect(() => {
-    if (loading || source === "fallback" || source === "initial") return;
+    if (!live) return;
     const allowed = new Set(allowedIds);
     const kept = selected.filter((s) => allowed.has(s));
     if (kept.length !== selected.length) onChange(patchForm(draft, { symbols: kept }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, source, allowedIds, strategyId]);
+  }, [live, allowedIds, strategyId]);
 
   const groups = useMemo(() => {
+    if (!live) return [];
     const byId = new Map(allMarkets.map((m) => [m.id, m]));
     const grouped = new Map<string, { label: string; markets: Market[] }>();
     for (const id of allowedIds) {
@@ -129,7 +138,7 @@ export function MarketsStep({ draft, onChange }: StepProps) {
       grouped.get(key)!.markets.push(market);
     }
     return [...grouped.values()];
-  }, [allMarkets, allowedIds]);
+  }, [allMarkets, allowedIds, live]);
 
   function toggle(id: string) {
     if (selected.includes(id)) {
@@ -147,12 +156,33 @@ export function MarketsStep({ draft, onChange }: StepProps) {
         title="Markets"
         subtitle={
           loading
-            ? "Loading the markets this method trades on…"
-            : `${selected.length} selected · tap to add or remove · up to ${MAX_MARKETS}`
+            ? "Asking Deriv which markets this method can trade right now…"
+            : live
+              ? `${selected.length} selected · tap to add or remove · up to ${MAX_MARKETS}`
+              : "Deriv did not return the markets for this method."
         }
       />
 
-      {selected.length > 1 && (
+      {!loading && !live && (
+        <div className="rounded-xl border border-line bg-surface-2 p-5">
+          <p className="text-sm text-ink-2">
+            The open markets could not be loaded. Nothing here is a guess — try again, and only markets Deriv is offering for this method will be listed.
+          </p>
+          <button
+            type="button"
+            onClick={retry}
+            className="mt-4 h-9 px-4 rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-80"
+          >
+            Try again
+          </button>
+        </div>
+      )}
+
+      {!loading && live && groups.length === 0 && (
+        <p className="text-sm text-ink-2">No markets are open for this method right now.</p>
+      )}
+
+      {live && selected.length > 1 && (
         <section className="mb-8">
           <GroupLabel>With several markets</GroupLabel>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
@@ -201,7 +231,127 @@ export function MarketsStep({ draft, onChange }: StepProps) {
 
 // ─── Duration (non-digit bots) ──────────────────────────────────────────────
 
-export function DurationStep({ draft, onChange }: StepProps) {
+export function DurationStep({
+  draft,
+  onChange,
+  durations,
+}: StepProps & { durations: RiseFallDurationState }) {
+  if (draft.method === "rise_fall") {
+    return <RiseFallDurationStep draft={draft} onChange={onChange} durations={durations} />;
+  }
+  return <PresetDurationStep draft={draft} onChange={onChange} />;
+}
+
+function RiseFallDurationStep({
+  draft,
+  onChange,
+  durations,
+}: StepProps & { durations: RiseFallDurationState }) {
+  const { form } = draft;
+  const { loading, failed, bands, retry } = durations;
+  const selected = bands.find((band) => band.unit === form.durationUnit);
+  const fallback = bands[0];
+  const offered = bands.map((band) => `${band.unit}:${formatRanges(band.ranges)}`).join("|");
+
+  // When the markets' offered units change, a stored length they do not sell
+  // moves to the shortest length they do. Typing an out-of-range number is
+  // left alone so the field can show why Continue is blocked.
+  useEffect(() => {
+    if (!fallback) return;
+    if (selected && durationFits(selected, form.duration)) return;
+    const next = selected ?? fallback;
+    onChange(patchForm(draft, { durationUnit: next.unit, duration: String(next.ranges[0].min) }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [offered]);
+
+  const inRange = durationFits(selected, form.duration);
+
+  return (
+    <div className="w-full">
+      <StepHeader
+        title="Duration"
+        subtitle="Enter how long each Rise/Fall contract lasts. Only a length Deriv sells on every selected market can be used."
+      />
+
+      {loading && <p className="text-sm text-ink-2">Asking Deriv which durations these markets sell…</p>}
+
+      {!loading && failed && (
+        <div className="rounded-xl border border-line bg-surface-2 p-5">
+          <p className="text-sm text-ink-2">
+            The valid durations could not be loaded. Nothing here is a guess — try again.
+          </p>
+          <button
+            type="button"
+            onClick={retry}
+            className="mt-4 h-9 px-4 rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-80"
+          >
+            Try again
+          </button>
+        </div>
+      )}
+
+      {!loading && !failed && bands.length === 0 && (
+        <p className="text-sm text-ink-2">
+          These markets do not share a Rise/Fall duration right now.
+        </p>
+      )}
+
+      {!loading && !failed && bands.length > 0 && (
+        <>
+          <GroupLabel>Unit</GroupLabel>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-8">
+            {bands.map((band) => (
+              <ChoiceCard
+                key={band.unit}
+                size="sm"
+                title={band.name}
+                description={formatRanges(band.ranges)}
+                active={form.durationUnit === band.unit}
+                onSelect={() =>
+                  onChange(patchForm(draft, {
+                    durationUnit: band.unit,
+                    duration: String(band.ranges[0].min),
+                  }))
+                }
+              />
+            ))}
+          </div>
+
+          {selected && (
+            <div className="max-w-xs">
+              <TextField
+                kind="integer"
+                label={selected.name}
+                value={form.duration}
+                placeholder={String(selected.ranges[0].min)}
+                hint={`Whole number, ${formatRanges(selected.ranges)}.`}
+                onChange={(duration) => onChange(patchForm(draft, { duration, durationUnit: selected.unit }))}
+              />
+              {form.duration.trim() !== "" && !inRange && (
+                <p className="mt-2 text-sm text-red-300">
+                  {/^\d+$/.test(form.duration)
+                    ? `Deriv sells ${formatRanges(selected.ranges)} ${selected.name.toLowerCase()} on these markets.`
+                    : "Enter a whole number."}
+                </p>
+              )}
+            </div>
+          )}
+
+          <div className="mt-8 max-w-md">
+            <InfoPanel title="Each contract">
+              <span className="text-ink font-medium">{inRange ? durationLabel(draft) ?? "—" : "—"}</span>
+              <span className="block mt-1">
+                The range is the overlap of every market selected in the previous step.
+              </span>
+            </InfoPanel>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function PresetDurationStep({ draft, onChange }: StepProps) {
   const { form } = draft;
   const method = findMethod(draft.method);
   // Only the lengths Deriv sells on the first market, when its list is in.
@@ -564,7 +714,12 @@ export function SetupStep({
 
         {shape.digit && (
           <PillPicker
-            label={method?.fixedDirection === "down" ? "Win unless the last digit is" : "Win if the last digit is"}
+            label={
+              method?.fixedDirection === "down" ||
+              (strategyId === "matches_differs" && form.direction === "down")
+                ? "Win unless the last digit is"
+                : "Win if the last digit is"
+            }
             options={DIGITS}
             value={form.digit}
             onChange={(digit) => set({ digit, autoDigit: false })}

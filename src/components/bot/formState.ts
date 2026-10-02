@@ -1,5 +1,4 @@
 import type { StartBotRunRequest } from "@/services/api/model";
-import { findMarket } from "@/components/options/market/catalog";
 import { toDerivSymbol } from "@/services/deriv/derivSymbols";
 import { formShapeFor } from "./botMeta";
 
@@ -128,15 +127,19 @@ export function buildStartRequest(
   if (state.symbols.length === 0) {
     errors.push("Pick at least one market.");
   }
-  
-  // Verify all symbols exist
-  for (const sym of state.symbols) {
-    const market = findMarket(sym);
-    if (!market) {
-      errors.push(`Invalid market selected: ${sym}`);
-    } else if (!toDerivSymbol(market.id)) {
-      errors.push(`${market.name} is not available for bots.`);
+
+  // A saved bot stores the Deriv symbol itself (R_100). The on-screen market
+  // list is empty until some other screen fetches it, so "not in that list"
+  // is not the same as an invalid market. The engine still refuses a symbol
+  // Deriv is not offering.
+  const symbols: string[] = [];
+  for (const raw of state.symbols) {
+    const symbol = toDerivSymbol(raw.trim());
+    if (!symbol) {
+      errors.push(`Invalid market selected: ${raw}`);
+      continue;
     }
+    symbols.push(symbol);
   }
 
   if (!isPositiveDecimal(state.stake)) {
@@ -165,7 +168,7 @@ export function buildStartRequest(
     strategy_id: strategyId,
     contract_template: {
       contract_type: contractType,
-      symbols: state.symbols,
+      symbols,
       currency: state.currency,
       ...(shape.duration
         ? { duration: optionalInt(state.duration), duration_unit: state.durationUnit as never }

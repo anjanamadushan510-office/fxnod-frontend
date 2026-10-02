@@ -7,13 +7,13 @@
  * get a live { markets, loading, source } tuple that updates when the
  * strategy changes.
  *
- * - Never returns an empty list (fallback guarantees at least 4 markets).
- * - Deduplicates concurrent fetches (service-level in-flight guard).
- * - Refetches when strategyId changes; uses cached data immediately if fresh.
+ * The list stays empty until Deriv answers. A static fallback is not shown:
+ * a guessed market is one this method may not be able to trade right now.
+ * Refetches when the strategy changes. `retry` asks Deriv again.
  */
 
 import { useEffect, useRef, useState } from "react";
-import { getMarketsForStrategy, getFallbackMarkets } from "@/services/deriv/activeSymbols";
+import { getMarketsForStrategy } from "@/services/deriv/activeSymbols";
 import type { MarketResolutionResult } from "@/services/deriv/activeSymbols";
 
 export interface UseMarketsResult {
@@ -22,14 +22,13 @@ export interface UseMarketsResult {
   source: MarketResolutionResult["source"] | "initial";
 }
 
-export function useMarketsForStrategy(strategyId: string): UseMarketsResult {
-  const [state, setState] = useState<UseMarketsResult>(() => ({
-    // Initialise synchronously from static fallback so the dropdown is never
-    // empty even during the first async fetch.
-    markets: getFallbackMarkets(strategyId),
+export function useMarketsForStrategy(strategyId: string): UseMarketsResult & { retry: () => void } {
+  const [attempt, setAttempt] = useState(0);
+  const [state, setState] = useState<UseMarketsResult>({
+    markets: [],
     loading: true,
     source: "initial",
-  }));
+  });
 
   // Track the current strategyId so stale async results are discarded.
   const currentStrategyRef = useRef(strategyId);
@@ -38,27 +37,26 @@ export function useMarketsForStrategy(strategyId: string): UseMarketsResult {
     currentStrategyRef.current = strategyId;
     let cancelled = false;
 
-    // Show the fallback immediately while we fetch, preventing an empty dropdown.
-    setState({
-      markets: getFallbackMarkets(strategyId),
-      loading: true,
-      source: "initial",
-    });
+    // Nothing is listed until Deriv answers. A static guess would let someone
+    // pick a market this method cannot trade right now.
+    setState({ markets: [], loading: true, source: "initial" });
 
-    getMarketsForStrategy(strategyId)
+    getMarketsForStrategy(strategyId, { fresh: attempt > 0 })
       .then((result) => {
         if (cancelled || currentStrategyRef.current !== strategyId) return;
+        if (result.source === "fallback") {
+          setState({ markets: [], loading: false, source: "fallback" });
+          return;
+        }
         setState({ markets: result.markets, loading: false, source: result.source });
       })
       .catch(() => {
         if (cancelled || currentStrategyRef.current !== strategyId) return;
-        // getMarketsForStrategy itself never rejects (catches internally),
-        // but guard here just in case.
-        setState((prev) => ({ ...prev, loading: false }));
+        setState({ markets: [], loading: false, source: "fallback" });
       });
 
     return () => { cancelled = true; };
-  }, [strategyId]);
+  }, [strategyId, attempt]);
 
-  return state;
+  return { ...state, retry: () => setAttempt((n) => n + 1) };
 }

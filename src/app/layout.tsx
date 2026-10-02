@@ -24,6 +24,20 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "FXNOD — Dashboard",
   description: "FXNod trading platform",
+  icons: {
+    icon: [
+      {
+        url: "/favicon-light.ico",
+        media: "(prefers-color-scheme: light)",
+        type: "image/x-icon",
+      },
+      {
+        url: "/favicon-dark.ico",
+        media: "(prefers-color-scheme: dark)",
+        type: "image/x-icon",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
