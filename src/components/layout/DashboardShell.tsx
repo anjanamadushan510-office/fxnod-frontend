@@ -45,7 +45,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         <main
           className={cn(
             "min-w-0 flex-1 bg-bg",
-            showPhoneNav && "pb-[calc(3.5rem+env(safe-area-inset-bottom))] lg:pb-0",
+            showPhoneNav && "pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0",
           )}
         >
           {children}
