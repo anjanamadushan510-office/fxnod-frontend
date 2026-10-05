@@ -158,21 +158,22 @@ export function ChartPanel({
           onPrice={handlePrice}
         />
 
-        {/* Zoom controls — bottom-center */}
-        <div className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3">
-          <div className="pointer-events-auto">
+        {/* Zoom controls — bottom-center; the stats strip stacks above them on a phone */}
+        <div className="pointer-events-none absolute bottom-6 left-1/2 z-40 flex -translate-x-1/2 items-center gap-3 max-lg:bottom-3 max-lg:w-[calc(100%-1.5rem)] max-lg:flex-col-reverse max-lg:gap-2">
+          <div className="pointer-events-auto max-w-full">
             <ChartNavControls chartRef={chartRef} />
           </div>
           {showStatsStrip && (
-            <div className="pointer-events-auto">
+            <div className="pointer-events-auto max-w-full">
               <StatsStrip runs={accuStats || undefined} />
             </div>
           )}
         </div>
 
-        {/* Chart toolbar — floating bottom-left over canvas */}
-        <div className="pointer-events-none absolute bottom-16 left-4 z-[60] flex flex-col items-center gap-1">
-          <div className="pointer-events-auto">
+        {/* Chart toolbar — a column at the bottom-left on desktop; on a phone a
+            row at the top-right, where it does not cover half the chart height */}
+        <div className="pointer-events-none absolute right-3 top-3 z-[60] flex flex-col items-center gap-1 lg:bottom-16 lg:left-4 lg:right-auto lg:top-auto">
+          <div className="pointer-events-auto max-w-full">
             <ChartToolbar
               symbol={marketId}
               chartType={chartType}
@@ -192,7 +193,7 @@ export function ChartPanel({
       </div>
 
       {/* ── Floating Market Selector — absolute top-left over the chart ── */}
-      <div className="absolute left-3 top-3 z-30 max-lg:has-[[data-sheet]]:z-[110] lg:left-4">
+      <div className="absolute left-3 top-3 z-30 max-lg:max-w-[calc(100%-11.5rem)] max-lg:has-[[data-sheet]]:z-[110] lg:left-4">
         <MarketPill
           name={marketName}
           price={price}

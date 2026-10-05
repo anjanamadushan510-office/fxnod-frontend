@@ -36,20 +36,22 @@ export function MarketPill({
       type="button"
       onClick={onOpen}
       className={cn(
-        "flex max-w-[calc(100vw-24px)] items-center gap-3 rounded-[10px] border text-left sm:min-w-[280px]",
+        "flex max-w-full items-center gap-3 rounded-[10px] border text-left max-sm:gap-2 sm:min-w-[280px]",
         "bg-white/90 dark:bg-[#111928]/75 backdrop-blur-md",
         "border-slate-200 dark:border-opt-line",
-        "px-3.5 py-2.5",
+        "px-3.5 py-2.5 max-sm:px-2.5",
         "transition-colors hover:border-slate-300 dark:hover:border-opt-line-strong hover:bg-white dark:hover:bg-[#111928]/90",
       )}
     >
-      <InstrumentBadge />
+      <div className="flex-shrink-0 max-sm:hidden">
+        <InstrumentBadge />
+      </div>
 
-      <div className="flex flex-col items-start">
-        <div className="text-[13.5px] font-semibold leading-tight text-slate-900 dark:text-opt-ink">
+      <div className="flex min-w-0 flex-col items-start">
+        <div className="max-w-full truncate text-[13.5px] font-semibold leading-tight text-slate-900 dark:text-opt-ink">
           {name}
         </div>
-        <div className="mt-0.5 flex items-center gap-1.5 text-[11.5px] leading-tight text-slate-600 dark:text-opt-ink-3">
+        <div className="mt-0.5 flex max-w-full items-center gap-1.5 whitespace-nowrap text-[11.5px] leading-tight text-slate-600 dark:text-opt-ink-3">
           <span className="font-mono tabular-nums">{price.toFixed(2)}</span>
           <span
             className={cn(
@@ -58,13 +60,18 @@ export function MarketPill({
             )}
           >
             {up ? "+" : ""}
-            {change.toFixed(2)} ({up ? "+" : ""}
-            {changePct.toFixed(2)}%) {up ? "▲" : "▼"}
+            {change.toFixed(2)}{" "}
+            {/* The percentage repeats the change; a phone has no room for both. */}
+            <span className="max-sm:hidden">
+              ({up ? "+" : ""}
+              {changePct.toFixed(2)}%){" "}
+            </span>
+            {up ? "▲" : "▼"}
           </span>
         </div>
       </div>
 
-      <CaretDownIcon className="ml-auto h-3.5 w-3.5 text-slate-900 dark:text-opt-ink-3" />
+      <CaretDownIcon className="ml-auto h-3.5 w-3.5 flex-shrink-0 text-slate-900 dark:text-opt-ink-3" />
     </button>
   );
 }

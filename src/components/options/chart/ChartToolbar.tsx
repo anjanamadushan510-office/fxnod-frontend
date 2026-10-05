@@ -129,7 +129,7 @@ export function ChartToolbar({
   };
 
   return (
-    <div className="flex flex-col items-center gap-1 rounded-lg bg-white dark:bg-[#151924] px-1.5 py-2 shadow-xl border border-slate-200 dark:border-gray-700">
+    <div className="flex flex-row items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-xl dark:border-gray-700 dark:bg-[#151924] lg:flex-col lg:px-1.5 lg:py-2">
       {/* 1 — Chart types (with interval badge) */}
       <button
         type="button"
@@ -139,7 +139,7 @@ export function ChartToolbar({
         title="Chart types"
         onClick={() => setTypesOpen(true)}
         className={cn(
-          "flex flex-col items-center gap-0.5 rounded-md px-1.5 py-1 transition-colors",
+          "flex flex-col items-center justify-center gap-0.5 rounded-md px-1.5 py-1 transition-colors coarse:h-10 coarse:min-w-10",
           typesOpen
             ? "bg-slate-200 text-slate-900 dark:bg-gray-700 dark:text-white"
             : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white",
@@ -187,10 +187,13 @@ export function ChartToolbar({
         <PencilIcon className="h-4 w-4" />
       </ToolbarButton>
 
-      {/* 5 — Download */}
-      <ToolbarButton label="Download" active={downloadOpen} onClick={() => setDownloadOpen(true)}>
-        <DownloadIcon className="h-4 w-4" />
-      </ToolbarButton>
+      {/* 5 — Download. Desktop only: a CSV export is not a phone task, and the
+          row has to leave room for the market pill beside it. */}
+      <div className="max-lg:hidden">
+        <ToolbarButton label="Download" active={downloadOpen} onClick={() => setDownloadOpen(true)}>
+          <DownloadIcon className="h-4 w-4" />
+        </ToolbarButton>
+      </div>
 
       {typesOpen && (
         <ChartTypesModal
@@ -263,7 +266,8 @@ export function ChartNavControls({
 
   return (
     <div className="flex flex-row gap-1 rounded-lg border border-opt-line bg-opt-bg-elev/90 p-1 shadow-[0_2px_8px_rgba(0,0,0,0.12)] backdrop-blur-sm">
-      <NavButton label="Zoom in" onClick={handleZoomIn}>
+      {/* Pinch does this on a touch screen; the buttons would only cover chart. */}
+      <NavButton label="Zoom in" onClick={handleZoomIn} className="coarse:hidden">
         <PlusIcon className="h-4 w-4" />
       </NavButton>
       <NavButton
@@ -273,7 +277,7 @@ export function ChartNavControls({
       >
         <Crosshair className="h-4 w-4" />
       </NavButton>
-      <NavButton label="Zoom out" onClick={handleZoomOut}>
+      <NavButton label="Zoom out" onClick={handleZoomOut} className="coarse:hidden">
         <MinusIcon className="h-4 w-4" />
       </NavButton>
     </div>
@@ -298,7 +302,7 @@ function ToolbarButton({
       title={label}
       onClick={onClick}
       className={cn(
-        "grid h-8 w-8 place-items-center rounded-md transition-colors",
+        "grid h-8 w-8 place-items-center rounded-md transition-colors coarse:h-10 coarse:w-10",
         active
           ? "bg-slate-200 text-slate-900 dark:bg-gray-700 dark:text-white"
           : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white",
@@ -314,11 +318,13 @@ function NavButton({
   active,
   onClick,
   children,
+  className,
 }: {
   label: string;
   active?: boolean;
   onClick: () => void;
   children: React.ReactNode;
+  className?: string;
 }) {
   return (
     <button
@@ -327,7 +333,8 @@ function NavButton({
       title={label}
       onClick={onClick}
       className={cn(
-        "grid h-7 w-7 place-items-center rounded-md transition-colors",
+        "grid h-7 w-7 place-items-center rounded-md transition-colors coarse:h-10 coarse:w-10",
+        className,
         active
           ? "bg-opt-bg-sunk text-opt-ink"
           : "text-opt-ink-3 hover:bg-opt-bg-sunk hover:text-opt-ink",

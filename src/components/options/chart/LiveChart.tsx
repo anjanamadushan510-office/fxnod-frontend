@@ -64,6 +64,33 @@ import {
 /** Accent color for user-drawn lines (drawn on canvas — needs literal hex). */
 const DRAWING_COLOR = "#2962FF";
 
+// Below this plot width the chart is on a phone or a narrow tablet.
+const COMPACT_CHART_WIDTH = 1024;
+// Room kept to the right of the live price on a wide chart, in bars.
+const WIDE_RIGHT_OFFSET = 50;
+// The same room on a compact chart, as a share of its width.
+const COMPACT_RIGHT_GAP_SHARE = 0.15;
+
+/**
+ * Layout options that depend on how wide the chart is.
+ *
+ * rightOffset is counted in bars, so a fixed 50 is about 300px at the default
+ * spacing: a comfortable margin on a desktop, and nearly the whole plot on a
+ * phone, where it left the live price pinned to the left edge with a handful
+ * of bars visible. A compact chart keeps a share of its own width instead,
+ * and uses a smaller axis font so the price scale takes less of it.
+ */
+function fitOptions(width: number, barSpacing: number) {
+  if (width >= COMPACT_CHART_WIDTH) {
+    return { rightOffset: WIDE_RIGHT_OFFSET, fontSize: 12 };
+  }
+  const bars = Math.round((width * COMPACT_RIGHT_GAP_SHARE) / Math.max(barSpacing, 1));
+  return {
+    rightOffset: Math.min(WIDE_RIGHT_OFFSET, Math.max(4, bars)),
+    fontSize: width < 640 ? 10 : 11,
+  };
+}
+
 /** Live chart objects backing one Drawing, removed when the drawing is deleted. */
 type DrawingObj =
   | { kind: "priceline"; line: IPriceLine }
@@ -221,6 +248,10 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
       const line = isDark ? CHART_COLORS.line : "#E5E7EB";
       const inkFaint = CHART_COLORS.inkFaint;
 
+      // 6 is the library's default bar spacing, which is what a new chart has.
+      let fitted = fitOptions(el.clientWidth, 6);
+      let fittedWidth = el.clientWidth;
+
       const chart = createChart(el, {
         width: el.clientWidth,
         height: el.clientHeight,
@@ -228,6 +259,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
           background: { type: ColorType.Solid, color: "transparent" },
           textColor: inkFaint,
           attributionLogo: false,
+          fontSize: fitted.fontSize,
         },
         localization: {
           timeFormatter: (businessDayOrTimestamp: Time) => {
@@ -244,7 +276,7 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
           borderColor: line,
           timeVisible: true,
           secondsVisible: false,
-          rightOffset: 50,
+          rightOffset: fitted.rightOffset,
         },
       });
       chartRef.current = chart;
@@ -254,7 +286,24 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
       // chart.resize() keeps the canvas in lock-step with the shrinking column.
       const ro = new ResizeObserver((entries) => {
         const { width, height } = entries[0]!.contentRect;
-        if (width > 0 && height > 0) chart.resize(width, height);
+        if (width <= 0 || height <= 0) return;
+        chart.resize(width, height);
+
+        // Refit only when the width changed. A phone's address bar sliding
+        // away changes the height many times a minute, and applying a right
+        // offset scrolls the chart back to the live price: doing that on every
+        // height change would yank the view away from whatever history the
+        // user had scrolled to.
+        if (width === fittedWidth) return;
+        fittedWidth = width;
+        const next = fitOptions(width, chart.timeScale().options().barSpacing);
+        if (next.fontSize !== fitted.fontSize) {
+          chart.applyOptions({ layout: { fontSize: next.fontSize } });
+        }
+        if (next.rightOffset !== fitted.rightOffset) {
+          chart.timeScale().applyOptions({ rightOffset: next.rightOffset });
+        }
+        fitted = next;
       });
       ro.observe(el);
 
@@ -1150,15 +1199,15 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
       <div className="relative h-full w-full min-h-0">
         
         {/* Indicator Legends */}
-        <div className="absolute top-2 left-14 z-10 flex flex-col gap-1 pointer-events-none">
+        <div className="absolute left-3 top-[68px] z-10 flex flex-col gap-1 pointer-events-none lg:left-14 lg:top-2">
           {activeIndicators.filter(ind => ["ma", "ma_envelope", "rainbow_ma", "bollinger", "donchian", "alligator", "fractal", "ichimoku", "parabolic_sar", "zigzag", "supertrend"].includes(ind.type)).map(ind => {
             const meta = INDICATOR_LIST.find(i => i.id === ind.type);
             const name = meta ? meta.name : ind.type;
             return (
               <div key={ind.id} className="flex items-center gap-2 pointer-events-auto group">
                 <span className="text-[11px] font-medium text-opt-ink-2 bg-opt-bg-main/50 px-1 rounded">{name}</span>
-                <button onClick={() => setSettingsIndicatorId(ind.id)} className="opacity-100 p-1 hover:bg-opt-bg-hover rounded text-opt-ink-3 hover:text-opt-ink-1 transition-all"><Settings className="w-3 h-3" /></button>
-                <button onClick={() => removeIndicator(ind.id)} className="opacity-100 p-1 hover:bg-opt-bg-hover rounded text-opt-ink-3 hover:text-red-400 transition-all"><Trash2 className="w-3 h-3" /></button>
+                <button onClick={() => setSettingsIndicatorId(ind.id)} className="opacity-100 p-1 coarse:p-2.5 hover:bg-opt-bg-hover rounded text-opt-ink-3 hover:text-opt-ink-1 transition-all"><Settings className="w-3 h-3" /></button>
+                <button onClick={() => removeIndicator(ind.id)} className="opacity-100 p-1 coarse:p-2.5 hover:bg-opt-bg-hover rounded text-opt-ink-3 hover:text-red-400 transition-all"><Trash2 className="w-3 h-3" /></button>
               </div>
             );
           })}
@@ -1183,8 +1232,8 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
             return (
               <div key={ind.id} className="absolute left-14 z-10 flex items-center gap-2 pointer-events-auto group" style={{ top: `calc((100% - 26px) * ${baseTop} + 6px)` }}>
                  <span className="text-[10px] font-bold text-opt-ink-2 px-1 rounded">{name}</span>
-                 <button onClick={() => setSettingsIndicatorId(ind.id)} className="opacity-100 p-1 hover:bg-opt-bg-hover rounded text-opt-ink-3 hover:text-opt-ink-1 transition-all"><Settings className="w-3 h-3" /></button>
-                 <button onClick={() => removeIndicator(ind.id)} className="opacity-100 p-1 hover:bg-opt-bg-hover rounded text-opt-ink-3 hover:text-red-400 transition-all"><Trash2 className="w-3 h-3" /></button>
+                 <button onClick={() => setSettingsIndicatorId(ind.id)} className="opacity-100 p-1 coarse:p-2.5 hover:bg-opt-bg-hover rounded text-opt-ink-3 hover:text-opt-ink-1 transition-all"><Settings className="w-3 h-3" /></button>
+                 <button onClick={() => removeIndicator(ind.id)} className="opacity-100 p-1 coarse:p-2.5 hover:bg-opt-bg-hover rounded text-opt-ink-3 hover:text-red-400 transition-all"><Trash2 className="w-3 h-3" /></button>
               </div>
             );
           });

@@ -66,6 +66,11 @@ const config: Config = {
         "land",
         "@media (max-width: 1023.98px) and (orientation: landscape) and (max-height: 520px)",
       ),
+    // `coarse:` — a finger, not a mouse. Touch targets grow under it without
+    // loosening the denser desktop controls, whatever the screen width: a
+    // touch laptop gets them, a narrow desktop window does not.
+    ({ addVariant }: { addVariant: (name: string, definition: string) => void }) =>
+      addVariant("coarse", "@media (pointer: coarse)"),
   ],
 };
 

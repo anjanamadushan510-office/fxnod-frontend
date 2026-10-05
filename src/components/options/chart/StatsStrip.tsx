@@ -27,12 +27,12 @@ export function StatsStrip({ runs = [] }: StatsStripProps) {
   const stripRuns = runs.slice(0, 10);
 
   return (
-    <div className="relative inline-flex items-center gap-4 px-4 py-2 text-[12px] bg-opt-bg-elev rounded-lg shadow-md border border-opt-line">
+    <div className="relative inline-flex max-w-full items-center gap-4 px-4 py-2 text-[12px] bg-opt-bg-elev rounded-lg shadow-md border border-opt-line">
       <span className="font-medium text-opt-ink-2 underline decoration-dashed decoration-opt-ink-3/60 underline-offset-[4px]">
         Stats
       </span>
 
-      <div className="flex items-center gap-[18px] overflow-hidden font-mono text-opt-ink-2">
+      <div className="flex min-w-0 items-center gap-[18px] overflow-hidden font-mono text-opt-ink-2">
         {stripRuns.map((n, i) => (
           <span
             key={i}
