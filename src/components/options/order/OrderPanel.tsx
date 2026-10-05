@@ -34,7 +34,9 @@ export function OrderPanel({ contractType, symbol }: OrderPanelProps) {
       <div className="flex-1 overflow-y-auto">
         {renderForType(contractType, symbol)}
       </div>
-      <div className="mt-auto shrink-0">
+      {/* Date, clock and fullscreen: desktop chrome. On a phone the status
+          bar already shows the time and these 40px belong to the ticket. */}
+      <div className="mt-auto hidden shrink-0 lg:block">
         <ChartFooter />
       </div>
     </div>

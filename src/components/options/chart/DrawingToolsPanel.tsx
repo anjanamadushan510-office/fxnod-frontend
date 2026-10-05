@@ -74,17 +74,18 @@ export function DrawingToolsPanel({ onClose }: { onClose: () => void }) {
 
   return (
     <div
-      className="absolute bottom-0 left-12 z-[70] flex items-center justify-center"
+      data-sheet=""
+      className="z-[70] flex justify-center max-lg:fixed max-lg:inset-0 max-lg:items-end lg:absolute lg:bottom-0 lg:left-12 lg:items-center"
       role="dialog"
       aria-modal="true"
       aria-label="Drawing tools"
     >
       <div
-        className="fixed inset-0 bg-transparent"
+        className="fixed inset-0 bg-transparent max-lg:bg-black/50"
         onClick={onClose}
       />
 
-      <div className="relative z-10 flex h-[380px] w-[min(520px,calc(100vw-32px))] flex-col overflow-hidden rounded-2xl border border-opt-line bg-opt-bg-elev shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
+      <div className="relative z-10 flex h-[70dvh] w-full flex-col overflow-hidden rounded-t-2xl border pb-safe lg:h-[380px] lg:w-[min(520px,calc(100vw-32px))] lg:rounded-2xl lg:pb-0 border-opt-line bg-opt-bg-elev shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-opt-line px-5 py-4">
           <h2 className="text-[16px] font-bold text-opt-ink">Drawing tools</h2>
@@ -99,7 +100,7 @@ export function DrawingToolsPanel({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* Split pane: [left nav | right content] */}
-        <div className="grid min-h-0 flex-1 grid-cols-[160px_1fr]">
+        <div className="grid min-h-0 flex-1 grid-cols-[120px_1fr] lg:grid-cols-[160px_1fr]">
           <div className="flex flex-col gap-0.5 border-r border-opt-line bg-opt-bg-sunk p-2">
             <NavTab
               label="Active"

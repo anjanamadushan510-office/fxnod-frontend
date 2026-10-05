@@ -53,12 +53,18 @@ export function TradeTable() {
   return (
     <div className="flex h-full flex-col text-[14px] text-gray-900 dark:text-gray-100">
       {/* Top filters */}
-      <div className="flex items-center border-b border-gray-200 dark:border-gray-800 p-4">
+      <div className="flex flex-wrap items-center gap-2 border-b border-gray-200 dark:border-gray-800 p-3 lg:p-4">
         <div className="flex items-center gap-2 ml-auto">
           <DateRangePicker value={dateRange} onChange={setDateRange} />
         </div>
       </div>
 
+      {/* The table is fixed columns. On a phone it keeps its shape and scrolls
+          sideways once it has rows, rather than crushing every figure into a
+          sliver; with no rows it stays screen-width so the empty state is
+          centred. */}
+      <div className="flex min-h-0 flex-1 flex-col overflow-x-auto lg:overflow-x-visible">
+        <div className="flex min-h-0 flex-1 flex-col max-lg:has-[[data-report-row]]:min-w-[760px]">
       {/* Table header */}
       <div className="grid grid-cols-[2fr_1.5fr_1fr_1.5fr_1fr_1.5fr_1fr_1.5fr] gap-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-[#0e0e0e]/50 p-4 text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
         <div>Type</div>
@@ -108,7 +114,8 @@ export function TradeTable() {
               return (
                 <div
                   key={trade.id}
-                  className="grid grid-cols-[2fr_1.5fr_1fr_1.5fr_1fr_1.5fr_1fr_1.5fr] gap-4 border-b border-gray-100 dark:border-gray-800/50 p-4 items-center hover:bg-gray-50 dark:hover:bg-gray-800/20 transition-colors cursor-pointer"
+                  data-report-row=""
+                className="grid grid-cols-[2fr_1.5fr_1fr_1.5fr_1fr_1.5fr_1fr_1.5fr] gap-4 border-b border-gray-100 dark:border-gray-800/50 p-4 items-center hover:bg-gray-50 dark:hover:bg-gray-800/20 transition-colors cursor-pointer"
                   onClick={() => openDetail(historyToDetail(trade))}
                 >
                   <div className="flex items-center gap-2 text-gray-900 dark:text-white" title={marketName}>
@@ -145,6 +152,9 @@ export function TradeTable() {
             })}
           </div>
         )}
+      </div>
+
+        </div>
       </div>
 
       {/* Footer */}

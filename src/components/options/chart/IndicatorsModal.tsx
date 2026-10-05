@@ -218,17 +218,18 @@ export function IndicatorsModal({ symbol, interval, onClose }: IndicatorsModalPr
 
   return (
     <div
-      className="absolute bottom-0 left-12 z-[70] flex items-center justify-center"
+      data-sheet=""
+      className="z-[70] flex justify-center max-lg:fixed max-lg:inset-0 max-lg:items-end lg:absolute lg:bottom-0 lg:left-12 lg:items-center"
       role="dialog"
       aria-modal="true"
       aria-label="Indicators"
     >
-      <div className="fixed inset-0 bg-transparent" onClick={onClose} />
+      <div className="fixed inset-0 bg-transparent max-lg:bg-black/50" onClick={onClose} />
 
-      <div className="relative z-10 flex h-[480px] w-[min(720px,calc(100vw-32px))] overflow-hidden rounded-md border border-opt-line bg-opt-bg-elev shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
+      <div className="relative z-10 flex h-[80dvh] w-full overflow-hidden rounded-t-2xl border pb-safe lg:h-[480px] lg:w-[min(720px,calc(100vw-32px))] lg:rounded-md lg:pb-0 border-opt-line bg-opt-bg-elev shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
         
         {/* Left Sidebar Tabs */}
-        <div className="w-[180px] flex-shrink-0 border-r border-opt-line bg-opt-bg flex flex-col">
+        <div className="w-[124px] lg:w-[180px] flex-shrink-0 border-r border-opt-line bg-opt-bg flex flex-col">
           <div className="p-4 border-b border-opt-line">
             <h2 className="text-[16px] font-bold text-opt-ink">Indicators</h2>
           </div>

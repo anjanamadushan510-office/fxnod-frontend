@@ -301,7 +301,7 @@ function BotBuilder() {
         )}
       </div>
 
-      <div className="sticky bottom-0 z-30 -mx-4 lg:-mx-8 -mb-4 lg:-mb-8 px-4 lg:px-8 py-5 bg-bg border-t border-line flex items-center justify-start gap-3 mt-auto">
+      <div className="sticky bottom-[calc(52px+env(safe-area-inset-bottom))] lg:bottom-0 z-20 -mx-4 lg:-mx-8 -mb-4 lg:-mb-8 px-4 lg:px-8 py-5 bg-bg border-t border-line flex items-center justify-start gap-3 mt-auto">
         <button
           type="button"
           onClick={() => setStep(steps[Math.max(0, index - 1)].key)}

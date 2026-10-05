@@ -133,7 +133,7 @@ export function UpdateEmailModal({ isOpen, onClose }: UpdateEmailModalProps) {
       />
       
       {/* Modal */}
-      <div className="relative w-full max-w-md bg-surface border border-line rounded-2xl shadow-xl overflow-hidden flex flex-col">
+      <div className="relative max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto bg-surface border border-line rounded-2xl shadow-xl flex flex-col">
         <div className="flex items-center justify-between px-6 py-4 border-b border-line">
           <h2 className="text-lg font-semibold text-ink">
             {step === "verify" ? "Verify Identity" : step === "newEmail" ? "Update Email" : "Confirm OTP"}

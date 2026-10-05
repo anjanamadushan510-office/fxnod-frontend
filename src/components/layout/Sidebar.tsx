@@ -132,7 +132,7 @@ export function Sidebar({
       <aside
         id="sidebar"
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex h-full w-64 flex-col border-r border-line bg-surface transition-transform duration-300 ease-in-out lg:translate-x-0 lg:sticky lg:top-0 lg:h-[100dvh]",
+          "fixed inset-y-0 left-0 z-40 flex h-full w-[min(18rem,86vw)] flex-col border-r border-line bg-surface pt-safe pb-safe transition-transform duration-300 ease-in-out lg:w-64 lg:translate-x-0 lg:sticky lg:top-0 lg:h-[100dvh]",
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
@@ -141,7 +141,7 @@ export function Sidebar({
             <img src="/assets/fxnod-logo.png" alt="FXNOD" className="h-8 w-auto invert dark:invert-0" />
           </Link>
           <button 
-            className="text-ink-2 hover:text-ink lg:hidden" 
+            className="-mr-2 grid h-11 w-11 place-items-center text-ink-2 hover:text-ink lg:hidden" 
             onClick={onClose}
             aria-label="Close menu"
           >
@@ -151,7 +151,7 @@ export function Sidebar({
           </button>
         </div>
 
-        <nav className="flex-1 space-y-2 overflow-y-auto p-3">
+        <nav className="flex-1 space-y-2 overflow-y-auto overscroll-contain p-3">
           <p className="px-3 pb-2 pt-3 text-[10px] font-medium uppercase tracking-[0.18em] text-ink-3">
             Terminal
           </p>
@@ -215,6 +215,7 @@ export function Sidebar({
         <div className="mt-auto border-t border-line p-3">
           <Link 
             href={"/settings" as Route} 
+            onClick={onClose}
             className="flex items-center gap-3 rounded-lg px-2 py-2 cursor-pointer hover:bg-surface-2 transition-colors"
           >
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-line bg-surface">

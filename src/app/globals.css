@@ -65,9 +65,74 @@ body {
   transition: background 0.25s ease, color 0.25s ease;
 }
 
+html {
+  /* Stop iOS inflating text in landscape; the layout is already responsive. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  /* A grey flash on every tap reads as lag on a trading screen. */
+  -webkit-tap-highlight-color: transparent;
+  /* No rubber-band past the page edge, which drags fixed bars with it. */
+  overscroll-behavior-y: none;
+}
+
 button {
   font-family: inherit;
   cursor: pointer;
+}
+
+button,
+a,
+[role="button"],
+label,
+summary {
+  /* Removes the 300ms double-tap-to-zoom wait on controls. */
+  touch-action: manipulation;
+}
+
+/* iOS Safari zooms the page whenever a focused field is under 16px and never
+   zooms back out. Touch devices get 16px fields; pointer devices keep the
+   denser desktop sizes. This is why zoom can stay enabled in the viewport. */
+@media (hover: none) and (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@layer utilities {
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .px-safe {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+  /* Horizontal scrollers that should not show a bar on touch screens. */
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 a {
@@ -153,6 +218,25 @@ a {
 [data-app="options"][data-opt-theme="dark"],
 [data-theme="dark"] [data-app="options"] {
   --opt-ink-4: #6b7280;
+}
+
+/* The Buy button's wrapper in every order panel. On desktop it is just the
+   gap above the button. Below lg the ticket scrolls under a short chart, so
+   the button docks to the bottom of the ticket instead of scrolling away —
+   the one control that must never be off-screen on a trading page. */
+.opt-buy-dock {
+  margin-top: 1rem;
+}
+@media (max-width: 1023.98px) {
+  .opt-buy-dock {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    margin: auto -1rem -1rem;
+    padding: 0.75rem 1rem;
+    background: var(--opt-bg-elev);
+    border-top: 1px solid var(--opt-line);
+  }
 }
 
 /* Custom Scrollbar */

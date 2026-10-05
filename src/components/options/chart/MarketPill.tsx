@@ -36,7 +36,7 @@ export function MarketPill({
       type="button"
       onClick={onOpen}
       className={cn(
-        "flex min-w-[280px] items-center gap-3 rounded-[10px] border",
+        "flex max-w-[calc(100vw-24px)] items-center gap-3 rounded-[10px] border text-left sm:min-w-[280px]",
         "bg-white/90 dark:bg-[#111928]/75 backdrop-blur-md",
         "border-slate-200 dark:border-opt-line",
         "px-3.5 py-2.5",

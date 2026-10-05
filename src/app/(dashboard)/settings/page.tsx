@@ -905,7 +905,7 @@ export default function SettingsPage() {
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => !isDisabling2FA && closeDisableModal()}
           />
-          <div className="relative w-full max-w-md bg-panel border border-line rounded-2xl overflow-hidden shadow-xl">
+          <div className="relative max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto bg-panel border border-line rounded-2xl shadow-xl">
             <div className="p-5 sm:p-6 space-y-4">
               <h2 className="text-lg font-semibold text-white">Disable Two-Factor Authentication</h2>
               {!disableCodeSent ? (
