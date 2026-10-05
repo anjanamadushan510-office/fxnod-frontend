@@ -43,7 +43,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           {children}
         </main>
       </div>
-      <MobileTabBar onMore={() => setSidebarOpen(true)} moreOpen={sidebarOpen} />
+      <MobileTabBar />
     </div>
   );
 }

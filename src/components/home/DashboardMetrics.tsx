@@ -35,7 +35,6 @@ export function DashboardMetrics({ onTopUp, onSend }: DashboardMetricsProps) {
           </div>
         </div>
         <p className="font-display text-2xl sm:text-3xl font-semibold tabular-nums text-ink">{fmtUSD(balance)}</p>
-        <p className="mt-1 text-xs text-ink-3">On Deriv <span className="tabular-nums text-ink-2">$0.00</span></p>
       </article>
 
       <article className="bg-surface border border-line rounded-2xl p-4 sm:p-6 lg:p-7 hover:bg-surface-2 cursor-pointer transition-colors">
