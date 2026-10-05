@@ -93,10 +93,10 @@ export function TopBar({
 
       {/* Right cluster — pinned far right */}
       <div className="order-first flex w-full min-w-0 items-center justify-between gap-2 land:order-none land:w-auto land:shrink-0 lg:order-none lg:ml-auto lg:w-auto lg:shrink-0 lg:justify-start lg:gap-4">
-        <span className="font-display text-[15px] font-semibold text-opt-ink land:hidden lg:hidden">
+        <span className="min-w-0 truncate font-display text-[15px] font-semibold text-opt-ink land:hidden lg:hidden">
           dTrader
         </span>
-        <div className="flex min-w-0 items-center gap-2 lg:contents">
+        <div className="flex shrink-0 items-center gap-2 lg:contents">
         {authed ? (
           <>
             <ConnectDerivButton />
