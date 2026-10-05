@@ -155,7 +155,7 @@ export function OptionsShell({
         {/* ── Content Row: Left Drawer | Chart | Right Order ── */}
         <div
           className={cn(
-            "flex min-h-0 w-full flex-1 flex-col overflow-hidden",
+            "flex min-h-0 w-full flex-1 flex-col overflow-hidden land:flex-row",
             "lg:grid lg:[grid-template-columns:var(--opt-drawer-w)_minmax(0,1fr)_var(--opt-order-w)]",
           )}
           style={contentStyle}
@@ -183,12 +183,12 @@ export function OptionsShell({
           </div>
 
           {/* Chart Area — 1fr on desktop, a fixed share of the screen on a phone */}
-          <div className="relative z-10 h-[44dvh] min-h-[240px] flex-none overflow-hidden max-lg:has-[[data-sheet]]:z-[80] lg:h-full lg:min-h-0">
+          <div className="relative z-10 h-[44dvh] min-h-[240px] flex-none overflow-hidden max-lg:has-[[data-sheet]]:z-[80] land:h-full land:min-h-0 land:flex-1 lg:h-full lg:min-h-0">
             {main}
           </div>
 
           {/* Order Panel — right column on desktop, below the chart on a phone */}
-          <div className="relative z-20 flex min-h-0 flex-1 flex-col border-t border-opt-line bg-opt-bg-elev lg:h-full lg:flex-none lg:border-l lg:border-t-0">
+          <div className="relative z-20 flex min-h-0 flex-1 flex-col border-t border-opt-line bg-opt-bg-elev land:w-[300px] land:flex-none land:border-l land:border-t-0 lg:h-full lg:flex-none lg:border-l lg:border-t-0">
             <div
               onMouseDown={(e) => { e.preventDefault(); setIsResizing(true); }}
               className="absolute -left-1.5 top-0 bottom-0 z-30 hidden w-3 cursor-col-resize transition-colors hover:bg-opt-ink/10 lg:block"

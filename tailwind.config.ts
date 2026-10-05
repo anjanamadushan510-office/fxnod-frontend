@@ -55,7 +55,18 @@ const config: Config = {
       },
     },
   },
-  plugins: [require('@tailwindcss/typography')],
+  plugins: [
+    require('@tailwindcss/typography'),
+    // `land:` — a phone held sideways: wide enough to look like a tablet, far
+    // too short to stack a chart above an order ticket. It is a variant, not
+    // an entry in `screens`: a raw media query there switches off every
+    // `max-*` variant in the project.
+    ({ addVariant }: { addVariant: (name: string, definition: string) => void }) =>
+      addVariant(
+        "land",
+        "@media (max-width: 1023.98px) and (orientation: landscape) and (max-height: 520px)",
+      ),
+  ],
 };
 
 export default config;

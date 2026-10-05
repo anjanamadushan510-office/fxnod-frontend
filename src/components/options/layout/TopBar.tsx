@@ -56,7 +56,7 @@ export function TopBar({
   const gridRef = useRef<HTMLButtonElement>(null);
 
   return (
-    <div className="flex h-full flex-wrap items-center gap-x-2 gap-y-1 px-3 py-2 lg:flex-nowrap lg:px-4 lg:py-0">
+    <div className="flex h-full flex-wrap items-center gap-x-2 gap-y-1 px-3 py-2 land:flex-nowrap land:py-1 lg:flex-nowrap lg:px-4 lg:py-0">
       {/* Trade-types flyout trigger (§2 grid icon → §11 flyout) */}
       <button
         ref={gridRef}
@@ -92,8 +92,8 @@ export function TopBar({
       </div>
 
       {/* Right cluster — pinned far right */}
-      <div className="order-first flex w-full min-w-0 items-center justify-between gap-2 lg:order-none lg:ml-auto lg:w-auto lg:shrink-0 lg:justify-start lg:gap-4">
-        <span className="font-display text-[15px] font-semibold text-opt-ink lg:hidden">
+      <div className="order-first flex w-full min-w-0 items-center justify-between gap-2 land:order-none land:w-auto land:shrink-0 lg:order-none lg:ml-auto lg:w-auto lg:shrink-0 lg:justify-start lg:gap-4">
+        <span className="font-display text-[15px] font-semibold text-opt-ink land:hidden lg:hidden">
           dTrader
         </span>
         <div className="flex min-w-0 items-center gap-2 lg:contents">
