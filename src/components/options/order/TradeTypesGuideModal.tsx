@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
-import { Play, X } from "lucide-react";
+import { useEffect, useState, useRef } from "react";
+import { Flame, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useTheme } from "next-themes";
 import dynamic from "next/dynamic";
@@ -22,7 +22,7 @@ interface DirectionSection {
   lightAnim?: string;
 }
 
-/** Per-trade-type help content (Even/Odd fully fleshed out per §7.1). */
+/** Per-trade-type help content. */
 const CONTENT: Record<
   string,
   { intro: React.ReactNode; sections: DirectionSection[] }
@@ -270,22 +270,25 @@ const CONTENT: Record<
   },
 };
 
-interface HowToTradeModalProps {
-  contractLabel: string;
+interface TradeTypesGuideModalProps {
+  initialTradeType: string;
   onClose: () => void;
 }
 
-/**
- * "How to trade [X]?" help modal (Deriv §7.1). Fixed header (title + close),
- * scrollable body (intro + per-direction sections with animated-diagram
- * placeholders + an embedded video placeholder), fixed "Got it" footer.
- */
-export function HowToTradeModal({
-  contractLabel,
+export function TradeTypesGuideModal({
+  initialTradeType,
   onClose,
-}: HowToTradeModalProps) {
+}: TradeTypesGuideModalProps) {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
+  const [activeTab, setActiveTab] = useState(initialTradeType);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollLeft += e.deltaY;
+    }
+  };
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -295,24 +298,25 @@ export function HowToTradeModal({
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const content = CONTENT[contractLabel] ?? genericContent(contractLabel);
+  const content = CONTENT[activeTab] ?? genericContent(activeTab);
+  const tradeTypeKeys = Object.keys(CONTENT);
 
   return (
     <div
       className="fixed inset-0 z-[60] flex items-start justify-center p-4 pt-[80px]"
       role="dialog"
       aria-modal="true"
-      aria-label={`How to trade ${contractLabel}`}
+      aria-label="Trade Types Guide"
     >
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       />
 
-      <div className="relative z-10 flex max-h-[90vh] w-[min(460px,calc(100vw-32px))] flex-col overflow-hidden rounded-2xl border border-opt-line bg-opt-bg-elev shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
+      <div className="relative z-10 flex h-[92vh] w-[min(460px,calc(100vw-32px))] flex-col overflow-hidden rounded-2xl border border-opt-line bg-opt-bg-elev shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
         {/* Fixed header */}
         <div className="flex flex-shrink-0 items-center justify-between border-b border-opt-line px-5 py-4">
-          <h2 className="text-[17px] font-bold text-opt-ink">{contractLabel}</h2>
+          <h2 className="text-[17px] font-bold text-opt-ink">Trade types</h2>
           <button
             type="button"
             aria-label="Close"
@@ -321,6 +325,43 @@ export function HowToTradeModal({
           >
             <X className="h-[18px] w-[18px]" />
           </button>
+        </div>
+
+        {/* Horizontal Tabs */}
+        <div className="w-full max-w-full overflow-hidden border-b border-opt-line px-5 pt-3 pb-2">
+          <div
+            ref={scrollRef}
+            onWheel={handleWheel}
+            className="flex w-full overflow-x-auto gap-2 snap-x pb-2"
+          >
+            {tradeTypeKeys.map((key) => {
+              const isSelected = activeTab === key;
+              const hasFire = key === "Rise/Fall" || key === "Accumulators";
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setActiveTab(key)}
+                  className={cn(
+                    "flex flex-none snap-center items-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-[14px] font-semibold transition-colors",
+                    isSelected
+                      ? "bg-opt-ink text-opt-bg"
+                      : "bg-opt-bg-sunk text-opt-ink-3 hover:text-opt-ink"
+                  )}
+                >
+                  {key}
+                  {hasFire && (
+                    <DotLottiePlayer
+                      src="/trade-types/rise-fall/fire.lottie"
+                      autoplay
+                      loop
+                      className="w-4 h-4 ml-1"
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Scrollable body */}
@@ -335,7 +376,7 @@ export function HowToTradeModal({
               <p className="text-[13px] leading-relaxed text-opt-ink-2">
                 {s.description}
               </p>
-              {(s.darkAnim || s.lightAnim) ? (
+              {s.darkAnim || s.lightAnim ? (
                 <div className="relative flex-shrink-0 overflow-hidden rounded-xl border border-opt-line bg-opt-bg-sunk">
                   <DotLottiePlayer
                     src={(isDark ? s.darkAnim : s.lightAnim) as string}
@@ -368,13 +409,15 @@ export function HowToTradeModal({
 
 function Glossary({ children }: { children: React.ReactNode }) {
   return (
-    <span style={{ color: TEAL }} className="cursor-help font-medium underline decoration-dotted underline-offset-2">
+    <span
+      style={{ color: TEAL }}
+      className="cursor-help font-medium underline decoration-dotted underline-offset-2"
+    >
       {children}
     </span>
   );
 }
 
-/** Animated-diagram stand-in: Start → Expiry chart with the exit-price pill. */
 function DiagramPlaceholder({ label, exit }: { label: string; exit: string }) {
   const lastDigit = exit.slice(-1);
   return (
@@ -382,15 +425,24 @@ function DiagramPlaceholder({ label, exit }: { label: string; exit: string }) {
       <span className="absolute left-3 top-2 text-[11px] font-semibold text-opt-ink-3">
         {label}
       </span>
-      {/* dashed "start time" / solid "expiry time" verticals */}
       <span className="absolute bottom-5 left-8 top-6 w-px border-l border-dashed border-opt-ink-4" />
-      <span className="absolute bottom-5 right-16 top-6 w-px" style={{ borderLeft: `2px solid ${TEAL}` }} />
-      {/* price line stand-in */}
-      <svg viewBox="0 0 200 80" className="absolute inset-x-0 bottom-4 h-16 w-full" preserveAspectRatio="none">
-        <path d="M10 50 L60 40 L110 55 L150 30" fill="none" stroke="var(--opt-ink)" strokeWidth="1.5" />
+      <span
+        className="absolute bottom-5 right-16 top-6 w-px"
+        style={{ borderLeft: `2px solid ${TEAL}` }}
+      />
+      <svg
+        viewBox="0 0 200 80"
+        className="absolute inset-x-0 bottom-4 h-16 w-full"
+        preserveAspectRatio="none"
+      >
+        <path
+          d="M10 50 L60 40 L110 55 L150 30"
+          fill="none"
+          stroke="var(--opt-ink)"
+          strokeWidth="1.5"
+        />
         <circle cx="150" cy="30" r="4" fill={TEAL} />
       </svg>
-      {/* exit price pill */}
       <span className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md bg-[#FF4444] px-1.5 py-0.5 font-mono text-[11px] font-semibold text-white">
         {exit.slice(0, -1)}
         <span className="underline">{lastDigit}</span>
@@ -405,7 +457,11 @@ function genericContent(label: string) {
       <>Learn how the {label} contract works and when it pays out.</>
     ),
     sections: [
-      { title: label, description: <>Placeholder explainer for {label}.</>, exit: "1900.00" },
+      {
+        title: label,
+        description: <>Placeholder explainer for {label}.</>,
+        exit: "1900.00",
+      },
     ],
   };
 }
