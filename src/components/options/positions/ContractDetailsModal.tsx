@@ -71,7 +71,7 @@ export function ContractDetailsModal() {
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[120] flex items-center justify-center p-4"
+      className="fixed inset-0 z-[120] flex items-center justify-center lg:p-4"
       role="dialog"
       aria-modal="true"
       aria-label="Contract details"
@@ -81,7 +81,7 @@ export function ContractDetailsModal() {
         onClick={close}
       />
 
-      <div className="relative z-10 flex h-[min(700px,calc(100vh-64px))] w-[min(1200px,calc(100vw-64px))] flex-col overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#111928] shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
+      <div className="relative z-10 flex h-full w-full flex-col overflow-hidden bg-white dark:bg-[#111928] pt-safe pb-safe shadow-[0_24px_60px_rgba(0,0,0,0.28)] lg:h-[min(700px,calc(100dvh-64px))] lg:w-[min(1200px,calc(100vw-64px))] lg:rounded-2xl lg:border lg:border-gray-200 lg:dark:border-gray-800">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-800 px-4 py-3">
           <h2 className="text-[15px] font-bold text-gray-900 dark:text-white">Contract details</h2>
@@ -89,16 +89,18 @@ export function ContractDetailsModal() {
             type="button"
             aria-label="Close"
             onClick={close}
-            className="grid h-8 w-8 place-items-center rounded-lg text-gray-500 dark:text-gray-400 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
+            className="grid h-10 w-10 place-items-center rounded-lg text-gray-500 dark:text-gray-400 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white lg:h-8 lg:w-8"
           >
             <X className="h-[18px] w-[18px]" />
           </button>
         </div>
 
         {/* Body: [left metadata] [right chart] */}
-        <div className="grid min-h-0 flex-1 grid-cols-[280px_1fr]">
+        {/* Below lg: the chart on top at a fixed height, the figures under it,
+            one scroll for both. */}
+        <div className="flex min-h-0 flex-1 flex-col-reverse justify-end overflow-y-auto lg:grid lg:grid-cols-[280px_1fr] lg:overflow-visible">
           <LeftPanel detail={detail} lost={lost} />
-          <div className="min-h-0 min-w-0 bg-gray-50 dark:bg-[#0e0e0e] p-2">
+          <div className="h-[40dvh] min-w-0 flex-none bg-gray-50 dark:bg-[#0e0e0e] p-2 lg:h-auto lg:min-h-0">
             <ContractDetailChart detail={detail} />
           </div>
         </div>
@@ -133,7 +135,7 @@ function LeftPanel({
   const isMultiplier = detail.type.toLowerCase().includes("mult");
 
   return (
-    <div className="flex min-h-0 flex-col gap-3 overflow-y-auto border-r border-gray-200 dark:border-gray-800 p-4 [scrollbar-width:thin]">
+    <div className="flex flex-none flex-col gap-3 border-gray-200 dark:border-gray-800 p-4 [scrollbar-width:thin] lg:min-h-0 lg:overflow-y-auto lg:border-r">
       
       {/* Header Badge */}
       <div className="flex items-center gap-3 rounded-lg border border-gray-200 dark:border-gray-800 bg-gradient-to-r from-gray-100 to-transparent dark:from-gray-800/50 px-3 py-2">

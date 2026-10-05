@@ -48,24 +48,25 @@ export function ReportsModal({ isOpen, onClose }: ReportsModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-white dark:bg-[#111928] font-sans">
+    <div className="fixed inset-0 z-[100] flex flex-col bg-white dark:bg-[#111928] font-sans pt-safe pb-safe px-safe">
       {/* Header */}
-      <div className="relative flex h-16 items-center justify-center border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1a2234] px-4">
+      <div className="relative flex h-14 flex-none items-center lg:h-16 justify-center border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1a2234] px-4">
         <h2 className="text-lg font-bold text-gray-900 dark:text-white">Reports</h2>
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 rounded p-2 text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition-colors"
+          aria-label="Close reports"
+          className="absolute right-2 rounded p-3 lg:right-4 lg:p-2 text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition-colors"
         >
           <X className="h-5 w-5" />
         </button>
       </div>
 
       {/* Body: Sidebar + Main Content */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left Sidebar Tabs */}
-        <div className="w-[280px] border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1a2234] py-4">
-          <nav className="flex flex-col">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
+        {/* Tabs: a row across the top on a phone, a left rail on desktop */}
+        <div className="flex-none border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1a2234] lg:w-[280px] lg:border-b-0 lg:border-r lg:py-4">
+          <nav className="flex lg:flex-col">
             <TabItem
               id="open_positions"
               label="Open positions"
@@ -91,7 +92,7 @@ export function ReportsModal({ isOpen, onClose }: ReportsModalProps) {
         </div>
 
         {/* Main Content Area */}
-        <div className="flex-1 bg-white dark:bg-[#111928] overflow-hidden">
+        <div className="min-h-0 flex-1 overflow-hidden bg-white dark:bg-[#111928]">
           {activeTab === "open_positions" && <OpenPositions />}
           {activeTab === "trade_table" && <TradeTable />}
           {activeTab === "statement" && <Statement />}
@@ -114,14 +115,14 @@ function TabItem({ label, icon, isActive, onClick }: TabItemProps) {
     <button
       type="button"
       onClick={onClick}
-      className={`relative flex items-center gap-3 px-6 py-4 text-left text-[14px] font-medium transition-colors ${
+      className={`relative flex flex-1 items-center justify-center gap-2 whitespace-nowrap px-2 py-3.5 text-[13px] font-medium transition-colors lg:flex-none lg:justify-start lg:gap-3 lg:px-6 lg:py-4 lg:text-left lg:text-[14px] ${
         isActive
           ? "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white"
           : "text-gray-500 dark:text-zinc-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-700 dark:hover:text-zinc-200"
       }`}
     >
       {isActive && (
-        <div className="absolute left-0 top-0 bottom-0 w-1 bg-opt-rise" />
+        <div className="absolute bottom-0 left-0 h-0.5 w-full bg-opt-rise lg:top-0 lg:h-auto lg:w-1" />
       )}
       <span className={isActive ? "text-gray-900 dark:text-white" : "text-gray-500 dark:text-zinc-400"}>
         {icon}

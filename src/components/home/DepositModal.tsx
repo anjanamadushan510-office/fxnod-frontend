@@ -343,6 +343,14 @@ function describe(deposit: ChainDepositResponse): {
   }
 }
 
+function isHttpsUrl(value: string): boolean {
+  try {
+    return new URL(value).protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 function BinancePayDeposit({ onClose }: { onClose: () => void }) {
   const [amount, setAmount] = useState("100");
   const [unavailable, setUnavailable] = useState(false);
@@ -352,8 +360,10 @@ function BinancePayDeposit({ onClose }: { onClose: () => void }) {
       onSuccess: (order) => {
         // Null until the Binance order API is wired up. Rather than open a
         // blank tab, say so — the order is recorded either way.
-        if (order.checkout_url) {
-          window.open(order.checkout_url, "_blank");
+        // https only, and no opener: a checkout page is another site, and a
+        // tab opened without noopener can navigate the tab that opened it.
+        if (order.checkout_url && isHttpsUrl(order.checkout_url)) {
+          window.open(order.checkout_url, "_blank", "noopener,noreferrer");
           onClose();
         } else {
           setUnavailable(true);

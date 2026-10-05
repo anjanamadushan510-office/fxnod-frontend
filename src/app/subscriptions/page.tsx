@@ -9,17 +9,17 @@ export default function SubscriptionsPage() {
 
   return (
     <section data-view="subscriptions" className="p-4 lg:p-8">
-      <p className="mb-6 text-sm text-ink-2">Tools you have activated. Turn one on from Tools and it shows up here.</p>
+      <p className="mb-6 text-sm text-ink-2">Tools you have activated. Turn one on from Discover and it shows up here.</p>
 
       {activeTools.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-line bg-surface p-8 text-center">
           <p className="text-sm text-ink">No tools are active.</p>
-          <p className="mt-1 text-sm text-ink-2">Activate a tool on the Tools page and it will be listed here.</p>
+          <p className="mt-1 text-sm text-ink-2">Activate a tool on the Discover page and it will be listed here.</p>
           <Link
             href={"/tools" as Route}
             className="mt-4 inline-flex h-10 items-center rounded-lg bg-ink px-5 text-sm font-medium text-surface hover:opacity-80"
           >
-            Go to Tools
+            Go to Discover
           </Link>
         </div>
       ) : (

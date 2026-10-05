@@ -19,7 +19,14 @@ import { useAuthStore } from "@/stores/authStore";
  *   memory after a reload, so /users/me 401s, the axios interceptor refreshes
  *   via the httpOnly cookie, and the retry succeeds if the cookie is valid.
  */
-export function Providers({ children }: { children: React.ReactNode }) {
+export function Providers({
+  children,
+  nonce,
+}: {
+  children: React.ReactNode;
+  /** CSP nonce for the inline theme script next-themes injects. */
+  nonce?: string;
+}) {
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -53,7 +60,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <ThemeProvider attribute="data-theme" defaultTheme="dark" disableTransitionOnChange>
+    <ThemeProvider attribute="data-theme" defaultTheme="dark" disableTransitionOnChange nonce={nonce}>
       <QueryClientProvider client={queryClient}>
         {children}
       {/* App-wide toast portal (trade results, Deriv linking, …). */}

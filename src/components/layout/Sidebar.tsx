@@ -35,7 +35,7 @@ export function Sidebar({
   const TERMINAL_LINKS: NavItem[] = [
     { 
       key: "home", 
-      label: "Home", 
+      label: "Dashboard", 
       icon: (isActive) => (
         <svg className={cn("nav-icon w-4 h-4 transition-colors", isActive ? "text-ink" : "text-ink-3")} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M3 7.5A1.5 1.5 0 014.5 6h4A1.5 1.5 0 0110 7.5v4A1.5 1.5 0 018.5 13h-4A1.5 1.5 0 013 11.5v-4zM14 7.5A1.5 1.5 0 0115.5 6h4A1.5 1.5 0 0121 7.5v1A1.5 1.5 0 0119.5 10h-4A1.5 1.5 0 0114 8.5v-1zM14 14.5a1.5 1.5 0 011.5-1.5h4a1.5 1.5 0 011.5 1.5v2a1.5 1.5 0 01-1.5 1.5h-4a1.5 1.5 0 01-1.5-1.5v-2zM3 16.5A1.5 1.5 0 014.5 15h4a1.5 1.5 0 011.5 1.5v1A1.5 1.5 0 018.5 19h-4A1.5 1.5 0 013 17.5v-1z"/>
@@ -45,7 +45,7 @@ export function Sidebar({
     },
     { 
       key: "tools", 
-      label: "Tools", 
+      label: "Discover", 
       icon: (isActive) => (
         <svg className={cn("nav-icon w-4 h-4 transition-colors", isActive ? "text-ink" : "text-ink-3")} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085"/>
@@ -55,7 +55,7 @@ export function Sidebar({
     },
     { 
       key: "subscriptions", 
-      label: "Subscriptions", 
+      label: "Active Tools", 
       icon: (isActive) => (
         <svg className={cn("nav-icon w-4 h-4 transition-colors", isActive ? "text-ink" : "text-ink-3")} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M6 6.878V6a2.25 2.25 0 012.25-2.25h7.5A2.25 2.25 0 0118 6v.878m-12 0c.235-.083.487-.128.75-.128h10.5c.263 0 .515.045.75.128m-12 0A2.25 2.25 0 004.5 8.75v10.5A2.25 2.25 0 006.75 21.5h10.5a2.25 2.25 0 002.25-2.25V8.75a2.25 2.25 0 00-1.5-2.122"/>
@@ -65,7 +65,7 @@ export function Sidebar({
     },
     { 
       key: "venues", 
-      label: "Venues", 
+      label: "Connected Accounts", 
       icon: (isActive) => (
         <svg className={cn("nav-icon w-4 h-4 transition-colors", isActive ? "text-ink" : "text-ink-3")} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.91a4 4 0 015.66 5.66l-3.54 3.54a4 4 0 01-5.66 0M10.81 15.09a4 4 0 01-5.66-5.66l3.54-3.54a4 4 0 015.66 0"/>
@@ -132,7 +132,7 @@ export function Sidebar({
       <aside
         id="sidebar"
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex h-full w-64 flex-col border-r border-line bg-surface transition-transform duration-300 ease-in-out lg:translate-x-0 lg:sticky lg:top-0 lg:h-[100dvh]",
+          "fixed inset-y-0 left-0 z-40 flex h-full w-[min(18rem,86vw)] flex-col border-r border-line bg-surface pt-safe pb-safe transition-transform duration-300 ease-in-out lg:w-64 lg:translate-x-0 lg:sticky lg:top-0 lg:h-[100dvh]",
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
@@ -141,7 +141,7 @@ export function Sidebar({
             <img src="/assets/fxnod-logo.png" alt="FXNOD" className="h-8 w-auto invert dark:invert-0" />
           </Link>
           <button 
-            className="text-ink-2 hover:text-ink lg:hidden" 
+            className="-mr-2 grid h-11 w-11 place-items-center text-ink-2 hover:text-ink lg:hidden" 
             onClick={onClose}
             aria-label="Close menu"
           >
@@ -151,7 +151,7 @@ export function Sidebar({
           </button>
         </div>
 
-        <nav className="flex-1 space-y-2 overflow-y-auto p-3">
+        <nav className="flex-1 space-y-2 overflow-y-auto overscroll-contain p-3">
           <p className="px-3 pb-2 pt-3 text-[10px] font-medium uppercase tracking-[0.18em] text-ink-3">
             Terminal
           </p>
@@ -215,6 +215,7 @@ export function Sidebar({
         <div className="mt-auto border-t border-line p-3">
           <Link 
             href={"/settings" as Route} 
+            onClick={onClose}
             className="flex items-center gap-3 rounded-lg px-2 py-2 cursor-pointer hover:bg-surface-2 transition-colors"
           >
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-line bg-surface">

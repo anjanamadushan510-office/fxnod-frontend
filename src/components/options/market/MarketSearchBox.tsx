@@ -21,7 +21,7 @@ export function MarketSearchBox({
   return (
     <div
       className={cn(
-        "flex h-[34px] flex-1 items-center gap-2 rounded-lg border border-opt-line bg-opt-bg-sunk px-2.5",
+        "flex h-10 flex-1 items-center lg:h-[34px] gap-2 rounded-lg border border-opt-line bg-opt-bg-sunk px-2.5",
         "transition-colors focus-within:border-opt-ink-3 focus-within:bg-opt-bg-elev",
       )}
     >

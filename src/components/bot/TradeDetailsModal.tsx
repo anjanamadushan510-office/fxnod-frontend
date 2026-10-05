@@ -33,10 +33,10 @@ export function TradeDetailsModal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-6xl rounded-[var(--opt-radius)] border border-opt-line bg-opt-bg-elev p-6 shadow-2xl flex flex-col md:flex-row gap-6"
+        className="max-h-[calc(100dvh-2rem)] w-full max-w-6xl overflow-y-auto rounded-[var(--opt-radius)] border border-opt-line bg-opt-bg-elev p-4 shadow-2xl flex flex-col gap-4 md:flex-row md:gap-6 md:p-6"
       >
         {/* Left column: Chart */}
-        <div className="flex-1 flex flex-col min-h-[500px] border border-opt-line rounded-[var(--opt-radius)] overflow-hidden bg-opt-bg">
+        <div className="flex-none md:flex-1 flex flex-col min-h-[300px] md:min-h-[500px] border border-opt-line rounded-[var(--opt-radius)] overflow-hidden bg-opt-bg">
           <div className="p-3 border-b border-opt-line bg-opt-bg-sunk font-medium text-sm text-opt-ink flex justify-between items-center">
             <span>{market?.name ?? trade.symbol} Live Chart</span>
             <span className="text-[12px] text-opt-ink-3 uppercase px-2 py-0.5 rounded-full bg-opt-bg">

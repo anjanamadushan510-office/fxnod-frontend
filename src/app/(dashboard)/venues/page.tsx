@@ -107,7 +107,7 @@ function DerivVenueCard({
             href={"/tools" as Route}
             className="inline-flex h-10 items-center justify-center rounded-lg border border-line px-4 text-sm text-ink-2 transition hover:text-ink"
           >
-            Tools
+            Discover
           </Link>
           <button
             type="button"

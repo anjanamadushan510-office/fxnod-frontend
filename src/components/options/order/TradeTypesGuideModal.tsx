@@ -303,7 +303,7 @@ export function TradeTypesGuideModal({
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-start justify-center p-4 pt-[80px]"
+      className="fixed inset-0 z-[60] flex items-start justify-center p-3 lg:p-4 lg:pt-[80px]"
       role="dialog"
       aria-modal="true"
       aria-label="Trade Types Guide"
@@ -313,7 +313,7 @@ export function TradeTypesGuideModal({
         onClick={onClose}
       />
 
-      <div className="relative z-10 flex h-[92vh] w-[min(460px,calc(100vw-32px))] flex-col overflow-hidden rounded-2xl border border-opt-line bg-opt-bg-elev shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
+      <div className="relative z-10 flex h-[calc(100dvh-1.5rem)] w-[min(460px,calc(100vw-24px))] lg:h-[92vh] flex-col overflow-hidden rounded-2xl border border-opt-line bg-opt-bg-elev shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
         {/* Fixed header */}
         <div className="flex flex-shrink-0 items-center justify-between border-b border-opt-line px-5 py-4">
           <h2 className="text-[17px] font-bold text-opt-ink">Trade types</h2>

@@ -237,7 +237,7 @@ export function BotPackageModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-xs">
-      <div className="flex h-[560px] w-full max-w-2xl flex-col rounded-[var(--opt-radius)] border border-opt-line bg-opt-bg-elev shadow-2xl overflow-hidden">
+      <div className="flex h-[min(560px,calc(100dvh-2rem))] w-full max-w-2xl flex-col rounded-[var(--opt-radius)] border border-opt-line bg-opt-bg-elev shadow-2xl overflow-hidden">
         {/* Modal Header */}
         <div className="flex items-center justify-between border-b border-opt-line px-5 py-3.5 bg-opt-bg-sunk/50">
           <div className="flex items-center gap-2">

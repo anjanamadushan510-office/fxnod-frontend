@@ -24,7 +24,7 @@ export default function WalletPage() {
     <section data-view="wallet" className="p-4 lg:p-8 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:ml-auto">
-          <Link href="/transfer" className="flex items-center h-9 px-4 rounded-lg border border-line text-sm text-ink-2 hover:text-ink hover:bg-surface-2 transition-colors w-full sm:w-auto">Send to Deriv</Link>
+          <Link href="/transfer" className="flex items-center justify-center h-11 sm:h-9 px-4 rounded-lg border border-line text-sm text-ink-2 hover:text-ink hover:bg-surface-2 transition-colors w-full sm:w-auto">Send to Deriv</Link>
           <button onClick={() => setIsDepositModalOpen(true)} className="h-9 px-4 rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-80 transition-opacity w-full sm:w-auto">Top up</button>
         </div>
       </div>
