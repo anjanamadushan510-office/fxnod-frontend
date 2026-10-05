@@ -15,6 +15,7 @@ import {
   getDerivListConnectionsQueryKey,
   useDerivDisconnect,
   useDerivListAccounts,
+  useDerivListConnections,
   useDerivSelectAccount,
 } from "@/services/api/endpoints/trading/trading";
 import type { DerivLinkedAccount } from "@/services/api/model";
@@ -42,6 +43,7 @@ export function DerivConnectionMenu() {
   const rootRef = useRef<HTMLDivElement>(null);
 
   const accountsQuery = useDerivListAccounts({ query: { enabled: open && linked } });
+  const connectionsQuery = useDerivListConnections({ query: { enabled: open && linked } });
   const selectMutation = useDerivSelectAccount();
   const disconnectMutation = useDerivDisconnect();
   const [confirmReal, setConfirmReal] = useState<DerivLinkedAccount | null>(null);
@@ -75,6 +77,14 @@ export function DerivConnectionMenu() {
   // The server returns accounts ordered by the grant they came from, so
   // grouping in encounter order numbers the logins the same way every render.
   const logins = useMemo(() => groupByConnection(accounts), [accounts]);
+  const ownerName = useMemo(() => {
+    const names = new Map<string, string>();
+    for (const connection of connectionsQuery.data?.connections ?? []) {
+      const name = connection.owner_name?.trim();
+      if (name) names.set(connection.connection_id, name);
+    }
+    return names;
+  }, [connectionsQuery.data]);
 
   async function switchTo(account: DerivLinkedAccount) {
     if (account.is_selected) {
@@ -206,7 +216,7 @@ export function DerivConnectionMenu() {
                 <div key={login.connectionId} className="border-b border-line last:border-b-0">
                   <div className="flex items-center justify-between gap-2 px-4 pt-3 pb-1">
                     <span className="text-[10px] font-semibold uppercase tracking-wide text-ink-3">
-                      Deriv login {index + 1}
+                      {ownerName.get(login.connectionId) || `Deriv login ${index + 1}`}
                       {login.needsReconnect && " · expired"}
                     </span>
                     <button

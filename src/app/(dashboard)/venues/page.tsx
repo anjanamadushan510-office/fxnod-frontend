@@ -35,7 +35,20 @@ import type { DerivConnection, DerivLinkedAccount } from "@/services/api/model";
  * timestamp against the browser clock.
  */
 export default function VenuesPage() {
-  const connectionsQuery = useDerivListConnections();
+  const connectionsQuery = useDerivListConnections({
+    query: {
+      // Stored rows come back immediately. A name Deriv has not given us yet
+      // is filled in the background, so keep asking briefly until it arrives.
+      refetchInterval: (query) => {
+        const rows = query.state.data?.connections ?? [];
+        const waitingOnName = rows.some(
+          (connection) => !connection.needs_reconnect && !connection.owner_name?.trim(),
+        );
+        if (!waitingOnName || query.state.dataUpdateCount >= 4) return false;
+        return 1500;
+      },
+    },
+  });
   const connections = connectionsQuery.data?.connections ?? [];
 
   return (
