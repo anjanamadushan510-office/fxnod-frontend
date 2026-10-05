@@ -84,7 +84,7 @@ function DerivVenueCard({
 
   return (
     <article className="overflow-hidden rounded-2xl border border-line bg-surface">
-      <header className="flex flex-wrap items-start justify-between gap-4 border-b border-line p-6">
+      <header className="flex flex-col gap-4 border-b border-line p-4 sm:p-6 md:flex-row md:items-start md:justify-between">
         <div className="flex items-center gap-4">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-line bg-surface-2 text-lg font-semibold text-ink">
             D
@@ -96,16 +96,16 @@ function DerivVenueCard({
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="grid w-full grid-cols-2 gap-2 md:flex md:w-auto md:flex-wrap md:justify-end">
           <Link
             href={"/transfer" as Route}
-            className="inline-flex h-10 items-center rounded-lg border border-line px-4 text-sm text-ink-2 transition hover:text-ink"
+            className="inline-flex h-10 items-center justify-center rounded-lg border border-line px-4 text-sm text-ink-2 transition hover:text-ink"
           >
             Deposit
           </Link>
           <Link
             href={"/tools" as Route}
-            className="inline-flex h-10 items-center rounded-lg border border-line px-4 text-sm text-ink-2 transition hover:text-ink"
+            className="inline-flex h-10 items-center justify-center rounded-lg border border-line px-4 text-sm text-ink-2 transition hover:text-ink"
           >
             Tools
           </Link>
@@ -113,7 +113,7 @@ function DerivVenueCard({
             type="button"
             onClick={start}
             disabled={redirecting}
-            className="inline-flex h-10 items-center rounded-lg bg-ink px-4 text-sm font-medium text-surface transition hover:opacity-80 disabled:opacity-60"
+            className="col-span-2 inline-flex h-10 items-center justify-center rounded-lg bg-ink px-4 text-sm font-medium text-surface transition hover:opacity-80 disabled:opacity-60 md:col-span-1"
           >
             {redirecting
               ? "Redirecting…"
@@ -124,7 +124,7 @@ function DerivVenueCard({
         </div>
       </header>
 
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         {isLoading && <p className="text-sm text-ink-3">Loading your Deriv accounts…</p>}
 
         {isError && (
@@ -212,29 +212,29 @@ function DerivLoginRow({ connection, index }: { connection: DerivConnection; ind
 
   return (
     <div className="rounded-xl border border-line bg-surface-2/40">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-3">
-        <div className="flex items-center gap-2.5">
-          <div className="leading-tight">
-            <span className="text-sm font-medium text-ink">
+      <div className="flex flex-col gap-3 border-b border-line px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="break-words text-sm font-medium text-ink">
               {connection.owner_name?.trim() || `Deriv login ${index + 1}`}
             </span>
-            {connection.client_id && (
-              <p className="mt-0.5 font-mono text-[11px] text-ink-3">
-                Client ID {connection.client_id}
-              </p>
+            {connection.needs_reconnect ? (
+              <span className="inline-flex shrink-0 items-center rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-400 ring-1 ring-inset ring-amber-500/20">
+                Session expired
+              </span>
+            ) : (
+              <span className="inline-flex shrink-0 items-center rounded-full bg-green-500/10 px-2 py-0.5 text-[10px] font-semibold text-green-400 ring-1 ring-inset ring-green-500/20">
+                Active
+              </span>
             )}
           </div>
-          {connection.needs_reconnect ? (
-            <span className="inline-flex items-center rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-400 ring-1 ring-inset ring-amber-500/20">
-              Session expired
-            </span>
-          ) : (
-            <span className="inline-flex items-center rounded-full bg-green-500/10 px-2 py-0.5 text-[10px] font-semibold text-green-400 ring-1 ring-inset ring-green-500/20">
-              Active
-            </span>
+          {connection.client_id && (
+            <p className="mt-0.5 break-all font-mono text-[11px] leading-relaxed text-ink-3">
+              Client ID {connection.client_id}
+            </p>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center justify-end gap-2">
           {connection.needs_reconnect && (
             <button
               type="button"
@@ -268,7 +268,7 @@ function DerivLoginRow({ connection, index }: { connection: DerivConnection; ind
         {connection.accounts.map((account) => (
           <li
             key={account.deriv_account_id}
-            className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-3 last:border-b-0"
+            className="flex flex-col gap-3 border-b border-line px-4 py-3 last:border-b-0 sm:flex-row sm:items-center sm:justify-between"
           >
             <div className="flex items-center gap-3">
               <span
@@ -295,7 +295,7 @@ function DerivLoginRow({ connection, index }: { connection: DerivConnection; ind
               </div>
             </div>
             {account.is_selected ? (
-              <span className="rounded-lg border border-line bg-surface px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-ink-3">
+              <span className="self-start rounded-lg border border-line bg-surface px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-ink-3 sm:self-center">
                 In use
               </span>
             ) : (
@@ -303,7 +303,7 @@ function DerivLoginRow({ connection, index }: { connection: DerivConnection; ind
                 type="button"
                 onClick={() => chooseAccount(account)}
                 disabled={busy}
-                className="rounded-lg border border-line px-3 py-1.5 text-xs text-ink transition hover:bg-surface disabled:opacity-50"
+                className="h-10 w-full rounded-lg border border-line px-3 text-xs text-ink transition hover:bg-surface disabled:opacity-50 sm:h-auto sm:w-auto sm:py-1.5"
               >
                 Use this account
               </button>
@@ -359,7 +359,7 @@ function DerivAppApprovals() {
   if (!linked || appsQuery.isPending || appsQuery.isError || apps.length === 0) return null;
 
   return (
-    <div className="border-t border-line px-6 py-5">
+    <div className="border-t border-line px-4 py-5 sm:px-6">
       <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-3">
         Bot approvals
       </h3>
@@ -422,11 +422,11 @@ function ConfirmDialog({
       <div className="w-full max-w-sm rounded-2xl border border-line bg-surface p-6 shadow-2xl">
         <h3 className="mb-2 font-display text-base font-semibold text-ink">{title}</h3>
         <p className="mb-6 text-[13px] leading-relaxed text-ink-2">{body}</p>
-        <div className="flex justify-end gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-lg border border-line px-4 py-2 text-[13px] font-medium text-ink transition hover:bg-surface-2"
+            className="h-10 rounded-lg border border-line px-4 text-[13px] font-medium text-ink transition hover:bg-surface-2 sm:h-auto sm:py-2"
           >
             Cancel
           </button>
@@ -434,7 +434,7 @@ function ConfirmDialog({
             type="button"
             onClick={onConfirm}
             disabled={busy}
-            className="rounded-lg bg-red-500 px-4 py-2 text-[13px] font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+            className="h-10 rounded-lg bg-red-500 px-4 text-[13px] font-semibold text-white transition hover:opacity-90 disabled:opacity-50 sm:h-auto sm:py-2"
           >
             {confirmLabel}
           </button>
