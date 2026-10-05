@@ -1,9 +1,6 @@
 /**
- * Layout for the `/home` route group.
- *
- * Renders the TopNav once and gives the page a sticky-aware container.
- * The Sidebar + MobileTabBar live inside the page itself so they can share
- * `active` state with the section components (Real/Demo, etc.).
+ * Layout for the `/home` route.
+ * Sidebar, top bar, and the phone tab bar live in DashboardShell.
  */
 import { DashboardShell } from "@/components/layout/DashboardShell";
 
