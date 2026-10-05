@@ -60,7 +60,7 @@ export function RunSavedBotDialog({
             <p className="text-sm text-ink-2">
               Connect a Deriv account on{" "}
               <Link href={"/venues" as Route} className="text-ink underline underline-offset-2">
-                Venues
+                Connected Accounts
               </Link>{" "}
               before running this bot.
             </p>

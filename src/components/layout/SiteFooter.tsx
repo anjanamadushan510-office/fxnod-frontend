@@ -26,7 +26,7 @@ const SECTIONS: { title: string; links: { label: string; href: Route }[] }[] = [
     title: "Trade",
     links: [
       { label: "Options", href: "/options" },
-      { label: "Subscriptions", href: "/subscriptions" },
+      { label: "Active Tools", href: "/subscriptions" },
     ],
   },
   {

@@ -7,14 +7,14 @@ import { cn } from "@/lib/cn";
 
 /**
  * Phone navigation for the signed-in app.
- * Subscriptions is the list of tools the person has turned on.
+ * Active Tools is the list of tools the person has turned on.
  * Transfer, Partners, and Settings stay in the side menu.
  */
 const TABS = [
-  { href: "/home", label: "Home", icon: HomeIcon },
-  { href: "/tools", label: "Tools", icon: ToolsIcon },
-  { href: "/subscriptions", label: "Subscriptions", icon: SubscriptionsIcon },
-  { href: "/venues", label: "Venues", icon: VenuesIcon },
+  { href: "/home", label: "Dashboard", icon: HomeIcon },
+  { href: "/tools", label: "Discover", icon: ToolsIcon },
+  { href: "/subscriptions", label: "Active Tools", icon: SubscriptionsIcon },
+  { href: "/venues", label: "Connected Accounts", icon: VenuesIcon },
   { href: "/wallet", label: "Wallet", icon: WalletIcon },
 ] as const;
 
@@ -27,7 +27,7 @@ export function MobileTabBar() {
       className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 backdrop-blur-xl lg:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      <div className="grid h-14 grid-cols-5">
+      <div className="grid h-16 grid-cols-5">
         {TABS.map((tab) => {
           const on = pathname === tab.href || pathname.startsWith(`${tab.href}/`);
           const Icon = tab.icon;
@@ -37,7 +37,7 @@ export function MobileTabBar() {
               href={tab.href as Route}
               aria-current={on ? "page" : undefined}
               className={cn(
-                "flex min-w-0 flex-col items-center justify-center gap-1 px-0.5 text-center text-[9px] font-medium leading-none tracking-tight min-[400px]:text-[10px]",
+                "flex min-w-0 flex-col items-center justify-center gap-1 px-0.5 text-center text-[9px] font-medium leading-tight tracking-tight min-[400px]:text-[10px]",
                 on ? "text-ink" : "text-ink-3",
               )}
             >

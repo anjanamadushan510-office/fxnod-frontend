@@ -9,16 +9,16 @@ import { cn } from "@/lib/cn";
 
 // Helper for dynamic title
 function getRouteTitle(pathname: string) {
-  if (pathname.startsWith("/home")) return { title: "Home", subtitle: "dTrader · dBot on Deriv" };
+  if (pathname.startsWith("/home")) return { title: "Dashboard", subtitle: "dTrader · dBot on Deriv" };
   if (pathname.startsWith("/option")) return { title: "Options", subtitle: "dTrader · dBot on Deriv" };
-  if (pathname.startsWith("/tools")) return { title: "Tools", subtitle: "Free tools and paid subscriptions" };
-  if (pathname.startsWith("/subscriptions")) return { title: "Subscriptions", subtitle: "Manage Subscriptions" };
-  if (pathname.startsWith("/venues")) return { title: "Venues", subtitle: "Live APIs" };
+  if (pathname.startsWith("/tools")) return { title: "Discover", subtitle: "Free tools and paid subscriptions" };
+  if (pathname.startsWith("/subscriptions")) return { title: "Active Tools", subtitle: "Tools you have turned on" };
+  if (pathname.startsWith("/venues")) return { title: "Connected Accounts", subtitle: "Live APIs" };
   if (pathname.startsWith("/wallet")) return { title: "Wallet", subtitle: "Top up, then pay for tools" };
   if (pathname.startsWith("/transfer")) return { title: "Transfer", subtitle: "Transfer Funds" };
   if (pathname.startsWith("/partner/dashboard")) return { title: "Partner", subtitle: "Share FXNOD, earn on usage" };
   if (pathname.startsWith("/settings")) return { title: "Settings", subtitle: "Account Settings" };
-  return { title: "Home", subtitle: "dTrader · dBot on Deriv" };
+  return { title: "Dashboard", subtitle: "dTrader · dBot on Deriv" };
 }
 
 interface TopNavProps {

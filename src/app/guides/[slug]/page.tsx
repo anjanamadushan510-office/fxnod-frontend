@@ -30,7 +30,7 @@ const guidesData: Record<string, {
       },
       {
         heading: 'Where it lives',
-        text: 'Open the terminal, go to Tools, activate FXNOD Bot, then open it from Subscriptions. The workspace is empty until you add a strategy — that editor is the next layer of the product.',
+        text: 'Open the terminal, go to Discover, activate FXNOD Bot, then open it from Active Tools. The workspace is empty until you add a strategy — that editor is the next layer of the product.',
         link: { label: 'Send FXNOD Wallet funds onto Deriv', href: '/guides/send-wallet-funds' }
       }
     ]
@@ -69,7 +69,7 @@ const guidesData: Record<string, {
       { heading: 'Monthly — pay from the wallet, use your keys', text: 'You top up the FXNOD Wallet, subscribe, and connect your own API keys. There is no markup on that flow. The charge renews monthly from the same wallet you also use to send funds to Deriv.' },
       {
         heading: 'Which to pick',
-        text: 'Start free if you want to run volume without a plan. Move to monthly when you want direct keys and a cleaner execution cost. Both sit under Tools; active ones collect in Subscriptions.',
+        text: 'Start free if you want to run volume without a plan. Move to monthly when you want direct keys and a cleaner execution cost. Both sit under Discover; active ones collect in Active Tools.',
         link: { label: 'Read next: How FXNOD Bot runs strategies on Deriv.', href: '/guides/fxnod-bot-strategies' }
       }
     ]

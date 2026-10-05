@@ -49,7 +49,7 @@ export function DashboardMetrics({ onTopUp, onSend }: DashboardMetricsProps) {
 
       <article className="min-w-0 bg-surface border border-line rounded-2xl p-4 sm:p-6 lg:p-7 hover:bg-surface-2 cursor-pointer transition-colors">
         <div className="flex items-start justify-between gap-2 mb-4">
-          <p className="text-[11px] uppercase tracking-[0.14em] text-ink-3 sm:text-xs">Venues</p>
+          <p className="text-[11px] uppercase tracking-[0.14em] text-ink-3 sm:text-xs">Connected Accounts</p>
           <span className="text-[11px] text-green-400">Live APIs</span>
         </div>
         <p className="font-display text-2xl font-semibold tabular-nums text-ink sm:text-3xl">{venueCount}</p>

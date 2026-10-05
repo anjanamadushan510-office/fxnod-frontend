@@ -152,7 +152,7 @@ export function CallbackInner() {
     setPhase({
       name: "done",
       title: "Deriv account added",
-      body: "You can switch to it any time from Venues or the account menu. Redirecting…",
+      body: "You can switch to it any time from Connected Accounts or the account menu. Redirecting…",
     });
     setTimeout(() => router.push(returnTo), 1800);
   }
@@ -356,7 +356,7 @@ function PickerCard({
 
       <p className="text-[11px] text-ink-3 leading-relaxed">
         One account is traded at a time, and you can switch whenever you like from
-        Venues or the account menu. Demo accounts trade with virtual funds.
+        Connected Accounts or the account menu. Demo accounts trade with virtual funds.
       </p>
     </Card>
   );

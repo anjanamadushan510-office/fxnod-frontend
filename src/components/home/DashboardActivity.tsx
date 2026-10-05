@@ -20,7 +20,7 @@ export function DashboardActivity() {
         <div className="flex items-center justify-between px-5 py-4 border-b border-line gap-3">
           <h2 className="font-display text-sm font-semibold text-ink">Active on your account</h2>
           <Link href="/subscriptions" className="text-xs text-ink-2 hover:text-ink transition-colors">
-            Subscriptions &rarr;
+            Active Tools &rarr;
           </Link>
         </div>
         
