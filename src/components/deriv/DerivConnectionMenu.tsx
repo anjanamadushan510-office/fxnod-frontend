@@ -139,7 +139,7 @@ export function DerivConnectionMenu() {
         type="button"
         onClick={start}
         disabled={redirecting}
-        className="inline-flex h-10 items-center gap-2 rounded-lg bg-ink px-4 text-sm font-medium text-surface transition hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-ink px-4 text-sm font-medium text-surface transition hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
       >
         {redirecting && (
           <span
@@ -156,14 +156,14 @@ export function DerivConnectionMenu() {
 
   return (
     <>
-      <div ref={rootRef} className="relative">
+      <div ref={rootRef} className="relative w-full sm:w-auto">
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
           aria-haspopup="menu"
           aria-expanded={open}
           className={cn(
-            "inline-flex h-10 items-center gap-2 rounded-lg border px-3 text-sm transition",
+            "inline-flex h-10 w-full items-center gap-2 rounded-lg border px-3 text-sm transition sm:w-auto",
             needsReconnect
               ? "border-amber-500/40 bg-amber-500/10 text-ink hover:bg-amber-500/15"
               : "border-line bg-surface text-ink hover:bg-surface-2",
@@ -182,7 +182,7 @@ export function DerivConnectionMenu() {
         {open && (
           <div
             role="menu"
-            className="absolute right-0 top-[calc(100%+6px)] z-50 w-80 overflow-hidden rounded-2xl border border-line bg-surface shadow-2xl"
+            className="absolute right-0 top-[calc(100%+6px)] z-50 w-[min(20rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl border border-line bg-surface shadow-2xl"
           >
             {needsReconnect && (
               <div className="border-b border-line bg-amber-500/10 px-4 py-3">

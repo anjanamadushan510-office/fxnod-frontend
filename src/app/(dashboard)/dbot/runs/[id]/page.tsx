@@ -177,13 +177,13 @@ export default function BotRunPage() {
         </div>
 
         {active && (
-          <div className="flex gap-2">
+          <div className="flex w-full gap-2 sm:w-auto">
             {run.status === "paused" ? (
               <button
                 type="button"
                 disabled={busy}
                 onClick={() => act("resume", run)}
-                className="h-10 px-4 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 transition disabled:opacity-45"
+                className="h-10 flex-1 rounded-lg bg-white px-4 text-sm font-medium text-black transition hover:bg-zinc-200 disabled:opacity-45 sm:flex-none"
               >
                 Resume
               </button>
@@ -192,7 +192,7 @@ export default function BotRunPage() {
                 type="button"
                 disabled={busy || run.status !== "running"}
                 onClick={() => act("pause", run)}
-                className="h-10 px-4 rounded-lg border border-line text-sm text-ink-2 hover:text-ink transition disabled:opacity-45"
+                className="h-10 flex-1 rounded-lg border border-line px-4 text-sm text-ink-2 transition hover:text-ink disabled:opacity-45 sm:flex-none"
               >
                 Pause
               </button>
@@ -201,7 +201,7 @@ export default function BotRunPage() {
               type="button"
               disabled={busy || run.status === "stopping"}
               onClick={() => act("stop", run)}
-              className="h-10 px-4 rounded-lg border border-red-500/50 text-sm text-red-300 hover:bg-red-500/10 transition disabled:opacity-45"
+              className="h-10 flex-1 rounded-lg border border-red-500/50 px-4 text-sm text-red-300 transition hover:bg-red-500/10 disabled:opacity-45 sm:flex-none"
             >
               {run.status === "stopping" ? "Stopping…" : "Stop"}
             </button>

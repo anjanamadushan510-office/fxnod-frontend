@@ -135,7 +135,7 @@ export function AccountSelector({
           <div
             role="menu"
             className={cn(
-              "absolute right-0 top-[calc(100%+6px)] z-50 w-72 overflow-hidden",
+              "absolute right-0 top-[calc(100%+6px)] z-50 w-[min(18rem,calc(100vw-1rem))] overflow-hidden",
               "rounded-[var(--opt-radius)] border border-opt-line bg-opt-bg-elev shadow-lg"
             )}
           >

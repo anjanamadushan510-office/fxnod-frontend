@@ -52,7 +52,7 @@ export function TopBar({
   const gridRef = useRef<HTMLButtonElement>(null);
 
   return (
-    <div className="flex h-full items-center gap-2 px-4">
+    <div className="flex h-full items-center gap-2 px-2 lg:gap-2 lg:px-4">
       {/* Trade-types flyout trigger (§2 grid icon → §11 flyout) */}
       <button
         ref={gridRef}
@@ -88,7 +88,7 @@ export function TopBar({
       </div>
 
       {/* Right cluster — pinned far right */}
-      <div className="ml-auto flex shrink-0 items-center gap-4">
+      <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-4">
         {authed ? (
           <>
             <ConnectDerivButton />

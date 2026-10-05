@@ -107,64 +107,59 @@ export function OptionsShell({
       data-app="options"
       data-opt-theme={theme}
       className={cn(
-        "fixed inset-0 flex flex-row overflow-hidden bg-opt-bg font-sans text-opt-ink",
+        "fixed inset-0 flex flex-col overflow-hidden bg-opt-bg font-sans text-opt-ink lg:flex-row",
         (isResizing || isResizingDrawer) && "cursor-col-resize select-none"
       )}
     >
-      {/* ── Icon Sidebar (flex-none) ── */}
-      <div className="flex-none w-14 h-full relative z-50 border-r border-opt-line bg-opt-bg-elev">
+      {/* Icon rail: a bottom bar on a phone, a left column on a wide screen. */}
+      <div className="order-last flex h-14 w-full shrink-0 items-center overflow-x-auto border-t border-opt-line bg-opt-bg-elev pb-[env(safe-area-inset-bottom)] lg:order-none lg:h-full lg:w-14 lg:flex-none lg:items-stretch lg:overflow-visible lg:border-r lg:border-t-0 lg:pb-0">
         {sidebar}
       </div>
 
-      {/* ── Main Column: Topbar + Content Row ── */}
-      <div className="flex-1 min-w-0 h-full flex flex-col overflow-hidden">
-
-        {/* Topbar */}
-        <div className="relative z-40 h-[64px] flex-shrink-0 border-b border-opt-line bg-opt-bg-elev">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        <div className="relative z-40 h-14 shrink-0 border-b border-opt-line bg-opt-bg-elev lg:h-16">
           {topbar}
         </div>
 
-        {/* ── Content Row: Left Drawer | Chart | Right Order ── */}
-        <div 
-          className="grid flex-1 min-h-0 w-full overflow-hidden"
+        {/* Phone: chart, then the ticket. Wide: drawer | chart | ticket. */}
+        <div
+          className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden lg:grid"
           style={{
             gridTemplateColumns: `${drawerOpen ? drawerWidth : 0}px minmax(0, 1fr) ${orderWidth}px`,
-            transition: (isResizingDrawer || isResizing) ? "none" : "grid-template-columns 300ms ease-out"
+            transition: (isResizingDrawer || isResizing) ? "none" : "grid-template-columns 300ms ease-out",
           }}
         >
-
-          {/* Left Drawer Panel */}
-          <div
-            className={cn(
-              "h-full relative z-20 bg-opt-bg overflow-hidden",
-              drawerOpen && "border-r border-opt-line"
-            )}
-          >
-            {drawerOpen && (
-              <div
-                onMouseDown={(e) => { e.preventDefault(); setIsResizingDrawer(true); }}
-                className="absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize z-30 hover:bg-opt-ink/10 transition-colors"
-              />
-            )}
-            <div className="w-full h-full overflow-hidden" style={{ minWidth: drawerOpen ? 250 : 0 }}>
-              {drawer}
-            </div>
-          </div>
-
-          {/* Chart Area — dynamically adjusts width via 1fr */}
-          <div className="h-full relative z-10 overflow-hidden">
-            {main}
-          </div>
-
-          {/* Right Order Panel */}
-          <div className="h-full relative z-20 bg-opt-bg-elev border-l border-opt-line flex flex-col">
             <div
-              onMouseDown={(e) => { e.preventDefault(); setIsResizing(true); }}
-              className="absolute -left-1.5 top-0 bottom-0 w-3 cursor-col-resize z-30 hover:bg-opt-ink/10 transition-colors"
-            />
-            {order}
-          </div>
+              className={cn(
+                "z-20 overflow-hidden bg-opt-bg",
+                "max-lg:absolute max-lg:inset-0",
+                drawerOpen ? "max-lg:block" : "max-lg:hidden",
+                "lg:relative lg:block lg:h-full",
+                drawerOpen && "lg:border-r lg:border-opt-line",
+              )}
+            >
+              {drawerOpen && (
+                <div
+                  onMouseDown={(e) => { e.preventDefault(); setIsResizingDrawer(true); }}
+                  className="absolute right-0 top-0 bottom-0 z-30 hidden w-1.5 cursor-col-resize hover:bg-opt-ink/10 lg:block"
+                />
+              )}
+              <div className="h-full w-full overflow-auto lg:overflow-hidden" style={{ minWidth: drawerOpen ? undefined : 0 }}>
+                {drawer}
+              </div>
+            </div>
 
+            <div className="relative z-10 min-h-[180px] flex-1 overflow-hidden lg:h-full lg:min-h-0">
+              {main}
+            </div>
+
+            <div className="relative z-20 flex max-h-[46vh] shrink-0 flex-col overflow-y-auto border-t border-opt-line bg-opt-bg-elev lg:h-full lg:max-h-none lg:overflow-hidden lg:border-l lg:border-t-0">
+              <div
+                onMouseDown={(e) => { e.preventDefault(); setIsResizing(true); }}
+                className="absolute -left-1.5 top-0 bottom-0 z-30 hidden w-3 cursor-col-resize hover:bg-opt-ink/10 lg:block"
+              />
+              {order}
+            </div>
         </div>
       </div>
     </div>

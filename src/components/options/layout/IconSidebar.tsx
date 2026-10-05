@@ -129,9 +129,9 @@ export function IconSidebar({
   };
 
   return (
-    <div className="flex h-full flex-col py-3.5">
+    <div className="flex h-full flex-col py-3.5 max-lg:flex-row max-lg:items-center max-lg:gap-1 max-lg:px-1 max-lg:py-0">
       {/* Brand block */}
-      <div className="flex justify-center px-3 pb-4">
+      <div className="flex justify-center px-3 pb-4 max-lg:px-2 max-lg:pb-0">
         <div
           className={cn(
             "grid h-7 w-7 place-items-center rounded-lg",
@@ -145,7 +145,7 @@ export function IconSidebar({
 
       <NavRail items={primary} isActive={isActive} onSelect={setActiveKey} />
 
-      <div className="mt-auto flex flex-col gap-2 pb-8">
+      <div className="mt-auto flex flex-col gap-2 pb-8 max-lg:mt-0 max-lg:ml-auto max-lg:flex-row max-lg:items-center max-lg:gap-0 max-lg:pb-0">
         <NavRail items={secondary} isActive={isActive} onSelect={setActiveKey} />
 
         <NavButton
@@ -182,7 +182,7 @@ function NavRail({
   onSelect: (k: string) => void;
 }) {
   return (
-    <div className="flex flex-col gap-0.5 px-2">
+    <div className="flex flex-col gap-0.5 px-2 max-lg:flex-row max-lg:px-0">
       {items.map((item) => {
         const active = isActive(item);
         const hasCustomClick = !!item.onClick;

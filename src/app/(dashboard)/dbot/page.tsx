@@ -203,15 +203,15 @@ export default function DBotDashboardPage() {
 
   return (
     <section className="p-4 lg:p-8 space-y-8">
-      <div className="flex flex-wrap items-start justify-between gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between sm:gap-4">
         <div>
           <h1 className="text-2xl font-semibold text-ink">dBot</h1>
           <p className="text-sm text-ink-2 mt-1">Build a bot in plain language</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:gap-3">
           <Link
             href={"/dbot/subscription" as Route}
-            className="h-10 px-4 inline-flex items-center rounded-lg border border-line text-sm text-ink-2 hover:text-ink transition"
+            className="inline-flex h-10 w-full items-center justify-center rounded-lg border border-line px-4 text-sm text-ink-2 transition hover:text-ink sm:w-auto"
           >
             Subscription
           </Link>
@@ -252,7 +252,7 @@ export default function DBotDashboardPage() {
         />
       </div>
 
-      <article className="bg-surface border border-line rounded-2xl p-10 sm:p-14 text-center">
+      <article className="bg-surface border border-line rounded-2xl p-6 text-center sm:p-14">
         <img src="/assets/fxnod-mark.png" alt="" className="mx-auto h-10 w-10 object-contain opacity-40 mb-5 dark:invert-0 invert" />
         <h3 className="font-display text-lg font-semibold mb-2 text-ink">No Blockly. No theory.</h3>
         <p className="text-sm text-ink-3 max-w-md mx-auto leading-relaxed mb-6">
@@ -441,14 +441,14 @@ export default function DBotDashboardPage() {
               <Link
                 key={run.run_id}
                 href={`/dbot/runs/${run.run_id}` as Route}
-                className="flex flex-wrap items-center gap-3 px-5 py-3 hover:bg-surface-2 transition-colors"
+                className="flex flex-col gap-1.5 px-4 py-3 transition-colors hover:bg-surface-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3 sm:px-5"
               >
                 <span className="text-sm text-ink font-medium min-w-0 truncate">
                   {strategyName(run.strategy_id)}
                 </span>
                 <AccountBadge isVirtual={run.is_virtual} />
                 <span className="text-xs text-ink-3 truncate">{run.symbols.map(marketName).join(", ")}</span>
-                <span className="text-xs text-ink-3 ml-auto">
+                <span className="text-xs text-ink-3 sm:ml-auto">
                   {new Date(run.created_at).toLocaleString()}
                 </span>
                 <span className="text-xs text-ink-3">
@@ -621,7 +621,7 @@ function Figure({ label, value, tone = 0 }: { label: string; value: string; tone
       <dt className="text-xs text-ink-3">{label}</dt>
       <dd
         className={cn(
-          "font-semibold capitalize",
+          "break-words font-semibold capitalize",
           tone < 0 ? "text-red-400" : tone > 0 ? "text-emerald-400" : "text-ink",
         )}
       >

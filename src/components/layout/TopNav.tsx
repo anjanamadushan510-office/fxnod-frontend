@@ -30,30 +30,30 @@ export function TopNav({ onMenu }: TopNavProps) {
   const { title, subtitle } = getRouteTitle(pathname || "/home");
 
   return (
-    <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-line bg-surface px-4 lg:px-8">
+    <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-2 border-b border-line bg-surface px-3 lg:px-8">
       {/* Left Side */}
-      <div className="flex items-center gap-4">
+      <div className="flex min-w-0 items-center gap-3">
         <button
           type="button"
           onClick={onMenu}
           aria-label="Menu"
-          className="grid h-9 w-9 place-items-center rounded-lg border border-line bg-surface text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink lg:hidden"
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-line bg-surface text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink lg:hidden"
         >
           <MenuIcon className="h-4 w-4" />
         </button>
 
-        <div className="flex flex-col">
-          <h1 className="font-display text-lg font-semibold text-ink leading-tight">
+        <div className="flex min-w-0 flex-col">
+          <h1 className="truncate font-display text-base font-semibold leading-tight text-ink lg:text-lg">
             {title}
           </h1>
-          <div className="text-xs text-ink-2">
+          <div className="hidden truncate text-xs text-ink-2 sm:block">
             {subtitle}
           </div>
         </div>
       </div>
 
       {/* Right Side */}
-      <div className="flex items-center gap-4">
+      <div className="flex shrink-0 items-center gap-2 sm:gap-4">
         <LiveClock />
         <NotificationsDropdown />
       </div>
@@ -185,7 +185,7 @@ function NotificationsDropdown() {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-surface border border-line rounded-2xl shadow-2xl z-50 overflow-hidden">
+        <div className="absolute right-0 mt-2 w-[min(20rem,calc(100vw-1.5rem))] bg-surface border border-line rounded-2xl shadow-2xl z-50 overflow-hidden">
           <div className="px-5 py-4 border-b border-line flex items-start justify-between gap-4">
             <div>
               <h3 className="font-display text-sm font-semibold text-ink">Notifications</h3>

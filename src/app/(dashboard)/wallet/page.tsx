@@ -32,7 +32,7 @@ export default function WalletPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <article className="md:col-span-2 bg-surface border border-line rounded-2xl p-6 min-w-0">
           <p className="text-xs uppercase tracking-[0.14em] text-ink-3 mb-3">Available</p>
-          <p className="font-display text-4xl font-semibold tabular-nums text-ink">{fmtUSD(balance)}</p>
+          <p className="break-words font-display text-3xl font-semibold tabular-nums text-ink sm:text-4xl">{fmtUSD(balance)}</p>
           <p className="mt-2 text-sm text-ink-3">Keep funds here for tools, or transfer them onto Deriv.</p>
         </article>
         

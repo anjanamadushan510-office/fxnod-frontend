@@ -16,23 +16,23 @@ export default function ToolsPage() {
 
   return (
     <section className="p-4 lg:p-8 space-y-8">
-      <div className="flex justify-end">
-        <div className="inline-flex bg-surface-2 p-1 rounded-lg border border-line">
+      <div className="flex justify-stretch sm:justify-end">
+        <div className="grid w-full grid-cols-3 bg-surface-2 p-1 rounded-lg border border-line sm:inline-flex sm:w-auto">
           <button
             onClick={() => setFilter("all")}
-            className={cn("px-4 py-1.5 text-sm font-medium rounded-md transition-colors", filter === "all" ? "bg-black text-white shadow-sm dark:bg-white dark:text-black" : "text-ink-2 hover:text-ink")}
+            className={cn("px-3 py-1.5 text-center text-sm font-medium rounded-md transition-colors", filter === "all" ? "bg-black text-white shadow-sm dark:bg-white dark:text-black" : "text-ink-2 hover:text-ink")}
           >
             All
           </button>
           <button
             onClick={() => setFilter("free")}
-            className={cn("px-4 py-1.5 text-sm font-medium rounded-md transition-colors", filter === "free" ? "bg-black text-white shadow-sm dark:bg-white dark:text-black" : "text-ink-2 hover:text-ink")}
+            className={cn("px-3 py-1.5 text-center text-sm font-medium rounded-md transition-colors", filter === "free" ? "bg-black text-white shadow-sm dark:bg-white dark:text-black" : "text-ink-2 hover:text-ink")}
           >
             Free
           </button>
           <button
             onClick={() => setFilter("paid")}
-            className={cn("px-4 py-1.5 text-sm font-medium rounded-md transition-colors", filter === "paid" ? "bg-black text-white shadow-sm dark:bg-white dark:text-black" : "text-ink-2 hover:text-ink")}
+            className={cn("px-3 py-1.5 text-center text-sm font-medium rounded-md transition-colors", filter === "paid" ? "bg-black text-white shadow-sm dark:bg-white dark:text-black" : "text-ink-2 hover:text-ink")}
           >
             Paid
           </button>

@@ -313,12 +313,12 @@ function BotBuilder() {
         )}
       </div>
 
-      <div className="sticky bottom-0 z-30 -mx-4 lg:-mx-8 -mb-4 lg:-mb-8 px-4 lg:px-8 py-5 bg-bg border-t border-line flex items-center justify-start gap-3 mt-auto">
+      <div className="sticky bottom-0 z-30 -mx-4 mt-auto flex items-center gap-3 border-t border-line bg-bg px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] lg:-mx-8 lg:-mb-8 lg:px-8 lg:py-5">
         <button
           type="button"
           onClick={() => setStep(steps[Math.max(0, index - 1)].key)}
           disabled={index === 0}
-          className="h-10 px-6 rounded-lg bg-surface-2 border border-line text-sm font-medium text-ink-3 hover:text-ink disabled:opacity-50 disabled:cursor-not-allowed transition"
+          className="h-11 flex-1 rounded-lg border border-line bg-surface-2 px-6 text-sm font-medium text-ink-3 transition hover:text-ink disabled:cursor-not-allowed disabled:opacity-50 sm:h-10 sm:flex-none"
         >
           Back
         </button>
@@ -327,7 +327,7 @@ function BotBuilder() {
             type="button"
             onClick={() => setStep(steps[index + 1].key)}
             disabled={(current === "method" && !methodChosen) || (current === "duration" && durationIssue !== null)}
-            className="h-10 px-6 rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-80 disabled:opacity-50 transition"
+            className="h-11 flex-1 rounded-lg bg-ink px-6 text-sm font-medium text-surface transition hover:opacity-80 disabled:opacity-50 sm:h-10 sm:flex-none"
           >
             Continue
           </button>
