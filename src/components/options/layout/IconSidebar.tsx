@@ -3,7 +3,7 @@
 import type { Route } from "next";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LogOut } from "lucide-react";
 import { useDerivStatus, derivStatusKey } from "@/hooks/useDerivStatus";
 import { useDerivUnlink } from "@/services/api/endpoints/trading/trading";
@@ -41,6 +41,8 @@ interface NavItem {
   controlledActive?: boolean;
   /** Whether the href is an external link. */
   external?: boolean;
+  /** Caption under the icon in the phone tab bar; defaults to `label`. */
+  shortLabel?: string;
 }
 
 interface IconSidebarProps {
@@ -60,6 +62,9 @@ interface IconSidebarProps {
  * button/link so future tooltips / context menus only re-render their own
  * subtree.
  *
+ * Below lg the same items lay out as a bottom tab bar with captions: an
+ * icon-only rail relies on hover tooltips, which a touch screen does not have.
+ *
  * Positions is the one item that doesn't navigate — instead it toggles the
  * PositionsDrawer. The parent owns that open/close flag via
  * `positionsOpen` + `onPositionsToggle`.
@@ -77,6 +82,13 @@ export function IconSidebar({
   const pathname = usePathname();
   const router = useRouter();
   const [activeKey, setActiveKey] = useState<string>("home");
+
+  // The theme is only known in the browser, so the server and the first client
+  // render must agree on one icon; choosing by theme before mount is a
+  // hydration mismatch that throws the whole page back to client rendering.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const showSun = mounted && theme === "dark";
 
   const queryClient = useQueryClient();
   const { linked } = useDerivStatus();
@@ -99,8 +111,8 @@ export function IconSidebar({
   }
 
   const primary: NavItem[] = [
-    { key: "apps", label: "Apps", icon: <AppsGridIcon className="h-[18px] w-[18px]" />, href: "/home" },
-    { key: "home", label: "Home", icon: <HomeIcon className="h-[18px] w-[18px]" />, href: "/options" },
+    { key: "apps", label: "Apps", shortLabel: "Dashboard", icon: <AppsGridIcon className="h-[18px] w-[18px]" />, href: "/home" },
+    { key: "home", label: "Home", shortLabel: "Options", icon: <HomeIcon className="h-[18px] w-[18px]" />, href: "/options" },
     {
       key: "positions",
       label: "Positions",
@@ -129,9 +141,9 @@ export function IconSidebar({
   };
 
   return (
-    <div className="flex h-full flex-col py-3.5 max-lg:flex-row max-lg:items-center max-lg:gap-1 max-lg:px-1 max-lg:py-0">
+    <div className="flex h-full items-stretch justify-around px-1 py-1 lg:flex-col lg:justify-start lg:px-0 lg:py-3.5">
       {/* Brand block */}
-      <div className="flex justify-center px-3 pb-4 max-lg:px-2 max-lg:pb-0">
+      <div className="hidden justify-center px-3 pb-4 lg:flex">
         <div
           className={cn(
             "grid h-7 w-7 place-items-center rounded-lg",
@@ -145,13 +157,16 @@ export function IconSidebar({
 
       <NavRail items={primary} isActive={isActive} onSelect={setActiveKey} />
 
-      <div className="mt-auto flex flex-col gap-2 pb-8 max-lg:mt-0 max-lg:ml-auto max-lg:flex-row max-lg:items-center max-lg:gap-0 max-lg:pb-0">
-        <NavRail items={secondary} isActive={isActive} onSelect={setActiveKey} />
+      <div className="max-lg:contents lg:mt-auto lg:flex lg:flex-col lg:gap-2 lg:pb-8">
+        <div className="hidden lg:block">
+          <NavRail items={secondary} isActive={isActive} onSelect={setActiveKey} />
+        </div>
 
         <NavButton
-          label={theme === "dark" ? "Light mode" : "Dark mode"}
+          label={showSun ? "Light mode" : "Dark mode"}
+          shortLabel="Theme"
           icon={
-            theme === "dark" ? (
+            showSun ? (
               <SunIcon className="h-5 w-5" />
             ) : (
               <MoonIcon className="h-5 w-5" />
@@ -163,6 +178,7 @@ export function IconSidebar({
 
         <NavButton
           label="Disconnect Deriv"
+          shortLabel="Disconnect"
           icon={<LogOut className="h-5 w-5" />}
           active={false}
           onClick={disconnectDeriv}
@@ -182,7 +198,7 @@ function NavRail({
   onSelect: (k: string) => void;
 }) {
   return (
-    <div className="flex flex-col gap-0.5 px-2 max-lg:flex-row max-lg:px-0">
+    <div className="max-lg:contents lg:flex lg:flex-col lg:gap-0.5 lg:px-2">
       {items.map((item) => {
         const active = isActive(item);
         const hasCustomClick = !!item.onClick;
@@ -204,6 +220,7 @@ function NavRail({
                   {item.icon}
                   {item.badge && <Badge value={item.badge} />}
                 </span>
+                <Caption>{item.shortLabel ?? item.label}</Caption>
               </a>
             );
           }
@@ -212,6 +229,7 @@ function NavRail({
               key={item.key}
               href={item.href}
               label={item.label}
+              shortLabel={item.shortLabel}
               icon={item.icon}
               active={active}
               badge={item.badge}
@@ -225,6 +243,7 @@ function NavRail({
             icon={item.icon}
             active={active}
             badge={item.badge}
+            shortLabel={item.shortLabel}
             onClick={() => {
               item.onClick?.();
               onSelect(item.key);
@@ -242,12 +261,14 @@ function NavLinkBtn({
   icon,
   active,
   badge,
+  shortLabel,
 }: {
   href: string;
   label: string;
   icon: React.ReactNode;
   active: boolean;
   badge?: number | string;
+  shortLabel?: string;
 }) {
   return (
     <Link
@@ -260,6 +281,7 @@ function NavLinkBtn({
         {icon}
         {badge && <Badge value={badge} />}
       </span>
+      <Caption>{shortLabel ?? label}</Caption>
     </Link>
   );
 }
@@ -270,12 +292,14 @@ function NavButton({
   active,
   badge,
   onClick,
+  shortLabel,
 }: {
   label: string;
   icon: React.ReactNode;
   active: boolean;
   badge?: number | string;
   onClick?: () => void;
+  shortLabel?: string;
 }) {
   return (
     <button
@@ -289,7 +313,15 @@ function NavButton({
         {icon}
         {badge && <Badge value={badge} />}
       </span>
+      <Caption>{shortLabel ?? label}</Caption>
     </button>
+  );
+}
+
+/** Tab-bar caption; the desktop rail stays icon-only. */
+function Caption({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="text-[10px] font-medium leading-none lg:hidden">{children}</span>
   );
 }
 
@@ -307,7 +339,8 @@ function Badge({ value }: { value: number | string }) {
 }
 
 const navItemClass = cn(
-  "grid h-10 w-10 mx-auto place-items-center rounded-lg",
+  "flex h-12 min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-lg",
+  "lg:mx-auto lg:grid lg:h-10 lg:w-10 lg:flex-none lg:place-items-center",
   "text-opt-ink-3",
   "transition-colors duration-150",
   "hover:bg-opt-bg-sunk hover:text-opt-ink",

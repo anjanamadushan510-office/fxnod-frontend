@@ -132,20 +132,31 @@ export function MarketPicker({
       role="dialog"
       aria-modal="false"
       aria-label="Markets"
+      // Below lg the picker is a full-screen sheet. `data-sheet` lets the
+      // shell lift the chart column above the bars while it is open, because
+      // the picker lives inside that column's stacking context.
+      data-sheet=""
       className={cn(
-        "absolute left-0 top-[calc(100%+6px)] z-30",
-        "flex h-[480px] w-[660px] max-w-[calc(100vw-32px)] flex-col overflow-hidden rounded-2xl",
-        "border border-opt-line bg-opt-bg-elev",
+        "flex flex-col overflow-hidden border-opt-line bg-opt-bg-elev",
+        "max-lg:fixed max-lg:inset-0 max-lg:pt-safe max-lg:pb-safe",
+        "lg:absolute lg:left-0 lg:top-[calc(100%+6px)] lg:z-30 lg:h-[480px] lg:w-[660px] lg:rounded-2xl lg:border",
         "shadow-[0_20px_50px_rgba(0,0,0,0.16),0_2px_6px_rgba(0,0,0,0.06)]",
       )}
     >
       {/* Header */}
       <div className="flex items-center gap-3 border-b border-opt-line px-4 py-3">
         <MarketSearchBox value={query} onChange={setQuery} />
+        <button
+          type="button"
+          onClick={onClose}
+          className="h-10 shrink-0 rounded-lg px-2 text-[13px] font-semibold text-opt-ink-2 lg:hidden"
+        >
+          Close
+        </button>
       </div>
 
       {/* Body */}
-      <div className="grid min-h-0 flex-1 grid-cols-[200px_1fr]">
+      <div className="grid min-h-0 flex-1 grid-cols-[132px_1fr] lg:grid-cols-[200px_1fr]">
         <MarketCategoryRail
           activeCategoryId={activeCat}
           activeSubCategoryId={activeSub}

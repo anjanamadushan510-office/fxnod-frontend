@@ -66,7 +66,7 @@ export function StatsStrip({ runs = [] }: StatsStripProps) {
 
       {/* Popover Grid */}
       {open && runs.length > 0 && (
-        <div className="absolute bottom-full left-0 mb-3 z-50 w-[420px] rounded-lg bg-opt-bg-elev p-4 text-opt-ink shadow-xl border border-opt-line">
+        <div className="absolute bottom-full left-0 mb-3 z-50 w-[420px] max-w-[calc(100vw-32px)] rounded-lg bg-opt-bg-elev p-4 text-opt-ink shadow-xl border border-opt-line">
           <div className="flex items-center justify-between mb-4">
             <span className="font-semibold text-[12px] text-opt-ink-2 underline decoration-opt-ink-3/60 underline-offset-[4px]">
               Stats

@@ -235,7 +235,7 @@ function OptionsPageInner() {
       {showWarning && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60" onClick={() => setShowWarning(false)} />
-          <div className="relative flex w-full max-w-[400px] flex-col rounded-lg bg-panel border border-line shadow-2xl p-6">
+          <div className="relative flex w-[400px] max-w-full flex-col rounded-lg bg-panel border border-line shadow-2xl p-6">
             <h2 className="text-[16px] font-bold text-white">Are you sure?</h2>
             <p className="text-[14px] leading-relaxed text-zinc-400 mt-4 mb-6">
               Some of your active indicators don't support 1-tick intervals. If you switch to this trade type, these indicators will be removed from your chart.

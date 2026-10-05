@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
+import type { Route } from "next";
 import Link from "next/link";
 import { toast } from "sonner";
 import { BellIcon, MenuIcon } from "@/components/ui/Icons";
@@ -11,6 +12,7 @@ import { cn } from "@/lib/cn";
 function getRouteTitle(pathname: string) {
   if (pathname.startsWith("/home")) return { title: "Home", subtitle: "dTrader · dBot on Deriv" };
   if (pathname.startsWith("/option")) return { title: "Options", subtitle: "dTrader · dBot on Deriv" };
+  if (pathname.startsWith("/dbot")) return { title: "dBot", subtitle: "Automated trading on Deriv" };
   if (pathname.startsWith("/tools")) return { title: "Tools", subtitle: "Free tools and paid subscriptions" };
   if (pathname.startsWith("/subscriptions")) return { title: "Subscriptions", subtitle: "Manage Subscriptions" };
   if (pathname.startsWith("/venues")) return { title: "Venues", subtitle: "Live APIs" };
@@ -30,30 +32,30 @@ export function TopNav({ onMenu }: TopNavProps) {
   const { title, subtitle } = getRouteTitle(pathname || "/home");
 
   return (
-    <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-2 border-b border-line bg-surface px-3 lg:px-8">
+    <header className="sticky top-0 z-20 box-content flex h-14 items-center justify-between gap-3 border-b border-line bg-surface px-4 pt-safe lg:h-16 lg:px-8">
       {/* Left Side */}
-      <div className="flex min-w-0 items-center gap-3">
+      <div className="flex min-w-0 items-center gap-3 lg:gap-4">
         <button
           type="button"
           onClick={onMenu}
           aria-label="Menu"
-          className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-line bg-surface text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink lg:hidden"
+          className="grid h-11 w-11 flex-none place-items-center rounded-lg border border-line bg-surface text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink lg:hidden"
         >
           <MenuIcon className="h-4 w-4" />
         </button>
 
         <div className="flex min-w-0 flex-col">
-          <h1 className="truncate font-display text-base font-semibold leading-tight text-ink lg:text-lg">
+          <h1 className="truncate font-display text-lg font-semibold text-ink leading-tight">
             {title}
           </h1>
-          <div className="hidden truncate text-xs text-ink-2 sm:block">
+          <div className="truncate text-xs text-ink-2">
             {subtitle}
           </div>
         </div>
       </div>
 
       {/* Right Side */}
-      <div className="flex shrink-0 items-center gap-2 sm:gap-4">
+      <div className="flex flex-none items-center gap-4">
         <LiveClock />
         <NotificationsDropdown />
       </div>
@@ -64,24 +66,13 @@ export function TopNav({ onMenu }: TopNavProps) {
 function LiveClock() {
   const [timeStr, setTimeStr] = useState("");
 
+  // The device clock, and nothing else. This used to fetch the time from a
+  // third-party API on every page load, which told an outside company each
+  // visitor's IP address and when they were on FXNod, for a display-only
+  // clock. Prices and contract times come from the server, never from here.
   useEffect(() => {
-    let offset = 0;
-
-    const syncTime = async () => {
-      try {
-        const res = await fetch("https://worldtimeapi.org/api/timezone/Etc/UTC");
-        const data = await res.json();
-        const serverTime = new Date(data.utc_datetime).getTime();
-        offset = serverTime - Date.now();
-      } catch (err) {
-        console.warn("Failed to sync true time", err);
-      }
-    };
-
-    syncTime();
-
     const updateTime = () => {
-      const now = new Date(Date.now() + offset);
+      const now = new Date();
       const hh = String(now.getUTCHours()).padStart(2, "0");
       const mm = String(now.getUTCMinutes()).padStart(2, "0");
       const ss = String(now.getUTCSeconds()).padStart(2, "0");
@@ -106,48 +97,25 @@ function LiveClock() {
   );
 }
 
+interface NotificationItem {
+  id: string;
+  title: string;
+  message: string;
+  timestamp: string;
+  /** In-app path to open, or "" for none. */
+  url: string;
+}
+
 function NotificationsDropdown() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   
-  // Mock state since there is no backend hook yet
-  const [notifications, setNotifications] = useState([
-    {
-      id: "1",
-      title: "System Update",
-      message: "Your trading account is fully verified and ready.",
-      timestamp: "Just now",
-      url: "",
-    },
-    {
-      id: "2",
-      title: "dBot is live",
-      message: "Running on Deriv · markup API",
-      timestamp: "Today 09:14",
-      url: "/tools",
-    },
-    {
-      id: "3",
-      title: "dTrader ready",
-      message: "Volatility 75 · Deriv",
-      timestamp: "Today 08:02",
-      url: "/tools",
-    },
-    {
-      id: "4",
-      title: "Deriv connected",
-      message: "Token synced · last check 8s ago",
-      timestamp: "Today 08:02",
-      url: "",
-    },
-    {
-      id: "5",
-      title: "Partner payout",
-      message: "$42.10 settled to your wallet",
-      timestamp: "2 Sep",
-      url: "/partner/dashboard",
-    },
-  ]);
+  // Empty until a notifications endpoint exists. This list used to be
+  // hardcoded samples shown to every account — "Your trading account is fully
+  // verified", "Partner payout $42.10 settled to your wallet" — statements
+  // about identity checks and money that were true of nobody. An account
+  // screen must never show a figure or a status that was not measured.
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
 
   const hasUnread = notifications.length > 0;
 
@@ -174,18 +142,18 @@ function NotificationsDropdown() {
         aria-label="Notifications"
         onClick={() => setOpen((prev) => !prev)}
         className={cn(
-          "relative grid h-9 w-9 place-items-center rounded-lg border border-line transition-colors",
+          "relative grid h-11 w-11 place-items-center rounded-lg border border-line transition-colors lg:h-9 lg:w-9",
           open ? "bg-surface-2 text-ink" : "bg-surface text-ink-2 hover:bg-surface-2 hover:text-ink"
         )}
       >
         <BellIcon className="h-4 w-4" />
         {hasUnread && (
-          <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-gold shadow-[0_0_0_2px_var(--ink)]" />
+          <span className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-gold shadow-[0_0_0_2px_var(--ink)] lg:right-2 lg:top-2" />
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-[min(20rem,calc(100vw-1.5rem))] bg-surface border border-line rounded-2xl shadow-2xl z-50 overflow-hidden">
+        <div className="absolute right-0 mt-2 w-[min(20rem,calc(100vw-2rem))] bg-surface border border-line rounded-2xl shadow-2xl z-50 overflow-hidden">
           <div className="px-5 py-4 border-b border-line flex items-start justify-between gap-4">
             <div>
               <h3 className="font-display text-sm font-semibold text-ink">Notifications</h3>
@@ -213,7 +181,7 @@ function NotificationsDropdown() {
                   return (
                     <Link
                       key={item.id}
-                      href={item.url as any}
+                      href={item.url as Route}
                       onClick={() => setOpen(false)}
                       className="flex items-start justify-between gap-3 px-5 py-3 hover:bg-surface-2 transition-colors cursor-pointer"
                     >

@@ -78,7 +78,7 @@ export function PositionsDrawer({ open, onClose }: PositionsDrawerProps) {
   const footerPositive = footerPnl >= 0;
 
   return (
-    <div className="flex h-full w-[360px] flex-col border-r border-opt-line bg-opt-bg-elev">
+    <div className="flex h-full w-full flex-col border-opt-line bg-opt-bg-elev lg:w-[360px] lg:border-r">
       <header className="flex items-center justify-between border-b border-opt-line px-3 py-3">
         <h2 className="m-0 font-sans text-[14px] font-semibold text-opt-ink">
           Positions
@@ -87,7 +87,7 @@ export function PositionsDrawer({ open, onClose }: PositionsDrawerProps) {
           type="button"
           aria-label="Close"
           onClick={onClose}
-          className="grid h-7 w-7 place-items-center rounded-md border-0 bg-transparent text-opt-ink-3 hover:bg-opt-bg-sunk hover:text-opt-ink"
+          className="grid h-10 w-10 place-items-center rounded-md border-0 bg-transparent text-opt-ink-3 hover:bg-opt-bg-sunk hover:text-opt-ink lg:h-7 lg:w-7"
         >
           ✕
         </button>

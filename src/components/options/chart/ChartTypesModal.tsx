@@ -59,17 +59,18 @@ export function ChartTypesModal({
 
   return (
     <div
-      className="absolute bottom-0 left-12 z-[70] flex items-center justify-center"
+      data-sheet=""
+      className="z-[70] flex justify-center max-lg:fixed max-lg:inset-0 max-lg:items-end lg:absolute lg:bottom-0 lg:left-12 lg:items-center"
       role="dialog"
       aria-modal="true"
       aria-label="Chart types"
     >
       <div
-        className="fixed inset-0 bg-transparent"
+        className="fixed inset-0 bg-transparent max-lg:bg-black/50"
         onClick={onClose}
       />
 
-      <div className="relative z-10 flex w-[min(460px,calc(100vw-32px))] flex-col overflow-hidden rounded-md border border-opt-line bg-opt-bg-elev shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
+      <div className="relative z-10 flex w-full flex-col overflow-y-auto rounded-t-2xl border pb-safe max-lg:max-h-[85dvh] lg:w-[min(460px,calc(100vw-32px))] lg:overflow-hidden lg:rounded-md border-opt-line bg-opt-bg-elev shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-opt-line px-5 py-4">
           <h2 className="text-[16px] font-bold text-opt-ink">Chart types</h2>
@@ -224,7 +225,7 @@ export function ChartTypesModal({
       {showWarning && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowWarning(false)} />
-          <div className="relative flex w-[400px] flex-col rounded-lg bg-white shadow-2xl p-6">
+          <div className="relative flex w-[400px] max-w-full flex-col rounded-lg bg-white shadow-2xl p-6">
             <h2 className="text-[16px] font-bold text-[#333333]">Are you sure?</h2>
             <p className="text-[14px] leading-relaxed text-[#333333] mt-4 mb-6">
               Some of your active indicators don't support 1-tick intervals. If you change to a 1-tick interval, these indicators will be removed from your chart.

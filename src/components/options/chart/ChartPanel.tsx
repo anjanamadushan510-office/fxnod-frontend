@@ -192,7 +192,7 @@ export function ChartPanel({
       </div>
 
       {/* ── Floating Market Selector — absolute top-left over the chart ── */}
-      <div className="absolute top-3 left-4 z-30">
+      <div className="absolute left-3 top-3 z-30 max-lg:has-[[data-sheet]]:z-[110] lg:left-4">
         <MarketPill
           name={marketName}
           price={price}

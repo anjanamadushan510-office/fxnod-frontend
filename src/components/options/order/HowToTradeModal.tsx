@@ -3,6 +3,13 @@
 import { useEffect } from "react";
 import { Play, X } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { useTheme } from "next-themes";
+import dynamic from "next/dynamic";
+
+const DotLottiePlayer = dynamic(
+  () => import("@dotlottie/react-player").then((mod) => mod.DotLottiePlayer),
+  { ssr: false }
+);
 
 const TEAL = "#00A79E";
 
@@ -11,12 +18,14 @@ interface DirectionSection {
   description: React.ReactNode;
   /** Exit price callout shown in the diagram placeholder (last digit bolded). */
   exit: string;
+  darkAnim?: string;
+  lightAnim?: string;
 }
 
 /** Per-trade-type help content (Even/Odd fully fleshed out per §7.1). */
 const CONTENT: Record<
   string,
-  { intro: React.ReactNode; sections: DirectionSection[]; video: string }
+  { intro: React.ReactNode; sections: DirectionSection[] }
 > = {
   "Even/Odd": {
     intro: (
@@ -36,6 +45,8 @@ const CONTENT: Record<
           </>
         ),
         exit: "1900.02",
+        darkAnim: "/trade-types/even-odd/even_dark.lottie",
+        lightAnim: "/trade-types/even-odd/even_light.lottie",
       },
       {
         title: "Odd",
@@ -46,9 +57,216 @@ const CONTENT: Record<
           </>
         ),
         exit: "1900.03",
+        darkAnim: "/trade-types/even-odd/odd_dark.lottie",
+        lightAnim: "/trade-types/even-odd/odd_light.lottie",
       },
     ],
-    video: "Digits Even",
+  },
+  "Rise/Fall": {
+    intro: (
+      <>
+        Rise/Fall lets you predict if the market price will end higher or lower than the <Glossary>entry spot</Glossary> at contract <Glossary>expiry</Glossary>.
+      </>
+    ),
+    sections: [
+      {
+        title: "Rise",
+        description: <>Earn a <Glossary>payout</Glossary> if the <Glossary>exit spot</Glossary> is strictly higher than the <Glossary>entry spot</Glossary>.</>,
+        exit: "1900.00",
+        darkAnim: "/trade-types/rise-fall/rise_dark.lottie",
+        lightAnim: "/trade-types/rise-fall/rise_light.lottie",
+      },
+      {
+        title: "Fall",
+        description: <>Earn a <Glossary>payout</Glossary> if the <Glossary>exit spot</Glossary> is strictly lower than the <Glossary>entry spot</Glossary>.</>,
+        exit: "1900.00",
+        darkAnim: "/trade-types/rise-fall/fall_dark.lottie",
+        lightAnim: "/trade-types/rise-fall/fall_light.lottie",
+      },
+    ],
+  },
+  "Accumulators": {
+    intro: (
+      <>
+        Accumulators allow you to predict how much an index can move and potentially grow your <Glossary>stake</Glossary> exponentially at a fixed growth rate. Your <Glossary>payout</Glossary> is the sum of your initial <Glossary>stake</Glossary> and profit. It keeps growing as long as the spot price stays within a specified <Glossary>barrier</Glossary> range from the previous spot price at each interval. If the spot price goes outside that range, you lose your <Glossary>stake</Glossary> and the trade is terminated.
+      </>
+    ),
+    sections: [
+      {
+        title: "Accumulators",
+        description: (
+          <>
+            Your <Glossary>payout</Glossary> keeps growing as long as the spot price stays within a specified <Glossary>barrier</Glossary> range from the previous spot price at each interval.
+            <span className="block mt-2"><strong>Take profit:</strong> You can close your trade early to secure your profit.</span>
+            <span className="block mt-2"><strong>Note:</strong> You are exposed to slippage risk if the market gaps.</span>
+          </>
+        ),
+        exit: "1900.00",
+        darkAnim: "/trade-types/accumulators/accumulators_dark.lottie",
+        lightAnim: "/trade-types/accumulators/accumulators_light.lottie",
+      },
+    ],
+  },
+  "Matches/Differs": {
+    intro: (
+      <>
+        Matches/Differs lets you predict whether the last digit of the last tick&apos;s price will match your chosen number at contract <Glossary>expiry</Glossary> (<Glossary>exit spot</Glossary>).
+      </>
+    ),
+    sections: [
+      {
+        title: "Matches",
+        description: <>Earn a <Glossary>payout</Glossary> if the last digit of the <Glossary>exit spot</Glossary> matches your prediction.</>,
+        exit: "1900.00",
+        darkAnim: "/trade-types/matches-differs/matches_dark.lottie",
+        lightAnim: "/trade-types/matches-differs/matches_light.lottie",
+      },
+      {
+        title: "Differs",
+        description: <>Earn a <Glossary>payout</Glossary> if the last digit of the <Glossary>exit spot</Glossary> differs from your prediction.</>,
+        exit: "1900.00",
+        darkAnim: "/trade-types/matches-differs/differs_dark.lottie",
+        lightAnim: "/trade-types/matches-differs/differs_light.lottie",
+      },
+    ],
+  },
+  "Over/Under": {
+    intro: (
+      <>
+        Over/Under lets you predict if the last digit of the <Glossary>exit spot</Glossary> at contract <Glossary>expiry</Glossary> will be over or under your chosen number.
+      </>
+    ),
+    sections: [
+      {
+        title: "Over",
+        description: <>Earn a <Glossary>payout</Glossary> if the last digit of the <Glossary>exit spot</Glossary> is greater than your chosen number.</>,
+        exit: "1900.00",
+        darkAnim: "/trade-types/over-under/over_dark.lottie",
+        lightAnim: "/trade-types/over-under/over_light.lottie",
+      },
+      {
+        title: "Under",
+        description: <>Earn a <Glossary>payout</Glossary> if the last digit of the <Glossary>exit spot</Glossary> is less than your chosen number.</>,
+        exit: "1900.00",
+        darkAnim: "/trade-types/over-under/under_dark.lottie",
+        lightAnim: "/trade-types/over-under/under_light.lottie",
+      },
+    ],
+  },
+  "Multipliers": {
+    intro: (
+      <>
+        Multipliers let you amplify your potential profit or loss by applying a multiplier to the asset price movement.
+      </>
+    ),
+    sections: [
+      {
+        title: "Up",
+        description: <>Earn a profit if the asset price rises above the <Glossary>entry price</Glossary> at the time you close the trade.</>,
+        exit: "1900.00",
+        darkAnim: "/trade-types/multiplers/multipliers_up_dark.lottie",
+        lightAnim: "/trade-types/multiplers/multipliers_up_light.lottie",
+      },
+      {
+        title: "Down",
+        description: <>Earn a profit if the asset price falls below the <Glossary>entry price</Glossary> at the time you close the trade.</>,
+        exit: "1900.00",
+        darkAnim: "/trade-types/multiplers/multipliers_down_dark.lottie",
+        lightAnim: "/trade-types/multiplers/multipliers_down_light.lottie",
+      },
+    ],
+  },
+  "Touch/No Touch": {
+    intro: (
+      <>
+        Touch/No Touch lets you predict if the market price will reach a set <Glossary>barrier</Glossary> at any time during the contract period.
+      </>
+    ),
+    sections: [
+      {
+        title: "Touch",
+        description: <>Earn a <Glossary>payout</Glossary> if the market touches the <Glossary>barrier</Glossary> at any time before <Glossary>expiry</Glossary>.</>,
+        exit: "1900.00",
+        darkAnim: "/trade-types/touch-no touch/touch_dark.lottie",
+        lightAnim: "/trade-types/touch-no touch/touch_light.lottie",
+      },
+      {
+        title: "No Touch",
+        description: <>Earn a <Glossary>payout</Glossary> if the market never touches the <Glossary>barrier</Glossary> before <Glossary>expiry</Glossary>.</>,
+        exit: "1900.00",
+        darkAnim: "/trade-types/touch-no touch/no_touch_dark.lottie",
+        lightAnim: "/trade-types/touch-no touch/no_touch_light.lottie",
+      },
+    ],
+  },
+  "Higher/Lower": {
+    intro: (
+      <>
+        Higher/Lower lets you predict if the market price will end higher or lower than a set <Glossary>barrier</Glossary> at contract <Glossary>expiry</Glossary> (<Glossary>exit spot</Glossary>).
+      </>
+    ),
+    sections: [
+      {
+        title: "Higher",
+        description: <>Earn a <Glossary>payout</Glossary> if the <Glossary>exit spot</Glossary> is strictly higher than the <Glossary>barrier</Glossary>.</>,
+        exit: "1900.00",
+        darkAnim: "/trade-types/higher-lower/higher_dark.lottie",
+        lightAnim: "/trade-types/higher-lower/higher_light.lottie",
+      },
+      {
+        title: "Lower",
+        description: <>Earn a <Glossary>payout</Glossary> if the <Glossary>exit spot</Glossary> is strictly lower than the <Glossary>barrier</Glossary>.</>,
+        exit: "1900.00",
+        darkAnim: "/trade-types/higher-lower/lower_dark.lottie",
+        lightAnim: "/trade-types/higher-lower/lower_light.lottie",
+      },
+    ],
+  },
+  "Turbos": {
+    intro: (
+      <>
+        Turbos allow you to predict the direction of the underlying asset&apos;s movements.
+      </>
+    ),
+    sections: [
+      {
+        title: "Up",
+        description: <>Earn a <Glossary>payout</Glossary> if the spot price never falls below the <Glossary>barrier</Glossary> during the contract period.</>,
+        exit: "1900.00",
+        darkAnim: "/trade-types/turbos/turbos_up_dark.lottie",
+        lightAnim: "/trade-types/turbos/turbos_up_light.lottie",
+      },
+      {
+        title: "Down",
+        description: <>Earn a <Glossary>payout</Glossary> if the spot price never rises above the <Glossary>barrier</Glossary> during the contract period.</>,
+        exit: "1900.00",
+        darkAnim: "/trade-types/turbos/turbos_down_dark.lottie",
+        lightAnim: "/trade-types/turbos/turbos_down_light.lottie",
+      },
+    ],
+  },
+  "Vanillas": {
+    intro: (
+      <>
+        Vanillas allow you to predict if the underlying asset&apos;s price will be above or below the strike price at contract <Glossary>expiry</Glossary> (<Glossary>exit spot</Glossary>).
+      </>
+    ),
+    sections: [
+      {
+        title: "Call",
+        description: <>Earn a <Glossary>payout</Glossary> if the <Glossary>exit spot</Glossary> is above the strike price at <Glossary>expiry</Glossary>.</>,
+        exit: "1900.00",
+        darkAnim: "/trade-types/vanillas/vanillas_call_dark.lottie",
+        lightAnim: "/trade-types/vanillas/vanillas_call_light.lottie",
+      },
+      {
+        title: "Put",
+        description: <>Earn a <Glossary>payout</Glossary> if the <Glossary>exit spot</Glossary> is below the strike price at <Glossary>expiry</Glossary>.</>,
+        exit: "1900.00",
+        darkAnim: "/trade-types/vanillas/vanillas_put_dark.lottie",
+        lightAnim: "/trade-types/vanillas/vanillas_put_light.lottie",
+      },
+    ],
   },
 };
 
@@ -66,6 +284,9 @@ export function HowToTradeModal({
   contractLabel,
   onClose,
 }: HowToTradeModalProps) {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -78,7 +299,7 @@ export function HowToTradeModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-[60] flex items-start justify-center p-3 lg:p-4 lg:pt-[80px]"
       role="dialog"
       aria-modal="true"
       aria-label={`How to trade ${contractLabel}`}
@@ -88,7 +309,7 @@ export function HowToTradeModal({
         onClick={onClose}
       />
 
-      <div className="relative z-10 flex h-[min(640px,calc(100vh-32px))] w-[min(460px,calc(100vw-32px))] flex-col overflow-hidden rounded-2xl border border-opt-line bg-opt-bg-elev shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
+      <div className="relative z-10 flex max-h-[calc(100dvh-1.5rem)] w-[min(460px,calc(100vw-24px))] lg:max-h-[90vh] flex-col overflow-hidden rounded-2xl border border-opt-line bg-opt-bg-elev shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
         {/* Fixed header */}
         <div className="flex flex-shrink-0 items-center justify-between border-b border-opt-line px-5 py-4">
           <h2 className="text-[17px] font-bold text-opt-ink">{contractLabel}</h2>
@@ -114,11 +335,20 @@ export function HowToTradeModal({
               <p className="text-[13px] leading-relaxed text-opt-ink-2">
                 {s.description}
               </p>
-              <DiagramPlaceholder label={s.title} exit={s.exit} />
+              {(s.darkAnim || s.lightAnim) ? (
+                <div className="relative flex-shrink-0 overflow-hidden rounded-xl border border-opt-line bg-opt-bg-sunk">
+                  <DotLottiePlayer
+                    src={(isDark ? s.darkAnim : s.lightAnim) as string}
+                    autoplay
+                    loop
+                    className="w-full h-auto"
+                  />
+                </div>
+              ) : (
+                <DiagramPlaceholder label={s.title} exit={s.exit} />
+              )}
             </section>
           ))}
-
-          <VideoPlaceholder title={content.video} />
         </div>
 
         {/* Fixed footer */}
@@ -148,7 +378,7 @@ function Glossary({ children }: { children: React.ReactNode }) {
 function DiagramPlaceholder({ label, exit }: { label: string; exit: string }) {
   const lastDigit = exit.slice(-1);
   return (
-    <div className="relative h-[120px] overflow-hidden rounded-xl border border-opt-line bg-opt-bg-sunk">
+    <div className="relative flex-shrink-0 h-[120px] overflow-hidden rounded-xl border border-opt-line bg-opt-bg-sunk">
       <span className="absolute left-3 top-2 text-[11px] font-semibold text-opt-ink-3">
         {label}
       </span>
@@ -169,25 +399,6 @@ function DiagramPlaceholder({ label, exit }: { label: string; exit: string }) {
   );
 }
 
-/** Embedded-video stand-in (Deriv-branded thumbnail + play button). */
-function VideoPlaceholder({ title }: { title: string }) {
-  return (
-    <div className="relative grid h-[160px] place-items-center overflow-hidden rounded-xl bg-gradient-to-br from-[#0a1430] to-[#13204a]">
-      <span className="absolute left-3 top-3 text-[12px] font-bold text-white/90">
-        deriv
-      </span>
-      <span className="absolute right-4 top-4 h-6 w-6 rounded bg-[#00A79E]/70" />
-      <span className="absolute bottom-4 right-6 h-5 w-5 rounded bg-[#FF4444]/70" />
-      <span className="absolute left-4 bottom-4 text-[16px] font-bold text-white">
-        {title}
-      </span>
-      <span className="grid h-12 w-12 place-items-center rounded-full bg-black/70 text-white">
-        <Play className="h-5 w-5 translate-x-[1px]" fill="currentColor" />
-      </span>
-    </div>
-  );
-}
-
 function genericContent(label: string) {
   return {
     intro: (
@@ -196,6 +407,5 @@ function genericContent(label: string) {
     sections: [
       { title: label, description: <>Placeholder explainer for {label}.</>, exit: "1900.00" },
     ],
-    video: label,
   };
 }

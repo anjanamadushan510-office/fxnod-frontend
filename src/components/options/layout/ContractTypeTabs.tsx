@@ -25,7 +25,7 @@ export function ContractTypeTabs({ value, onChange }: ContractTypeTabsProps) {
             type="button"
             onClick={() => onChange(type.id)}
             className={cn(
-              "whitespace-nowrap rounded-full border-0 px-3.5 py-2 text-[13px] font-medium",
+              "whitespace-nowrap rounded-full border-0 px-3.5 py-2.5 text-[13px] font-medium lg:py-2",
               "transition-colors duration-150",
               active
                 ? "bg-opt-bg-sunk text-opt-ink"
