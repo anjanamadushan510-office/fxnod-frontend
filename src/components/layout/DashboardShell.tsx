@@ -6,9 +6,23 @@ import { cn } from "@/lib/cn";
 import { TopNav } from "./TopNav";
 import { Sidebar } from "./Sidebar";
 import { MobileTabBar, phoneNavHidden } from "./MobileTabBar";
+import { AuthGate } from "@/components/auth/AuthGate";
 import { useAuthStore } from "@/stores/authStore";
 
+/**
+ * The signed-in frame: sidebar, top bar, phone tab bar. It is drawn only for
+ * a signed-in user; see AuthGate. It used to draw for anyone, with a made-up
+ * name and address in the sidebar and a sign-out button beside them.
+ */
 export function DashboardShell({ children }: { children: React.ReactNode }) {
+  return (
+    <AuthGate>
+      <Shell>{children}</Shell>
+    </AuthGate>
+  );
+}
+
+function Shell({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const user = useAuthStore((s) => s.user);
   const pathname = usePathname() || "";
@@ -36,8 +50,8 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         isOpen={sidebarOpen} 
         onClose={() => setSidebarOpen(false)} 
         user={{
-          name: user?.full_name || "Trader Account",
-          email: user?.email || "demo@fxnod.io"
+          name: user?.full_name || user?.email || "",
+          email: user?.email || "",
         }}
       />
       <div className="flex min-w-0 flex-1 flex-col overflow-x-hidden">

@@ -17,16 +17,13 @@ interface NavItem {
 interface SidebarProps {
   isOpen?: boolean;
   onClose?: () => void;
-  user?: { name: string; email: string };
+  user: { name: string; email: string };
 }
 
 export function Sidebar({
   isOpen = false,
   onClose,
-  user = {
-    name: "Trader Account",
-    email: "demo@fxnod.io",
-  },
+  user,
 }: SidebarProps) {
   const pathname = usePathname() || "";
   const { data: walletData } = useGetWalletBalance();

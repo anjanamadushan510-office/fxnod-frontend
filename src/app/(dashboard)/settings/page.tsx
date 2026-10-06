@@ -376,7 +376,7 @@ export default function SettingsPage() {
             </div>
             <div className="min-w-0">
               <h2 className="font-display text-lg sm:text-xl font-semibold tracking-tight truncate text-white">
-                {user?.full_name || "Trader Account"}
+                {user?.full_name || user?.email || ""}
               </h2>
               <button
                 type="button"

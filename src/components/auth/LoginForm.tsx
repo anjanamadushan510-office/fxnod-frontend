@@ -10,6 +10,7 @@ import { useLogin, useVerifyTwoFALogin } from "@/services/api/endpoints/auth/aut
 import { setAccessToken } from "@/services/authToken";
 import { useAuthStore } from "@/stores/authStore";
 import { parseApiError } from "@/lib/apiError";
+import { safeInternalPath } from "@/lib/safePath";
 import { ForgotPasswordFlow } from "./ForgotPasswordFlow";
 
 /**
@@ -19,8 +20,26 @@ import { ForgotPasswordFlow } from "./ForgotPasswordFlow";
  * store's bootstrap() to load the user + flip status to "authenticated", then
  * redirect to the home dashboard (users pick a service from there).
  */
+/**
+ * Where to go once signed in: the page the visitor was sent here from, when
+ * the link names one inside this app, and the home dashboard otherwise.
+ * Read from the address bar at the moment it is needed; useSearchParams here
+ * would opt the login page out of static rendering.
+ */
+function afterSignIn(): Route {
+  const next = safeInternalPath(new URLSearchParams(window.location.search).get("next"));
+  return (next ?? "/home") as Route;
+}
+
 export function LoginForm() {
   const router = useRouter();
+  const status = useAuthStore((s) => s.status);
+
+  // Someone who is already signed in has no business on this page: a visitor
+  // sent here by the middleware whose session then restored, or a bookmark.
+  useEffect(() => {
+    if (status === "authenticated") router.replace(afterSignIn());
+  }, [status, router]);
   const bootstrap = useAuthStore((s) => s.bootstrap);
 
   const [email, setEmail] = useState("");
@@ -57,7 +76,7 @@ export function LoginForm() {
           setAccessToken(data.access_token);
           await bootstrap(); // GET /users/me → store user + status: authenticated
           toast.success("Welcome back");
-          router.push("/home" as Route);
+          router.push(afterSignIn());
         }
       },
       onError: (err) => {
@@ -74,7 +93,7 @@ export function LoginForm() {
         setAccessToken(data.access_token);
         await bootstrap();
         toast.success("Welcome back");
-        router.push("/home" as Route);
+        router.push(afterSignIn());
       },
       onError: (err) => {
         const parsed = parseApiError(err, "Invalid code. Please try again.");

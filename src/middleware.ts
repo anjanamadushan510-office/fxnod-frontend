@@ -1,5 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { DEPLOYMENT_HOST_SUFFIX, isIndexablePath } from "@/lib/site";
+import { loginUrlFor, needsSignIn } from "@/lib/safePath";
+import { SESSION_HINT_COOKIE } from "@/lib/sessionHint";
 
 /**
  * Content-Security-Policy with a per-request nonce.
@@ -79,6 +81,19 @@ function buildCsp(nonce: string): string {
 }
 
 export function middleware(request: NextRequest) {
+  // A signed-in page asked for by a browser that carries no session marker is
+  // answered with the login page, before any of it is served. The marker is a
+  // hint, not proof (see lib/sessionHint.ts): the client gate and, above all,
+  // the API are what stand behind this.
+  const { pathname, search } = request.nextUrl;
+  if (needsSignIn(pathname) && !request.cookies.has(SESSION_HINT_COOKIE)) {
+    const login = new URL(loginUrlFor(pathname + search), request.url);
+    const redirect = NextResponse.redirect(login, 307);
+    redirect.headers.set("X-Robots-Tag", "noindex");
+    redirect.headers.set("Cache-Control", "no-store");
+    return redirect;
+  }
+
   const nonce = btoa(crypto.randomUUID());
   const csp = buildCsp(nonce);
 

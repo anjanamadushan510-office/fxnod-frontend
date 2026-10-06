@@ -10,6 +10,7 @@ import {
   registerAuthExpiredHandler,
   setAccessToken,
 } from "@/services/authToken";
+import { clearSessionHint, setSessionHint } from "@/lib/sessionHint";
 
 /**
  * Auth state (Zustand). Holds the access token + current user in memory only.
@@ -36,6 +37,7 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set) => {
   // When a refresh ultimately fails, the api layer calls this.
   registerAuthExpiredHandler(() => {
+    clearSessionHint();
     set({ user: null, status: "anonymous" });
   });
 
@@ -54,6 +56,7 @@ export const useAuthStore = create<AuthState>((set) => {
       const { access_token } = await authApi.login(email, password);
       setAccessToken(access_token);
       const user = await authApi.me();
+      setSessionHint();
       set({ user, status: "authenticated" });
     },
 
@@ -65,6 +68,7 @@ export const useAuthStore = create<AuthState>((set) => {
       const { access_token } = await authApi.loginWithDeriv(payload);
       setAccessToken(access_token);
       const user = await authApi.me();
+      setSessionHint();
       set({ user, status: "authenticated" });
     },
 
@@ -73,6 +77,7 @@ export const useAuthStore = create<AuthState>((set) => {
         await authApi.logout();
       } finally {
         setAccessToken(null);
+        clearSessionHint();
         set({ user: null, status: "anonymous" });
       }
     },
@@ -83,8 +88,10 @@ export const useAuthStore = create<AuthState>((set) => {
         // No access token in memory after a reload → /users/me 401 → the
         // interceptor refreshes via cookie → retry succeeds if still valid.
         const user = await authApi.me();
+        setSessionHint();
         set({ user, status: "authenticated" });
       } catch {
+        clearSessionHint();
         set({ user: null, status: "anonymous" });
       }
     },
