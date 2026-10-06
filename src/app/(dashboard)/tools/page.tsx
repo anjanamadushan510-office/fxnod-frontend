@@ -145,7 +145,11 @@ function MarketplaceCard({
   active: boolean;
   onAdd: () => void;
 }) {
-  const label = tool.kind === "free" ? "Add Tool" : "Subscribe";
+  // A paid tool is switched on by its purchase, and none can be bought yet.
+  // The button used to read "Subscribe" and mark the tool active in this
+  // browser without charging anything; the server refuses that now.
+  const paid = tool.kind === "paid";
+  const label = paid ? "Coming soon" : "Add Tool";
   const list = view === "list";
 
   return (
@@ -163,8 +167,8 @@ function MarketplaceCard({
       actions={
         <button
           type="button"
-          onClick={onAdd}
-          disabled={active}
+          onClick={paid ? undefined : onAdd}
+          disabled={active || paid}
           className={cn(
             "h-9 rounded-lg bg-black px-4 text-sm font-medium text-white transition-colors hover:bg-gray-800 disabled:cursor-default disabled:opacity-45 dark:bg-white dark:text-black dark:hover:bg-zinc-200",
             list ? "w-full sm:w-auto sm:min-w-[8.5rem]" : "w-full",

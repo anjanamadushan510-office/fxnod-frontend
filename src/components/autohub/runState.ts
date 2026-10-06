@@ -17,6 +17,16 @@ export function isActiveRun(status: string | undefined): boolean {
  */
 export const RUN_POLL_MS = 2000;
 
+/**
+ * How often a list with nothing running asks whether something has started.
+ * A bot can be started from another device, and the server is the only place
+ * this page can learn that from.
+ */
+export const IDLE_POLL_MS = 10_000;
+
+/** How often the finished list is re-read while a run that could join it is live. */
+export const ENDED_POLL_MS = 5_000;
+
 /** Why the engine ended a run, in the user's words. */
 export const STOP_REASONS: Record<string, string> = {
   session_stop_loss: "Reached its stop loss",

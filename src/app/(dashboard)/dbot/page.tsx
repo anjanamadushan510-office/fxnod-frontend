@@ -57,8 +57,12 @@ import {
   type DerivLinkedAccount,
 } from "@/services/api/model";
 
-const RUNS_PARAMS = { limit: 50 } as const;
-const ACTIVE_STATUSES = new Set(["pending", "running", "paused", "stopping"]);
+// Two questions, each answered by the engine: what is running on this
+// account, and what finished most recently. Fetching the newest fifty runs
+// and sorting them here loses a bot that has been running longer than fifty
+// others took to finish, on every device that did not start it.
+const ACTIVE_RUNS_PARAMS = { state: "active", limit: 100 } as const;
+const ENDED_RUNS_PARAMS = { state: "ended", limit: 50 } as const;
 type AccountFilter = "all" | "demo" | "real";
 
 function matchesAccount(isVirtual: boolean, filter: AccountFilter): boolean {
@@ -85,7 +89,11 @@ export default function DBotDashboardPage() {
 
   const strategiesQuery = useListBotStrategies();
   const presetsQuery = useListBotPresets();
-  const runsQuery = useListBotRuns(RUNS_PARAMS, { query: { refetchInterval: 1000 } });
+  const runsQuery = useListBotRuns(ACTIVE_RUNS_PARAMS, { query: { refetchInterval: 1000 } });
+  const endedQuery = useListBotRuns(ENDED_RUNS_PARAMS, {
+    // A finished run is a record; the list only changes when a live one ends.
+    query: { refetchInterval: (runsQuery.data?.runs?.length ?? 0) > 0 ? 5000 : false },
+  });
   const stopRun = useStopBotRun();
   const forceStop = useForceStopBotRun();
   const deletePreset = useDeleteBotPreset();
@@ -102,17 +110,16 @@ export default function DBotDashboardPage() {
 
   const strategies = useMemo(() => strategiesQuery.data?.strategies ?? [], [strategiesQuery.data]);
   const presets = useMemo(() => presetsQuery.data?.presets ?? [], [presetsQuery.data]);
-  const visibleRuns = useMemo(
+  const activeRuns = useMemo(
     () => (runsQuery.data?.runs ?? []).filter((r) => matchesAccount(r.is_virtual, accountFilter)),
     [runsQuery.data, accountFilter],
   );
-  const activeRuns = useMemo(
-    () => visibleRuns.filter((r) => ACTIVE_STATUSES.has(r.status)),
-    [visibleRuns],
-  );
   const finishedRuns = useMemo(
-    () => visibleRuns.filter((r) => !ACTIVE_STATUSES.has(r.status)).slice(0, 10),
-    [visibleRuns],
+    () =>
+      (endedQuery.data?.runs ?? [])
+        .filter((r) => matchesAccount(r.is_virtual, accountFilter))
+        .slice(0, 10),
+    [endedQuery.data, accountFilter],
   );
 
   // One currency across runs is the normal case; if it is not, a single total
@@ -416,7 +423,7 @@ export default function DBotDashboardPage() {
         )}
       </div>
 
-      {(runsQuery.data?.runs ?? []).some((r) => !ACTIVE_STATUSES.has(r.status)) && (
+      {(endedQuery.data?.runs ?? []).length > 0 && (
         <div className="space-y-4">
           <SectionTitle title="Recent runs" subtitle="Finished sessions, newest first." />
           {finishedRuns.length === 0 ? (

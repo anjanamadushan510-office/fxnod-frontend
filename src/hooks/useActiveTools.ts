@@ -1,62 +1,72 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { DEFAULT_ACTIVE_TOOL_IDS, FXNOD_TOOLS, type FxnodTool } from "@/components/tools/catalog";
-
-const LS_KEY = "fxnod.active-tools";
+import {
+  getGetActiveToolsQueryKey,
+  useGetActiveTools,
+  useSetActiveTools,
+} from "@/services/api/endpoints/users/users";
+import type { ActiveToolsResponse } from "@/services/api/model";
 
 function knownIds(ids: string[]): string[] {
   const allowed = new Set(FXNOD_TOOLS.map((tool) => tool.id));
   return ids.filter((id) => allowed.has(id));
 }
 
-function readStored(): string[] {
-  try {
-    const raw = window.localStorage.getItem(LS_KEY);
-    if (raw === null) return [...DEFAULT_ACTIVE_TOOL_IDS];
-    const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) return [...DEFAULT_ACTIVE_TOOL_IDS];
-    return knownIds(parsed.filter((id): id is string => typeof id === "string"));
-  } catch {
-    return [...DEFAULT_ACTIVE_TOOL_IDS];
-  }
-}
-
-function writeStored(ids: string[]) {
-  try {
-    window.localStorage.setItem(LS_KEY, JSON.stringify(ids));
-  } catch {
-    // Quota or private mode. The in-memory list still updates this page.
-  }
-}
-
 /**
- * Which catalogue tools the user has switched on from the Tools page.
+ * Which catalogue tools the account has switched on.
  *
- * Subscriptions renders this list and nothing else. Stored on this device,
- * same as other preferences that have no account API yet.
+ * The list is kept by the server, per account, so it is the same on a laptop
+ * and a phone. It used to be a localStorage entry, which made it a property
+ * of the browser. An account that has never changed it gets the default set.
+ *
+ * `ready` is false until the server has answered. A caller that shows a count
+ * should wait for it: the default set is not this account's answer.
  */
 export function useActiveTools() {
-  const [ids, setIds] = useState<string[]>(DEFAULT_ACTIVE_TOOL_IDS);
+  const queryClient = useQueryClient();
+  const query = useGetActiveTools();
+  const save = useSetActiveTools();
 
-  useEffect(() => {
-    const sync = () => setIds(readStored());
-    sync();
-    window.addEventListener("storage", sync);
-    return () => window.removeEventListener("storage", sync);
-  }, []);
+  const ids = useMemo(() => {
+    const data = query.data;
+    if (!data || !data.configured) return DEFAULT_ACTIVE_TOOL_IDS;
+    return knownIds(data.active_tool_ids);
+  }, [query.data]);
 
   const isActive = useCallback((id: string) => ids.includes(id), [ids]);
 
-  const setActive = useCallback((id: string, on: boolean) => {
-    setIds((prev) => {
-      const next = on ? Array.from(new Set([...prev, id])) : prev.filter((item) => item !== id);
-      writeStored(next);
-      return next;
-    });
-  }, []);
+  const setActive = useCallback(
+    (id: string, on: boolean) => {
+      const next = on ? Array.from(new Set([...ids, id])) : ids.filter((item) => item !== id);
+      const key = getGetActiveToolsQueryKey();
+      const previous = queryClient.getQueryData<ActiveToolsResponse>(key);
 
-  const activeTools: FxnodTool[] = FXNOD_TOOLS.filter((tool) => ids.includes(tool.id));
+      // Shown at once, and put back if the server refuses it.
+      queryClient.setQueryData<ActiveToolsResponse>(key, { configured: true, active_tool_ids: next });
+      save.mutate(
+        { data: { active_tool_ids: next } },
+        {
+          onError: () => {
+            queryClient.setQueryData(key, previous);
+            toast.error("That could not be saved. Please try again.");
+          },
+          onSettled: () => {
+            void queryClient.invalidateQueries({ queryKey: key });
+          },
+        },
+      );
+    },
+    [ids, queryClient, save],
+  );
 
-  return { ids, activeTools, isActive, setActive };
+  const activeTools: FxnodTool[] = useMemo(
+    () => FXNOD_TOOLS.filter((tool) => ids.includes(tool.id)),
+    [ids],
+  );
+
+  return { ids, activeTools, isActive, setActive, ready: query.isSuccess };
 }

@@ -36,7 +36,7 @@ export function DashboardMetrics({ onTopUp, onSend }: DashboardMetricsProps) {
   const { data: referralStats } = useGetReferralStats();
   const partnerEarnings = Number(referralStats?.settled_total || 0);
   const partnerTeamSize = referralStats?.total_team_size || 0;
-  const { activeTools } = useActiveTools();
+  const { activeTools, ready: toolsReady } = useActiveTools();
 
   return (
     <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
@@ -64,9 +64,15 @@ export function DashboardMetrics({ onTopUp, onSend }: DashboardMetricsProps) {
           <p className="text-[11px] uppercase tracking-[0.14em] text-ink-3 sm:text-xs">Active tools</p>
           <span className="text-[11px] text-ink-2">On Deriv</span>
         </div>
-        <p className="font-display text-2xl font-semibold tabular-nums text-ink sm:text-3xl">{activeTools.length}</p>
+        <p className="font-display text-2xl font-semibold tabular-nums text-ink sm:text-3xl">
+          {toolsReady ? activeTools.length : "—"}
+        </p>
         <p className="mt-1 break-words text-xs text-ink-3">
-          {activeTools.length > 0 ? activeTools.map((tool) => tool.name).join(" · ") : "None activated"}
+          {!toolsReady
+            ? " "
+            : activeTools.length > 0
+              ? activeTools.map((tool) => tool.name).join(" · ")
+              : "None activated"}
         </p>
       </article>
 

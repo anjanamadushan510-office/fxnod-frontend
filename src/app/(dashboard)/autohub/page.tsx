@@ -6,7 +6,7 @@ import type { Route } from "next";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AccountBadge, LaneChip, StatusBadge } from "@/components/autohub/pieces";
-import { RUN_POLL_MS, isActiveRun, stopReasonLabel } from "@/components/autohub/runState";
+import { ENDED_POLL_MS, IDLE_POLL_MS, RUN_POLL_MS, stopReasonLabel } from "@/components/autohub/runState";
 import { cn } from "@/lib/cn";
 import { decimalSign, formatMoney, sumDecimals } from "@/lib/decimal";
 import { parseApiError } from "@/lib/apiError";
@@ -18,7 +18,12 @@ import {
 } from "@/services/api/endpoints/auto-hub/auto-hub";
 import type { AutoHubBot, AutoHubRun } from "@/services/api/model";
 
-const RUNS_PARAMS = { limit: 50 } as const;
+// Two questions, each answered by the engine: what is running on this
+// account, and what finished most recently. The page used to fetch the newest
+// fifty runs and sort them itself, which loses a bot that has been running
+// longer than fifty others took to finish.
+const ACTIVE_RUNS_PARAMS = { state: "active", limit: 100 } as const;
+const ENDED_RUNS_PARAMS = { state: "ended", limit: 8 } as const;
 
 /**
  * /autohub — the bots FXNod built, and the ones this user has running.
@@ -31,22 +36,23 @@ const RUNS_PARAMS = { limit: 50 } as const;
 export default function AutoHubPage() {
   const queryClient = useQueryClient();
   const botsQuery = useListAutoHubBots();
-  const runsQuery = useListAutoHubRuns(RUNS_PARAMS, {
+  const runsQuery = useListAutoHubRuns(ACTIVE_RUNS_PARAMS, {
     query: {
-      // Poll only while something is live; a list of finished runs is a record.
+      // Quickly while something is live; slowly otherwise, because a bot may
+      // have been started on another device.
       refetchInterval: (query) =>
-        (query.state.data?.runs ?? []).some((run) => isActiveRun(run.status)) ? RUN_POLL_MS : false,
+        (query.state.data?.runs ?? []).length > 0 ? RUN_POLL_MS : IDLE_POLL_MS,
     },
+  });
+  const activeRuns = useMemo(() => runsQuery.data?.runs ?? [], [runsQuery.data]);
+  const endedQuery = useListAutoHubRuns(ENDED_RUNS_PARAMS, {
+    // A finished run is a record; the list only changes when a live one ends.
+    query: { refetchInterval: activeRuns.length > 0 ? ENDED_POLL_MS : false },
   });
   const stopRun = useStopAutoHubRun();
 
   const bots = useMemo(() => botsQuery.data?.bots ?? [], [botsQuery.data]);
-  const runs = useMemo(() => runsQuery.data?.runs ?? [], [runsQuery.data]);
-  const activeRuns = useMemo(() => runs.filter((run) => isActiveRun(run.status)), [runs]);
-  const finishedRuns = useMemo(
-    () => runs.filter((run) => !isActiveRun(run.status)).slice(0, 8),
-    [runs],
-  );
+  const finishedRuns = useMemo(() => endedQuery.data?.runs ?? [], [endedQuery.data]);
 
   // One currency across runs is the normal case. If it is not, a single total
   // would add dollars to something else, so none is shown.
