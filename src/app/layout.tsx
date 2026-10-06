@@ -3,6 +3,7 @@ import { Inter, Outfit, JetBrains_Mono } from "next/font/google";
 import { headers } from "next/headers";
 import "./globals.css";
 import { Providers } from "./providers";
+import { OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -22,9 +23,22 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
+// The defaults every route inherits. Public pages set their own title,
+// description and canonical URL through `pageMetadata`; a page behind the
+// login keeps the bare name, and is kept out of search results by the
+// X-Robots-Tag header in middleware.ts.
 export const metadata: Metadata = {
-  title: "FXNOD — Dashboard",
-  description: "FXNod trading platform",
+  metadataBase: new URL(SITE_URL),
+  title: { default: SITE_NAME, template: `%s | ${SITE_NAME}` },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    locale: "en_US",
+    images: [OG_IMAGE],
+  },
+  twitter: { card: "summary_large_image" },
   icons: {
     icon: [
       {

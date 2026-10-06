@@ -52,6 +52,13 @@ const nextConfig = {
       // The plans page is gone (dBot is free); old links land on dBot itself.
       { source: "/options/dbot/subscription", destination: "/dbot", permanent: false },
       { source: "/dbot/subscription", destination: "/dbot", permanent: false },
+      // The first three guides described a wallet transfer and monthly plans
+      // that are not live. Their addresses were linked from the home page, so
+      // they land on the guide that replaced them, or on the list.
+      { source: "/guides/fxnod-bot-strategies", destination: "/guides/build-a-deriv-bot-with-dbot", permanent: true },
+      { source: "/guides/send-wallet-funds", destination: "/guides", permanent: false },
+      { source: "/guides/free-vs-monthly", destination: "/guides", permanent: false },
+      { source: "/guides/free-api-vs-monthly", destination: "/guides", permanent: false },
     ];
   },
 
