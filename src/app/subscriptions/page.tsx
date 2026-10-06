@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import type { Route } from "next";
 import Link from "next/link";
 import { Trash2 } from "lucide-react";
@@ -8,6 +9,17 @@ import { useActiveTools } from "@/hooks/useActiveTools";
 
 export default function SubscriptionsPage() {
   const { activeTools, setActive } = useActiveTools();
+  const [pendingId, setPendingId] = useState<string | null>(null);
+  const pending = activeTools.find((tool) => tool.id === pendingId) ?? null;
+
+  useEffect(() => {
+    if (!pending) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setPendingId(null);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [pending]);
 
   return (
     <section data-view="subscriptions" className="p-4 lg:p-8">
@@ -51,7 +63,7 @@ export default function SubscriptionsPage() {
                   ) : null}
                   <button
                     type="button"
-                    onClick={() => setActive(tool.id, false)}
+                    onClick={() => setPendingId(tool.id)}
                     aria-label={`Deactivate ${tool.name}`}
                     className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg border border-line px-3 text-sm text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink"
                   >
@@ -62,6 +74,47 @@ export default function SubscriptionsPage() {
               }
             />
           ))}
+        </div>
+      )}
+
+      {pending && (
+        <div
+          className="fixed inset-0 z-[60] grid place-items-center bg-black/60 p-4 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="deactivate-tool-title"
+          onClick={() => setPendingId(null)}
+        >
+          <div
+            onClick={(event) => event.stopPropagation()}
+            className="w-full max-w-md rounded-2xl border border-line bg-surface p-6 shadow-2xl"
+          >
+            <h2 id="deactivate-tool-title" className="text-lg font-semibold text-ink">
+              Deactivate {pending.name}?
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-ink-2">
+              Are you sure you want to deactivate this tool? You can always enable it again from the Discover page.
+            </p>
+            <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => setPendingId(null)}
+                className="h-10 rounded-lg px-4 text-sm text-ink-2 transition-colors hover:text-ink"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setActive(pending.id, false);
+                  setPendingId(null);
+                }}
+                className="h-10 rounded-lg bg-red-500 px-5 text-sm font-medium text-white transition-colors hover:bg-red-400"
+              >
+                Deactivate
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </section>
