@@ -104,7 +104,7 @@ export function RunPanel({ ready, saving, starting, saved, onSave, onRun }: RunP
   );
 }
 
-function AccountSection() {
+export function AccountSection() {
   const deriv = useDerivStatus();
   const queryClient = useQueryClient();
   const accountsQuery = useDerivListAccounts({ query: { enabled: deriv.linked } });

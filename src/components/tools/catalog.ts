@@ -35,6 +35,16 @@ export const FXNOD_TOOLS: FxnodTool[] = [
     href: "/dbot",
   },
   {
+    id: "autohub",
+    name: "Auto Hub",
+    subtitle: "Deriv · Ready-made bots",
+    description:
+      "Bots built by FXNOD. Pick one, set your stake and limits, and start it. Nothing to build. Free — FXNOD earns a markup on the API.",
+    icon: "/assets/fxnod-mark.png",
+    kind: "free",
+    href: "/autohub",
+  },
+  {
     id: "bybit-flow",
     name: "Bybit flow",
     subtitle: "Bybit · Trade",
