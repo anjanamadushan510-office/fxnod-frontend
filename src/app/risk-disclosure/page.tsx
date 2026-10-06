@@ -42,7 +42,7 @@ const POINTS: { title: string; text: string }[] = [
   },
   {
     title: "Automation can stop",
-    text: "A bot depends on FXNOD, on Deriv and on the permission Deriv gives FXNOD, which expires and has to be renewed. A run can end because of any of them. Do not leave a strategy running that only works if it is never interrupted.",
+    text: "A bot depends on FXNOD, on Deriv and on the connection between them. A run can end because of any of them. Do not leave a strategy running that only works if it is never interrupted.",
   },
   {
     title: "FXNOD does not give financial advice",

@@ -223,12 +223,12 @@ export function LandingPage({ guides }: { guides: LandingGuide[] }) {
               <article className="bg-panel border border-line rounded-3xl p-5 sm:p-8">
                 <p className="text-[11px] uppercase tracking-[0.14em] text-gold mb-3">Free</p>
                 <h3 className="font-display text-2xl font-semibold mb-3">No subscription</h3>
-                <p className="text-sm text-zinc-400 leading-relaxed">dTrader, dBot and Auto Hub cost nothing to use. FXNOD is paid through a markup included in the price of the contracts its bots buy on real accounts. Demo trades carry no markup.</p>
+                <p className="text-sm text-zinc-400 leading-relaxed">dTrader, dBot and Auto Hub have no subscription and no sign-up fee. Connect your Deriv account and start on demo.</p>
               </article>
               <article className="rounded-3xl p-5 sm:p-8 border border-gold/25" style={{ background: "linear-gradient(160deg, #1A3358 0%, #101827 58%)" }}>
                 <p className="text-[11px] uppercase tracking-[0.14em] text-accent mb-3">Monthly &middot; Coming soon</p>
                 <h3 className="font-display text-2xl font-semibold mb-3">Wallet subscription</h3>
-                <p className="text-sm text-zinc-300 leading-relaxed">Planned: top up the FXNOD Wallet, subscribe, and use your own venue keys with no markup. Not available yet.</p>
+                <p className="text-sm text-zinc-300 leading-relaxed">Planned: top up the FXNOD Wallet, subscribe, and use your own venue keys. Not available yet.</p>
               </article>
             </div>
           </div>

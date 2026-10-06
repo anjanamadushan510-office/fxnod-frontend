@@ -8,7 +8,7 @@ import { pageMetadata } from "@/lib/site";
 export const metadata: Metadata = pageMetadata({
   title: "Partner programme",
   description:
-    "Invite people to FXNOD and earn a share of what FXNOD earns from their bot trades, and from the people they invite. dBot is free, so there is nothing to buy first.",
+    "Invite people to FXNOD and earn on what they trade, and on what the people they invite trade. dBot is free, so there is nothing for them to buy first.",
   path: "/partner",
 });
 

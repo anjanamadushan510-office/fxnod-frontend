@@ -12,14 +12,14 @@ Facts that are easy to get wrong:
 
 ## Guides
 
-- [How to connect your Deriv account to FXNOD](https://fxnod.com/guides/connect-deriv-account): signing in on Deriv's own page, demo and real accounts, reconnecting and disconnecting.
+- [How to connect your Deriv account to FXNOD](https://fxnod.com/guides/connect-deriv-account): signing in on Deriv's own page, demo and real accounts, switching and disconnecting.
 - [How to trade manually on Deriv with FXNOD dTrader](https://fxnod.com/guides/dtrader-manual-trading): the ten trade types and how to place a trade.
 - [How to build a Deriv trading bot without code in FXNOD dBot](https://fxnod.com/guides/build-a-deriv-bot-with-dbot): templates, the builder step by step, stake sizing and limits.
 - [FXNOD Auto Hub: ready-made Deriv bots](https://fxnod.com/guides/auto-hub-ready-made-bots): Hot Fade, Shadow Fade, Matches / Differs, and what a shadow trade is.
 
 ## About
 
-- [About FXNOD](https://fxnod.com/about): what is live, what is coming soon, how FXNOD is paid.
+- [About FXNOD](https://fxnod.com/about): what is live and what is coming soon.
 - [Risk warning](https://fxnod.com/risk-disclosure): what the tools do and do not protect a trader from.
 - [Partner programme](https://fxnod.com/partner): how inviting others is paid.
 - [Blog](https://fxnod.com/blog): product news and updates.

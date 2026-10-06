@@ -16,7 +16,7 @@ export const HOME_FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Is FXNOD free?",
-    a: "Yes. There is no subscription for dTrader, dBot or Auto Hub. FXNOD is paid through a markup that is included in the price of the contracts its bots buy on real accounts. Demo trades carry no markup.",
+    a: "Yes. There is no subscription and no sign-up fee for dTrader, dBot or Auto Hub. Connect a Deriv demo account and you can try all three with virtual funds.",
   },
   {
     q: "What is the difference between dBot and Auto Hub?",

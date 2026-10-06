@@ -100,11 +100,6 @@ export const GUIDES: Guide[] = [
         type: "p",
         text: "The first time you run a bot, Deriv asks you to allow FXNOD's automated-trading connection. It is a separate permission from the one you gave for manual trading, and you grant it the same way: on Deriv's page, not on FXNOD's.",
       },
-      { type: "h2", text: "Why FXNOD sometimes asks you to reconnect" },
-      {
-        type: "p",
-        text: "The permission Deriv gives FXNOD is short-lived, at the moment about an hour. When it expires, FXNOD can no longer place orders and asks you to reconnect. A running bot stops with a reconnect message at that point. It does not keep trading on a permission that has run out.",
-      },
       { type: "h2", text: "Disconnecting" },
       {
         type: "p",
@@ -124,7 +119,7 @@ export const GUIDES: Guide[] = [
       },
       {
         q: "Can I use FXNOD with only a Deriv demo account?",
-        a: "Yes. Select the demo account after connecting and every trade uses Deriv's virtual funds. It is the right way to test a bot before you risk money, and demo trades carry no FXNOD markup.",
+        a: "Yes. Select the demo account after connecting and every trade uses Deriv's virtual funds. It is the right way to test a bot before you risk money.",
       },
       {
         q: "Can I connect more than one Deriv login?",
@@ -133,10 +128,6 @@ export const GUIDES: Guide[] = [
       {
         q: "Does FXNOD hold my trading money?",
         a: "No. The money you trade with stays in your Deriv account. FXNOD sends your orders to Deriv and shows you the result.",
-      },
-      {
-        q: "Why did my bot stop with a reconnect message?",
-        a: "Deriv's permission for FXNOD expired. It lasts about an hour at the moment. Reconnect from Connected Accounts and start the bot again.",
       },
     ],
     related: ["dtrader-manual-trading", "build-a-deriv-bot-with-dbot"],
@@ -333,7 +324,7 @@ export const GUIDES: Guide[] = [
       { type: "h2", text: "What it costs" },
       {
         type: "p",
-        text: "dBot is free and there is no subscription. FXNOD is paid through a markup that is included in the price of the contracts a bot buys on a real account. Demo trades carry no markup.",
+        text: "dBot has no subscription and no sign-up fee. You can build a bot, save it and test it on a demo account before you use real money.",
       },
       RISK_NOTE,
     ],
@@ -344,7 +335,7 @@ export const GUIDES: Guide[] = [
       },
       {
         q: "Does the bot keep running when I close my browser?",
-        a: "Yes. It runs on FXNOD's servers and stops when it reaches one of your limits, when you stop it, or when Deriv's permission for FXNOD expires. That permission lasts about an hour at the moment, after which the bot stops and asks you to reconnect.",
+        a: "Yes. It runs on FXNOD's servers, so it keeps trading after you close the page. It stops when it reaches one of your limits or when you stop it.",
       },
       {
         q: "Can I test a bot without risking money?",
@@ -460,7 +451,7 @@ export const GUIDES: Guide[] = [
       },
       {
         q: "Is Auto Hub free?",
-        a: "Yes, there is no subscription. FXNOD is paid through a markup included in the price of the contracts a bot buys on a real account. Demo trades carry no markup.",
+        a: "Yes. There is no subscription and no sign-up fee.",
       },
       {
         q: "Can I change how an Auto Hub bot trades?",
@@ -468,7 +459,7 @@ export const GUIDES: Guide[] = [
       },
       {
         q: "How long does a bot run?",
-        a: "Until it reaches your stop loss or take profit, until you stop it, or until Deriv's permission for FXNOD expires, which is about an hour at the moment. After that you reconnect and start it again.",
+        a: "Until it reaches your stop loss or take profit, or until you stop it. It runs on FXNOD's servers, so closing the page does not end it.",
       },
       {
         q: "Does Auto Hub use Martingale?",

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   ...pageMetadata({
     title: "About FXNOD",
     description:
-      "What FXNOD is, what is live today, how it is paid, and how it relates to Deriv. FXNOD is an independent trading terminal for Deriv accounts.",
+      "What FXNOD is, what is live today, what is coming soon, and how it relates to Deriv. FXNOD is an independent trading terminal for Deriv accounts.",
     path: "/about",
   }),
   // The title already carries the name; the template would repeat it.
@@ -93,10 +93,10 @@ export default function AboutPage() {
               soon until it is.
             </p>
 
-            <h2 className="font-display text-2xl font-semibold text-white pt-6">How FXNOD is paid</h2>
+            <h2 className="font-display text-2xl font-semibold text-white pt-6">What it costs</h2>
             <p>
-              The tools are free to use and there is no subscription. FXNOD is paid through a markup that is included
-              in the price of the contracts its bots buy on real accounts. Demo trades carry no markup.
+              The tools have no subscription and no sign-up fee. You can try all of them on a Deriv demo account
+              with virtual funds before you trade real money.
             </p>
 
             <h2 className="font-display text-2xl font-semibold text-white pt-6">FXNOD and Deriv</h2>
