@@ -3,12 +3,14 @@ import type { Route } from "next";
 import Link from "next/link";
 import { TopNav } from "@/components/layout/TopNav";
 import { SiteFooter } from "@/components/layout/SiteFooter";
+import { pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "Partner programme — FXNod",
+export const metadata: Metadata = pageMetadata({
+  title: "Partner programme",
   description:
-    "Earn on what the people you invite trade, and on what their invitees do.",
-};
+    "Invite people to FXNOD and earn a share of what FXNOD earns from their bot trades, and from the people they invite. dBot is free, so there is nothing to buy first.",
+  path: "/partner",
+});
 
 /**
  * /partner — the public explainer the footer links to.
@@ -49,10 +51,10 @@ export default function PartnerProgrammePage() {
 
       <main className="mx-auto max-w-4xl px-6 py-16 lg:px-8">
         <h1 className="m-0 text-4xl font-extrabold tracking-tight text-[#0a0f1c]">
-          Earn with FXNod
+          Earn with FXNOD
         </h1>
         <p className="m-0 mt-4 max-w-[60ch] text-lg leading-relaxed text-[#0a0f1c]/65">
-          Invite people to FXNod and earn a share of what FXNod earns from them —
+          Invite people to FXNOD and earn a share of what FXNOD earns from them —
           the markup on their dBot trades today, and every paid product we add.
           dBot itself is free, so there is nothing for them to buy first. You
           also earn on the people they invite.
@@ -150,7 +152,7 @@ export default function PartnerProgrammePage() {
               we check for it.
             </li>
             <li>
-              <strong className="text-[#0a0f1c]">Earnings go to your FXNod wallet</strong>{" "}
+              <strong className="text-[#0a0f1c]">Earnings go to your FXNOD wallet</strong>{" "}
               and withdraw like any other balance.
             </li>
           </ul>

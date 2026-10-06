@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LoginForm } from "@/components/auth/LoginForm";
 
 export const metadata: Metadata = {
-  title: "Log in — FXNod",
+  title: "Log in",
 };
 
 export default function LoginPage() {

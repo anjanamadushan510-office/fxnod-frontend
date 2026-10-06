@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { VerifyOtpForm } from "@/components/auth/VerifyOtpForm";
 
 export const metadata: Metadata = {
-  title: "Verify your email — FXNod",
+  title: "Verify your email",
 };
 
 export default function VerifyOtpPage() {

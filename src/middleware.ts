@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { DEPLOYMENT_HOST_SUFFIX, isIndexablePath } from "@/lib/site";
 
 /**
  * Content-Security-Policy with a per-request nonce.
@@ -89,6 +90,20 @@ export function middleware(request: NextRequest) {
 
   const response = NextResponse.next({ request: { headers: requestHeaders } });
   response.headers.set("Content-Security-Policy", csp);
+
+  // Search engines may index only the public pages; everything behind the
+  // login is an empty shell to a signed-out crawler. The same build also
+  // answers on the project's *.vercel.app alias and on the staging and testing
+  // previews, and a copy of the site indexed there competes with the real one.
+  //
+  // The host rule names the hosts to exclude rather than the one to allow. If
+  // the Host header were ever not what this expects, an allow rule would take
+  // the production site out of search entirely; an exclude rule leaves a
+  // duplicate that the canonical link on every page already points away from.
+  const host = (request.headers.get("host") ?? "").toLowerCase().split(":")[0];
+  if (host.endsWith(DEPLOYMENT_HOST_SUFFIX) || !isIndexablePath(request.nextUrl.pathname)) {
+    response.headers.set("X-Robots-Tag", "noindex");
+  }
   return response;
 }
 
