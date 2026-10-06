@@ -37,6 +37,7 @@ export interface BotLimits {
   max_session_loss?: string;
   max_session_target_profit?: string;
   max_martingale_multiplier?: string;
+  /** The longest ladder a run may ask for. It follows max_trades_per_session, so the platform adds no limit of its own on the number of steps; 0 means escalating stakes are switched off. */
   max_martingale_steps?: number;
   max_trades_per_session?: number;
   max_run_duration_seconds?: number;

@@ -50,6 +50,8 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  ActiveToolsResponse,
+  ActiveToolsUpdate,
   ClientRecordCreate,
   ClientRecordPublic,
   CloseAccountRequest,
@@ -658,6 +660,163 @@ export function useGetKycStatus<TData = Awaited<ReturnType<typeof getKycStatus>>
 
 
 /**
+ * Account state, the same from every device. `configured` is false until the user changes the list for the first time; show the default set then.
+ * @summary Which tools this account has switched on
+ */
+export const getActiveTools = (
+    
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ActiveToolsResponse>(
+      {url: `/api/v1/users/me/tools`, method: 'GET', signal
+    },
+      options);
+    }
+  
+
+
+
+export const getGetActiveToolsQueryKey = () => {
+    return [
+    `/api/v1/users/me/tools`
+    ] as const;
+    }
+
+    
+export const getGetActiveToolsQueryOptions = <TData = Awaited<ReturnType<typeof getActiveTools>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getActiveTools>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetActiveToolsQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getActiveTools>>> = ({ signal }) => getActiveTools(requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getActiveTools>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetActiveToolsQueryResult = NonNullable<Awaited<ReturnType<typeof getActiveTools>>>
+export type GetActiveToolsQueryError = ErrorType<unknown>
+
+
+export function useGetActiveTools<TData = Awaited<ReturnType<typeof getActiveTools>>, TError = ErrorType<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getActiveTools>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getActiveTools>>,
+          TError,
+          Awaited<ReturnType<typeof getActiveTools>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetActiveTools<TData = Awaited<ReturnType<typeof getActiveTools>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getActiveTools>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getActiveTools>>,
+          TError,
+          Awaited<ReturnType<typeof getActiveTools>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetActiveTools<TData = Awaited<ReturnType<typeof getActiveTools>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getActiveTools>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Which tools this account has switched on
+ */
+
+export function useGetActiveTools<TData = Awaited<ReturnType<typeof getActiveTools>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getActiveTools>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetActiveToolsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * Send the whole list. Only tools a user may switch on for themselves are accepted, which is the free ones; a tool that costs money is switched on by its purchase and naming it here is a 422.
+ * @summary Replace the list of tools this account has switched on
+ */
+export const setActiveTools = (
+    activeToolsUpdate: BodyType<ActiveToolsUpdate>,
+ options?: SecondParameter<typeof customInstance>,) => {
+      
+      
+      return customInstance<ActiveToolsResponse>(
+      {url: `/api/v1/users/me/tools`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: activeToolsUpdate
+    },
+      options);
+    }
+  
+
+
+export const getSetActiveToolsMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setActiveTools>>, TError,{data: BodyType<ActiveToolsUpdate>}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof setActiveTools>>, TError,{data: BodyType<ActiveToolsUpdate>}, TContext> => {
+
+const mutationKey = ['setActiveTools'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setActiveTools>>, {data: BodyType<ActiveToolsUpdate>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  setActiveTools(data,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SetActiveToolsMutationResult = NonNullable<Awaited<ReturnType<typeof setActiveTools>>>
+    export type SetActiveToolsMutationBody = BodyType<ActiveToolsUpdate>
+    export type SetActiveToolsMutationError = ErrorType<void>
+
+    /**
+ * @summary Replace the list of tools this account has switched on
+ */
+export const useSetActiveTools = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setActiveTools>>, TError,{data: BodyType<ActiveToolsUpdate>}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof setActiveTools>>,
+        TError,
+        {data: BodyType<ActiveToolsUpdate>},
+        TContext
+      > => {
+
+      const mutationOptions = getSetActiveToolsMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
  * @summary Get Client Record
  */
 export const getClientRecord = (

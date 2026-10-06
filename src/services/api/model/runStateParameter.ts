@@ -30,16 +30,13 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
-import type { RunStateParameter } from './runStateParameter';
 
-export type ListAutoHubRunsParams = {
-/**
- * Which runs to list. `active` is every run that has not ended (pending, running, paused or stopping), however old; the filter is applied before the page is cut, so it is the way to ask what is running now. Any other value is a 422.
- */
-state?: RunStateParameter;
-/**
- * @maximum 100
- */
-limit?: number;
-offset?: number;
-};
+export type RunStateParameter = typeof RunStateParameter[keyof typeof RunStateParameter];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const RunStateParameter = {
+  all: 'all',
+  active: 'active',
+  ended: 'ended',
+} as const;
