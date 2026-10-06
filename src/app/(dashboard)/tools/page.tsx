@@ -59,7 +59,7 @@ export default function ToolsPage() {
       {showFree && (
         <ToolSection
           title="Free"
-          blurb="From FXNOD. No monthly fee — we earn a markup on the API."
+          blurb="From FXNOD. No monthly fee."
           tools={freeTools}
           view={view}
           isActive={isActive}
@@ -70,7 +70,7 @@ export default function ToolsPage() {
       {showPaid && (
         <ToolSection
           title="Subscriptions"
-          blurb="Pay from the FXNOD Wallet. Your own venue keys, no API markup."
+          blurb="Pay from the FXNOD Wallet. Your own venue keys."
           tools={paidTools}
           view={view}
           divided={showFree}

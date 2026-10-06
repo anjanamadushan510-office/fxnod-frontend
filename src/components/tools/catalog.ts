@@ -24,7 +24,7 @@ export const FXNOD_TOOLS: FxnodTool[] = [
     name: "dTrader",
     subtitle: "Deriv · Trade",
     description:
-      "Trade synthetics and options on Deriv. Rise / Fall tickets from the FXNOD desk. Free — FXNOD earns a markup on the API.",
+      "Trade synthetics and options on Deriv. Rise / Fall tickets from the FXNOD desk.",
     icon: "/assets/fxnod-mark.png",
     kind: "free",
     href: "/options/dtrader",
@@ -35,7 +35,7 @@ export const FXNOD_TOOLS: FxnodTool[] = [
     name: "dBot",
     subtitle: "Deriv · Bot",
     description:
-      "Build a Deriv options bot in plain language. Ready-made starts if you are new — no Blockly. Free — FXNOD earns a markup on the API.",
+      "Build a Deriv options bot in plain language. Ready-made starts if you are new — no Blockly.",
     icon: "/assets/fxnod-mark.png",
     kind: "free",
     href: "/dbot",
@@ -46,7 +46,7 @@ export const FXNOD_TOOLS: FxnodTool[] = [
     name: "Auto Hub",
     subtitle: "Deriv · Ready-made bots",
     description:
-      "Bots built by FXNOD. Pick one, set your stake and limits, and start it. Nothing to build. Free — FXNOD earns a markup on the API.",
+      "Bots built by FXNOD. Pick one, set your stake and limits, and start it. Nothing to build.",
     icon: "/assets/fxnod-mark.png",
     kind: "free",
     href: "/autohub",

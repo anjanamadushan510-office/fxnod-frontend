@@ -14,7 +14,7 @@ export function DashboardQuickActions() {
         <p className="text-[11px] uppercase tracking-[0.14em] text-ink-3 mb-3">dTrader</p>
         <h2 className="font-display text-lg font-semibold mb-2 text-ink">Trade now</h2>
         <p className="text-sm text-ink-2 leading-relaxed mb-4">
-          Rise / Fall tickets on Deriv synthetics. Free — FXNOD earns a markup on the API.
+          Rise / Fall tickets on Deriv synthetics. No monthly fee.
         </p>
         <span className="text-xs text-ink-2">Open dTrader &rarr;</span>
       </article>
