@@ -10,6 +10,11 @@ export interface FxnodTool {
   /** Where the tool opens, once it has been activated. */
   href?: string;
   price?: string;
+  /**
+   * Text-only compatibility labels. Never an exchange logo: the badge is
+   * our own wording so the marketplace stays clear of trademark marks.
+   */
+  badges: string[];
 }
 
 /** Every tool FXNOD ships. The Tools page is the catalogue; Subscriptions only lists the active ones. */
@@ -23,6 +28,7 @@ export const FXNOD_TOOLS: FxnodTool[] = [
     icon: "/assets/fxnod-mark.png",
     kind: "free",
     href: "/options/dtrader",
+    badges: ["Works with Deriv"],
   },
   {
     id: "dbot",
@@ -33,6 +39,7 @@ export const FXNOD_TOOLS: FxnodTool[] = [
     icon: "/assets/fxnod-mark.png",
     kind: "free",
     href: "/dbot",
+    badges: ["Works with Deriv"],
   },
   {
     id: "autohub",
@@ -43,6 +50,7 @@ export const FXNOD_TOOLS: FxnodTool[] = [
     icon: "/assets/fxnod-mark.png",
     kind: "free",
     href: "/autohub",
+    badges: ["Works with Deriv"],
   },
   {
     id: "bybit-flow",
@@ -52,6 +60,7 @@ export const FXNOD_TOOLS: FxnodTool[] = [
     icon: "/assets/fxnod-mark.png",
     kind: "paid",
     price: "$19.00 / mo",
+    badges: ["API: Bybit"],
   },
   {
     id: "binance-grid",
@@ -61,6 +70,7 @@ export const FXNOD_TOOLS: FxnodTool[] = [
     icon: "/assets/fxnod-mark.png",
     kind: "paid",
     price: "$29.00 / mo",
+    badges: ["API: Binance"],
   },
 ];
 
