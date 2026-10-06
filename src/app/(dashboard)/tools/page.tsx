@@ -1,13 +1,21 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
-import { LayoutGrid, List, Search } from "lucide-react";
+import { Bot, ChartCandlestick, Grid3x3, LayoutGrid, List, Search, Workflow, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { FXNOD_TOOLS, type FxnodTool } from "@/components/tools/catalog";
 import { useActiveTools } from "@/hooks/useActiveTools";
 
 type Filter = "all" | "free" | "paid";
 type View = "grid" | "list";
+
+/** Purpose icons for the marketplace. New tools fall back to a grid mark. */
+const TOOL_ICONS: Record<string, LucideIcon> = {
+  dtrader: ChartCandlestick,
+  dbot: Bot,
+  "bybit-flow": Workflow,
+  "binance-grid": Grid3x3,
+};
 
 export default function ToolsPage() {
   const [filter, setFilter] = useState<Filter>("all");
@@ -157,7 +165,7 @@ function ToolCard({
       <div className={cn("min-w-0", list ? "flex-1" : "mb-4")}>
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
-            <img src={tool.icon} alt="" className="h-8 w-8 shrink-0 object-contain invert dark:invert-0" />
+            <ToolMark id={tool.id} />
             <div className="min-w-0">
               <h3 className="truncate font-medium text-ink">{tool.name}</h3>
               <p className="truncate text-xs text-ink-3">{tool.subtitle}</p>
@@ -199,6 +207,15 @@ function ToolCard({
         {label}
       </button>
     </article>
+  );
+}
+
+function ToolMark({ id }: { id: string }) {
+  const Icon = TOOL_ICONS[id] ?? Grid3x3;
+  return (
+    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-line bg-bg text-ink">
+      <Icon className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+    </span>
   );
 }
 
