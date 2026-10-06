@@ -1,21 +1,14 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
-import { Bot, ChartCandlestick, Grid3x3, LayoutGrid, List, Search, Workflow, type LucideIcon } from "lucide-react";
+import { LayoutGrid, List, Search } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { FXNOD_TOOLS, type FxnodTool } from "@/components/tools/catalog";
+import { ActiveBadge, ToolCard, type ToolCardView } from "@/components/tools/ToolCard";
 import { useActiveTools } from "@/hooks/useActiveTools";
 
 type Filter = "all" | "free" | "paid";
-type View = "grid" | "list";
-
-/** Purpose icons for the marketplace. New tools fall back to a grid mark. */
-const TOOL_ICONS: Record<string, LucideIcon> = {
-  dtrader: ChartCandlestick,
-  dbot: Bot,
-  "bybit-flow": Workflow,
-  "binance-grid": Grid3x3,
-};
+type View = ToolCardView;
 
 export default function ToolsPage() {
   const [filter, setFilter] = useState<Filter>("all");
@@ -128,7 +121,7 @@ function ToolSection({
       </div>
       <div className={cn(view === "grid" ? "grid grid-cols-1 gap-4 md:grid-cols-2" : "flex flex-col gap-3")}>
         {tools.map((tool) => (
-          <ToolCard
+          <MarketplaceCard
             key={tool.id}
             tool={tool}
             view={view}
@@ -141,7 +134,7 @@ function ToolSection({
   );
 }
 
-function ToolCard({
+function MarketplaceCard({
   tool,
   view,
   active,
@@ -156,66 +149,31 @@ function ToolCard({
   const list = view === "list";
 
   return (
-    <article
-      className={cn(
-        "min-w-0 rounded-2xl border border-line bg-surface p-5 transition-colors hover:bg-surface-2",
-        list ? "flex flex-col gap-4 sm:flex-row sm:items-center" : "flex flex-col",
-      )}
-    >
-      <div className={cn("min-w-0", list ? "flex-1" : "mb-4")}>
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-3">
-            <ToolMark id={tool.id} />
-            <div className="min-w-0">
-              <h3 className="truncate font-medium text-ink">{tool.name}</h3>
-              <p className="truncate text-xs text-ink-3">{tool.subtitle}</p>
-            </div>
-          </div>
-          {tool.kind === "paid" && tool.price ? (
-            <p className="shrink-0 text-sm font-semibold text-ink">{tool.price}</p>
-          ) : active ? (
-            <ActiveBadge />
-          ) : null}
-        </div>
-
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {tool.badges.map((badge) => (
-            <span
-              key={badge}
-              className="inline-flex items-center rounded-full bg-black px-2 py-0.5 text-[10px] font-medium text-white ring-1 ring-white/15"
-            >
-              {badge}
-            </span>
-          ))}
-          {tool.kind === "paid" && active ? <ActiveBadge /> : null}
-        </div>
-
-        <p className={cn("mt-3 text-sm leading-relaxed text-ink-2", list ? "line-clamp-2" : "mb-4 flex-1")}>
-          {tool.description}
-        </p>
-      </div>
-
-      <button
-        type="button"
-        onClick={onAdd}
-        disabled={active}
-        className={cn(
-          "h-9 shrink-0 rounded-lg bg-black px-4 text-sm font-medium text-white transition-colors hover:bg-gray-800 disabled:cursor-default disabled:opacity-45 dark:bg-white dark:text-black dark:hover:bg-zinc-200",
-          list ? "w-full sm:w-auto sm:min-w-[8.5rem]" : "mt-auto w-full",
-        )}
-      >
-        {label}
-      </button>
-    </article>
-  );
-}
-
-function ToolMark({ id }: { id: string }) {
-  const Icon = TOOL_ICONS[id] ?? Grid3x3;
-  return (
-    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-line bg-bg text-ink">
-      <Icon className="h-4 w-4" strokeWidth={1.75} aria-hidden />
-    </span>
+    <ToolCard
+      tool={tool}
+      view={view}
+      headerExtra={
+        tool.kind === "paid" && tool.price ? (
+          <p className="shrink-0 text-sm font-semibold text-ink">{tool.price}</p>
+        ) : active ? (
+          <ActiveBadge />
+        ) : null
+      }
+      badgeExtra={tool.kind === "paid" && active ? <ActiveBadge /> : null}
+      actions={
+        <button
+          type="button"
+          onClick={onAdd}
+          disabled={active}
+          className={cn(
+            "h-9 rounded-lg bg-black px-4 text-sm font-medium text-white transition-colors hover:bg-gray-800 disabled:cursor-default disabled:opacity-45 dark:bg-white dark:text-black dark:hover:bg-zinc-200",
+            list ? "w-full sm:w-auto sm:min-w-[8.5rem]" : "w-full",
+          )}
+        >
+          {label}
+        </button>
+      }
+    />
   );
 }
 
@@ -266,17 +224,5 @@ function ViewButton({
     >
       {children}
     </button>
-  );
-}
-
-function ActiveBadge() {
-  return (
-    <span className="inline-flex shrink-0 items-center gap-1.5 text-xs text-green-400">
-      <span className="relative flex h-2 w-2">
-        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
-        <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
-      </span>
-      Active
-    </span>
   );
 }

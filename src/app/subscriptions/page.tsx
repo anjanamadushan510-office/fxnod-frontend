@@ -2,10 +2,12 @@
 
 import type { Route } from "next";
 import Link from "next/link";
+import { Trash2 } from "lucide-react";
+import { ToolCard } from "@/components/tools/ToolCard";
 import { useActiveTools } from "@/hooks/useActiveTools";
 
 export default function SubscriptionsPage() {
-  const { activeTools } = useActiveTools();
+  const { activeTools, setActive } = useActiveTools();
 
   return (
     <section data-view="subscriptions" className="p-4 lg:p-8">
@@ -23,42 +25,42 @@ export default function SubscriptionsPage() {
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-w-0">
+        <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2">
           {activeTools.map((tool) => (
-            <article
+            <ToolCard
               key={tool.id}
-              className="bg-surface border border-line hover:bg-surface-2 transition-colors rounded-2xl p-5 sm:p-6 flex flex-col min-w-0"
-            >
-              <div className="mb-4 flex items-start justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <img src={tool.icon} alt="" className="h-10 w-10 object-contain invert dark:invert-0" />
-                  <div>
-                    <h2 className="text-lg font-medium text-ink">{tool.name}</h2>
-                    <p className="text-xs text-ink-3">{tool.subtitle}</p>
-                  </div>
-                </div>
-                <span className="inline-flex items-center gap-1.5 text-xs text-green-400 bg-green-400/10 px-2 py-1 rounded-md">
+              tool={tool}
+              headerExtra={
+                <span className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-green-400/10 px-2 py-1 text-xs text-green-400">
                   <span className="relative flex h-1.5 w-1.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500"></span>
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-green-500" />
                   </span>
                   Active
                 </span>
-              </div>
-
-              <p className="text-sm text-ink-2 leading-relaxed mb-6">{tool.description}</p>
-
-              {tool.href ? (
-                <div className="mt-auto flex">
-                  <Link
-                    href={tool.href as Route}
-                    className="w-full h-10 px-5 flex justify-center items-center rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-80 transition-opacity"
+              }
+              actions={
+                <div className="flex gap-2">
+                  {tool.href ? (
+                    <Link
+                      href={tool.href as Route}
+                      className="flex h-10 flex-1 items-center justify-center rounded-lg bg-ink px-5 text-sm font-medium text-surface transition-opacity hover:opacity-80"
+                    >
+                      Open {tool.name}
+                    </Link>
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={() => setActive(tool.id, false)}
+                    aria-label={`Deactivate ${tool.name}`}
+                    className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg border border-line px-3 text-sm text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink"
                   >
-                    Open {tool.name}
-                  </Link>
+                    <Trash2 className="h-4 w-4" />
+                    <span className="hidden sm:inline">Deactivate</span>
+                  </button>
                 </div>
-              ) : null}
-            </article>
+              }
+            />
           ))}
         </div>
       )}
