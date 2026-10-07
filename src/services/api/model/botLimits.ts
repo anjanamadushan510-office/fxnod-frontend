@@ -42,6 +42,7 @@ export interface BotLimits {
   max_martingale_steps?: number;
   /** The most trades one run may hold. ABSENT when the platform sets no trade limit, which is the default; a run that asks for no max_trades then has none, and trades until its stop loss, its profit target or max_run_duration_seconds ends it. */
   max_trades_per_session?: number;
+  /** How long a run may last, and how long it lasts when it asks for no limit of its own. Sixty days. */
   max_run_duration_seconds?: number;
   /** How many bots one user may run at the same time. */
   max_concurrent_runs?: number;

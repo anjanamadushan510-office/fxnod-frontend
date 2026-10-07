@@ -947,11 +947,18 @@ function emptyTradeLimitHint(limits: BotLimits | undefined): string | undefined 
   if (limits.max_trades_per_session) {
     return `Left empty, the bot stops at ${limits.max_trades_per_session} trades, the platform limit.`;
   }
-  const hours = (limits.max_run_duration_seconds ?? 0) / 3600;
+  const seconds = limits.max_run_duration_seconds ?? 0;
   return (
     "Left empty, there is no trade limit: the bot trades until its loss or profit stop ends it" +
-    (hours > 0 ? `, or for ${Number(hours.toFixed(1))} hours at most.` : ".")
+    (seconds > 0 ? `, or for ${sessionLength(seconds)} at most.` : ".")
   );
+}
+
+/** The session time limit in the unit a person would say it in. */
+function sessionLength(seconds: number): string {
+  const days = seconds / 86_400;
+  if (days >= 2) return `${Number(days.toFixed(1))} days`;
+  return `${Number((seconds / 3600).toFixed(1))} hours`;
 }
 
 function LadderNote({ ladder }: { ladder: LadderPreview }) {
