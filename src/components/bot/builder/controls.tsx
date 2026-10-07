@@ -96,6 +96,8 @@ interface TextFieldProps {
   value: string;
   onChange: (value: string) => void;
   hint?: ReactNode;
+  /** What is wrong with the value. Shown in place of the hint. */
+  error?: string;
   placeholder?: string;
   /** Decimal amounts and whole counts both stay strings; only the keyboard differs. */
   kind?: "decimal" | "integer" | "text";
@@ -107,6 +109,7 @@ export function TextField({
   value,
   onChange,
   hint,
+  error,
   placeholder,
   kind = "decimal",
   maxLength,
@@ -121,9 +124,16 @@ export function TextField({
         placeholder={placeholder}
         maxLength={maxLength}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full h-11 px-4 rounded-lg bg-surface-2 border border-line text-sm text-ink placeholder:text-ink-3 focus:border-ink-3 outline-none transition-colors"
+        aria-invalid={error ? true : undefined}
+        className={`w-full h-11 px-4 rounded-lg bg-surface-2 border text-sm text-ink placeholder:text-ink-3 outline-none transition-colors ${
+          error ? "border-red-500/60 focus:border-red-400" : "border-line focus:border-ink-3"
+        }`}
       />
-      {hint && <span className="mt-1.5 block text-[11px] text-ink-3">{hint}</span>}
+      {error ? (
+        <span role="alert" className="mt-1.5 block text-[11px] text-red-300">{error}</span>
+      ) : (
+        hint && <span className="mt-1.5 block text-[11px] text-ink-3">{hint}</span>
+      )}
     </label>
   );
 }

@@ -1,3 +1,4 @@
+import { compareDecimals } from "@/lib/decimal";
 import type {
   BotIndicator,
   BotPreset,
@@ -279,16 +280,6 @@ export function draftProblems(
     problems.push("The chosen money strategy is not available yet.");
   }
   if (form.symbols.length === 0) problems.push("Pick at least one market.");
-  if (!isPositiveDecimal(form.stake)) problems.push("Starting stake must be a positive amount.");
-  if (!isPositiveDecimal(form.sessionStopLoss)) {
-    problems.push("Set the loss at which the bot stops.");
-  }
-  if (form.sessionTargetProfit.trim() && !isPositiveDecimal(form.sessionTargetProfit)) {
-    problems.push("The profit target must be a positive amount, or empty.");
-  }
-  if (form.maxTrades.trim() && !isPositiveInt(form.maxTrades)) {
-    problems.push("Max trades must be a whole number, or empty.");
-  }
   if (formShapeFor(strategy!.strategy_id).duration && !isPositiveInt(form.duration)) {
     problems.push("Contract duration must be a whole number.");
   }
@@ -315,25 +306,66 @@ export function draftProblems(
   ) {
     problems.push("A contract's stop loss cannot be more than its stake.");
   }
+  problems.push(...Object.values(moneyProblems(draft)));
+  return problems;
+}
+
+/**
+ * The Money step's field labels.
+ *
+ * The step draws its fields from these and every message about a field quotes
+ * them, so a message cannot name something the page does not show. It used to:
+ * the field read "Never stake more than" and its error said "stake ceiling".
+ * The step count is the one label not here; it changes with the money
+ * strategy and lives on the option (MoneyOption.stepsLabel).
+ */
+export const MONEY_LABELS = {
+  stake: "Starting stake",
+  sessionStopLoss: "Stop when loss hits",
+  sessionTargetProfit: "Stop when profit hits",
+  maxTrades: "Max trades this run",
+  maxStake: "Never stake more than",
+  martingaleMultiplier: "Multiply the stake by",
+} as const;
+
+export type MoneyField = keyof typeof MONEY_LABELS | "martingaleMaxSteps";
+
+const quoted = (label: string) => `“${label}”`;
+
+/**
+ * What is wrong with the Money step, by field, in the order the fields appear.
+ * The step shows each beside its own field as it is typed; the Review step
+ * lists them all.
+ */
+export function moneyProblems(draft: BotDraft): Partial<Record<MoneyField, string>> {
+  const { form } = draft;
   const money = findMoneyOption(draft.money);
-  if (money?.multiplies) {
-    const multiplier = Number.parseFloat(form.martingaleMultiplier);
-    if (!Number.isFinite(multiplier) || multiplier <= 1) {
-      problems.push("The stake multiplier must be greater than 1.");
-    }
+  const problems: Partial<Record<MoneyField, string>> = {};
+
+  if (!isPositiveDecimal(form.stake)) {
+    problems.stake = `${quoted(MONEY_LABELS.stake)} must be an amount above 0.`;
   }
-  if (money?.escalates && !isPositiveInt(form.martingaleMaxSteps)) {
-    problems.push("The number of steps must be a whole number.");
+  if (!isPositiveDecimal(form.sessionStopLoss)) {
+    problems.sessionStopLoss = `${quoted(MONEY_LABELS.sessionStopLoss)} is required, and must be an amount above 0.`;
+  }
+  if (form.sessionTargetProfit.trim() && !isPositiveDecimal(form.sessionTargetProfit)) {
+    problems.sessionTargetProfit = `${quoted(MONEY_LABELS.sessionTargetProfit)} must be an amount above 0, or left empty.`;
+  }
+  if (form.maxTrades.trim() && !isPositiveInt(form.maxTrades)) {
+    problems.maxTrades = `${quoted(MONEY_LABELS.maxTrades)} must be a whole number above 0, or left empty.`;
   }
   if (form.maxStake.trim()) {
     if (!isPositiveDecimal(form.maxStake)) {
-      problems.push("The stake ceiling must be a positive amount, or empty.");
-    } else if (
-      isPositiveDecimal(form.stake) &&
-      Number.parseFloat(form.maxStake) < Number.parseFloat(form.stake)
-    ) {
-      problems.push("The stake ceiling cannot be below the starting stake.");
+      problems.maxStake = `${quoted(MONEY_LABELS.maxStake)} must be an amount above 0, or left empty.`;
+    } else if (isPositiveDecimal(form.stake) && compareDecimals(form.maxStake, form.stake) === -1) {
+      problems.maxStake = `Your ${quoted(MONEY_LABELS.maxStake)} amount cannot be less than your ${quoted(MONEY_LABELS.stake)}.`;
     }
+  }
+  if (money?.multiplies && compareDecimals(form.martingaleMultiplier, "1") !== 1) {
+    problems.martingaleMultiplier = `${quoted(MONEY_LABELS.martingaleMultiplier)} must be more than 1.`;
+  }
+  if (money?.escalates && !isPositiveInt(form.martingaleMaxSteps)) {
+    problems.martingaleMaxSteps = `${quoted(money.stepsLabel ?? "Steps")} must be a whole number above 0.`;
   }
   return problems;
 }
