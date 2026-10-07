@@ -33,6 +33,7 @@ library, not a float.
 import type { DecimalString } from './decimalString';
 
 export interface BotLimits {
+  /** The most a run may START from. An escalating stake may go above it, up to the run's own ceiling and its session stop loss. */
   max_stake_per_trade?: string;
   max_session_loss?: string;
   max_session_target_profit?: string;

@@ -41,6 +41,37 @@ export function sumDecimals(values: readonly string[]): string {
   return fromUnits(total);
 }
 
+/** -1, 0 or 1 as `a` is below, equal to or above `b`; null when either is not a decimal. */
+export function compareDecimals(a: string, b: string): -1 | 0 | 1 | null {
+  const left = toUnits(a);
+  const right = toUnits(b);
+  if (left === null || right === null) return null;
+  if (left === right) return 0;
+  return left < right ? -1 : 1;
+}
+
+/**
+ * `value` × `factor` to the power `power`, exactly, rounded once at the end to
+ * SCALE places (half away from zero). That is the engine's own order: it
+ * compounds a stake in full and rounds the result, so rounding each step here
+ * would drift from it. Null when either argument is not a decimal.
+ */
+export function compoundDecimal(value: string, factor: string, power: number): string | null {
+  const base = toUnits(value);
+  const multiplier = toUnits(factor);
+  if (base === null || multiplier === null || !Number.isInteger(power) || power < 0) return null;
+  let numerator = base;
+  let denominator = BigInt(1);
+  for (let i = 0; i < power; i++) {
+    numerator *= multiplier;
+    denominator *= FACTOR;
+  }
+  const negative = numerator < BigInt(0);
+  const abs = negative ? -numerator : numerator;
+  const rounded = (abs + denominator / BigInt(2)) / denominator;
+  return fromUnits(negative ? -rounded : rounded);
+}
+
 /** -1, 0 or 1 for a decimal string; 0 when it does not parse. */
 export function decimalSign(value: string): -1 | 0 | 1 {
   const units = toUnits(value);

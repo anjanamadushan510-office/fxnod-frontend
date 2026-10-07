@@ -57,7 +57,7 @@ export interface BotRiskLimits {
   /** Length of the ladder in every escalating mode. Exhausting it ENDS a martingale run rather than restarting at the base stake, which would hide an unrecovered loss; gentle_step and reverse_martingale reset to the base stake instead.
  */
   martingale_max_steps?: number;
-  /** The caller's own ceiling on one stake, applied on top of the platform cap (which still wins). At least stake_per_trade.
+  /** The caller's own ceiling on one stake. At least stake_per_trade. With an escalating stake_mode it may be above the platform's max_stake_per_trade, which bounds only the stake a run starts from, and is reduced to session_stop_loss when above it: no single stake may be larger than the session stop loss, with or without this field. A martingale run whose next stake would be above that ceiling ENDS with stake_limit_reached rather than placing a smaller one, which could not recover the streak; gentle_step and reverse_martingale hold at the ceiling. With a flat stake it is held to the platform cap.
  */
   max_stake_per_trade?: string;
   max_trades?: number;

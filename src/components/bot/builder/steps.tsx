@@ -6,6 +6,7 @@ import type { Market } from "@/components/options/market/catalog";
 import { useContractsFor } from "@/hooks/useContractsFor";
 import { useMarketsForStrategy } from "@/hooks/useMarketsForStrategy";
 import type { RiseFallDurationState } from "@/hooks/useRiseFallDurations";
+import { formatMoney } from "@/lib/decimal";
 import type { BotIndicator, BotLimits, BotStrategy } from "@/services/api/model";
 import { BARRIER_SCALES, GROWTH_RATES, MULTIPLIER_STEPS, durationPresetsFor, formShapeFor } from "../botMeta";
 import type { BotFormState } from "../formState";
@@ -43,6 +44,7 @@ import {
   withMethod,
   type BotDraft,
 } from "./draft";
+import { martingaleLadder, type LadderPreview } from "./ladder";
 
 /** Mirrors the engine's MaxRunSymbols; the engine refuses more either way. */
 export const MAX_MARKETS = 10;
@@ -908,6 +910,47 @@ const STEP_LABELS: Record<string, string> = {
   reverse_martingale: "Wins in a row before it resets",
 };
 
+// A long ladder is shown by its ends: the first stakes say how it grows, the
+// last say where it gets to.
+const LADDER_SHOWN = 8;
+
+function ladderStakes(stakes: readonly string[]): string {
+  const shown =
+    stakes.length > LADDER_SHOWN
+      ? [...stakes.slice(0, LADDER_SHOWN - 3).map((s) => formatMoney(s)), "…", ...stakes.slice(-2).map((s) => formatMoney(s))]
+      : stakes.map((s) => formatMoney(s));
+  return shown.join(" → ");
+}
+
+/** Why the streak in a LadderPreview ends, in the words of the fields above it. */
+function ladderEnding(ladder: LadderPreview): string {
+  const lost = formatMoney(ladder.lost);
+  switch (ladder.end) {
+    case "loss_cap":
+      return `${ladder.stakes.length === 1 ? "Losing it" : "Losing all of them"} costs ${lost}, which reaches your “Stop when loss hits” of ${formatMoney(ladder.lossCap)}, so the bot stops.`;
+    case "stake_limit":
+      return (
+        `The next stake would be ${formatMoney(ladder.refused ?? "")}, above ` +
+        (ladder.ceilingIsOwn
+          ? `your “Never stake more than” of ${formatMoney(ladder.ceiling ?? "")}`
+          : `your “Stop when loss hits” of ${formatMoney(ladder.ceiling ?? "")}, and one trade is never larger than that`) +
+        `. The bot stops there, down ${lost}, instead of placing a smaller stake that could not win the streak back.`
+      );
+    case "steps":
+      return `That is the last step. If it loses too, the bot stops, down ${lost}.`;
+  }
+}
+
+function LadderNote({ ladder }: { ladder: LadderPreview }) {
+  return (
+    <div className="rounded-lg border border-line bg-surface-2 px-4 py-3">
+      <p className="text-[11px] text-ink-3">If every trade loses, starting from a level session</p>
+      <p className="mt-1.5 text-sm text-ink tabular-nums break-words">{ladderStakes(ladder.stakes)}</p>
+      <p className="mt-1.5 text-xs text-ink-2 leading-relaxed">{ladderEnding(ladder)}</p>
+    </div>
+  );
+}
+
 export function MoneyStep({
   draft,
   onChange,
@@ -916,6 +959,19 @@ export function MoneyStep({
   const { form } = draft;
   const money = findMoneyOption(draft.money);
   const set = (patch: Partial<BotFormState>) => onChange(patchForm(draft, patch));
+  const ladder =
+    draft.money === "martingale"
+      ? martingaleLadder({
+          stake: form.stake,
+          multiplier: form.martingaleMultiplier,
+          steps: form.martingaleMaxSteps,
+          lossCap: form.sessionStopLoss,
+          maxStake: form.maxStake,
+          platformMaxStake: limits?.max_stake_per_trade,
+          platformMaxLoss: limits?.max_session_loss,
+          platformMaxSteps: limits?.max_martingale_steps,
+        })
+      : null;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start w-full">
@@ -927,7 +983,11 @@ export function MoneyStep({
             label="Starting stake ($)"
             value={form.stake}
             onChange={(stake) => set({ stake })}
-            hint={limits?.max_stake_per_trade ? `Platform limit: $${limits.max_stake_per_trade} per trade` : undefined}
+            hint={
+              limits?.max_stake_per_trade
+                ? `Platform limit: $${limits.max_stake_per_trade}${money?.escalates ? " for the starting stake" : " per trade"}`
+                : undefined
+            }
           />
           <TextField
             label="Stop when loss hits ($)"
@@ -954,7 +1014,11 @@ export function MoneyStep({
             value={form.maxStake}
             onChange={(maxStake) => set({ maxStake })}
             placeholder="Optional"
-            hint="A ceiling on any one trade, whatever the money strategy below does."
+            hint={
+              money?.escalates
+                ? "The most any one trade may be. Left empty, a stake can grow as far as “Stop when loss hits”, and no further."
+                : "A ceiling on any one trade, whatever the money strategy below does."
+            }
           />
         </div>
 
@@ -994,6 +1058,8 @@ export function MoneyStep({
             />
           </div>
         )}
+
+        {ladder && <LadderNote ladder={ladder} />}
       </div>
 
       <div className="lg:col-span-4 2xl:col-span-3 lg:sticky lg:top-4 space-y-4">

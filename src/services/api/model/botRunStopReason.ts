@@ -43,6 +43,7 @@ export const BotRunStopReason = {
   user_requested: 'user_requested',
   account_session_loss: 'account_session_loss',
   martingale_steps_exhausted: 'martingale_steps_exhausted',
+  stake_limit_reached: 'stake_limit_reached',
   deriv_reconnect_required: 'deriv_reconnect_required',
   admin_halt: 'admin_halt',
   error: 'error',
