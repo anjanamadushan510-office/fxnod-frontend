@@ -937,6 +937,23 @@ function ladderEnding(ladder: LadderPreview): string {
   }
 }
 
+/**
+ * What leaving the trade limit empty does. The field is optional, so the page
+ * has to say what "empty" means; it used to mean a platform limit the page
+ * showed only as a number.
+ */
+function emptyTradeLimitHint(limits: BotLimits | undefined): string | undefined {
+  if (!limits) return undefined;
+  if (limits.max_trades_per_session) {
+    return `Left empty, the bot stops at ${limits.max_trades_per_session} trades, the platform limit.`;
+  }
+  const hours = (limits.max_run_duration_seconds ?? 0) / 3600;
+  return (
+    "Left empty, there is no trade limit: the bot trades until its loss or profit stop ends it" +
+    (hours > 0 ? `, or for ${Number(hours.toFixed(1))} hours at most.` : ".")
+  );
+}
+
 function LadderNote({ ladder }: { ladder: LadderPreview }) {
   return (
     <div className="rounded-lg border border-line bg-surface-2 px-4 py-3">
@@ -1011,7 +1028,7 @@ export function MoneyStep({
             onChange={(maxTrades) => set({ maxTrades })}
             error={errorFor("maxTrades", form.maxTrades)}
             placeholder="Optional"
-            hint={limits?.max_trades_per_session ? `Platform limit: ${limits.max_trades_per_session}` : undefined}
+            hint={emptyTradeLimitHint(limits)}
           />
           <TextField
             label={`${MONEY_LABELS.maxStake} ($)`}

@@ -60,6 +60,7 @@ export interface BotRiskLimits {
   /** The caller's own ceiling on one stake. At least stake_per_trade. With an escalating stake_mode it may be above the platform's max_stake_per_trade, which bounds only the stake a run starts from, and is reduced to session_stop_loss when above it: no single stake may be larger than the session stop loss, with or without this field. A martingale run whose next stake would be above that ceiling ENDS with stake_limit_reached rather than placing a smaller one, which could not recover the streak; gentle_step and reverse_martingale hold at the ceiling. With a flat stake it is held to the platform cap.
  */
   max_stake_per_trade?: string;
+  /** Optional. Absent, the run takes the platform's trade limit, and has no trade limit at all where the platform sets none (see BotLimits.max_trades_per_session). */
   max_trades?: number;
   max_duration_seconds?: number;
 }

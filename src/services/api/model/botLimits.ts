@@ -38,8 +38,9 @@ export interface BotLimits {
   max_session_loss?: string;
   max_session_target_profit?: string;
   max_martingale_multiplier?: string;
-  /** The longest ladder a run may ask for. It follows max_trades_per_session, so the platform adds no limit of its own on the number of steps; 0 means escalating stakes are switched off. */
+  /** The longest ladder a run may ask for. Far longer than a ladder gets before its stake ceiling or the stop loss ends it, so in practice the number of steps is the user's; 0 means escalating stakes are switched off. */
   max_martingale_steps?: number;
+  /** The most trades one run may hold. ABSENT when the platform sets no trade limit, which is the default; a run that asks for no max_trades then has none, and trades until its stop loss, its profit target or max_run_duration_seconds ends it. */
   max_trades_per_session?: number;
   max_run_duration_seconds?: number;
   /** How many bots one user may run at the same time. */
