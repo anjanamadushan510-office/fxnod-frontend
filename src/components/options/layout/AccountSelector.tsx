@@ -37,7 +37,7 @@ export function AccountSelector({
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
-  const accountsQuery = useDerivListAccounts({ query: { enabled: open && linked } });
+  const accountsQuery = useDerivListAccounts(undefined, { query: { enabled: open && linked } });
   const selectMutation = useDerivSelectAccount();
   const [pendingAccount, setPendingAccount] = useState<DerivLinkedAccount | null>(null);
   

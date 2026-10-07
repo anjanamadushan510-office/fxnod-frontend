@@ -107,7 +107,7 @@ export function RunPanel({ ready, saving, starting, saved, onSave, onRun }: RunP
 export function AccountSection() {
   const deriv = useDerivStatus();
   const queryClient = useQueryClient();
-  const accountsQuery = useDerivListAccounts({ query: { enabled: deriv.linked } });
+  const accountsQuery = useDerivListAccounts(undefined, { query: { enabled: deriv.linked } });
   const selectMutation = useDerivSelectAccount();
   const [pending, setPending] = useState<DerivLinkedAccount | null>(null);
 

@@ -63,6 +63,7 @@ import type {
   DerivExchangeResponse,
   DerivLinkRequest,
   DerivLinkResponse,
+  DerivListAccountsParams,
   DerivOAuthClient200,
   DerivSelectAccountRequest,
   DerivUnlink200,
@@ -318,13 +319,14 @@ export const useDerivLink = <TError = ErrorType<Error | UnauthorizedResponse>,
  * @summary Every Deriv account the user's live grants cover
  */
 export const derivListAccounts = (
-    
+    params?: DerivListAccountsParams,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
       
       
       return customInstance<DerivAccountListResponse>(
-      {url: `/api/v1/deriv/accounts`, method: 'GET', signal
+      {url: `/api/v1/deriv/accounts`, method: 'GET',
+        params, signal
     },
       options);
     }
@@ -332,23 +334,23 @@ export const derivListAccounts = (
 
 
 
-export const getDerivListAccountsQueryKey = () => {
+export const getDerivListAccountsQueryKey = (params?: DerivListAccountsParams,) => {
     return [
-    `/api/v1/deriv/accounts`
+    `/api/v1/deriv/accounts`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getDerivListAccountsQueryOptions = <TData = Awaited<ReturnType<typeof derivListAccounts>>, TError = ErrorType<UnauthorizedResponse>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof derivListAccounts>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getDerivListAccountsQueryOptions = <TData = Awaited<ReturnType<typeof derivListAccounts>>, TError = ErrorType<UnauthorizedResponse>>(params?: DerivListAccountsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof derivListAccounts>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getDerivListAccountsQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getDerivListAccountsQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof derivListAccounts>>> = ({ signal }) => derivListAccounts(requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof derivListAccounts>>> = ({ signal }) => derivListAccounts(params, requestOptions, signal);
 
       
 
@@ -362,7 +364,7 @@ export type DerivListAccountsQueryError = ErrorType<UnauthorizedResponse>
 
 
 export function useDerivListAccounts<TData = Awaited<ReturnType<typeof derivListAccounts>>, TError = ErrorType<UnauthorizedResponse>>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof derivListAccounts>>, TError, TData>> & Pick<
+ params: undefined |  DerivListAccountsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof derivListAccounts>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof derivListAccounts>>,
           TError,
@@ -372,7 +374,7 @@ export function useDerivListAccounts<TData = Awaited<ReturnType<typeof derivList
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useDerivListAccounts<TData = Awaited<ReturnType<typeof derivListAccounts>>, TError = ErrorType<UnauthorizedResponse>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof derivListAccounts>>, TError, TData>> & Pick<
+ params?: DerivListAccountsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof derivListAccounts>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof derivListAccounts>>,
           TError,
@@ -382,7 +384,7 @@ export function useDerivListAccounts<TData = Awaited<ReturnType<typeof derivList
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useDerivListAccounts<TData = Awaited<ReturnType<typeof derivListAccounts>>, TError = ErrorType<UnauthorizedResponse>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof derivListAccounts>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ params?: DerivListAccountsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof derivListAccounts>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
@@ -390,11 +392,11 @@ export function useDerivListAccounts<TData = Awaited<ReturnType<typeof derivList
  */
 
 export function useDerivListAccounts<TData = Awaited<ReturnType<typeof derivListAccounts>>, TError = ErrorType<UnauthorizedResponse>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof derivListAccounts>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ params?: DerivListAccountsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof derivListAccounts>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getDerivListAccountsQueryOptions(options)
+  const queryOptions = getDerivListAccountsQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

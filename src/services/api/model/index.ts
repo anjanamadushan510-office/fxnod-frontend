@@ -141,6 +141,7 @@ export * from './derivExchangeResponseAccountsItem';
 export * from './derivLinkRequest';
 export * from './derivLinkResponse';
 export * from './derivLinkedAccount';
+export * from './derivListAccountsParams';
 export * from './derivLoginRequest';
 export * from './derivOAuthClient200';
 export * from './derivPayoutIn';

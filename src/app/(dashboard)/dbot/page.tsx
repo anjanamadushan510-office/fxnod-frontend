@@ -47,7 +47,6 @@ import {
 } from "@/services/api/endpoints/bots/bots";
 import {
   getDerivListAccountsQueryKey,
-  useDerivListAccounts,
   useDerivSelectAccount,
 } from "@/services/api/endpoints/trading/trading";
 import {
@@ -100,7 +99,6 @@ export default function DBotDashboardPage() {
   const deletePreset = useDeleteBotPreset();
   const startRun = useStartBotRun();
   const selectAccount = useDerivSelectAccount();
-  const accountsQuery = useDerivListAccounts();
 
   const [packageModal, setPackageModal] = useState<PackageModalState | null>(null);
   const [confirmRemove, setConfirmRemove] = useState<string | null>(null);
@@ -209,7 +207,9 @@ export default function DBotDashboardPage() {
     try {
       if (!account.is_selected) {
         await selectAccount.mutateAsync({ data: { deriv_account_id: account.deriv_account_id } });
-        await queryClient.invalidateQueries({ queryKey: getDerivListAccountsQueryKey() });
+        // Not awaited: the engine already has the selection, and waiting for
+        // the lists to be read again would only hold the bot back.
+        void queryClient.invalidateQueries({ queryKey: getDerivListAccountsQueryKey() });
       }
       const res = await startRun.mutateAsync({ data: request });
       await queryClient.invalidateQueries({ queryKey: getListBotRunsQueryKey() });
@@ -560,8 +560,6 @@ export default function DBotDashboardPage() {
       {runPreset && (
         <RunSavedBotDialog
           botName={runPreset.name}
-          accounts={accountsQuery.data?.accounts ?? []}
-          loading={accountsQuery.isPending}
           busy={startRun.isPending || selectAccount.isPending}
           onClose={() => {
             if (!startRun.isPending && !selectAccount.isPending) setRunPreset(null);

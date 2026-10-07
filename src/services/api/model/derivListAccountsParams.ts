@@ -30,21 +30,10 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
-import type { DecimalString } from './decimalString';
 
-export interface DerivLinkedAccount {
-  deriv_account_id: string;
-  currency: string;
-  /** As DERIV reported it when the account was linked. Never taken from a client â€” it decides whether a bot run needs a paid subscription. */
-  is_virtual: boolean;
-  /** Whether trades currently go to this account. */
-  is_selected: boolean;
-  /** The Deriv login this account belongs to. A user may authorise several, and the accounts of each are only switchable within the grant that covers them. */
-  connection_id: string;
-  /** The grant behind this account has expired. Resolved against the SERVER clock â€” the browser is never asked to decide it from a timestamp of its own. */
-  needs_reconnect: boolean;
-  /** Last balance Deriv reported for this account. Absent until Deriv has sent one; never a guessed zero. */
-  balance?: DecimalString;
-  /** When Deriv reported `balance`. Absent with it. The figure is not live; a page that shows it should be able to say how old it is. */
-  balance_updated_at?: string;
-}
+export type DerivListAccountsParams = {
+/**
+ * Ask Deriv for current balances before answering, and wait for them (a few seconds at most). For the moment a user reads a balance to decide something, such as which account a bot will trade. Without it the balances are the stored ones, however old; either way each carries `balance_updated_at`. Deriv is asked at most once every few seconds per login, so repeating the call does not make it fresher. Any value but true or false is a 422.
+ */
+refresh?: boolean;
+};
