@@ -43,6 +43,14 @@ state?: RunStateParameter;
  */
 account?: ListBotRunsAccount;
 /**
+ * Only runs started at or after this instant (RFC 3339). A run is placed by when it was started, `created_at`, which is also what the listing is ordered by. Applied before the page is cut. A caller filtering by calendar day sends that day's midnight in the user's own time zone.
+ */
+from?: string;
+/**
+ * Only runs started before this instant (RFC 3339). It is not included, so one whole day is its midnight as `from` and the next midnight as `to`. A `from` that is not before `to`, or a value that is not a date-time, is a 422.
+ */
+to?: string;
+/**
  * @maximum 100
  */
 limit?: number;

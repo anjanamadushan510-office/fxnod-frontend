@@ -69,6 +69,54 @@ const ACTIVE_RUNS_PARAMS = { state: "active", limit: 100 } as const;
 const FINISHED_PAGE_SIZE = 10;
 type AccountFilter = "all" | "demo" | "real";
 
+/** Which finished runs to list, by the day they were started. */
+type PeriodFilter = "all" | "today" | "7d" | "30d" | "custom";
+
+/** Midnight at the start of a local calendar day, counted from today. */
+function localMidnight(daysFromToday: number): Date {
+  const day = new Date();
+  day.setHours(0, 0, 0, 0);
+  day.setDate(day.getDate() + daysFromToday);
+  return day;
+}
+
+/** A date input's value (yyyy-mm-dd) as that day's local midnight, or the midnight after it. */
+function inputMidnight(value: string, nextDay: boolean): Date | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return null;
+  const day = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]) + (nextDay ? 1 : 0));
+  return Number.isNaN(day.getTime()) ? null : day;
+}
+
+/**
+ * The instants a period stands for, as the engine takes them: `from` is
+ * included, `to` is not. A day is the viewer's own, midnight to midnight on
+ * their clock, which is why the browser works these out and the engine is
+ * sent instants. Null means the two dates are the wrong way round.
+ */
+function periodRange(
+  period: PeriodFilter,
+  customFrom: string,
+  customTo: string,
+): { from?: string; to?: string } | null {
+  switch (period) {
+    case "all":
+      return {};
+    case "today":
+      return { from: localMidnight(0).toISOString(), to: localMidnight(1).toISOString() };
+    case "7d":
+      return { from: localMidnight(-6).toISOString(), to: localMidnight(1).toISOString() };
+    case "30d":
+      return { from: localMidnight(-29).toISOString(), to: localMidnight(1).toISOString() };
+    case "custom": {
+      const from = inputMidnight(customFrom, false);
+      const to = inputMidnight(customTo, true);
+      if (from && to && from >= to) return null;
+      return { ...(from && { from: from.toISOString() }), ...(to && { to: to.toISOString() }) };
+    }
+  }
+}
+
 function matchesAccount(isVirtual: boolean, filter: AccountFilter): boolean {
   if (filter === "demo") return isVirtual;
   if (filter === "real") return !isVirtual;
@@ -107,8 +155,15 @@ export default function DBotDashboardPage() {
   const [accountFilter, setAccountFilter] = useState<AccountFilter>("all");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
-  const finishedParams = { state: "ended", account: accountFilter } as const;
+  const [period, setPeriod] = useState<PeriodFilter>("all");
+  const [customFrom, setCustomFrom] = useState("");
+  const [customTo, setCustomTo] = useState("");
+  const range = useMemo(() => periodRange(period, customFrom, customTo), [period, customFrom, customTo]);
+
+  const finishedParams = { state: "ended" as const, account: accountFilter, ...range };
   const finishedQuery = useInfiniteQuery({
+    // Nothing is asked while the two dates are the wrong way round.
+    enabled: range !== null,
     // Under the listing's own key, so whatever refreshes the run list
     // refreshes this as well.
     queryKey: [...getListBotRunsQueryKey(finishedParams), "pages"],
@@ -463,13 +518,27 @@ export default function DBotDashboardPage() {
 
       {hasFinishedRuns && (
         <div className="space-y-4">
-          <SectionTitle title="Recent runs" subtitle="Finished sessions, newest first." />
-          {finishedQuery.isPending ? (
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+            <SectionTitle title="Recent runs" subtitle="Finished sessions, newest first." />
+            <PeriodFilterControl
+              period={period}
+              onPeriodChange={setPeriod}
+              from={customFrom}
+              to={customTo}
+              onFromChange={setCustomFrom}
+              onToChange={setCustomTo}
+            />
+          </div>
+          {range === null ? (
+            <EmptyPanel text="The first date is after the last. Swap them to see runs." />
+          ) : finishedQuery.isPending ? (
             <EmptyPanel text="Loading runs…" />
           ) : finishedQuery.isError && finishedRuns.length === 0 ? (
             <EmptyPanel text="Could not load your finished runs." />
           ) : finishedRuns.length === 0 ? (
-            <EmptyPanel text={accountFilter === "real" ? "No finished real runs." : "No finished demo runs."} />
+            <EmptyPanel
+              text={`No finished ${accountFilter === "all" ? "" : `${accountFilter} `}runs${period === "all" ? "" : " started in this period"}.`}
+            />
           ) : (
           <div className="bg-surface border border-line rounded-2xl divide-y divide-line overflow-hidden">
             {finishedRuns.map((run) => (
@@ -505,7 +574,7 @@ export default function DBotDashboardPage() {
             ))}
           </div>
           )}
-          {finishedQuery.hasNextPage && (
+          {range !== null && finishedQuery.hasNextPage && (
             <button
               type="button"
               onClick={() => void finishedQuery.fetchNextPage()}
@@ -801,6 +870,83 @@ function AccountFilterControl({
           {option.label}
         </button>
       ))}
+    </div>
+  );
+}
+
+const PERIOD_OPTIONS: { id: PeriodFilter; label: string }[] = [
+  { id: "all", label: "All" },
+  { id: "today", label: "Today" },
+  { id: "7d", label: "7 days" },
+  { id: "30d", label: "30 days" },
+  { id: "custom", label: "Dates" },
+];
+
+/**
+ * Which days of finished runs to show. The two date fields appear only for
+ * "Dates"; either may be left empty to leave that end open.
+ */
+function PeriodFilterControl({
+  period,
+  onPeriodChange,
+  from,
+  to,
+  onFromChange,
+  onToChange,
+}: {
+  period: PeriodFilter;
+  onPeriodChange: (next: PeriodFilter) => void;
+  from: string;
+  to: string;
+  onFromChange: (next: string) => void;
+  onToChange: (next: string) => void;
+}) {
+  const dateField =
+    "mt-1 block h-10 w-full rounded-lg border border-line bg-surface-2 px-2 text-sm text-ink outline-none focus:border-ink-3 dark:[color-scheme:dark]";
+  return (
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-end lg:justify-end">
+      {period === "custom" && (
+        <div className="grid grid-cols-2 gap-3">
+          <label className="block text-xs text-ink-3">
+            From
+            <input
+              type="date"
+              value={from}
+              max={to || undefined}
+              onChange={(event) => onFromChange(event.target.value)}
+              className={dateField}
+            />
+          </label>
+          <label className="block text-xs text-ink-3">
+            To
+            <input
+              type="date"
+              value={to}
+              min={from || undefined}
+              onChange={(event) => onToChange(event.target.value)}
+              className={dateField}
+            />
+          </label>
+        </div>
+      )}
+      <div className="max-w-full overflow-x-auto">
+        <div className="inline-flex rounded-lg border border-line p-0.5" role="group" aria-label="Started">
+          {PERIOD_OPTIONS.map((option) => (
+            <button
+              key={option.id}
+              type="button"
+              aria-pressed={period === option.id}
+              onClick={() => onPeriodChange(option.id)}
+              className={cn(
+                "h-8 px-2.5 rounded-md text-xs font-medium transition whitespace-nowrap",
+                period === option.id ? "bg-ink text-surface" : "text-ink-2 hover:text-ink",
+              )}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
