@@ -39,5 +39,7 @@ export interface BotTrade {
   createdAt: string;
   derivContractId: string;
   entryPrice?: number;
+  /** The exit spot Deriv settled the contract on. Absent while it is open. */
+  exitPrice?: number;
   tickStream?: BotTickSample[];
 }

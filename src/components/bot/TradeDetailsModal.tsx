@@ -5,7 +5,7 @@ import { createChart, ISeriesApi, Time, LineSeries, SeriesMarker, createSeriesMa
 import { useTheme } from "next-themes";
 import { useDerivChartFeed, type FeedTick } from "@/hooks/useDerivChartFeed";
 import { useOpenContract } from "@/hooks/useOpenContract";
-import type { BotTrade, PlottableTick } from "./types";
+import type { BotTickSample, BotTrade, PlottableTick } from "./types";
 import { cn } from "@/lib/cn";
 import { findMarket } from "@/components/options/market/catalog";
 
@@ -22,6 +22,7 @@ export function TradeDetailsModal({
 
   const positive = trade.pnl !== null && trade.pnl >= 0;
   const market = findMarket(trade.symbol);
+  const precision = spotPrecision(trade.tickStream);
 
   return (
     <div
@@ -100,6 +101,15 @@ export function TradeDetailsModal({
                   : `${positive ? "+" : "-"}${Math.abs(trade.pnl).toFixed(2)} ${trade.currency}`}
               </span>
             </DetailBlock>
+            {/* The two prices Deriv's own contract page shows, so the trade
+                can be checked against it figure for figure. */}
+            <DetailBlock label="Entry spot">
+              <span className="tabular-nums">{formatSpot(trade.entryPrice, precision)}</span>
+            </DetailBlock>
+            <DetailBlock label="Exit spot">
+              <span className="tabular-nums">{formatSpot(trade.exitPrice, precision)}</span>
+            </DetailBlock>
+
             <DetailBlock label="Status">
               <span className="capitalize">{trade.result === "open" ? "Running" : "Settled"}</span>
             </DetailBlock>
@@ -127,6 +137,48 @@ export function TradeDetailsModal({
       </div>
     </div>
   );
+}
+
+// Deriv's tick contracts run for at most ten ticks.
+const MAX_NUMBERED_TICKS = 10;
+
+/** The samples of a stored tick stream that can be drawn, oldest first. */
+function plottable(stream: BotTickSample[] | undefined): PlottableTick[] {
+  return (stream ?? [])
+    .filter((t): t is PlottableTick => typeof t.epoch === "number" && typeof t.tick === "number")
+    .sort((a, b) => a.epoch - b.epoch);
+}
+
+/**
+ * How many decimal places this market quotes, read from its own ticks: a
+ * price shown here has to match the one Deriv shows to the last digit, and
+ * "4902.9" beside Deriv's "4,902.90" does not look like a match.
+ */
+function spotPrecision(stream: BotTickSample[] | undefined): number {
+  let places = 2;
+  for (const { tick } of stream ?? []) {
+    if (typeof tick !== "number") continue;
+    const text = String(tick);
+    const dot = text.indexOf(".");
+    if (dot >= 0 && !text.includes("e")) places = Math.max(places, text.length - dot - 1);
+  }
+  return Math.min(places, 8);
+}
+
+/**
+ * Which sample is the entry spot. The engine starts the stream at the entry
+ * tick, so it is the first; a stream filled in from tick history can begin
+ * one tick earlier, and then it is the first sample at the entry price.
+ */
+function entrySampleIndex(samples: PlottableTick[], entryPrice: number | undefined): number {
+  if (entryPrice === undefined) return 0;
+  const at = samples.findIndex((t) => Math.abs(t.tick - entryPrice) < 1e-9);
+  // Never the last sample: that one is the exit.
+  return at >= 0 && at < samples.length - 1 ? at : 0;
+}
+
+function formatSpot(value: number | undefined, precision: number): string {
+  return value === undefined ? "--" : value.toFixed(precision);
 }
 
 function DetailBlock({ label, children }: { label: string; children: React.ReactNode }) {
@@ -293,73 +345,65 @@ function LiveTradeChart({ trade }: { trade: BotTrade }) {
 
   // 4. Historical Data (For settled trades)
   useEffect(() => {
-    if (!isLive && seriesRef.current && trade.tickStream && trade.tickStream.length > 0) {
-      // The tickStream array contains objects like { epoch: number, tick: number }
-      // Sort to ensure chronological order as required by lightweight-charts
-      const sortedTicks = [...trade.tickStream]
-        .filter((t): t is PlottableTick => typeof t.epoch === "number" && typeof t.tick === "number")
-        .sort((a, b) => a.epoch - b.epoch);
-        
-      if (sortedTicks.length > 0) {
-        // The contract reports how many ticks it runs for; five is Deriv's own
-        // default for tick contracts, used only before it has answered.
-        const tickCount = openContract?.ticksTotal || 5;
-        const displayTicks = sortedTicks.slice(0, tickCount);
+    const series = seriesRef.current;
+    if (isLive || !series) return;
+    const samples = plottable(trade.tickStream);
+    if (samples.length === 0) return;
 
-        seriesRef.current.setData(
-          displayTicks.map(t => ({ time: t.epoch as Time, value: t.tick }))
-        );
-        
-        // Add Tick Markers and Time Boundaries
-        const markers: SeriesMarker<Time>[] = [];
-        
-        displayTicks.forEach((t, i) => {
-          const isLast = i === displayTicks.length - 1;
-          
-          let color = isDark ? "#9CA3AF" : "#6B7280"; 
-          
-          // Outcome Highlight for the final tick, regardless of array length
-          if (isLast) {
-            color = isDark ? "#FFFFFF" : "#000000";
-          }
-          
-          markers.push({
-            time: t.epoch as Time,
-            position: "inBar",
-            color: color,
-            shape: "circle",
-            text: `${i + 1}`,
-            size: 1,
-          });
-        });
-        
-        if (!markersPluginRef.current) {
-          markersPluginRef.current = createSeriesMarkers(seriesRef.current, markers);
-        } else {
-          markersPluginRef.current.setMarkers(markers);
-        }
-        
-        // Final Exit Price Line (for the red/green label)
-        if (displayTicks.length > 0) {
-          const exitPrice = displayTicks[displayTicks.length - 1].tick;
-          const boxColor = trade.result === "won" ? "#10B981" : trade.result === "lost" ? "#EF4444" : "#1F2937";
-          seriesRef.current.createPriceLine({
-            price: exitPrice,
-            color: boxColor,
-            lineWidth: 1,
-            lineStyle: 4, // Dotted, so it's barely visible
-            axisLabelVisible: true,
-            title: "",
-          });
-        }
-        
-        // If the chart renders historical data, we should fit the content
-        if (chartRef.current) {
-          chartRef.current.timeScale().fitContent();
-        }
-      }
+    // The stream is drawn whole. The engine cuts it by time, from the entry
+    // tick to the exit tick, and a contract of N ticks is therefore N + 1
+    // samples. Taking "the first five" drew the entry and four ticks, numbered
+    // the entry as tick 1, and left the exit tick off the chart.
+    const precision = spotPrecision(trade.tickStream);
+    series.applyOptions({
+      priceFormat: { type: "price", precision, minMove: 1 / 10 ** precision },
+    });
+    series.setData(samples.map((t) => ({ time: t.epoch as Time, value: t.tick })));
+
+    // The entry spot is where the contract starts, not one of its ticks, so
+    // the count begins after it, as it does on Deriv.
+    const entryIndex = entrySampleIndex(samples, trade.entryPrice);
+    const last = samples.length - 1;
+    // Ticks are numbered on a contract that is measured in them. One that
+    // runs for minutes has a sample every second or two, and is drawn as a
+    // line with only its entry and exit marked.
+    const numbered = last - entryIndex <= MAX_NUMBERED_TICKS;
+    const markers: SeriesMarker<Time>[] = samples.flatMap((t, i) => {
+      if (!numbered && i !== entryIndex && i !== last) return [];
+      return [{
+        time: t.epoch as Time,
+        position: "inBar" as const,
+        // The exit tick is the one the outcome was decided on.
+        color: i === last ? (isDark ? "#FFFFFF" : "#000000") : isDark ? "#9CA3AF" : "#6B7280",
+        shape: "circle" as const,
+        text: numbered && i > entryIndex ? `${i - entryIndex}` : "",
+        size: 1,
+      }];
+    });
+    if (!markersPluginRef.current) {
+      markersPluginRef.current = createSeriesMarkers(series, markers);
+    } else {
+      markersPluginRef.current.setMarkers(markers);
     }
-  }, [isLive, trade.tickStream, isDark]);
+
+    // The labelled exit is the exit spot the engine recorded from Deriv. The
+    // last sample is the fallback for a trade stored without one.
+    const exitLine = series.createPriceLine({
+      price: trade.exitPrice ?? samples[samples.length - 1].tick,
+      color: trade.result === "won" ? "#10B981" : trade.result === "lost" ? "#EF4444" : "#1F2937",
+      lineWidth: 1,
+      lineStyle: 4, // Dotted, so it's barely visible
+      axisLabelVisible: true,
+      title: "",
+    });
+
+    chartRef.current?.timeScale().fitContent();
+
+    // Without this a theme change left one more line behind each time.
+    return () => {
+      seriesRef.current?.removePriceLine(exitLine);
+    };
+  }, [isLive, trade.tickStream, trade.entryPrice, trade.exitPrice, trade.result, isDark]);
 
   return <div ref={chartContainerRef} className="absolute inset-0 [&_.tv-lightweight-charts-logo]:hidden [&_#tv-attr-logo]:hidden" />;
 }
