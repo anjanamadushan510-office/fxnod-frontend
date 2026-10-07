@@ -30,10 +30,13 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
-import type { BotRun } from './botRun';
 
-export type ListBotRuns200 = {
-  runs?: BotRun[];
-  /** Whether more runs follow this page under the same filters. Ask for them with `offset` raised by the number of runs returned. */
-  has_more?: boolean;
-};
+export type ListBotRunsAccount = typeof ListBotRunsAccount[keyof typeof ListBotRunsAccount];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const ListBotRunsAccount = {
+  all: 'all',
+  demo: 'demo',
+  real: 'real',
+} as const;

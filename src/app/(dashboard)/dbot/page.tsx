@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { type Route } from "next";
 import { useRouter } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Activity, Cpu, DollarSign, MoreVertical } from "lucide-react";
 import { BotPackageModal } from "@/components/bot/BotPackageModal";
@@ -37,6 +37,7 @@ import { useForceStopBotRun } from "@/services/forceStopBotRun";
 import {
   getListBotPresetsQueryKey,
   getListBotRunsQueryKey,
+  listBotRuns,
   useDeleteBotPreset,
   useListBotPresets,
   useListBotRuns,
@@ -58,11 +59,15 @@ import {
 } from "@/services/api/model";
 
 // Two questions, each answered by the engine: what is running on this
-// account, and what finished most recently. Fetching the newest fifty runs
-// and sorting them here loses a bot that has been running longer than fifty
-// others took to finish, on every device that did not start it.
+// account, and what has finished. Fetching the newest fifty runs and sorting
+// them here loses a bot that has been running longer than fifty others took
+// to finish, on every device that did not start it.
 const ACTIVE_RUNS_PARAMS = { state: "active", limit: 100 } as const;
-const ENDED_RUNS_PARAMS = { state: "ended", limit: 50 } as const;
+// Finished runs come a page at a time, and the engine says whether more
+// follow. Demo or real is part of the question for the same reason "active"
+// is: asked of one page in the browser, it answers "none" for someone whose
+// real runs are behind a page of demo ones.
+const FINISHED_PAGE_SIZE = 10;
 type AccountFilter = "all" | "demo" | "real";
 
 function matchesAccount(isVirtual: boolean, filter: AccountFilter): boolean {
@@ -90,10 +95,6 @@ export default function DBotDashboardPage() {
   const strategiesQuery = useListBotStrategies();
   const presetsQuery = useListBotPresets();
   const runsQuery = useListBotRuns(ACTIVE_RUNS_PARAMS, { query: { refetchInterval: 1000 } });
-  const endedQuery = useListBotRuns(ENDED_RUNS_PARAMS, {
-    // A finished run is a record; the list only changes when a live one ends.
-    query: { refetchInterval: (runsQuery.data?.runs?.length ?? 0) > 0 ? 5000 : false },
-  });
   const stopRun = useStopBotRun();
   const forceStop = useForceStopBotRun();
   const deletePreset = useDeleteBotPreset();
@@ -108,19 +109,56 @@ export default function DBotDashboardPage() {
   const [accountFilter, setAccountFilter] = useState<AccountFilter>("all");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
+  const finishedParams = { state: "ended", account: accountFilter } as const;
+  const finishedQuery = useInfiniteQuery({
+    // Under the listing's own key, so whatever refreshes the run list
+    // refreshes this as well.
+    queryKey: [...getListBotRunsQueryKey(finishedParams), "pages"],
+    queryFn: ({ pageParam, signal }) =>
+      listBotRuns({ ...finishedParams, limit: FINISHED_PAGE_SIZE, offset: pageParam }, undefined, signal),
+    initialPageParam: 0,
+    getNextPageParam: (last, pages) =>
+      last.has_more ? pages.reduce((count, page) => count + (page.runs?.length ?? 0), 0) : undefined,
+  });
+
   const strategies = useMemo(() => strategiesQuery.data?.strategies ?? [], [strategiesQuery.data]);
   const presets = useMemo(() => presetsQuery.data?.presets ?? [], [presetsQuery.data]);
   const activeRuns = useMemo(
     () => (runsQuery.data?.runs ?? []).filter((r) => matchesAccount(r.is_virtual, accountFilter)),
     [runsQuery.data, accountFilter],
   );
-  const finishedRuns = useMemo(
-    () =>
-      (endedQuery.data?.runs ?? [])
-        .filter((r) => matchesAccount(r.is_virtual, accountFilter))
-        .slice(0, 10),
-    [endedQuery.data, accountFilter],
-  );
+  // A run that ends while a later page is being fetched moves every run
+  // after it down one place, so it can arrive on two pages. Each is kept once.
+  const finishedRuns = useMemo(() => {
+    const seen = new Set<string>();
+    return (finishedQuery.data?.pages ?? [])
+      .flatMap((page) => page.runs ?? [])
+      .filter((run) => {
+        if (seen.has(run.run_id)) return false;
+        seen.add(run.run_id);
+        return true;
+      });
+  }, [finishedQuery.data]);
+
+  // A finished run is a record: the list changes only when a live one ends.
+  // That is the moment it is read again, in place of asking on a timer.
+  const liveRunIds = (runsQuery.data?.runs ?? []).map((r) => r.run_id).sort().join(",");
+  const previousLiveRunIds = useRef(liveRunIds);
+  useEffect(() => {
+    const before = previousLiveRunIds.current ? previousLiveRunIds.current.split(",") : [];
+    const now = new Set(liveRunIds ? liveRunIds.split(",") : []);
+    previousLiveRunIds.current = liveRunIds;
+    if (before.some((id) => !now.has(id))) {
+      void queryClient.invalidateQueries({ queryKey: getListBotRunsQueryKey({ state: "ended" }) });
+    }
+  }, [liveRunIds, queryClient]);
+
+  // Whether the account has any finished run at all, which the section's
+  // presence depends on. Learned from the unfiltered list the page opens on.
+  const [hasFinishedRuns, setHasFinishedRuns] = useState(false);
+  useEffect(() => {
+    if (finishedRuns.length > 0) setHasFinishedRuns(true);
+  }, [finishedRuns.length]);
 
   // One currency across runs is the normal case; if it is not, a single total
   // would add dollars to something else, so none is shown.
@@ -423,10 +461,14 @@ export default function DBotDashboardPage() {
         )}
       </div>
 
-      {(endedQuery.data?.runs ?? []).length > 0 && (
+      {hasFinishedRuns && (
         <div className="space-y-4">
           <SectionTitle title="Recent runs" subtitle="Finished sessions, newest first." />
-          {finishedRuns.length === 0 ? (
+          {finishedQuery.isPending ? (
+            <EmptyPanel text="Loading runs…" />
+          ) : finishedQuery.isError && finishedRuns.length === 0 ? (
+            <EmptyPanel text="Could not load your finished runs." />
+          ) : finishedRuns.length === 0 ? (
             <EmptyPanel text={accountFilter === "real" ? "No finished real runs." : "No finished demo runs."} />
           ) : (
           <div className="bg-surface border border-line rounded-2xl divide-y divide-line overflow-hidden">
@@ -462,6 +504,20 @@ export default function DBotDashboardPage() {
               </Link>
             ))}
           </div>
+          )}
+          {finishedQuery.hasNextPage && (
+            <button
+              type="button"
+              onClick={() => void finishedQuery.fetchNextPage()}
+              disabled={finishedQuery.isFetchingNextPage}
+              className="h-11 w-full rounded-lg border border-line text-sm text-ink-3 hover:text-ink transition disabled:opacity-45"
+            >
+              {finishedQuery.isFetchingNextPage
+                ? "Loading…"
+                : finishedQuery.isFetchNextPageError
+                  ? "Could not load more. Try again"
+                  : "Load more"}
+            </button>
           )}
         </div>
       )}

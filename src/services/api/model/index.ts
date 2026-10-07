@@ -174,6 +174,7 @@ export * from './listBotPresetsParams';
 export * from './listBotRunTrades200';
 export * from './listBotRunTradesParams';
 export * from './listBotRuns200';
+export * from './listBotRunsAccount';
 export * from './listBotRunsParams';
 export * from './listBotStrategies200';
 export * from './listChainDepositsParams';
