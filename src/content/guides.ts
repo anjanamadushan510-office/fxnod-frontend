@@ -314,12 +314,12 @@ export const GUIDES: Guide[] = [
       { type: "h2", text: "Your limits and FXNOD's limits" },
       {
         type: "p",
-        text: "You set the stake and the stop loss for each bot. On top of that, FXNOD applies its own ceilings: on the size of a single stake, on the loss of one session, on the total loss across all your bots on one account, on how fast Martingale may grow a stake, and on how many bots run at once. If your number is higher than a ceiling, the ceiling wins.",
+        text: "You set the stake and the stop loss for each bot. On top of that, FXNOD applies its own ceilings: on the stake a bot starts from, on the loss of one session, on the total loss across all your bots on one account, on the multiplier Martingale may use, and on how many bots run at once. If your number is higher than a ceiling, the ceiling wins. A stake that grows after a loss is limited by your own “never stake more than” amount, and is never larger than the session’s stop loss.",
       },
       { type: "h2", text: "Read this before you choose Martingale" },
       {
         type: "p",
-        text: "Martingale multiplies the stake after every loss so that one win recovers the losses before it. The arithmetic is unforgiving. Starting at 1 and doubling, seven losses in a row means stakes of 1, 2, 4, 8, 16, 32 and 64, which is 127 lost to win back 1. Losing streaks of that length do happen. dBot labels Martingale as high risk and limits the number of steps, and when the last step loses the session ends with the loss. Same stake is the recommended setting for a reason.",
+        text: "Martingale multiplies the stake after every loss so that one win recovers the losses before it. The arithmetic is unforgiving. Starting at 1 and doubling, seven losses in a row means stakes of 1, 2, 4, 8, 16, 32 and 64, which is 127 lost to win back 1. Losing streaks of that length do happen. dBot labels Martingale as high risk. You choose how many steps it may take, and the builder shows the stakes of a losing streak before you start. When the last step loses, or the next stake would be more than one trade is allowed, the session ends with the loss; dBot does not place a smaller stake that could not win the streak back. The stop loss is checked before each trade, so the last trade of a streak can take the session past it. Same stake is the recommended setting for a reason.",
       },
       { type: "h2", text: "What it costs" },
       {
