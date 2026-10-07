@@ -1,4 +1,4 @@
-import { compareDecimals } from "@/lib/decimal";
+import { compareDecimals, decimalPlaces } from "@/lib/decimal";
 import type {
   BotIndicator,
   BotPreset,
@@ -26,6 +26,7 @@ import {
   type MethodKey,
   type MoneyKey,
 } from "./catalog";
+import { STAKE_PLACES } from "./ladder";
 
 /**
  * A bot as the builder edits it.
@@ -332,6 +333,9 @@ export type MoneyField = keyof typeof MONEY_LABELS | "martingaleMaxSteps";
 
 const quoted = (label: string) => `“${label}”`;
 
+/** Whether an amount has more decimal places than a stake may. */
+const tooPrecise = (value: string) => (decimalPlaces(value) ?? 0) > STAKE_PLACES;
+
 /**
  * What is wrong with the Money step, by field, in the order the fields appear.
  * The step shows each beside its own field as it is typed; the Review step
@@ -344,6 +348,10 @@ export function moneyProblems(draft: BotDraft): Partial<Record<MoneyField, strin
 
   if (!isPositiveDecimal(form.stake)) {
     problems.stake = `${quoted(MONEY_LABELS.stake)} must be an amount above 0.`;
+  } else if (tooPrecise(form.stake)) {
+    // Deriv refuses a stake with a third decimal place, and the engine
+    // refuses the run for it. Said here, it is a field to correct.
+    problems.stake = `${quoted(MONEY_LABELS.stake)} can have at most ${STAKE_PLACES} decimal places.`;
   }
   if (!isPositiveDecimal(form.sessionStopLoss)) {
     problems.sessionStopLoss = `${quoted(MONEY_LABELS.sessionStopLoss)} is required, and must be an amount above 0.`;
@@ -357,6 +365,8 @@ export function moneyProblems(draft: BotDraft): Partial<Record<MoneyField, strin
   if (form.maxStake.trim()) {
     if (!isPositiveDecimal(form.maxStake)) {
       problems.maxStake = `${quoted(MONEY_LABELS.maxStake)} must be an amount above 0, or left empty.`;
+    } else if (tooPrecise(form.maxStake)) {
+      problems.maxStake = `${quoted(MONEY_LABELS.maxStake)} can have at most ${STAKE_PLACES} decimal places.`;
     } else if (isPositiveDecimal(form.stake) && compareDecimals(form.maxStake, form.stake) === -1) {
       problems.maxStake = `Your ${quoted(MONEY_LABELS.maxStake)} amount cannot be less than your ${quoted(MONEY_LABELS.stake)}.`;
     }

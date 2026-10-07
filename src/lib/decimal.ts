@@ -52,24 +52,43 @@ export function compareDecimals(a: string, b: string): -1 | 0 | 1 | null {
 
 /**
  * `value` × `factor` to the power `power`, exactly, rounded once at the end to
- * SCALE places (half away from zero). That is the engine's own order: it
- * compounds a stake in full and rounds the result, so rounding each step here
- * would drift from it. Null when either argument is not a decimal.
+ * `places` decimal places (half away from zero). That is the engine's own
+ * order: it compounds a stake in full and rounds the result, so rounding each
+ * step here would drift from it. Null when either argument is not a decimal.
  */
-export function compoundDecimal(value: string, factor: string, power: number): string | null {
+export function compoundDecimal(
+  value: string,
+  factor: string,
+  power: number,
+  places: number = SCALE,
+): string | null {
   const base = toUnits(value);
   const multiplier = toUnits(factor);
   if (base === null || multiplier === null || !Number.isInteger(power) || power < 0) return null;
+  if (!Number.isInteger(places) || places < 0 || places > SCALE) return null;
   let numerator = base;
   let denominator = BigInt(1);
   for (let i = 0; i < power; i++) {
     numerator *= multiplier;
     denominator *= FACTOR;
   }
+  // One unit of the last kept place, in units of the scale.
+  const step = BigInt(10) ** BigInt(SCALE - places);
+  const divisor = denominator * step;
   const negative = numerator < BigInt(0);
   const abs = negative ? -numerator : numerator;
-  const rounded = (abs + denominator / BigInt(2)) / denominator;
+  const rounded = ((abs + divisor / BigInt(2)) / divisor) * step;
   return fromUnits(negative ? -rounded : rounded);
+}
+
+/**
+ * How many decimal places a decimal string needs to be written exactly, with
+ * trailing zeros not counted: "0.350" needs 2. Null when it is not a decimal.
+ */
+export function decimalPlaces(value: string): number | null {
+  const match = DECIMAL.exec(value.trim());
+  if (!match) return null;
+  return (match[3] ?? "").replace(/0+$/, "").length;
 }
 
 /** -1, 0 or 1 for a decimal string; 0 when it does not parse. */

@@ -38,6 +38,7 @@ Enforced server-side in the worker, never in the browser - a user closing their 
 
  */
 export interface BotRiskLimits {
+  /** The stake a run starts from. Like every amount that is sent to Deriv (max_stake_per_trade, take_profit, stop_loss), it may have no more decimal places than the account's currency takes, two for a dollar account; more is a 422 that names the field. A stake that grows by a multiplier is rounded to the same precision. */
   stake_per_trade: string;
   /** Required. There is no representation of a run without one. */
   session_stop_loss: string;

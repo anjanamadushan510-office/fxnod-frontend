@@ -33,7 +33,7 @@ library, not a float.
 import type { DecimalString } from './decimalString';
 
 /**
- * Totals across the run's trades. Derived from the trade rows themselves rather than read off bot_runs, so it cannot disagree with the list the caller is looking at.
+ * The run's own totals, the same figures the run itself reports (trades_total, trades_won, trades_lost, trades_open, realized_pnl, total_staked). They are moved by the worker as it records each order and each settlement, so a contract counts as won or lost here once the run has settled it. A trade in the list can show its outcome a moment earlier.
 
  */
 export interface BotRunTradeSummary {

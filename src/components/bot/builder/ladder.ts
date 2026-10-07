@@ -53,6 +53,13 @@ export interface LadderInput {
 // the walk below when the limits have not loaded yet.
 const FALLBACK_MAX_STEPS = 200;
 
+/**
+ * The decimal places a stake may have. Deriv refuses a stake with more, and
+ * the engine rounds every stake on a ladder to what the account's currency
+ * takes: two, for every currency this page can show an amount in.
+ */
+export const STAKE_PLACES = 2;
+
 const isPositive = (value: string) => compareDecimals(value, "0") === 1;
 
 function lower(a: string, b: string | undefined): string {
@@ -96,7 +103,7 @@ export function martingaleLadder(input: LadderInput): LadderPreview | null {
     if (step > steps) {
       return { stakes, lost, end: "steps", lossCap };
     }
-    const next = compoundDecimal(start, multiplier, step);
+    const next = compoundDecimal(start, multiplier, step, STAKE_PLACES);
     if (next === null) return null;
     if (compareDecimals(next, ceiling) === 1) {
       return { stakes, lost, end: "stake_limit", lossCap, refused: next, ceiling, ceilingIsOwn };
