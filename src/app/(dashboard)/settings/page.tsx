@@ -17,7 +17,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { cn } from "@/lib/cn";
 
-type SettingsPane = "hub" | "personal" | "address" | "password" | "email" | "phone" | "2fa" | "close" | "theme" | "language" | "ticket";
+type SettingsPane = "hub" | "personal" | "password" | "email" | "2fa" | "close" | "theme" | "language" | "ticket";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -325,28 +325,23 @@ export default function SettingsPage() {
     }
   };
 
-  const handleNextToAddress = () => {
-    if (!firstName || !lastName || !dateOfBirth || !country) {
-      toast.error("Please fill in all personal details.");
+  const handleSaveProfile = () => {
+    if (!firstName.trim() || !lastName.trim() || !dateOfBirth || !country || !streetAddress.trim() || !city.trim() || !postalCode.trim()) {
+      toast.error("Please fill in all personal and address fields.");
       return;
     }
-    setActivePane("address");
-  };
-
-  const handleSaveProfile = () => {
-    if (!firstName || !lastName || !dateOfBirth || !country || !streetAddress || !city || !postalCode) {
-      toast.error("Please fill in all fields.");
-      return;
+    if (phone.trim() && phone.trim() !== (user?.phone ?? "")) {
+      savePhone({ data: { phone: phone.trim() } });
     }
     createProfile({
       data: {
-        first_name: firstName,
-        last_name: lastName,
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
         date_of_birth: dateOfBirth,
         country: country,
-        street_address: streetAddress,
-        city: city,
-        postal_code: postalCode,
+        street_address: streetAddress.trim(),
+        city: city.trim(),
+        postal_code: postalCode.trim(),
       }
     });
   };
@@ -394,19 +389,13 @@ export default function SettingsPage() {
             <div className="break-inside-avoid mb-6">
               <p className="px-1 mb-2 text-xs font-medium text-zinc-500">About you</p>
               <div className="bg-panel border border-line rounded-2xl overflow-hidden">
-                <button type="button" className="settings-row w-full flex items-center gap-3 px-4 py-3 text-left" onClick={() => setActivePane("personal")}>
+                <button type="button" className="settings-row w-full flex items-center gap-3 px-4 py-3.5 text-left" onClick={() => setActivePane("personal")}>
                   <svg className="w-5 h-5 text-zinc-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.118a7.5 7.5 0 0115 0"/></svg>
                   <span className="flex-1 min-w-0">
-                    <span className="block text-sm">Personal details</span>
-                    <span className="block text-xs text-zinc-500 mt-0.5 truncate">{user?.full_name || "Name, country, date of birth"}</span>
-                  </span>
-                  <svg className="w-4 h-4 text-zinc-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
-                </button>
-                <button type="button" className="settings-row w-full flex items-center gap-3 px-4 py-3 text-left border-t border-line" onClick={() => setActivePane("address")}>
-                  <svg className="w-5 h-5 text-zinc-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75"/></svg>
-                  <span className="flex-1 min-w-0">
-                    <span className="block text-sm">Home address</span>
-                    <span className="block text-xs text-zinc-500 mt-0.5 truncate">Used for wallet and venue checks</span>
+                    <span className="block text-sm font-medium">Personal details & address</span>
+                    <span className="block text-xs text-zinc-500 mt-0.5 truncate">
+                      {user?.full_name ? `${user.full_name}${user.phone ? ` • ${user.phone}` : ""}` : "Name, phone, date of birth & address"}
+                    </span>
                   </span>
                   <svg className="w-4 h-4 text-zinc-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
                 </button>
@@ -426,14 +415,6 @@ export default function SettingsPage() {
                   <span className="flex-1 min-w-0">
                     <span className="block text-sm">Change email address</span>
                     <span className="block text-xs text-zinc-500 mt-0.5 truncate">{user?.email || ""}</span>
-                  </span>
-                  <svg className="w-4 h-4 text-zinc-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
-                </button>
-                <button type="button" className="settings-row w-full flex items-center gap-3 px-4 py-3 text-left border-t border-line" onClick={() => setActivePane("phone")}>
-                  <svg className="w-5 h-5 text-zinc-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"/></svg>
-                  <span className="flex-1 min-w-0">
-                    <span className="block text-sm">Change phone number</span>
-                    <span className="block text-xs text-zinc-500 mt-0.5 truncate">{user?.phone || "Not set"}</span>
                   </span>
                   <svg className="w-4 h-4 text-zinc-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
                 </button>
@@ -502,91 +483,154 @@ export default function SettingsPage() {
       {activePane === "personal" && (
         <div className="space-y-4">
           <button type="button" className="text-sm text-gray-900 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
-          <article className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-4">
-            <p className="text-sm text-zinc-400 leading-relaxed">These details sit on your FXNOD client record — used for wallet payouts and venue transfer. <strong>Once saved, these details cannot be changed.</strong></p>
-            
-            <div className="grid sm:grid-cols-2 gap-4">
-              <label className="block">
-                <span className="text-xs text-zinc-500">First name</span>
-                <input disabled={!!clientRecord} value={firstName} onChange={(e) => setFirstName(e.target.value)} className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500 disabled:opacity-50" />
-              </label>
-              <label className="block">
-                <span className="text-xs text-zinc-500">Last name</span>
-                <input disabled={!!clientRecord} value={lastName} onChange={(e) => setLastName(e.target.value)} className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500 disabled:opacity-50" />
-              </label>
-            </div>
-            
-            <div className="grid sm:grid-cols-2 gap-4">
-              <label className="block">
-                <span className="text-xs text-zinc-500">Date of birth</span>
-                <input type="date" disabled={!!clientRecord} value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500 disabled:opacity-50" />
-              </label>
-              <label className="block">
-                <span className="text-xs text-zinc-500">Country of residence</span>
-                <select disabled={!!clientRecord} value={country} onChange={(e) => setCountry(e.target.value)} className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500 disabled:opacity-50">
-                  <option value="">Select a country...</option>
-                  <option value="Sri Lanka">Sri Lanka</option>
-                  <option value="United Kingdom">United Kingdom</option>
-                  <option value="United Arab Emirates">United Arab Emirates</option>
-                  <option value="Singapore">Singapore</option>
-                  <option value="Other">Other</option>
-                </select>
-              </label>
+          <article className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-6">
+            <div className="space-y-1">
+              <h3 className="text-base font-semibold text-white">Personal details & address</h3>
+              <p className="text-sm text-zinc-400 leading-relaxed">
+                These details sit on your FXNOD client record — used for wallet payouts and venue transfer.{" "}
+                <strong className="text-zinc-200">Once saved, client identity and address details cannot be modified.</strong>
+              </p>
             </div>
 
-            {!clientRecord && (
-              <button
-                type="button"
-                className="h-10 px-5 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 mt-4"
-                onClick={handleNextToAddress}
-              >
-                Next: Home Address
-              </button>
-            )}
-          </article>
-        </div>
-      )}
+            {/* Section 1: Personal & Contact info */}
+            <div className="space-y-4 pt-2 border-t border-line/60">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Personal & Contact Info</h4>
+              
+              <div className="grid sm:grid-cols-2 gap-4">
+                <label className="block">
+                  <span className="text-xs text-zinc-500">First name</span>
+                  <input
+                    disabled={!!clientRecord}
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    placeholder="e.g. John"
+                    className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500 disabled:opacity-50"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-xs text-zinc-500">Last name</span>
+                  <input
+                    disabled={!!clientRecord}
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    placeholder="e.g. Doe"
+                    className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500 disabled:opacity-50"
+                  />
+                </label>
+              </div>
 
-      {activePane === "address" && (
-        <div className="space-y-4">
-          <button type="button" className="text-sm text-gray-900 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
-          <article className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-4">
-            <p className="text-sm text-zinc-400 leading-relaxed">We use this address on wallet payouts and venue transfers. <strong>Once saved, these details cannot be changed.</strong></p>
+              <div>
+                <label className="block">
+                  <span className="text-xs text-zinc-500">Phone number</span>
+                  <div className="mt-1.5 flex gap-2">
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="+94 71 234 5678"
+                      className="w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500"
+                    />
+                    {!!clientRecord && (
+                      <button
+                        type="button"
+                        disabled={isSavingPhone || !phone.trim() || phone.trim() === (user?.phone ?? "")}
+                        onClick={handleSavePhone}
+                        className="shrink-0 h-10 px-4 rounded-lg bg-white text-black hover:bg-zinc-200 text-xs font-medium disabled:opacity-40 transition-colors"
+                      >
+                        {isSavingPhone ? "Saving..." : "Update Phone"}
+                      </button>
+                    )}
+                  </div>
+                  <span className="block mt-1 text-xs text-zinc-500">Include your country code (e.g. +94, +1, +44)</span>
+                </label>
+              </div>
 
-            <label className="block">
-              <span className="text-xs text-zinc-500">Street address</span>
-              <input disabled={!!clientRecord} value={streetAddress} onChange={(e) => setStreetAddress(e.target.value)} className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500 disabled:opacity-50" />
-            </label>
-            
-            <div className="grid sm:grid-cols-2 gap-4">
-              <label className="block">
-                <span className="text-xs text-zinc-500">City</span>
-                <input disabled={!!clientRecord} value={city} onChange={(e) => setCity(e.target.value)} className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500 disabled:opacity-50" />
-              </label>
-              <label className="block">
-                <span className="text-xs text-zinc-500">Postal code</span>
-                <input disabled={!!clientRecord} value={postalCode} onChange={(e) => setPostalCode(e.target.value)} className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500 disabled:opacity-50" />
-              </label>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <label className="block">
+                  <span className="text-xs text-zinc-500">Date of birth</span>
+                  <input
+                    type="date"
+                    disabled={!!clientRecord}
+                    value={dateOfBirth}
+                    onChange={(e) => setDateOfBirth(e.target.value)}
+                    className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500 disabled:opacity-50"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-xs text-zinc-500">Country of residence</span>
+                  <select
+                    disabled={!!clientRecord}
+                    value={country}
+                    onChange={(e) => setCountry(e.target.value)}
+                    className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500 disabled:opacity-50"
+                  >
+                    <option value="">Select a country...</option>
+                    <option value="Sri Lanka">Sri Lanka</option>
+                    <option value="United Kingdom">United Kingdom</option>
+                    <option value="United Arab Emirates">United Arab Emirates</option>
+                    <option value="Singapore">Singapore</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </label>
+              </div>
             </div>
 
-            {!clientRecord && (
-              <div className="flex items-center gap-3 mt-4">
+            {/* Section 2: Residential Address */}
+            <div className="space-y-4 pt-2 border-t border-line/60">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Residential Address</h4>
+              
+              <label className="block">
+                <span className="text-xs text-zinc-500">Street address</span>
+                <input
+                  disabled={!!clientRecord}
+                  value={streetAddress}
+                  onChange={(e) => setStreetAddress(e.target.value)}
+                  placeholder="e.g. 123 Main Street, Apt 4B"
+                  className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500 disabled:opacity-50"
+                />
+              </label>
+
+              <div className="grid sm:grid-cols-2 gap-4">
+                <label className="block">
+                  <span className="text-xs text-zinc-500">City</span>
+                  <input
+                    disabled={!!clientRecord}
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    placeholder="e.g. Colombo"
+                    className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500 disabled:opacity-50"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-xs text-zinc-500">Postal code</span>
+                  <input
+                    disabled={!!clientRecord}
+                    value={postalCode}
+                    onChange={(e) => setPostalCode(e.target.value)}
+                    placeholder="e.g. 00100"
+                    className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500 disabled:opacity-50"
+                  />
+                </label>
+              </div>
+            </div>
+
+            {!clientRecord ? (
+              <div className="pt-2">
                 <button
                   type="button"
-                  className="h-10 px-5 rounded-lg bg-transparent text-white border border-line text-sm font-medium hover:bg-zinc-800 disabled:opacity-50"
-                  onClick={() => setActivePane("personal")}
-                  disabled={isSavingProfile}
-                >
-                  Back
-                </button>
-                <button
-                  type="button"
-                  className="h-10 px-5 rounded-lg bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-sm font-medium disabled:opacity-50"
+                  className="h-10 px-6 rounded-lg bg-white text-black hover:bg-zinc-200 text-sm font-semibold disabled:opacity-50 transition-colors shadow-sm"
                   onClick={handleSaveProfile}
-                  disabled={isSavingProfile}
+                  disabled={isSavingProfile || isSavingPhone}
                 >
-                  {isSavingProfile ? "Saving..." : "Save Complete Profile"}
+                  {isSavingProfile || isSavingPhone ? "Saving Profile..." : "Save Complete Profile"}
                 </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 pt-2 text-xs text-emerald-400 font-medium">
+                <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Client profile verified and locked for compliance</span>
               </div>
             )}
           </article>
@@ -606,33 +650,6 @@ export default function SettingsPage() {
               onSubmit={handleUpdatePassword} 
               isLoading={isUpdatingPassword} 
             />
-          </article>
-        </div>
-      )}
-
-      {activePane === "phone" && (
-        <div className="space-y-4">
-          <button type="button" className="text-sm text-gray-900 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
-          <article className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-4">
-            <label className="block">
-              <span className="text-xs text-zinc-500">Phone number</span>
-              <input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+94 71 234 5678"
-                className="mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:border-zinc-500"
-              />
-              <span className="block mt-1 text-xs text-zinc-600">Include the country code (e.g. +1, +44, +94)</span>
-            </label>
-            <button
-              type="button"
-              disabled={isSavingPhone}
-              className="h-10 px-5 rounded-lg bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-sm font-medium disabled:opacity-50"
-              onClick={handleSavePhone}
-            >
-              {isSavingPhone ? "Saving..." : "Save"}
-            </button>
           </article>
         </div>
       )}
@@ -669,7 +686,7 @@ export default function SettingsPage() {
               </button>
             ) : (
               <div className="space-y-4 pt-2">
-                <p className="text-sm text-zinc-300">We've sent a code to <strong className="text-white">{user?.email}</strong>.</p>
+                <p className="text-sm text-zinc-300">We have sent a code to <strong className="text-white">{user?.email}</strong>.</p>
                 <label className="block max-w-[240px]">
                   <span className="text-xs text-zinc-500">Enter setup code</span>
                   <input
@@ -910,7 +927,7 @@ export default function SettingsPage() {
               <h2 className="text-lg font-semibold text-white">Disable Two-Factor Authentication</h2>
               {!disableCodeSent ? (
                 <p className="text-sm text-zinc-400 leading-relaxed">
-                  Are you sure you want to turn off 2FA? This will reduce your account's security. We will email you a code to confirm.
+                  Are you sure you want to turn off 2FA? This will reduce your account security. We will email you a code to confirm.
                 </p>
               ) : (
                 <label className="block">
