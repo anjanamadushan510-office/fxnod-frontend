@@ -30,18 +30,10 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
-import type { DecimalString } from './decimalString';
 
+export type DerivListAccountsParams = {
 /**
- * The run's own totals, the same figures the run itself reports (trades_total, trades_won, trades_lost, trades_open, realized_pnl, total_staked). They are moved by the worker as it records each order and each settlement, so a contract counts as won or lost here once the run has settled it. A trade in the list can show its outcome a moment earlier.
-
+ * Ask Deriv for current balances before answering, and wait for them (a few seconds at most). For the moment a user reads a balance to decide something, such as which account a bot will trade. Without it the balances are the stored ones, however old; either way each carries `balance_updated_at`. Deriv is asked at most once every few seconds per login, so repeating the call does not make it fresher. Any value but true or false is a 422.
  */
-export interface BotRunTradeSummary {
-  total: number;
-  won: number;
-  lost: number;
-  /** Contracts still running. */
-  open: number;
-  realized_pnl: DecimalString;
-  total_staked: DecimalString;
-}
+refresh?: boolean;
+};

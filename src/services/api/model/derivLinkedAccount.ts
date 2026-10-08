@@ -45,4 +45,6 @@ export interface DerivLinkedAccount {
   needs_reconnect: boolean;
   /** Last balance Deriv reported for this account. Absent until Deriv has sent one; never a guessed zero. */
   balance?: DecimalString;
+  /** When Deriv reported `balance`. Absent with it. The figure is not live; a page that shows it should be able to say how old it is. */
+  balance_updated_at?: string;
 }

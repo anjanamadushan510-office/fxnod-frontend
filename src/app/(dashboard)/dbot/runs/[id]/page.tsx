@@ -37,6 +37,7 @@ const STOP_REASONS: Record<string, string> = {
   user_requested: "You stopped it",
   account_session_loss: "Your bots together reached the account loss ceiling",
   martingale_steps_exhausted: "The martingale ladder ran out",
+  stake_limit_reached: "The next stake was above the most one trade may be",
   deriv_reconnect_required: "Deriv needs you to allow this bot again",
   admin_halt: "Stopped by FXNod",
   error: "Stopped after an error",

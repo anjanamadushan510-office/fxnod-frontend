@@ -5,7 +5,26 @@ import Link from "next/link";
 import type { Route } from "next";
 import { cn } from "@/lib/cn";
 import { formatMoney } from "@/lib/decimal";
+import { useDerivListAccounts } from "@/services/api/endpoints/trading/trading";
 import type { DerivLinkedAccount } from "@/services/api/model";
+
+// A balance Deriv reported longer ago than this is shown with its time.
+const CURRENT_FOR_MS = 60_000;
+
+/**
+ * " · as of 14:32" for a balance that is not current, and nothing for one
+ * that is. The engine asks Deriv when this dialog opens; when Deriv does not
+ * answer in time it sends the figure it has, and the user is owed its age.
+ */
+function balanceAge(updatedAt: string | undefined): string {
+  if (!updatedAt) return "";
+  const at = new Date(updatedAt);
+  const age = Date.now() - at.getTime();
+  if (!(age > CURRENT_FOR_MS)) return "";
+  const time = at.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const sameDay = at.toDateString() === new Date().toDateString();
+  return ` · as of ${sameDay ? time : `${at.toLocaleDateString()} ${time}`}`;
+}
 
 /**
  * The account a saved bot will trade, chosen before the run exists.
@@ -16,19 +35,26 @@ import type { DerivLinkedAccount } from "@/services/api/model";
  */
 export function RunSavedBotDialog({
   botName,
-  accounts,
-  loading,
   busy,
   onClose,
   onConfirm,
 }: {
   botName: string;
-  accounts: DerivLinkedAccount[];
-  loading: boolean;
   busy: boolean;
   onClose: () => void;
   onConfirm: (account: DerivLinkedAccount, riskAcknowledged: boolean) => void;
 }) {
+  // The balance is read to decide which account to risk, so it is asked of
+  // Deriv each time the dialog opens and never kept between openings. The
+  // page used to pass in the list it had loaded with the page, whose balances
+  // were as old as the last visit to Connected Accounts.
+  const accountsQuery = useDerivListAccounts(
+    { refresh: true },
+    { query: { staleTime: 0, gcTime: 0, refetchOnWindowFocus: false } },
+  );
+  const accounts = accountsQuery.data?.accounts ?? [];
+  const loading = accountsQuery.isPending;
+
   const [chosenId, setChosenId] = useState<string | null>(null);
   const [acknowledged, setAcknowledged] = useState(false);
   const chosen = accounts.find((account) => account.deriv_account_id === chosenId) ?? null;
@@ -55,8 +81,11 @@ export function RunSavedBotDialog({
         </p>
 
         <div className="mt-5 space-y-2">
-          {loading && <p className="text-sm text-ink-3">Loading your Deriv accounts…</p>}
-          {!loading && accounts.length === 0 && (
+          {loading && <p className="text-sm text-ink-3">Checking your Deriv accounts and balances…</p>}
+          {accountsQuery.isError && (
+            <p className="text-sm text-ink-2">Could not load your Deriv accounts. Close this and try again.</p>
+          )}
+          {accountsQuery.isSuccess && accounts.length === 0 && (
             <p className="text-sm text-ink-2">
               Connect a Deriv account on{" "}
               <Link href={"/venues" as Route} className="text-ink underline underline-offset-2">
@@ -89,7 +118,7 @@ export function RunSavedBotDialog({
                     {account.needs_reconnect
                       ? "Reconnect this account before it can run a bot"
                       : account.balance
-                        ? formatMoney(account.balance)
+                        ? `${formatMoney(account.balance)}${balanceAge(account.balance_updated_at)}`
                         : account.currency}
                   </span>
                 </span>

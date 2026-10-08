@@ -164,6 +164,8 @@ export interface MoneyOption {
   multiplies: boolean;
   /** Whether it walks a ladder at all (and so needs a step count). */
   escalates: boolean;
+  /** What the step count means in this mode: the label of its field. */
+  stepsLabel?: string;
 }
 
 /**
@@ -173,9 +175,9 @@ export interface MoneyOption {
  */
 export const MONEY_OPTIONS: MoneyOption[] = [
   { key: "same", name: "Same stake", badge: "Recommended", available: true, stakeMode: "flat", multiplies: false, escalates: false, description: "Every trade uses the same amount. Safest way to start." },
-  { key: "gentle_step", name: "Gentle step", badge: "Medium", available: true, stakeMode: "gentle_step", multiplies: false, escalates: true, description: "Add one starting stake after a loss, remove one after a win. Never below where you started." },
-  { key: "martingale", name: "Martingale", badge: "High risk", available: true, stakeMode: "martingale", multiplies: true, escalates: true, description: "Multiply the stake after a loss so one win recovers the streak. The bot stops if the losses outlast its steps." },
-  { key: "reverse_martingale", name: "Reverse Martingale", badge: "High risk", available: true, stakeMode: "reverse_martingale", multiplies: true, escalates: true, description: "Multiply the stake after a win. Reset after a loss, or after the last step. Rides streaks, gives them back fast." },
+  { key: "gentle_step", name: "Gentle step", badge: "Medium", available: true, stakeMode: "gentle_step", multiplies: false, escalates: true, stepsLabel: "Most extra stakes to add", description: "Add one starting stake after a loss, remove one after a win. Never below where you started." },
+  { key: "martingale", name: "Martingale", badge: "High risk", available: true, stakeMode: "martingale", multiplies: true, escalates: true, stepsLabel: "Losses in a row before the bot stops", description: "Multiply the stake after a loss so one win recovers the streak. The bot stops if the losses outlast its steps." },
+  { key: "reverse_martingale", name: "Reverse Martingale", badge: "High risk", available: true, stakeMode: "reverse_martingale", multiplies: true, escalates: true, stepsLabel: "Wins in a row before it resets", description: "Multiply the stake after a win. Reset after a loss, or after the last step. Rides streaks, gives them back fast." },
 ];
 
 export function findMoneyOption(key: string): MoneyOption | undefined {

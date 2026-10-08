@@ -42,7 +42,7 @@ export function DerivConnectionMenu() {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
-  const accountsQuery = useDerivListAccounts({ query: { enabled: open && linked } });
+  const accountsQuery = useDerivListAccounts(undefined, { query: { enabled: open && linked } });
   const connectionsQuery = useDerivListConnections({ query: { enabled: open && linked } });
   const selectMutation = useDerivSelectAccount();
   const disconnectMutation = useDerivDisconnect();

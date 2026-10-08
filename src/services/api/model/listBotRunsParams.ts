@@ -31,12 +31,25 @@ library, not a float.
  * OpenAPI spec version: 0.1.0
  */
 import type { RunStateParameter } from './runStateParameter';
+import type { ListBotRunsAccount } from './listBotRunsAccount';
 
 export type ListBotRunsParams = {
 /**
  * Which runs to list. `active` is every run that has not ended (pending, running, paused or stopping), however old; the filter is applied before the page is cut, so it is the way to ask what is running now. Any other value is a 422.
  */
 state?: RunStateParameter;
+/**
+ * Which kind of Deriv account the runs traded on. Applied before the page is cut, like `state`, so a real run is found however many newer demo runs there are. Any other value is a 422.
+ */
+account?: ListBotRunsAccount;
+/**
+ * Only runs started at or after this instant (RFC 3339). A run is placed by when it was started, `created_at`, which is also what the listing is ordered by. Applied before the page is cut. A caller filtering by calendar day sends that day's midnight in the user's own time zone.
+ */
+from?: string;
+/**
+ * Only runs started before this instant (RFC 3339). It is not included, so one whole day is its midnight as `from` and the next midnight as `to`. A `from` that is not before `to`, or a value that is not a date-time, is a 422.
+ */
+to?: string;
 /**
  * @maximum 100
  */

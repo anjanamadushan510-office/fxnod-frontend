@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { type Route } from "next";
 import { useRouter } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Activity, Cpu, DollarSign, MoreVertical } from "lucide-react";
 import { BotPackageModal } from "@/components/bot/BotPackageModal";
@@ -37,6 +37,7 @@ import { useForceStopBotRun } from "@/services/forceStopBotRun";
 import {
   getListBotPresetsQueryKey,
   getListBotRunsQueryKey,
+  listBotRuns,
   useDeleteBotPreset,
   useListBotPresets,
   useListBotRuns,
@@ -46,7 +47,6 @@ import {
 } from "@/services/api/endpoints/bots/bots";
 import {
   getDerivListAccountsQueryKey,
-  useDerivListAccounts,
   useDerivSelectAccount,
 } from "@/services/api/endpoints/trading/trading";
 import {
@@ -58,12 +58,64 @@ import {
 } from "@/services/api/model";
 
 // Two questions, each answered by the engine: what is running on this
-// account, and what finished most recently. Fetching the newest fifty runs
-// and sorting them here loses a bot that has been running longer than fifty
-// others took to finish, on every device that did not start it.
+// account, and what has finished. Fetching the newest fifty runs and sorting
+// them here loses a bot that has been running longer than fifty others took
+// to finish, on every device that did not start it.
 const ACTIVE_RUNS_PARAMS = { state: "active", limit: 100 } as const;
-const ENDED_RUNS_PARAMS = { state: "ended", limit: 50 } as const;
+// Finished runs come a page at a time, and the engine says whether more
+// follow. Demo or real is part of the question for the same reason "active"
+// is: asked of one page in the browser, it answers "none" for someone whose
+// real runs are behind a page of demo ones.
+const FINISHED_PAGE_SIZE = 10;
 type AccountFilter = "all" | "demo" | "real";
+
+/** Which finished runs to list, by the day they were started. */
+type PeriodFilter = "all" | "today" | "7d" | "30d" | "custom";
+
+/** Midnight at the start of a local calendar day, counted from today. */
+function localMidnight(daysFromToday: number): Date {
+  const day = new Date();
+  day.setHours(0, 0, 0, 0);
+  day.setDate(day.getDate() + daysFromToday);
+  return day;
+}
+
+/** A date input's value (yyyy-mm-dd) as that day's local midnight, or the midnight after it. */
+function inputMidnight(value: string, nextDay: boolean): Date | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return null;
+  const day = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]) + (nextDay ? 1 : 0));
+  return Number.isNaN(day.getTime()) ? null : day;
+}
+
+/**
+ * The instants a period stands for, as the engine takes them: `from` is
+ * included, `to` is not. A day is the viewer's own, midnight to midnight on
+ * their clock, which is why the browser works these out and the engine is
+ * sent instants. Null means the two dates are the wrong way round.
+ */
+function periodRange(
+  period: PeriodFilter,
+  customFrom: string,
+  customTo: string,
+): { from?: string; to?: string } | null {
+  switch (period) {
+    case "all":
+      return {};
+    case "today":
+      return { from: localMidnight(0).toISOString(), to: localMidnight(1).toISOString() };
+    case "7d":
+      return { from: localMidnight(-6).toISOString(), to: localMidnight(1).toISOString() };
+    case "30d":
+      return { from: localMidnight(-29).toISOString(), to: localMidnight(1).toISOString() };
+    case "custom": {
+      const from = inputMidnight(customFrom, false);
+      const to = inputMidnight(customTo, true);
+      if (from && to && from >= to) return null;
+      return { ...(from && { from: from.toISOString() }), ...(to && { to: to.toISOString() }) };
+    }
+  }
+}
 
 function matchesAccount(isVirtual: boolean, filter: AccountFilter): boolean {
   if (filter === "demo") return isVirtual;
@@ -90,16 +142,11 @@ export default function DBotDashboardPage() {
   const strategiesQuery = useListBotStrategies();
   const presetsQuery = useListBotPresets();
   const runsQuery = useListBotRuns(ACTIVE_RUNS_PARAMS, { query: { refetchInterval: 1000 } });
-  const endedQuery = useListBotRuns(ENDED_RUNS_PARAMS, {
-    // A finished run is a record; the list only changes when a live one ends.
-    query: { refetchInterval: (runsQuery.data?.runs?.length ?? 0) > 0 ? 5000 : false },
-  });
   const stopRun = useStopBotRun();
   const forceStop = useForceStopBotRun();
   const deletePreset = useDeleteBotPreset();
   const startRun = useStartBotRun();
   const selectAccount = useDerivSelectAccount();
-  const accountsQuery = useDerivListAccounts();
 
   const [packageModal, setPackageModal] = useState<PackageModalState | null>(null);
   const [confirmRemove, setConfirmRemove] = useState<string | null>(null);
@@ -108,19 +155,63 @@ export default function DBotDashboardPage() {
   const [accountFilter, setAccountFilter] = useState<AccountFilter>("all");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
+  const [period, setPeriod] = useState<PeriodFilter>("all");
+  const [customFrom, setCustomFrom] = useState("");
+  const [customTo, setCustomTo] = useState("");
+  const range = useMemo(() => periodRange(period, customFrom, customTo), [period, customFrom, customTo]);
+
+  const finishedParams = { state: "ended" as const, account: accountFilter, ...range };
+  const finishedQuery = useInfiniteQuery({
+    // Nothing is asked while the two dates are the wrong way round.
+    enabled: range !== null,
+    // Under the listing's own key, so whatever refreshes the run list
+    // refreshes this as well.
+    queryKey: [...getListBotRunsQueryKey(finishedParams), "pages"],
+    queryFn: ({ pageParam, signal }) =>
+      listBotRuns({ ...finishedParams, limit: FINISHED_PAGE_SIZE, offset: pageParam }, undefined, signal),
+    initialPageParam: 0,
+    getNextPageParam: (last, pages) =>
+      last.has_more ? pages.reduce((count, page) => count + (page.runs?.length ?? 0), 0) : undefined,
+  });
+
   const strategies = useMemo(() => strategiesQuery.data?.strategies ?? [], [strategiesQuery.data]);
   const presets = useMemo(() => presetsQuery.data?.presets ?? [], [presetsQuery.data]);
   const activeRuns = useMemo(
     () => (runsQuery.data?.runs ?? []).filter((r) => matchesAccount(r.is_virtual, accountFilter)),
     [runsQuery.data, accountFilter],
   );
-  const finishedRuns = useMemo(
-    () =>
-      (endedQuery.data?.runs ?? [])
-        .filter((r) => matchesAccount(r.is_virtual, accountFilter))
-        .slice(0, 10),
-    [endedQuery.data, accountFilter],
-  );
+  // A run that ends while a later page is being fetched moves every run
+  // after it down one place, so it can arrive on two pages. Each is kept once.
+  const finishedRuns = useMemo(() => {
+    const seen = new Set<string>();
+    return (finishedQuery.data?.pages ?? [])
+      .flatMap((page) => page.runs ?? [])
+      .filter((run) => {
+        if (seen.has(run.run_id)) return false;
+        seen.add(run.run_id);
+        return true;
+      });
+  }, [finishedQuery.data]);
+
+  // A finished run is a record: the list changes only when a live one ends.
+  // That is the moment it is read again, in place of asking on a timer.
+  const liveRunIds = (runsQuery.data?.runs ?? []).map((r) => r.run_id).sort().join(",");
+  const previousLiveRunIds = useRef(liveRunIds);
+  useEffect(() => {
+    const before = previousLiveRunIds.current ? previousLiveRunIds.current.split(",") : [];
+    const now = new Set(liveRunIds ? liveRunIds.split(",") : []);
+    previousLiveRunIds.current = liveRunIds;
+    if (before.some((id) => !now.has(id))) {
+      void queryClient.invalidateQueries({ queryKey: getListBotRunsQueryKey({ state: "ended" }) });
+    }
+  }, [liveRunIds, queryClient]);
+
+  // Whether the account has any finished run at all, which the section's
+  // presence depends on. Learned from the unfiltered list the page opens on.
+  const [hasFinishedRuns, setHasFinishedRuns] = useState(false);
+  useEffect(() => {
+    if (finishedRuns.length > 0) setHasFinishedRuns(true);
+  }, [finishedRuns.length]);
 
   // One currency across runs is the normal case; if it is not, a single total
   // would add dollars to something else, so none is shown.
@@ -171,7 +262,9 @@ export default function DBotDashboardPage() {
     try {
       if (!account.is_selected) {
         await selectAccount.mutateAsync({ data: { deriv_account_id: account.deriv_account_id } });
-        await queryClient.invalidateQueries({ queryKey: getDerivListAccountsQueryKey() });
+        // Not awaited: the engine already has the selection, and waiting for
+        // the lists to be read again would only hold the bot back.
+        void queryClient.invalidateQueries({ queryKey: getDerivListAccountsQueryKey() });
       }
       const res = await startRun.mutateAsync({ data: request });
       await queryClient.invalidateQueries({ queryKey: getListBotRunsQueryKey() });
@@ -423,11 +516,29 @@ export default function DBotDashboardPage() {
         )}
       </div>
 
-      {(endedQuery.data?.runs ?? []).length > 0 && (
+      {hasFinishedRuns && (
         <div className="space-y-4">
-          <SectionTitle title="Recent runs" subtitle="Finished sessions, newest first." />
-          {finishedRuns.length === 0 ? (
-            <EmptyPanel text={accountFilter === "real" ? "No finished real runs." : "No finished demo runs."} />
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+            <SectionTitle title="Recent runs" subtitle="Finished sessions, newest first." />
+            <PeriodFilterControl
+              period={period}
+              onPeriodChange={setPeriod}
+              from={customFrom}
+              to={customTo}
+              onFromChange={setCustomFrom}
+              onToChange={setCustomTo}
+            />
+          </div>
+          {range === null ? (
+            <EmptyPanel text="The first date is after the last. Swap them to see runs." />
+          ) : finishedQuery.isPending ? (
+            <EmptyPanel text="Loading runs…" />
+          ) : finishedQuery.isError && finishedRuns.length === 0 ? (
+            <EmptyPanel text="Could not load your finished runs." />
+          ) : finishedRuns.length === 0 ? (
+            <EmptyPanel
+              text={`No finished ${accountFilter === "all" ? "" : `${accountFilter} `}runs${period === "all" ? "" : " started in this period"}.`}
+            />
           ) : (
           <div className="bg-surface border border-line rounded-2xl divide-y divide-line overflow-hidden">
             {finishedRuns.map((run) => (
@@ -462,6 +573,20 @@ export default function DBotDashboardPage() {
               </Link>
             ))}
           </div>
+          )}
+          {range !== null && finishedQuery.hasNextPage && (
+            <button
+              type="button"
+              onClick={() => void finishedQuery.fetchNextPage()}
+              disabled={finishedQuery.isFetchingNextPage}
+              className="h-11 w-full rounded-lg border border-line text-sm text-ink-3 hover:text-ink transition disabled:opacity-45"
+            >
+              {finishedQuery.isFetchingNextPage
+                ? "Loading…"
+                : finishedQuery.isFetchNextPageError
+                  ? "Could not load more. Try again"
+                  : "Load more"}
+            </button>
           )}
         </div>
       )}
@@ -504,8 +629,6 @@ export default function DBotDashboardPage() {
       {runPreset && (
         <RunSavedBotDialog
           botName={runPreset.name}
-          accounts={accountsQuery.data?.accounts ?? []}
-          loading={accountsQuery.isPending}
           busy={startRun.isPending || selectAccount.isPending}
           onClose={() => {
             if (!startRun.isPending && !selectAccount.isPending) setRunPreset(null);
@@ -747,6 +870,83 @@ function AccountFilterControl({
           {option.label}
         </button>
       ))}
+    </div>
+  );
+}
+
+const PERIOD_OPTIONS: { id: PeriodFilter; label: string }[] = [
+  { id: "all", label: "All" },
+  { id: "today", label: "Today" },
+  { id: "7d", label: "7 days" },
+  { id: "30d", label: "30 days" },
+  { id: "custom", label: "Dates" },
+];
+
+/**
+ * Which days of finished runs to show. The two date fields appear only for
+ * "Dates"; either may be left empty to leave that end open.
+ */
+function PeriodFilterControl({
+  period,
+  onPeriodChange,
+  from,
+  to,
+  onFromChange,
+  onToChange,
+}: {
+  period: PeriodFilter;
+  onPeriodChange: (next: PeriodFilter) => void;
+  from: string;
+  to: string;
+  onFromChange: (next: string) => void;
+  onToChange: (next: string) => void;
+}) {
+  const dateField =
+    "mt-1 block h-10 w-full rounded-lg border border-line bg-surface-2 px-2 text-sm text-ink outline-none focus:border-ink-3 dark:[color-scheme:dark]";
+  return (
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-end lg:justify-end">
+      {period === "custom" && (
+        <div className="grid grid-cols-2 gap-3">
+          <label className="block text-xs text-ink-3">
+            From
+            <input
+              type="date"
+              value={from}
+              max={to || undefined}
+              onChange={(event) => onFromChange(event.target.value)}
+              className={dateField}
+            />
+          </label>
+          <label className="block text-xs text-ink-3">
+            To
+            <input
+              type="date"
+              value={to}
+              min={from || undefined}
+              onChange={(event) => onToChange(event.target.value)}
+              className={dateField}
+            />
+          </label>
+        </div>
+      )}
+      <div className="max-w-full overflow-x-auto">
+        <div className="inline-flex rounded-lg border border-line p-0.5" role="group" aria-label="Started">
+          {PERIOD_OPTIONS.map((option) => (
+            <button
+              key={option.id}
+              type="button"
+              aria-pressed={period === option.id}
+              onClick={() => onPeriodChange(option.id)}
+              className={cn(
+                "h-8 px-2.5 rounded-md text-xs font-medium transition whitespace-nowrap",
+                period === option.id ? "bg-ink text-surface" : "text-ink-2 hover:text-ink",
+              )}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

@@ -30,18 +30,13 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
-import type { DecimalString } from './decimalString';
 
-/**
- * The run's own totals, the same figures the run itself reports (trades_total, trades_won, trades_lost, trades_open, realized_pnl, total_staked). They are moved by the worker as it records each order and each settlement, so a contract counts as won or lost here once the run has settled it. A trade in the list can show its outcome a moment earlier.
+export type ListBotRunsAccount = typeof ListBotRunsAccount[keyof typeof ListBotRunsAccount];
 
- */
-export interface BotRunTradeSummary {
-  total: number;
-  won: number;
-  lost: number;
-  /** Contracts still running. */
-  open: number;
-  realized_pnl: DecimalString;
-  total_staked: DecimalString;
-}
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const ListBotRunsAccount = {
+  all: 'all',
+  demo: 'demo',
+  real: 'real',
+} as const;

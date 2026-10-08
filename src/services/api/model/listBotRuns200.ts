@@ -34,4 +34,6 @@ import type { BotRun } from './botRun';
 
 export type ListBotRuns200 = {
   runs?: BotRun[];
+  /** Whether more runs follow this page under the same filters. Ask for them with `offset` raised by the number of runs returned. */
+  has_more?: boolean;
 };
