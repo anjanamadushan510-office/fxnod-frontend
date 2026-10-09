@@ -3,7 +3,7 @@
 import { useCallback, useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { DEFAULT_ACTIVE_TOOL_IDS, FXNOD_TOOLS, type FxnodTool } from "@/components/tools/catalog";
+import { FXNOD_TOOLS, type FxnodTool } from "@/components/tools/catalog";
 import {
   getGetActiveToolsQueryKey,
   useGetActiveTools,
@@ -21,10 +21,11 @@ function knownIds(ids: string[]): string[] {
  *
  * The list is kept by the server, per account, so it is the same on a laptop
  * and a phone. It used to be a localStorage entry, which made it a property
- * of the browser. An account that has never changed it gets the default set.
+ * of the browser. Nothing is on until the user switches it on from Discover:
+ * a new account has no active tools.
  *
  * `ready` is false until the server has answered. A caller that shows a count
- * should wait for it: the default set is not this account's answer.
+ * should wait for it: an empty list before then is not this account's answer.
  */
 export function useActiveTools() {
   const queryClient = useQueryClient();
@@ -32,9 +33,7 @@ export function useActiveTools() {
   const save = useSetActiveTools();
 
   const ids = useMemo(() => {
-    const data = query.data;
-    if (!data || !data.configured) return DEFAULT_ACTIVE_TOOL_IDS;
-    return knownIds(data.active_tool_ids);
+    return knownIds(query.data?.active_tool_ids ?? []);
   }, [query.data]);
 
   const isActive = useCallback((id: string) => ids.includes(id), [ids]);

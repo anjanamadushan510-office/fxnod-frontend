@@ -74,9 +74,6 @@ export const FXNOD_TOOLS: FxnodTool[] = [
   },
 ];
 
-/** Free tools start active, matching the Tools page. Paid tools start off until Subscribe. */
-export const DEFAULT_ACTIVE_TOOL_IDS = FXNOD_TOOLS.filter((tool) => tool.kind === "free").map((tool) => tool.id);
-
 export function toolById(id: string): FxnodTool | undefined {
   return FXNOD_TOOLS.find((tool) => tool.id === id);
 }
