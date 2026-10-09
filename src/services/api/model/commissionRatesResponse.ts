@@ -30,9 +30,8 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
+import type { CommissionRate } from './commissionRate';
 
-export interface ActiveToolsResponse {
-  /** False until the user changes the list for the first time. It does not change what is active, and the list is the answer either way. */
-  configured: boolean;
-  active_tool_ids: string[];
+export interface CommissionRatesResponse {
+  rates: CommissionRate[];
 }

@@ -50,6 +50,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  CommissionRatesResponse,
   Error,
   PartnerEarningsResponse,
   PartnerListResponse,
@@ -399,6 +400,99 @@ export function useGetPartnerEarnings<TData = Awaited<ReturnType<typeof getPartn
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetPartnerEarningsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * What each level of a partner's team pays them, as a percentage of what FXNOD earned. Only rates that are being paid are listed. These are the rows commission is accrued from, so the figures shown to a partner and the figures paid cannot differ.
+ * @summary The commission rates in force, per product and level
+ */
+export const getCommissionRates = (
+    
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<CommissionRatesResponse>(
+      {url: `/api/v1/referrals/rates`, method: 'GET', signal
+    },
+      options);
+    }
+  
+
+
+
+export const getGetCommissionRatesQueryKey = () => {
+    return [
+    `/api/v1/referrals/rates`
+    ] as const;
+    }
+
+    
+export const getGetCommissionRatesQueryOptions = <TData = Awaited<ReturnType<typeof getCommissionRates>>, TError = ErrorType<UnauthorizedResponse>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionRates>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetCommissionRatesQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCommissionRates>>> = ({ signal }) => getCommissionRates(requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCommissionRates>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetCommissionRatesQueryResult = NonNullable<Awaited<ReturnType<typeof getCommissionRates>>>
+export type GetCommissionRatesQueryError = ErrorType<UnauthorizedResponse>
+
+
+export function useGetCommissionRates<TData = Awaited<ReturnType<typeof getCommissionRates>>, TError = ErrorType<UnauthorizedResponse>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionRates>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCommissionRates>>,
+          TError,
+          Awaited<ReturnType<typeof getCommissionRates>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetCommissionRates<TData = Awaited<ReturnType<typeof getCommissionRates>>, TError = ErrorType<UnauthorizedResponse>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionRates>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCommissionRates>>,
+          TError,
+          Awaited<ReturnType<typeof getCommissionRates>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetCommissionRates<TData = Awaited<ReturnType<typeof getCommissionRates>>, TError = ErrorType<UnauthorizedResponse>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionRates>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary The commission rates in force, per product and level
+ */
+
+export function useGetCommissionRates<TData = Awaited<ReturnType<typeof getCommissionRates>>, TError = ErrorType<UnauthorizedResponse>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionRates>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetCommissionRatesQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

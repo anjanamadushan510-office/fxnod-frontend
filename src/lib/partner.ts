@@ -20,6 +20,17 @@ export function money(value: string | undefined, currency = "USD"): string {
   })}`;
 }
 
+/**
+ * "30.000" as "30%", "2.500" as "2.5%".
+ *
+ * Trimmed as text. A rate is a term of the programme, and rounding one to
+ * draw it would show a partner a number that is not the one they are paid.
+ */
+export function percent(value: string): string {
+  const trimmed = value.includes(".") ? value.replace(/0+$/, "").replace(/\.$/, "") : value;
+  return `${trimmed || "0"}%`;
+}
+
 /** True when there is genuinely nothing there, so a row can be de-emphasised. */
 export function isZero(value: string | undefined): boolean {
   const amount = Number.parseFloat(value ?? "");

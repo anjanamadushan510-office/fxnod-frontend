@@ -108,6 +108,8 @@ export * from './closedAccountPublic';
 export * from './commissionHistoryResponse';
 export * from './commissionLedgerEntry';
 export * from './commissionLedgerEntrySettledAmount';
+export * from './commissionRate';
+export * from './commissionRatesResponse';
 export * from './commissionSourceType';
 export * from './commissionStatus';
 export * from './commissionTierIn';

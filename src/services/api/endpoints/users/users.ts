@@ -660,7 +660,7 @@ export function useGetKycStatus<TData = Awaited<ReturnType<typeof getKycStatus>>
 
 
 /**
- * Account state, the same from every device. `configured` is false until the user changes the list for the first time; show the default set then.
+ * Account state, the same from every device. `configured` is false until the user changes the list for the first time. Nothing is on until the user switches it on, so the list is empty then and a client shows it as such.
  * @summary Which tools this account has switched on
  */
 export const getActiveTools = (

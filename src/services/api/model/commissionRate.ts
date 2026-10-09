@@ -30,9 +30,12 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
+import type { DecimalString } from './decimalString';
 
-export interface ActiveToolsResponse {
-  /** False until the user changes the list for the first time. It does not change what is active, and the list is the answer either way. */
-  configured: boolean;
-  active_tool_ids: string[];
+export interface CommissionRate {
+  /** trade_markup, or whatever is sold next. Open by design. */
+  source_type: string;
+  level: number;
+  /** A percentage of what FXNOD earned, not of the stake. */
+  percentage: DecimalString;
 }
