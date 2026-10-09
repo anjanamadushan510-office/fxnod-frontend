@@ -8,6 +8,8 @@
 import { GUIDES, type Guide } from "./guides";
 import { BASICS_GUIDES } from "./learnBasics";
 import { BOT_GUIDES } from "./learnBots";
+import { MARKET_GUIDES } from "./learnMarkets";
+import { PRACTICE_GUIDES } from "./learnPractice";
 
 export interface GuideSection {
   id: string;
@@ -34,6 +36,18 @@ export const GUIDE_SECTIONS: GuideSection[] = [
     title: "Trading basics",
     intro: "Charts, risk and discipline: what to understand before any tool is useful.",
     guides: BASICS_GUIDES,
+  },
+  {
+    id: "how-markets-work",
+    title: "How markets work",
+    intro: "Why prices move, what news and volatility do, and how the common indicators and orders work.",
+    guides: MARKET_GUIDES,
+  },
+  {
+    id: "trading-practice",
+    title: "Trading practice",
+    intro: "Sizing a trade, surviving a drawdown, testing an idea, and choosing who to trust.",
+    guides: PRACTICE_GUIDES,
   },
 ];
 
