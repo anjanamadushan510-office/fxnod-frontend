@@ -22,7 +22,8 @@ export default function PartnerDashboardPage() {
   }, [ensureCode]);
 
   const earnings = earningsQuery.data;
-  const thisMonthPending = earnings?.total?.accrued;
+  // Everything earned and not yet paid, whichever month it was earned in.
+  const pending = earnings?.total?.accrued;
   const lifetimePaid = earnings?.total?.settled;
   const referredCount = partnersQuery.data?.total ?? 0;
   const currency = earnings?.currency ?? "USD";
@@ -48,11 +49,14 @@ export default function PartnerDashboardPage() {
     <section data-view="partners" className="p-4 lg:p-8 space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <article className="bg-surface border border-line rounded-2xl p-5">
-          <p className="text-xs uppercase tracking-[0.14em] text-ink-3 mb-3">This month</p>
+          <p className="text-xs uppercase tracking-[0.14em] text-ink-3 mb-3">Pending</p>
           <p className="font-display text-3xl font-semibold tabular-nums text-ink">
-            {money(thisMonthPending, currency)}
+            {money(pending, currency)}
           </p>
-          <p className="mt-1 text-xs text-ink-3">Pending to wallet</p>
+          <p className="mt-1 text-xs text-ink-3">
+            Paid to your wallet once the broker settles each month, in
+            proportion to what it pays.
+          </p>
         </article>
         <article className="bg-surface border border-line rounded-2xl p-5">
           <p className="text-xs uppercase tracking-[0.14em] text-ink-3 mb-3">Lifetime</p>

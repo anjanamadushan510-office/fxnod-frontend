@@ -48,7 +48,13 @@ export interface TradeCompletedEvent {
   platform: string;
   /** @nullable */
   asset?: string | null;
+  /** The markup on the trade, in the currency named beside it. The field name is older than that field. */
   accrued_markup_amount_usd: DecimalString;
+  /**
+   * The currency of the Deriv account that traded, which is the currency the markup is in. Commission accrued in a currency other than USD is recorded and left out of partner totals and payouts.
+   * @pattern ^[A-Z]{2,8}$
+   */
+  currency?: string;
   /** @pattern ^\d{4}-\d{2}$ */
   deriv_settlement_period: string;
   timestamp: string;

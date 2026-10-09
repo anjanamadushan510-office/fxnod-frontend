@@ -31,15 +31,27 @@ library, not a float.
  * OpenAPI spec version: 0.1.0
  */
 import type { DecimalString } from './decimalString';
+import type { PayoutPreviewOutRecorded } from './payoutPreviewOutRecorded';
 
-export interface DerivPayoutReceivedEvent {
-  event_type?: string;
-  payout_batch_id: string;
-  /** @pattern ^\d{4}-\d{2}$ */
+/**
+ * What a payout for a month would be measured against, read at the moment of asking.
+ */
+export interface PayoutPreviewOut {
   period: string;
-  amount: DecimalString;
-  currency?: string;
-  /** The share of the month's recorded markup that Deriv paid, 0 to 1. Each commission is paid this share of itself. Absent means 1. */
-  settlement_ratio?: DecimalString;
-  timestamp: string;
+  currency: string;
+  /** False while the month is still running (UTC); a payout cannot be recorded for it yet. */
+  period_ended: boolean;
+  /** The markup recorded on the month's trades. */
+  expected_markup: DecimalString;
+  trades: number;
+  /** Partner commission accrued on that markup and not yet paid. */
+  commission_waiting: DecimalString;
+  commission_waiting_rows: number;
+  commission_waiting_recipients: number;
+  commission_already_paid: DecimalString;
+  /**
+   * The payout already recorded for the month, if there is one.
+   * @nullable
+   */
+  recorded?: PayoutPreviewOutRecorded;
 }

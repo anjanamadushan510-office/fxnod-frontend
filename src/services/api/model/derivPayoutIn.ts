@@ -31,14 +31,15 @@ library, not a float.
  * OpenAPI spec version: 0.1.0
  */
 import type { DecimalString } from './decimalString';
+import type { DerivPayoutInCurrency } from './derivPayoutInCurrency';
 
 export interface DerivPayoutIn {
-  /** @pattern ^\d{4}-\d{2}$ */
+  /** @pattern ^\d{4}-(0[1-9]|1[0-2])$ */
   period: string;
-  /** Must be > 0. */
+  /** What Deriv paid for the month, at most eight decimal places. Zero is accepted - Deriv paid nothing, and the month's commission is closed at nothing. There is no field for the share commissions are paid - it is worked out from the trading engine's total. */
   amount: DecimalString;
-  /** @maxLength 8 */
-  currency?: string;
+  /** Dollars only. Partner wallets hold USDT and nothing converts, so commission accrued in another currency is not paid by this route. */
+  currency?: DerivPayoutInCurrency;
   /**
    * @maxLength 500
    * @nullable

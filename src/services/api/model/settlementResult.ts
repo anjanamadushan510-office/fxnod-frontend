@@ -30,6 +30,7 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
+import type { DecimalString } from './decimalString';
 
 export interface SettlementResult {
   period: string;
@@ -39,4 +40,8 @@ export interface SettlementResult {
   skipped_already_settled: number;
   failed_count: number;
   failed_ids: string[];
+  /** What the rows settled by this call had accrued. */
+  accrued_amount?: DecimalString;
+  /** What they were paid. Less when the payout was short. */
+  paid_amount?: DecimalString;
 }

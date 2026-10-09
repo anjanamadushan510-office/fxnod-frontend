@@ -32,14 +32,8 @@ library, not a float.
  */
 import type { DecimalString } from './decimalString';
 
-export interface DerivPayoutReceivedEvent {
-  event_type?: string;
-  payout_batch_id: string;
-  /** @pattern ^\d{4}-\d{2}$ */
-  period: string;
-  amount: DecimalString;
-  currency?: string;
-  /** The share of the month's recorded markup that Deriv paid, 0 to 1. Each commission is paid this share of itself. Absent means 1. */
-  settlement_ratio?: DecimalString;
-  timestamp: string;
-}
+/**
+ * The markup the trading engine had recorded on the month's trades when the payout was recorded - what the amount was measured against. Null on a payout recorded before the measure existed.
+ * @nullable
+ */
+export type PayoutBatchOutExpectedMarkup = DecimalString | null;

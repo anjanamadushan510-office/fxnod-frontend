@@ -32,6 +32,10 @@ library, not a float.
  */
 import type { DecimalString } from './decimalString';
 import type { PayoutBatchStatus } from './payoutBatchStatus';
+import type { PayoutBatchOutExpectedMarkup } from './payoutBatchOutExpectedMarkup';
+import type { PayoutBatchOutSettlementRatio } from './payoutBatchOutSettlementRatio';
+import type { PayoutBatchOutCommissionAccrued } from './payoutBatchOutCommissionAccrued';
+import type { PayoutBatchOutCommissionPaid } from './payoutBatchOutCommissionPaid';
 
 export interface PayoutBatchOut {
   id: string;
@@ -42,6 +46,27 @@ export interface PayoutBatchOut {
   status: PayoutBatchStatus;
   /** @nullable */
   admin_note?: string | null;
+  /**
+   * The markup the trading engine had recorded on the month's trades when the payout was recorded - what the amount was measured against. Null on a payout recorded before the measure existed.
+   * @nullable
+   */
+  expected_markup?: PayoutBatchOutExpectedMarkup;
+  /**
+   * amount / expected_markup, capped at 1 and rounded down to eight places. Every trade-markup commission of the month was paid this share of itself. Null means paid in full.
+   * @nullable
+   */
+  settlement_ratio?: PayoutBatchOutSettlementRatio;
+  /** @nullable */
+  recorded_by?: string | null;
+  /**
+   * Filled in once the Referral service has settled the month.
+   * @nullable
+   */
+  commissions_settled?: number | null;
+  /** @nullable */
+  commission_accrued?: PayoutBatchOutCommissionAccrued;
+  /** @nullable */
+  commission_paid?: PayoutBatchOutCommissionPaid;
   created_at: string;
   updated_at: string;
 }

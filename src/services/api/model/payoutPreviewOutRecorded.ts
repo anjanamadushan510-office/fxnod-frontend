@@ -30,16 +30,10 @@ library, not a float.
 
  * OpenAPI spec version: 0.1.0
  */
-import type { DecimalString } from './decimalString';
+import type { PayoutBatchOut } from './payoutBatchOut';
 
-export interface DerivPayoutReceivedEvent {
-  event_type?: string;
-  payout_batch_id: string;
-  /** @pattern ^\d{4}-\d{2}$ */
-  period: string;
-  amount: DecimalString;
-  currency?: string;
-  /** The share of the month's recorded markup that Deriv paid, 0 to 1. Each commission is paid this share of itself. Absent means 1. */
-  settlement_ratio?: DecimalString;
-  timestamp: string;
-}
+/**
+ * The payout already recorded for the month, if there is one.
+ * @nullable
+ */
+export type PayoutPreviewOutRecorded = PayoutBatchOut | null;

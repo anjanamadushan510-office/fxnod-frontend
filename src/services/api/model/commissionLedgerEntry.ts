@@ -33,6 +33,7 @@ library, not a float.
 import type { CommissionSourceType } from './commissionSourceType';
 import type { DecimalString } from './decimalString';
 import type { CommissionStatus } from './commissionStatus';
+import type { CommissionLedgerEntrySettledAmount } from './commissionLedgerEntrySettledAmount';
 
 export interface CommissionLedgerEntry {
   id: string;
@@ -75,4 +76,9 @@ export interface CommissionLedgerEntry {
   review_reason?: string | null;
   /** @nullable */
   settled_at?: string | null;
+  /**
+   * What a settled commission actually paid. Less than commission_amount when Deriv's payout for the month was smaller than the markup recorded; null when it was paid in full or is not settled yet.
+   * @nullable
+   */
+  settled_amount?: CommissionLedgerEntrySettledAmount;
 }
