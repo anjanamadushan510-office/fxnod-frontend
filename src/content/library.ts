@@ -6,13 +6,17 @@
  * guide's own page, the sitemap) reads from here.
  */
 import { GUIDES, type Guide } from "./guides";
+import { AUTOMATION_GUIDES } from "./learnAutomation";
 import { BASICS_GUIDES } from "./learnBasics";
 import { BOT_GUIDES } from "./learnBots";
 import { BOT_MORE_GUIDES } from "./learnBotsMore";
 import { CHART_GUIDES } from "./learnCharts";
+import { CONCEPT_GUIDES } from "./learnConcepts";
 import { CONTRACT_GUIDES } from "./learnContracts";
 import { DERIV_GUIDES } from "./learnDeriv";
+import { DERIV_MORE_GUIDES } from "./learnDerivMore";
 import { MARKET_GUIDES } from "./learnMarkets";
+import { MINDSET_GUIDES } from "./learnMindset";
 import { PRACTICE_GUIDES } from "./learnPractice";
 import { STAKING_GUIDES } from "./learnStaking";
 import { SYNTHETIC_GUIDES } from "./learnSynthetics";
@@ -35,7 +39,7 @@ export const GUIDE_SECTIONS: GuideSection[] = [
     id: "automated-trading",
     title: "Automated trading",
     intro: "What a trading bot is, how to choose and test one, and how to limit what it can lose.",
-    guides: [...BOT_GUIDES, ...BOT_MORE_GUIDES],
+    guides: [...BOT_GUIDES, ...BOT_MORE_GUIDES, ...AUTOMATION_GUIDES],
   },
   {
     id: "trading-basics",
@@ -56,16 +60,28 @@ export const GUIDE_SECTIONS: GuideSection[] = [
     guides: CHART_GUIDES,
   },
   {
+    id: "trading-concepts",
+    title: "Trading concepts",
+    intro: "Leverage, margin, pips, stops and the markets people ask about, each with a worked example.",
+    guides: CONCEPT_GUIDES,
+  },
+  {
     id: "trading-practice",
     title: "Trading practice",
     intro: "Sizing a trade, surviving a drawdown, testing an idea, and choosing who to trust.",
     guides: PRACTICE_GUIDES,
   },
   {
+    id: "trading-reality",
+    title: "Trading reality",
+    intro: "What it costs, how long it takes, why most lose, and the services sold around it.",
+    guides: MINDSET_GUIDES,
+  },
+  {
     id: "deriv-questions",
     title: "Deriv questions",
     intro: "What people ask about Deriv itself, answered from Deriv's own pages. FXNOD is independent of Deriv.",
-    guides: DERIV_GUIDES,
+    guides: [...DERIV_GUIDES, ...DERIV_MORE_GUIDES],
   },
   {
     id: "deriv-trade-types",
