@@ -74,6 +74,27 @@ export function productName(sourceType: string): string {
   return words ? words.charAt(0).toUpperCase() + words.slice(1) : sourceType;
 }
 
+/** "9 Oct 2026", in the reader's own time zone. */
+export function shortDate(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+}
+
+/** "2026-10" as "Oct 2026". The period is a UTC month bucket, so no time zone is applied. */
+export function monthName(period: string): string {
+  const match = /^(\d{4})-(\d{2})$/.exec(period);
+  if (!match) return period;
+  const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, 1));
+  return date.toLocaleDateString("en-GB", { month: "short", year: "numeric", timeZone: "UTC" });
+}
+
+/** Who a row is about, for someone whose profile may not have reached this service yet. */
+export function memberName(displayName: string | null | undefined, email: string | null | undefined): string {
+  return displayName || email || "A team member";
+}
+
 /**
  * When a partner can expect a pending amount, per product.
  *

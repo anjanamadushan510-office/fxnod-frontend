@@ -19,7 +19,7 @@ function getRouteTitle(pathname: string) {
   if (pathname.startsWith("/venues")) return { title: "Connected Accounts", subtitle: "Live APIs" };
   if (pathname.startsWith("/wallet")) return { title: "Wallet", subtitle: "Top up, then pay for tools" };
   if (pathname.startsWith("/transfer")) return { title: "Transfer", subtitle: "Transfer Funds" };
-  if (pathname.startsWith("/partner/dashboard")) return { title: "Partner", subtitle: "Share FXNOD, earn on usage" };
+  if (pathname.startsWith("/partner/dashboard")) return { title: "Partner Hub", subtitle: "Share FXNOD, earn on usage" };
   if (pathname.startsWith("/settings")) return { title: "Settings", subtitle: "Account Settings" };
   return { title: "Dashboard", subtitle: "dTrader · dBot on Deriv" };
 }
