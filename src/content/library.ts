@@ -8,6 +8,7 @@
 import { GUIDES, type Guide } from "./guides";
 import { BASICS_GUIDES } from "./learnBasics";
 import { BOT_GUIDES } from "./learnBots";
+import { DERIV_GUIDES } from "./learnDeriv";
 import { MARKET_GUIDES } from "./learnMarkets";
 import { PRACTICE_GUIDES } from "./learnPractice";
 
@@ -48,6 +49,12 @@ export const GUIDE_SECTIONS: GuideSection[] = [
     title: "Trading practice",
     intro: "Sizing a trade, surviving a drawdown, testing an idea, and choosing who to trust.",
     guides: PRACTICE_GUIDES,
+  },
+  {
+    id: "deriv-questions",
+    title: "Deriv questions",
+    intro: "What people ask about Deriv itself, answered from Deriv's own pages. FXNOD is independent of Deriv.",
+    guides: DERIV_GUIDES,
   },
 ];
 
