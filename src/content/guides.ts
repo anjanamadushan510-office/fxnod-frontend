@@ -37,7 +37,7 @@ export interface Guide {
   related: string[];
 }
 
-const RISK_NOTE: GuideBlock = {
+export const RISK_NOTE: GuideBlock = {
   type: "note",
   title: "Risk warning",
   text: "Options and multipliers are high-risk products. You can lose your entire stake on any trade, and a bot can lose it faster than you would by hand. Nothing on this page is financial advice. Try everything on a Deriv demo account first.",
@@ -469,10 +469,6 @@ export const GUIDES: Guide[] = [
     related: ["build-a-deriv-bot-with-dbot", "connect-deriv-account"],
   },
 ];
-
-export function guideBySlug(slug: string): Guide | undefined {
-  return GUIDES.find((g) => g.slug === slug);
-}
 
 function blockWords(block: GuideBlock): string {
   switch (block.type) {

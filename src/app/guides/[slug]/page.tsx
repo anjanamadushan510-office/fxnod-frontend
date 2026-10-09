@@ -5,7 +5,8 @@ import type { Route } from "next";
 import { PublicHeader } from "@/components/layout/PublicHeader";
 import { PublicFooter } from "@/components/layout/PublicFooter";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { GUIDES, formatGuideDate, guideBySlug, readMinutes, type Guide, type GuideBlock } from "@/content/guides";
+import { formatGuideDate, readMinutes, type Guide, type GuideBlock } from "@/content/guides";
+import { guideBySlug } from "@/content/library";
 import { SITE_NAME, SITE_URL, absoluteUrl, pageMetadata } from "@/lib/site";
 
 interface Props {
@@ -15,16 +16,14 @@ interface Props {
 export function generateMetadata({ params }: Props): Metadata {
   const guide = guideBySlug(params.slug);
   if (!guide) return {};
-  return {
-    ...pageMetadata({
-      title: guide.title,
-      description: guide.description,
-      path: `/guides/${guide.slug}`,
-      article: { publishedTime: guide.published, modifiedTime: guide.updated },
-    }),
-    // Every guide title names FXNOD already; the template would repeat it.
-    title: { absolute: guide.title },
-  };
+  const metadata = pageMetadata({
+    title: guide.title,
+    description: guide.description,
+    path: `/guides/${guide.slug}`,
+    article: { publishedTime: guide.published, modifiedTime: guide.updated },
+  });
+  // A tool guide's title names FXNOD already; the template would repeat it.
+  return guide.title.includes(SITE_NAME) ? { ...metadata, title: { absolute: guide.title } } : metadata;
 }
 
 /** Article, breadcrumb and FAQ markup, each built from what the page shows. */
@@ -147,7 +146,7 @@ export default function GuideDetailPage({ params }: Props) {
   if (!guide) notFound();
 
   const related = guide.related
-    .map((slug) => GUIDES.find((g) => g.slug === slug))
+    .map(guideBySlug)
     .filter((g): g is Guide => g !== undefined);
 
   return (
