@@ -16,7 +16,7 @@ const TAG = "Deriv questions";
 const DATE = "2026-10-09";
 const CHECKED = "9 October 2026";
 
-const SOURCE_NOTE: GuideBlock = {
+export const SOURCE_NOTE: GuideBlock = {
   type: "note",
   title: "Where this comes from",
   text: `FXNOD is an independent product and is not affiliated with Deriv. The statements about Deriv on this page were checked against Deriv's own website on ${CHECKED}. Deriv can change its terms, limits and platforms at any time, and what applies to you depends on your country and the Deriv company your account is with. Confirm anything that matters on deriv.com before you act on it.`,

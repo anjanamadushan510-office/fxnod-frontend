@@ -8,9 +8,11 @@
 import { GUIDES, type Guide } from "./guides";
 import { BASICS_GUIDES } from "./learnBasics";
 import { BOT_GUIDES } from "./learnBots";
+import { CONTRACT_GUIDES } from "./learnContracts";
 import { DERIV_GUIDES } from "./learnDeriv";
 import { MARKET_GUIDES } from "./learnMarkets";
 import { PRACTICE_GUIDES } from "./learnPractice";
+import { STAKING_GUIDES } from "./learnStaking";
 
 export interface GuideSection {
   id: string;
@@ -55,6 +57,18 @@ export const GUIDE_SECTIONS: GuideSection[] = [
     title: "Deriv questions",
     intro: "What people ask about Deriv itself, answered from Deriv's own pages. FXNOD is independent of Deriv.",
     guides: DERIV_GUIDES,
+  },
+  {
+    id: "deriv-trade-types",
+    title: "Deriv trade types",
+    intro: "One guide per contract: what wins, what it pays, and the win rate it needs to break even.",
+    guides: CONTRACT_GUIDES,
+  },
+  {
+    id: "stake-strategies",
+    title: "Stake strategies",
+    intro: "Martingale and its relatives, worked through step by step, and what no staking system can change.",
+    guides: STAKING_GUIDES,
   },
 ];
 
