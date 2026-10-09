@@ -9,6 +9,7 @@ import { GUIDES, type Guide } from "./guides";
 import { BASICS_GUIDES } from "./learnBasics";
 import { BOT_GUIDES } from "./learnBots";
 import { BOT_MORE_GUIDES } from "./learnBotsMore";
+import { CHART_GUIDES } from "./learnCharts";
 import { CONTRACT_GUIDES } from "./learnContracts";
 import { DERIV_GUIDES } from "./learnDeriv";
 import { MARKET_GUIDES } from "./learnMarkets";
@@ -47,6 +48,12 @@ export const GUIDE_SECTIONS: GuideSection[] = [
     title: "How markets work",
     intro: "Why prices move, what news and volatility do, and how the common indicators and orders work.",
     guides: MARKET_GUIDES,
+  },
+  {
+    id: "charts-and-indicators",
+    title: "Charts and indicators",
+    intro: "What each tool measures, how it is calculated, and where it stops being useful.",
+    guides: CHART_GUIDES,
   },
   {
     id: "trading-practice",
