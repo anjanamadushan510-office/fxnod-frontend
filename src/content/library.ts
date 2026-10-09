@@ -8,11 +8,13 @@
 import { GUIDES, type Guide } from "./guides";
 import { BASICS_GUIDES } from "./learnBasics";
 import { BOT_GUIDES } from "./learnBots";
+import { BOT_MORE_GUIDES } from "./learnBotsMore";
 import { CONTRACT_GUIDES } from "./learnContracts";
 import { DERIV_GUIDES } from "./learnDeriv";
 import { MARKET_GUIDES } from "./learnMarkets";
 import { PRACTICE_GUIDES } from "./learnPractice";
 import { STAKING_GUIDES } from "./learnStaking";
+import { SYNTHETIC_GUIDES } from "./learnSynthetics";
 
 export interface GuideSection {
   id: string;
@@ -32,7 +34,7 @@ export const GUIDE_SECTIONS: GuideSection[] = [
     id: "automated-trading",
     title: "Automated trading",
     intro: "What a trading bot is, how to choose and test one, and how to limit what it can lose.",
-    guides: BOT_GUIDES,
+    guides: [...BOT_GUIDES, ...BOT_MORE_GUIDES],
   },
   {
     id: "trading-basics",
@@ -63,6 +65,12 @@ export const GUIDE_SECTIONS: GuideSection[] = [
     title: "Deriv trade types",
     intro: "One guide per contract: what wins, what it pays, and the win rate it needs to break even.",
     guides: CONTRACT_GUIDES,
+  },
+  {
+    id: "synthetic-indices",
+    title: "Synthetic indices",
+    intro: "What each family of synthetic index is built to do, and what that means for a trade.",
+    guides: SYNTHETIC_GUIDES,
   },
   {
     id: "stake-strategies",
