@@ -64,4 +64,10 @@ export interface BotRunTrade {
   exit_spot?: BotRunTradeExitSpot;
   /** @nullable */
   tick_stream?: BotRunTradeTickStreamItem[] | null;
+  /** When the bot chose to buy, before the order was sent. The gap to created_at is how long the order took to reach the broker. */
+  decided_at?: string;
+  /** The quotes a tick rule read to make that choice, oldest first and as the broker displays them. Absent for a rule that reads no ticks. These are not the ticks before the entry spot, because the contract starts after the decision. */
+  signal_ticks?: string[];
+  /** The time of the newest of those quotes. */
+  signal_tick_at?: string;
 }

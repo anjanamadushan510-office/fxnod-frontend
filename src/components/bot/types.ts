@@ -42,4 +42,14 @@ export interface BotTrade {
   /** The exit spot Deriv settled the contract on. Absent while it is open. */
   exitPrice?: number;
   tickStream?: BotTickSample[];
+  /** When the bot chose to buy, before the order was sent. */
+  decidedAt?: string;
+  /**
+   * The quotes a tick rule read to make that choice, oldest first, exactly as
+   * the server sent them. Kept as text: a quote's last digit is the signal for
+   * a digit bot, and a number would drop a trailing zero.
+   */
+  signalTicks?: string[];
+  /** The time of the newest of those quotes. */
+  signalTickAt?: string;
 }

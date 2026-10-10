@@ -122,6 +122,8 @@ export function TradeDetailsModal({
                 }).format(new Date(trade.createdAt))}
               </DetailBlock>
             </div>
+
+            <TradeReason trade={trade} />
           </div>
 
           <div className="mt-8 flex justify-end">
@@ -179,6 +181,57 @@ function entrySampleIndex(samples: PlottableTick[], entryPrice: number | undefin
 
 function formatSpot(value: number | undefined, precision: number): string {
   return value === undefined ? "--" : value.toFixed(precision);
+}
+
+/** Contract types whose signal is a quote's last digit. */
+const DIGIT_CONTRACT = /even|odd|over|under|digit|match|differ/i;
+
+/**
+ * Why the bot bought: the ticks its rule read, and how long the order took.
+ *
+ * A contract starts on the tick after the broker accepts the order, a moment
+ * after the bot decided. So the ticks just before the entry spot are not the
+ * ones the rule read, and a trade checked against those looks as if the rule
+ * had not waited. These are the ones it read.
+ */
+function TradeReason({ trade }: { trade: BotTrade }) {
+  const ticks = trade.signalTicks;
+  if (!ticks?.length) return null;
+
+  const digits = DIGIT_CONTRACT.test(trade.contractType);
+  const decided = trade.decidedAt ? new Date(trade.decidedAt) : null;
+  const took = decided ? (new Date(trade.createdAt).getTime() - decided.getTime()) / 1000 : null;
+
+  return (
+    <div className="col-span-2 mt-2 flex flex-col gap-2 border-t border-opt-line pt-4 text-[13px]">
+      <span className="font-medium text-opt-ink-3">Ticks the bot read</span>
+      <ol className="m-0 flex list-none flex-wrap gap-x-3 gap-y-1 p-0 tabular-nums text-opt-ink-2">
+        {ticks.map((quote, index) => (
+          <li key={`${index}-${quote}`}>
+            {digits ? (
+              <>
+                {quote.slice(0, -1)}
+                <strong className="font-bold text-opt-ink">{quote.slice(-1)}</strong>
+              </>
+            ) : (
+              quote
+            )}
+          </li>
+        ))}
+      </ol>
+      {decided && (
+        <span className="text-opt-ink-3">
+          Decided at{" "}
+          {new Intl.DateTimeFormat(undefined, { timeStyle: "medium" }).format(decided)}
+          {took !== null && took >= 0 && `, order accepted ${took.toFixed(1)}s later`}
+        </span>
+      )}
+      <span className="text-[12px] leading-relaxed text-opt-ink-3">
+        The contract starts on the next tick after the order is accepted, so these are not
+        always the ticks just before the entry spot.
+      </span>
+    </div>
+  );
 }
 
 function DetailBlock({ label, children }: { label: string; children: React.ReactNode }) {

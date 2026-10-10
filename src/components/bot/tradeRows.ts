@@ -24,5 +24,8 @@ export function toTradeRows(trades: BotRunTrade[]): BotTrade[] {
     entryPrice: t.entry_spot != null ? Number.parseFloat(t.entry_spot) : undefined,
     exitPrice: t.exit_spot != null ? Number.parseFloat(t.exit_spot) : undefined,
     tickStream: t.tick_stream ?? undefined,
+    decidedAt: t.decided_at,
+    signalTicks: t.signal_ticks,
+    signalTickAt: t.signal_tick_at,
   }));
 }
