@@ -45,6 +45,12 @@ export interface Guide {
   cta?: GuideCta;
 }
 
+/** A guide in another language, with the English guide it corresponds to. */
+export interface LocalGuide extends Guide {
+  /** Slug of the English guide that says the same thing, if there is one. */
+  en?: string;
+}
+
 export const RISK_NOTE: GuideBlock = {
   type: "note",
   title: "Risk warning",

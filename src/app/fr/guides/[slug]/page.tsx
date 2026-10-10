@@ -6,10 +6,10 @@ interface Props {
 }
 
 export function generateMetadata({ params }: Props): Metadata {
-  return localGuideMetadata("es", params.slug);
+  return localGuideMetadata("fr", params.slug);
 }
 
-/** One guide in Spanish. */
+/** One guide in French. */
 export default function Page({ params }: Props) {
-  return <LocalGuidePage locale="es" slug={params.slug} />;
+  return <LocalGuidePage locale="fr" slug={params.slug} />;
 }

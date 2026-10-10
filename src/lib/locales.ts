@@ -9,13 +9,23 @@
  * each other with hreflang.
  *
  * Only the guides are translated. The app behind the login is in English.
+ *
+ * Adding a language: a content file, an entry in `GUIDE_LABELS` and
+ * `PREFIXES` here, an entry in content/localGuides.ts, two thin pages under
+ * its prefix, and its paths in `isIndexablePath` (lib/site.ts).
  */
-export type Locale = "en" | "es";
+export type Locale = "en" | "es" | "fr";
+export type LocalLocale = Exclude<Locale, "en">;
+
+export const LOCAL_LOCALES: LocalLocale[] = ["es", "fr"];
 
 /** Set on the request by middleware.ts, read by the root layout for <html lang>. */
 export const LOCALE_HEADER = "x-locale";
 
-const PREFIXES: { prefix: string; locale: Locale }[] = [{ prefix: "/es", locale: "es" }];
+const PREFIXES: { prefix: string; locale: Locale }[] = [
+  { prefix: "/es", locale: "es" },
+  { prefix: "/fr", locale: "fr" },
+];
 
 export function localeOfPath(pathname: string): Locale {
   const match = PREFIXES.find(({ prefix }) => pathname === prefix || pathname.startsWith(`${prefix}/`));
@@ -25,6 +35,8 @@ export function localeOfPath(pathname: string): Locale {
 /** What the guide pages need to say in each language, and where they live. */
 export interface GuideLabels {
   locale: Locale;
+  /** The language's own name, for the link that leads to it. */
+  name: string;
   /** Open Graph locale, e.g. "es_419". */
   ogLocale: string;
   homePath: string;
@@ -39,11 +51,14 @@ export interface GuideLabels {
   allGuides: string;
   getStarted: string;
   months: string[];
+  /** The index page of this language's guides. */
+  index: { title: string; description: string; heading: string; intro: string; collectionName: string; llmsHeading: string };
 }
 
 export const GUIDE_LABELS: Record<Locale, GuideLabels> = {
   en: {
     locale: "en",
+    name: "English",
     ogLocale: "en_US",
     homePath: "/",
     guidesPath: "/guides",
@@ -57,9 +72,19 @@ export const GUIDE_LABELS: Record<Locale, GuideLabels> = {
     allGuides: "All guides",
     getStarted: "Get started",
     months: ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"],
+    index: {
+      title: "Guides: trading bots, risk and the Deriv tools",
+      description:
+        "Guides to trading and trading bots: how FXNOD's Deriv tools work, how to choose, test and limit a bot, and the basics of charts, risk and discipline.",
+      heading: "Trading, bots and the tools.",
+      intro: "",
+      collectionName: "FXNOD guides",
+      llmsHeading: "Guides",
+    },
   },
   es: {
     locale: "es",
+    name: "Español",
     ogLocale: "es_419",
     homePath: "/",
     guidesPath: "/es/guias",
@@ -73,6 +98,43 @@ export const GUIDE_LABELS: Record<Locale, GuideLabels> = {
     allGuides: "Todas las guías",
     getStarted: "Empezar",
     months: ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"],
+    index: {
+      title: "Guías en español: Deriv, índices sintéticos y bots de trading",
+      description:
+        "Guías en español sobre Deriv y los bots de trading: qué es Deriv, cómo operar, depositar y retirar, índices sintéticos, y cómo elegir y probar un bot.",
+      heading: "Deriv y bots de trading, en claro.",
+      intro:
+        "Respuestas directas a lo que se pregunta en español: qué es Deriv, cómo operar, depositar y retirar, qué son los índices sintéticos y cómo elegir y probar un bot de trading.",
+      collectionName: "Guías de FXNOD en español",
+      llmsHeading: "Guías en español",
+    },
+  },
+  fr: {
+    locale: "fr",
+    name: "Français",
+    ogLocale: "fr_FR",
+    homePath: "/",
+    guidesPath: "/fr/guides",
+    home: "Accueil",
+    guides: "Guides",
+    updated: "Mis à jour le",
+    minRead: "min de lecture",
+    byTeam: "Par l'équipe FXNOD",
+    questions: "Questions fréquentes",
+    readNext: "À lire ensuite",
+    allGuides: "Tous les guides",
+    getStarted: "Commencer",
+    months: ["JANV.", "FÉVR.", "MARS", "AVR.", "MAI", "JUIN", "JUIL.", "AOÛT", "SEPT.", "OCT.", "NOV.", "DÉC."],
+    index: {
+      title: "Guides en français : Deriv, indices synthétiques et robots de trading",
+      description:
+        "Guides en français sur Deriv et les robots de trading : ce qu'est Deriv, comment trader, déposer et retirer, les indices synthétiques, choisir et tester un robot.",
+      heading: "Deriv et les robots de trading, clairement.",
+      intro:
+        "Des réponses directes aux questions posées en français : ce qu'est Deriv, comment trader, déposer et retirer, ce que sont les indices synthétiques, et comment choisir et tester un robot de trading.",
+      collectionName: "Guides FXNOD en français",
+      llmsHeading: "Guides en français",
+    },
   },
 };
 

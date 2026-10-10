@@ -19,8 +19,8 @@ interface Props {
   labels: GuideLabels;
   cta: GuideCta;
   related: { href: string; tag: string; title: string }[];
-  /** The same guide in another language, where one exists. */
-  alternate?: { href: string; label: string; hrefLang: string };
+  /** The same guide in other languages, where it exists in any. */
+  alternates?: { href: string; label: string; hrefLang: string }[];
 }
 
 /** Article, breadcrumb and FAQ markup, each built from what the page shows. */
@@ -138,7 +138,7 @@ function Block({ block }: { block: GuideBlock }) {
   }
 }
 
-export function GuideArticle({ guide, path, labels, cta, related, alternate }: Props) {
+export function GuideArticle({ guide, path, labels, cta, related, alternates = [] }: Props) {
   return (
     <div data-theme="dark" className="min-h-screen bg-bg text-ink font-sans antialiased flex flex-col">
       {structuredData(guide, path, labels).map((data) => (
@@ -156,15 +156,20 @@ export function GuideArticle({ guide, path, labels, cta, related, alternate }: P
             <Link href={labels.guidesPath as Route} className="hover:text-white transition">
               {labels.guides}
             </Link>
-            {alternate && (
-              <Link
-                href={alternate.href as Route}
-                hrefLang={alternate.hrefLang}
-                lang={alternate.hrefLang}
-                className="ml-auto text-accent hover:text-white transition"
-              >
-                {alternate.label}
-              </Link>
+            {alternates.length > 0 && (
+              <span className="ml-auto flex gap-x-3">
+                {alternates.map((alternate) => (
+                  <Link
+                    key={alternate.hrefLang}
+                    href={alternate.href as Route}
+                    hrefLang={alternate.hrefLang}
+                    lang={alternate.hrefLang}
+                    className="text-accent hover:text-white transition"
+                  >
+                    {alternate.label}
+                  </Link>
+                ))}
+              </span>
             )}
           </nav>
 

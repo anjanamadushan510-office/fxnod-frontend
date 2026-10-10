@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
-import { ES_GUIDES, spanishSlugFor } from "@/content/es/guias";
 import { ALL_GUIDES } from "@/content/library";
+import { LOCAL_GUIDES, languagePaths, localGuidePath } from "@/content/localGuides";
+import { GUIDE_LABELS, LOCAL_LOCALES } from "@/lib/locales";
 import { getPublishedPosts } from "@/lib/blog";
 import { absoluteUrl } from "@/lib/site";
 
@@ -16,34 +17,41 @@ export const revalidate = 3600;
  * `lastModified` is given only where it is known. A build timestamp on every
  * entry teaches a crawler to ignore the field.
  */
+/** The hreflang entries of one guide, as absolute URLs, where it has other languages. */
+function alternates(englishSlug: string | undefined) {
+  const paths = languagePaths(englishSlug);
+  if (!paths) return {};
+  const languages = Object.fromEntries(
+    Object.entries(paths)
+      .filter(([lang]) => lang !== "x-default")
+      .map(([lang, path]) => [lang, absoluteUrl(path)]),
+  );
+  return { alternates: { languages } };
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const posts = (await getPublishedPosts()) ?? [];
 
   return [
     { url: absoluteUrl("/"), changeFrequency: "weekly", priority: 1 },
     { url: absoluteUrl("/guides"), changeFrequency: "weekly", priority: 0.9 },
-    ...ALL_GUIDES.map((guide) => {
-      const spanish = spanishSlugFor(guide.slug);
-      return {
-        url: absoluteUrl(`/guides/${guide.slug}`),
-        lastModified: guide.updated,
-        changeFrequency: "monthly" as const,
-        priority: 0.8,
-        ...(spanish
-          ? { alternates: { languages: { en: absoluteUrl(`/guides/${guide.slug}`), es: absoluteUrl(`/es/guias/${spanish}`) } } }
-          : {}),
-      };
-    }),
-    { url: absoluteUrl("/es/guias"), changeFrequency: "weekly", priority: 0.8 },
-    ...ES_GUIDES.map((guide) => ({
-      url: absoluteUrl(`/es/guias/${guide.slug}`),
+    ...ALL_GUIDES.map((guide) => ({
+      url: absoluteUrl(`/guides/${guide.slug}`),
       lastModified: guide.updated,
       changeFrequency: "monthly" as const,
       priority: 0.8,
-      ...(guide.en
-        ? { alternates: { languages: { en: absoluteUrl(`/guides/${guide.en}`), es: absoluteUrl(`/es/guias/${guide.slug}`) } } }
-        : {}),
+      ...alternates(guide.slug),
     })),
+    ...LOCAL_LOCALES.flatMap((locale) => [
+      { url: absoluteUrl(GUIDE_LABELS[locale].guidesPath), changeFrequency: "weekly" as const, priority: 0.8 },
+      ...LOCAL_GUIDES[locale].guides.map((guide) => ({
+        url: absoluteUrl(localGuidePath(locale, guide.slug)),
+        lastModified: guide.updated,
+        changeFrequency: "monthly" as const,
+        priority: 0.8,
+        ...alternates(guide.en),
+      })),
+    ]),
     { url: absoluteUrl("/blog"), changeFrequency: "weekly", priority: 0.6 },
     ...posts.map((post) => ({
       url: absoluteUrl(`/blog/${post.slug}`),

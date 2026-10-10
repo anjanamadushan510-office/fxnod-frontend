@@ -488,7 +488,7 @@ export const DERIV_GUIDES: Guide[] = [
       { type: "h2", text: "Available does not mean everything is available" },
       {
         type: "p",
-        text: "Products differ by region. Deriv's terms say the entity your account is with decides which products you can use, and Deriv's own pages say that the availability of its app depends on your country of residence. Its regional terms state, for example, that options trading is not offered to clients residing in the EU. You may be able to open an account and still not see a particular contract type or payment method.",
+        text: "Products differ by region. Deriv's terms say the entity your account is with decides which products you can use, and Deriv's own pages say that the availability of its app depends on your country of residence. Its regional terms state, for example, that options trading is not offered to clients residing in the EU. You may be able to open an account and still not see a particular contract type or payment method. Regulators also act on their own account: in June 2023 Brazil's securities regulator, the CVM, ordered Deriv.com to stop offering its services to residents of Brazil. Look for notices from the regulator where you live.",
       },
       { type: "h2", text: "Do not use a VPN to get round it" },
       {

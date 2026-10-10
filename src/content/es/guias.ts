@@ -17,13 +17,7 @@
  * the reader will see on screen (stop loss, Rise/Fall, dBot) stay as they
  * appear there.
  */
-import type { Guide, GuideBlock, GuideCta } from "../guides";
-
-/** A guide in another language, with the English guide it corresponds to. */
-export interface LocalGuide extends Guide {
-  /** Slug of the English guide that says the same thing, if there is one. */
-  en?: string;
-}
+import type { GuideBlock, GuideCta, LocalGuide } from "../guides";
 
 const DATE = "2026-10-10";
 const REVISADO = "10 de octubre de 2026";
@@ -170,7 +164,7 @@ export const ES_GUIDES: LocalGuide[] = [
       { type: "h2", text: "¿Es legal en mi país?" },
       {
         type: "p",
-        text: "Esta guía no da una respuesta legal. Los términos de Deriv dicen que solo presta servicios a residentes de ciertos países, que la lista puede cambiar y que es tu responsabilidad conocer las restricciones del lugar donde vives. Revisa la posición del regulador financiero de tu país sobre los brókeres del extranjero.",
+        text: "Esta guía no da una respuesta legal. Los términos de Deriv dicen que solo presta servicios a residentes de ciertos países, que la lista puede cambiar y que es tu responsabilidad conocer las restricciones del lugar donde vives. Algunos reguladores han tomado medidas: en Brasil, la CVM ordenó en junio de 2023 suspender toda oferta de Deriv.com a residentes brasileños. Revisa los comunicados del regulador financiero de tu país.",
       },
       { type: "h2", text: "Reclamos" },
       {
@@ -1047,12 +1041,3 @@ export const ES_GUIDES: LocalGuide[] = [
     en: "connect-deriv-account",
   },
 ];
-
-/** Spanish slug for an English guide, where a Spanish version exists. */
-export function spanishSlugFor(englishSlug: string): string | undefined {
-  return ES_GUIDES.find((g) => g.en === englishSlug)?.slug;
-}
-
-export function spanishGuideBySlug(slug: string): LocalGuide | undefined {
-  return ES_GUIDES.find((g) => g.slug === slug);
-}

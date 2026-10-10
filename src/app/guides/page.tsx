@@ -6,6 +6,7 @@ import { PublicFooter } from "@/components/layout/PublicFooter";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { formatGuideDate, readMinutes } from "@/content/guides";
 import { ALL_GUIDES, GUIDE_SECTIONS } from "@/content/library";
+import { GUIDE_LABELS, LOCAL_LOCALES } from "@/lib/locales";
 import { absoluteUrl, pageMetadata } from "@/lib/site";
 
 const DESCRIPTION =
@@ -15,7 +16,11 @@ export const metadata: Metadata = pageMetadata({
   title: "Guides: trading bots, risk and the Deriv tools",
   description: DESCRIPTION,
   path: "/guides",
-  languages: { en: "/guides", es: "/es/guias", "x-default": "/guides" },
+  languages: {
+    en: "/guides",
+    ...Object.fromEntries(LOCAL_LOCALES.map((locale) => [locale, GUIDE_LABELS[locale].guidesPath])),
+    "x-default": "/guides",
+  },
 });
 
 export default function GuidesPage() {
@@ -45,10 +50,18 @@ export default function GuidesPage() {
             Plain answers to the questions traders ask: how each FXNOD tool works, how to choose, test and limit a
             trading bot, and what to understand about charts and risk first.
           </p>
-          <p className="text-sm text-zinc-500 mt-4">
-            <Link href={"/es/guias" as Route} hrefLang="es" lang="es" className="text-accent hover:text-white transition">
-              Guías en español
-            </Link>
+          <p className="text-sm text-zinc-500 mt-4 flex flex-wrap gap-x-4 gap-y-1">
+            {LOCAL_LOCALES.map((locale) => (
+              <Link
+                key={locale}
+                href={GUIDE_LABELS[locale].guidesPath as Route}
+                hrefLang={locale}
+                lang={locale}
+                className="text-accent hover:text-white transition"
+              >
+                {GUIDE_LABELS[locale].index.llmsHeading}
+              </Link>
+            ))}
           </p>
 
           {GUIDE_SECTIONS.map((section) => (
