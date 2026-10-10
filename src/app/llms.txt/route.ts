@@ -1,3 +1,4 @@
+import { ES_GUIDES } from "@/content/es/guias";
 import { GUIDE_SECTIONS } from "@/content/library";
 import { absoluteUrl } from "@/lib/site";
 
@@ -37,7 +38,11 @@ export function GET(): Response {
     return `## Guides: ${section.title}\n\n${lines.join("\n")}`;
   });
 
-  return new Response(`${[INTRO, ...sections, ABOUT].join("\n\n")}\n`, {
+  const spanish = `## Guías en español\n\n${ES_GUIDES.map(
+    (guide) => `- [${guide.title}](${absoluteUrl(`/es/guias/${guide.slug}`)}): ${guide.description}`,
+  ).join("\n")}`;
+
+  return new Response(`${[INTRO, ...sections, spanish, ABOUT].join("\n\n")}\n`, {
     headers: { "Content-Type": "text/plain; charset=utf-8" },
   });
 }

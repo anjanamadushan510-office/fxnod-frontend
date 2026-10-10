@@ -15,6 +15,7 @@ export const metadata: Metadata = pageMetadata({
   title: "Guides: trading bots, risk and the Deriv tools",
   description: DESCRIPTION,
   path: "/guides",
+  languages: { en: "/guides", es: "/es/guias", "x-default": "/guides" },
 });
 
 export default function GuidesPage() {
@@ -43,6 +44,11 @@ export default function GuidesPage() {
           <p className="text-zinc-400 max-w-xl leading-relaxed">
             Plain answers to the questions traders ask: how each FXNOD tool works, how to choose, test and limit a
             trading bot, and what to understand about charts and risk first.
+          </p>
+          <p className="text-sm text-zinc-500 mt-4">
+            <Link href={"/es/guias" as Route} hrefLang="es" lang="es" className="text-accent hover:text-white transition">
+              Guías en español
+            </Link>
           </p>
 
           {GUIDE_SECTIONS.map((section) => (

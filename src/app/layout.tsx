@@ -3,6 +3,7 @@ import { Inter, Outfit, JetBrains_Mono } from "next/font/google";
 import { headers } from "next/headers";
 import "./globals.css";
 import { Providers } from "./providers";
+import { LOCALE_HEADER } from "@/lib/locales";
 import { OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 
 const inter = Inter({
@@ -77,9 +78,11 @@ export default function RootLayout({
   // the nonce on its own scripts — do not remove it to "restore" static
   // rendering without replacing the CSP.
   const nonce = headers().get("x-nonce") ?? undefined;
+  // The guides exist in more than one language; middleware.ts says which this page is.
+  const lang = headers().get(LOCALE_HEADER) ?? "en";
 
   return (
-    <html lang="en" className={`dark ${inter.variable} ${outfit.variable} ${jetbrainsMono.variable} scroll-smooth scroll-pt-24`} suppressHydrationWarning>
+    <html lang={lang} className={`dark ${inter.variable} ${outfit.variable} ${jetbrainsMono.variable} scroll-smooth scroll-pt-24`} suppressHydrationWarning>
       <body className="bg-bg text-ink font-sans antialiased">
         <Providers nonce={nonce}>{children}</Providers>
       </body>

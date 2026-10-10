@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { ES_GUIDES, spanishSlugFor } from "@/content/es/guias";
 import { ALL_GUIDES } from "@/content/library";
 import { getPublishedPosts } from "@/lib/blog";
 import { absoluteUrl } from "@/lib/site";
@@ -21,11 +22,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     { url: absoluteUrl("/"), changeFrequency: "weekly", priority: 1 },
     { url: absoluteUrl("/guides"), changeFrequency: "weekly", priority: 0.9 },
-    ...ALL_GUIDES.map((guide) => ({
-      url: absoluteUrl(`/guides/${guide.slug}`),
+    ...ALL_GUIDES.map((guide) => {
+      const spanish = spanishSlugFor(guide.slug);
+      return {
+        url: absoluteUrl(`/guides/${guide.slug}`),
+        lastModified: guide.updated,
+        changeFrequency: "monthly" as const,
+        priority: 0.8,
+        ...(spanish
+          ? { alternates: { languages: { en: absoluteUrl(`/guides/${guide.slug}`), es: absoluteUrl(`/es/guias/${spanish}`) } } }
+          : {}),
+      };
+    }),
+    { url: absoluteUrl("/es/guias"), changeFrequency: "weekly", priority: 0.8 },
+    ...ES_GUIDES.map((guide) => ({
+      url: absoluteUrl(`/es/guias/${guide.slug}`),
       lastModified: guide.updated,
       changeFrequency: "monthly" as const,
       priority: 0.8,
+      ...(guide.en
+        ? { alternates: { languages: { en: absoluteUrl(`/guides/${guide.en}`), es: absoluteUrl(`/es/guias/${guide.slug}`) } } }
+        : {}),
     })),
     { url: absoluteUrl("/blog"), changeFrequency: "weekly", priority: 0.6 },
     ...posts.map((post) => ({

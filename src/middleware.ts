@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { LOCALE_HEADER, localeOfPath } from "@/lib/locales";
 import { DEPLOYMENT_HOST_SUFFIX, isIndexablePath } from "@/lib/site";
 import { loginUrlFor, needsSignIn } from "@/lib/safePath";
 import { SESSION_HINT_COOKIE } from "@/lib/sessionHint";
@@ -101,6 +102,8 @@ export function middleware(request: NextRequest) {
   // it on its own scripts; x-nonce is for our layout to read.
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-nonce", nonce);
+  // The language of the page, for <html lang> in the root layout.
+  requestHeaders.set(LOCALE_HEADER, localeOfPath(pathname));
   requestHeaders.set("Content-Security-Policy", csp);
 
   const response = NextResponse.next({ request: { headers: requestHeaders } });

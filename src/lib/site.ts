@@ -36,8 +36,8 @@ export function absoluteUrl(path: string): string {
  * listed here. A new public page has to be added on purpose; a new app page
  * is safe by default.
  */
-const INDEXABLE_PATHS = new Set(["/", "/guides", "/blog", "/partner", "/about", "/risk-disclosure"]);
-const INDEXABLE_PREFIXES = ["/guides/", "/blog/"];
+const INDEXABLE_PATHS = new Set(["/", "/guides", "/es/guias", "/blog", "/partner", "/about", "/risk-disclosure"]);
+const INDEXABLE_PREFIXES = ["/guides/", "/es/guias/", "/blog/"];
 
 export function isIndexablePath(pathname: string): boolean {
   const path = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
@@ -55,6 +55,13 @@ interface PageMetadataInput {
   article?: { publishedTime: string; modifiedTime: string };
   /** Overrides the default share image. */
   image?: string;
+  /** Open Graph locale of the page. English unless given. */
+  ogLocale?: string;
+  /**
+   * The same page in each language it exists in, as hreflang -> path, the
+   * page's own language included. Left out when there is only one.
+   */
+  languages?: Record<string, string>;
 }
 
 /**
@@ -62,18 +69,26 @@ interface PageMetadataInput {
  * layout's — a page that sets any of them replaces the whole object — so the
  * site name and image are repeated here rather than inherited.
  */
-export function pageMetadata({ title, description, path, article, image }: PageMetadataInput): Metadata {
+export function pageMetadata({
+  title,
+  description,
+  path,
+  article,
+  image,
+  ogLocale = "en_US",
+  languages,
+}: PageMetadataInput): Metadata {
   const images = image ? [{ url: image, alt: title }] : [OG_IMAGE];
   return {
     title,
     description,
-    alternates: { canonical: path },
+    alternates: languages ? { canonical: path, languages } : { canonical: path },
     openGraph: {
       title,
       description,
       url: path,
       siteName: SITE_NAME,
-      locale: "en_US",
+      locale: ogLocale,
       images,
       ...(article
         ? { type: "article", publishedTime: article.publishedTime, modifiedTime: article.modifiedTime }
