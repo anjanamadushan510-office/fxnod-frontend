@@ -9,11 +9,13 @@
 import type { GuideCta, LocalGuide } from "./guides";
 import { CTA_ES, ES_GUIDES } from "./es/guias";
 import { CTA_FR, FR_GUIDES } from "./fr/guides";
+import { CTA_SI, SI_GUIDES } from "./si/guides";
 import { GUIDE_LABELS, LOCAL_LOCALES, type LocalLocale } from "@/lib/locales";
 
 export const LOCAL_GUIDES: Record<LocalLocale, { guides: LocalGuide[]; cta: GuideCta }> = {
   es: { guides: ES_GUIDES, cta: CTA_ES },
   fr: { guides: FR_GUIDES, cta: CTA_FR },
+  si: { guides: SI_GUIDES, cta: CTA_SI },
 };
 
 export function localGuideBySlug(locale: LocalLocale, slug: string): LocalGuide | undefined {

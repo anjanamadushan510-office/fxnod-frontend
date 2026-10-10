@@ -14,10 +14,10 @@
  * `PREFIXES` here, an entry in content/localGuides.ts, two thin pages under
  * its prefix, and its paths in `isIndexablePath` (lib/site.ts).
  */
-export type Locale = "en" | "es" | "fr";
+export type Locale = "en" | "es" | "fr" | "si";
 export type LocalLocale = Exclude<Locale, "en">;
 
-export const LOCAL_LOCALES: LocalLocale[] = ["es", "fr"];
+export const LOCAL_LOCALES: LocalLocale[] = ["es", "fr", "si"];
 
 /** Set on the request by middleware.ts, read by the root layout for <html lang>. */
 export const LOCALE_HEADER = "x-locale";
@@ -25,6 +25,7 @@ export const LOCALE_HEADER = "x-locale";
 const PREFIXES: { prefix: string; locale: Locale }[] = [
   { prefix: "/es", locale: "es" },
   { prefix: "/fr", locale: "fr" },
+  { prefix: "/si", locale: "si" },
 ];
 
 export function localeOfPath(pathname: string): Locale {
@@ -134,6 +135,33 @@ export const GUIDE_LABELS: Record<Locale, GuideLabels> = {
         "Des réponses directes aux questions posées en français : ce qu'est Deriv, comment trader, déposer et retirer, ce que sont les indices synthétiques, et comment choisir et tester un robot de trading.",
       collectionName: "Guides FXNOD en français",
       llmsHeading: "Guides en français",
+    },
+  },
+  si: {
+    locale: "si",
+    name: "සිංහල",
+    ogLocale: "si_LK",
+    homePath: "/",
+    guidesPath: "/si/guides",
+    home: "මුල් පිටුව",
+    guides: "Guides",
+    updated: "යාවත්කාලීන කළේ",
+    minRead: "විනාඩි කියවීමක්",
+    byTeam: "FXNOD කණ්ඩායම",
+    questions: "නිතර අහන ප්‍රශ්න",
+    readNext: "ඊළඟට කියවන්න",
+    allGuides: "සියලු guides",
+    getStarted: "පටන් ගන්න",
+    months: ["ජන", "පෙබ", "මාර්", "අප්‍රේ", "මැයි", "ජූනි", "ජූලි", "අගෝ", "සැප්", "ඔක්", "නොවැ", "දෙසැ"],
+    index: {
+      title: "Trading Sinhala guides: Deriv, forex සහ trading bots සිංහලෙන්",
+      description:
+        "Deriv trading, forex trading, binary trading සහ trading bots ගැන සිංහල guides: account එකක් හදන හැටි, deposit සහ withdraw, risk, සහ bot එකක් තෝරන හැටි.",
+      heading: "Deriv සහ trading bots, සිංහලෙන් පැහැදිලිව.",
+      intro:
+        "ලංකාවේ traders ලා අහන ප්‍රශ්න වලට කෙලින් උත්තර: Deriv වල trade කරන හැටි, account එකක් හදන හැටි, deposit සහ withdraw, forex සහ binary trading කියන්නේ මොකක්ද, සහ trading bot එකක් තෝරලා test කරන හැටි.",
+      collectionName: "FXNOD සිංහල guides",
+      llmsHeading: "සිංහල guides (Sinhala)",
     },
   },
 };

@@ -36,8 +36,8 @@ export function absoluteUrl(path: string): string {
  * listed here. A new public page has to be added on purpose; a new app page
  * is safe by default.
  */
-const INDEXABLE_PATHS = new Set(["/", "/guides", "/es/guias", "/fr/guides", "/blog", "/partner", "/about", "/risk-disclosure"]);
-const INDEXABLE_PREFIXES = ["/guides/", "/es/guias/", "/fr/guides/", "/blog/"];
+const INDEXABLE_PATHS = new Set(["/", "/guides", "/es/guias", "/fr/guides", "/si/guides", "/blog", "/partner", "/about", "/risk-disclosure"]);
+const INDEXABLE_PREFIXES = ["/guides/", "/es/guias/", "/fr/guides/", "/si/guides/", "/blog/"];
 
 export function isIndexablePath(pathname: string): boolean {
   const path = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
