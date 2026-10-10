@@ -105,11 +105,12 @@ function track(name: string, params: Params = {}): void {
 
 /** `referrer` is the address the visitor came from, as the browser or the last page view reported it. */
 export function trackPageView(referrer: string): void {
-  track("page_view", {
-    page_location: cleanUrl(window.location.href),
-    page_referrer: cleanUrl(referrer),
-    page_title: document.title,
-  });
+  if (!started) return;
+  // Set for every later event as well, not only this one. The tag sends events
+  // of its own (a scroll to the bottom, an outbound click) and stamps each
+  // with the address; without this it reads the address bar, query and all.
+  gtag("set", { page_location: cleanUrl(window.location.href), page_referrer: cleanUrl(referrer) });
+  track("page_view", { page_title: document.title });
 }
 
 /** A public guide was opened. `language` is the guide's own, not the browser's. */
