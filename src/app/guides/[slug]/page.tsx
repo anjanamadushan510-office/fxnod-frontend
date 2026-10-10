@@ -6,7 +6,7 @@ import { PublicHeader } from "@/components/layout/PublicHeader";
 import { PublicFooter } from "@/components/layout/PublicFooter";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { formatGuideDate, readMinutes, type Guide, type GuideBlock } from "@/content/guides";
-import { guideBySlug } from "@/content/library";
+import { ctaFor, guideBySlug } from "@/content/library";
 import { SITE_NAME, SITE_URL, absoluteUrl, pageMetadata } from "@/lib/site";
 
 interface Props {
@@ -145,6 +145,7 @@ export default function GuideDetailPage({ params }: Props) {
   const guide = guideBySlug(params.slug);
   if (!guide) notFound();
 
+  const cta = ctaFor(guide);
   const related = guide.related
     .map(guideBySlug)
     .filter((g): g is Guide => g !== undefined);
@@ -215,10 +216,8 @@ export default function GuideDetailPage({ params }: Props) {
           </section>
 
           <section className="mt-14 rounded-2xl border border-line bg-panel p-6 sm:p-8">
-            <h2 className="font-display text-xl font-semibold text-white mb-2">Try it on a demo account</h2>
-            <p className="text-zinc-400 leading-relaxed mb-5">
-              Create an FXNOD account, connect your Deriv demo account, and use every tool with virtual funds.
-            </p>
+            <h2 className="font-display text-xl font-semibold text-white mb-2">{cta.title}</h2>
+            <p className="text-zinc-400 leading-relaxed mb-5">{cta.text}</p>
             <Link
               href={"/auth/register" as Route}
               className="bg-accent text-[#080C16] hover:opacity-90 transition inline-flex items-center justify-center h-11 px-6 rounded-full text-sm font-semibold"

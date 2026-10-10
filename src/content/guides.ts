@@ -20,6 +20,12 @@ export type GuideBlock =
   | { type: "table"; head: string[]; rows: string[][] }
   | { type: "note"; title: string; text: string };
 
+/** The box under a guide that says what to do next in FXNOD. */
+export interface GuideCta {
+  title: string;
+  text: string;
+}
+
 export interface Guide {
   slug: string;
   title: string;
@@ -35,6 +41,8 @@ export interface Guide {
   faq: { q: string; a: string }[];
   /** Slugs of the guides to read next. */
   related: string[];
+  /** Replaces the section's call to action where a guide needs its own. */
+  cta?: GuideCta;
 }
 
 export const RISK_NOTE: GuideBlock = {
