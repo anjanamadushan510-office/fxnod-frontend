@@ -34,6 +34,7 @@ import {
 import { findTemplate } from "@/components/bot/builder/templates";
 import { useMarketsForStrategy } from "@/hooks/useMarketsForStrategy";
 import { riseFallDurationIssue, useRiseFallDurations } from "@/hooks/useRiseFallDurations";
+import { trackDbotStart } from "@/lib/analytics";
 import { parseApiError } from "@/lib/apiError";
 import {
   getListBotPresetsQueryKey,
@@ -216,6 +217,7 @@ function BotBuilder() {
 
     try {
       const res = await startRun.mutateAsync({ data: request });
+      if (res.run) trackDbotStart(res.run.is_virtual, res.run.strategy_id, "builder");
       const adjustments = res.limit_adjustments ?? [];
       if (adjustments.length > 0) {
         // The user would otherwise believe their own numbers were honoured.

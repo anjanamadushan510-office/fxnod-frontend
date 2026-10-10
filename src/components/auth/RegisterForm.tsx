@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { useRegister, useLogin } from "@/services/api/endpoints/auth/auth";
 import { setAccessToken } from "@/services/authToken";
 import { useAuthStore } from "@/stores/authStore";
+import { trackSignUp } from "@/lib/analytics";
 import { parseApiError } from "@/lib/apiError";
 import { clearReferralCode, readReferralCode } from "@/lib/referral";
 
@@ -85,6 +86,7 @@ export function RegisterForm() {
         // Spent. Leaving it would attribute a second account made in the same
         // browser session to the same affiliate.
         clearReferralCode();
+        trackSignUp();
         loginMut.mutate({ data: { email, password } });
       },
       onError: (err) => {

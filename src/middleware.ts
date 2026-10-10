@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { GA_CONNECT_SOURCES } from "@/lib/analytics";
 import { LOCALE_HEADER, localeOfPath } from "@/lib/locales";
 import { DEPLOYMENT_HOST_SUFFIX, isIndexablePath } from "@/lib/site";
 import { loginUrlFor, needsSignIn } from "@/lib/safePath";
@@ -43,7 +44,9 @@ function origin(value: string | undefined): string | null {
 function buildCsp(nonce: string): string {
   const isDev = process.env.NODE_ENV !== "production";
 
-  const connect = new Set<string>(["'self'", ...DERIV_SOCKETS]);
+  // Google Analytics reports to these. Its script needs no entry of its own:
+  // it is added by our code, which 'strict-dynamic' covers.
+  const connect = new Set<string>(["'self'", ...DERIV_SOCKETS, ...GA_CONNECT_SOURCES]);
   const api = origin(process.env.NEXT_PUBLIC_API_URL);
   const ws = origin(process.env.NEXT_PUBLIC_WS_URL);
   const derivWs = origin(process.env.NEXT_PUBLIC_DERIV_WS_URL);

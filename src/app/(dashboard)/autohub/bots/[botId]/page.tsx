@@ -20,6 +20,7 @@ import { TextField } from "@/components/bot/builder/controls";
 import { AccountSection } from "@/components/bot/builder/RunPanel";
 import { useDerivStatus } from "@/hooks/useDerivStatus";
 import { cn } from "@/lib/cn";
+import { trackAutoHubStart } from "@/lib/analytics";
 import { parseApiError } from "@/lib/apiError";
 import {
   getListAutoHubRunsQueryKey,
@@ -224,6 +225,7 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
 
     try {
       const res = await startRun.mutateAsync({ botId: bot.bot_id, data: request });
+      trackAutoHubStart(res.run.is_virtual, bot.bot_id);
       await queryClient.invalidateQueries({ queryKey: getListAutoHubRunsQueryKey() });
       try {
         window.localStorage.removeItem(draftKey(bot.bot_id));

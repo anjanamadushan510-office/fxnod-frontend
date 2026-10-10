@@ -32,6 +32,7 @@ import {
 import { useMarketStore } from "@/components/options/market/marketStore";
 import { cn } from "@/lib/cn";
 import { decimalSign, formatMoney, sumDecimals } from "@/lib/decimal";
+import { trackDbotStart } from "@/lib/analytics";
 import { parseApiError } from "@/lib/apiError";
 import { useForceStopBotRun } from "@/services/forceStopBotRun";
 import {
@@ -267,6 +268,7 @@ export default function DBotDashboardPage() {
         void queryClient.invalidateQueries({ queryKey: getDerivListAccountsQueryKey() });
       }
       const res = await startRun.mutateAsync({ data: request });
+      if (res.run) trackDbotStart(res.run.is_virtual, res.run.strategy_id, "saved");
       await queryClient.invalidateQueries({ queryKey: getListBotRunsQueryKey() });
       setRunPreset(null);
       router.push((res.run ? `/dbot/runs/${res.run.run_id}` : "/dbot") as Route);

@@ -6,6 +6,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "next-themes";
 
+import { Analytics } from "@/components/analytics/Analytics";
 import { captureReferralCode } from "@/lib/referral";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -63,6 +64,7 @@ export function Providers({
     <ThemeProvider attribute="data-theme" defaultTheme="dark" disableTransitionOnChange nonce={nonce}>
       <QueryClientProvider client={queryClient}>
         {children}
+      <Analytics />
       {/* App-wide toast portal (trade results, Deriv linking, …). */}
       <Toaster richColors position="top-center" closeButton />
       {/* Dev-only: the devtools entry self-excludes from production bundles,

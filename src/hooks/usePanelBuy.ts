@@ -11,6 +11,7 @@ import { usePositionsUI } from "@/stores/usePositionsUI";
 import { useTradeOverlays } from "@/stores/useTradeOverlays";
 import { useDerivStatus } from "./useDerivStatus";
 import { useProposalStream } from "./useProposalStream";
+import { trackDtraderTrade } from "@/lib/analytics";
 import type {
   ConfirmResponse,
   ProposalRequest,
@@ -53,7 +54,7 @@ export interface PanelBuyResult {
  */
 export function usePanelBuy(request: ProposalRequest | null): PanelBuyResult {
   const [lastTrade, setLastTrade] = useState<ConfirmResponse | null>(null);
-  const { linked, isLoading: linkLoading } = useDerivStatus();
+  const { linked, isVirtual, isLoading: linkLoading } = useDerivStatus();
 
   const isIdle = lastTrade === null;
 
@@ -80,7 +81,10 @@ export function usePanelBuy(request: ProposalRequest | null): PanelBuyResult {
         toast.success("Trade placed", {
           description: `Buy ${trade.buy_price} · payout ${trade.payout_amount} · #${trade.trade_id}`,
         });
-        if (requestRef.current) applyPostTrade(requestRef.current, trade);
+        if (requestRef.current) {
+          applyPostTrade(requestRef.current, trade);
+          trackDtraderTrade(isVirtual, requestRef.current.contract_type || "rise_fall", requestRef.current.symbol);
+        }
       },
       onError: (e) => {
         const failedAtUTC = new Date().toISOString();
