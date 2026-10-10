@@ -27,7 +27,7 @@ const RULES: { title: string; body: string }[] = [
   },
   {
     title: "Currency",
-    body: "Commission is counted and paid in US dollars, into a wallet held in USDT. Trades on an account in another currency are not counted in these totals.",
+    body: "Commission is counted in US dollars and paid into your FXNOD wallet, which is held in USDT.",
   },
   {
     title: "Review",
