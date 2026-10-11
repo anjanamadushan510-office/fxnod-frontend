@@ -144,3 +144,7 @@ All API calls go through NGINX gateway:
 - Store refresh token in **httpOnly cookie**, access token in memory
 - Implement automatic token refresh on 401 responses
 - WebSocket reconnection logic with exponential backoff
+
+## Tool commerce
+
+Discover (`/tools`) loads the wallet commerce catalog and presents free plans, Pro offers and bundles. Checkout uses server-issued quotes with optional coupons. Active Tools (`/subscriptions`) shows account activation, expiry and purchase history. Deploy the wallet commerce API and migration 0008 before this frontend. Purchases are prepaid without automatic renewals.

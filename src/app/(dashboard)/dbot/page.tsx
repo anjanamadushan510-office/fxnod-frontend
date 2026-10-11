@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Activity, Cpu, DollarSign, MoreVertical } from "lucide-react";
+import { BotMembershipBanner } from "@/components/tools/BotMembershipBanner";
 import { BotPackageModal } from "@/components/bot/BotPackageModal";
 import { EmergencyStopButton } from "@/components/bot/EmergencyStopButton";
 import { DerivAppConsentModal } from "@/components/bot/DerivAppConsentModal";
@@ -309,6 +310,8 @@ export default function DBotDashboardPage() {
           <DerivConnectionMenu />
         </div>
       </div>
+
+      <BotMembershipBanner toolId="dbot" />
 
       <AccountFilterControl value={accountFilter} onChange={setAccountFilter} />
 

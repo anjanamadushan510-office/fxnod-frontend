@@ -1,232 +1,353 @@
 "use client";
-
-import { useMemo, useState, type ReactNode } from "react";
-import { LayoutGrid, List, Search } from "lucide-react";
+import { useState } from "react";
+import {
+  LayoutGrid,
+  List,
+  Search,
+  Package,
+  ArrowUpRight,
+  Loader2,
+} from "lucide-react";
+import Link from "next/link";
+import type { Route } from "next";
 import { cn } from "@/lib/cn";
-import { FXNOD_TOOLS, type FxnodTool } from "@/components/tools/catalog";
-import { ActiveBadge, ToolCard, type ToolCardView } from "@/components/tools/ToolCard";
-import { useActiveTools } from "@/hooks/useActiveTools";
+import {
+  ToolCard,
+  ActiveBadge,
+  type ToolCardView,
+} from "@/components/tools/ToolCard";
+import { PlanDialog } from "@/components/tools/PlanDialog";
+import { useCommerce, useToolActivation } from "@/hooks/useCommerce";
+import {
+  commerceError,
+  money,
+  term,
+  type CommerceTool,
+  type Catalog,
+} from "@/services/commerce";
+import type { FxnodTool } from "@/components/tools/catalog";
 
-type Filter = "all" | "free" | "paid";
-type View = ToolCardView;
+function cardTool(tool: CommerceTool, catalog: Catalog): FxnodTool {
+  return {
+    ...tool,
+    href: tool.href ?? undefined,
+    icon: "/assets/fxnod-mark.png",
+    kind: catalog.tiers.some((t) => t.tool_id === tool.id && t.is_free)
+      ? "free"
+      : "paid",
+  };
+}
 
 export default function ToolsPage() {
-  const [filter, setFilter] = useState<Filter>("all");
-  const [view, setView] = useState<View>("grid");
+  const { data, isLoading, isError, refetch } = useCommerce();
+  const activation = useToolActivation();
+  const [filter, setFilter] = useState("all");
+  const [view, setView] = useState<ToolCardView>("grid");
   const [query, setQuery] = useState("");
-  const { isActive, setActive } = useActiveTools();
-
-  const needle = query.trim().toLowerCase();
-  const visible = useMemo(
-    () => FXNOD_TOOLS.filter((tool) => matchesQuery(tool, needle)),
-    [needle],
-  );
-  const freeTools = visible.filter((tool) => tool.kind === "free");
-  const paidTools = visible.filter((tool) => tool.kind === "paid");
-  const showFree = (filter === "all" || filter === "free") && freeTools.length > 0;
-  const showPaid = (filter === "all" || filter === "paid") && paidTools.length > 0;
-
+  const [selected, setSelected] = useState<{
+    toolId?: string;
+    bundleId?: string;
+  } | null>(null);
+  const [error, setError] = useState("");
+  async function activate(id: string) {
+    setError("");
+    try {
+      await activation.mutateAsync({ id, enabled: true });
+    } catch (e) {
+      setError(commerceError(e));
+    }
+  }
+  if (isLoading)
+    return (
+      <div className="p-8 text-sm text-ink-3" role="status">
+        Loading tools and plans…
+      </div>
+    );
+  if (isError || !data)
+    return (
+      <div className="p-8">
+        <p>We could not load the tool catalog.</p>
+        <button onClick={() => refetch()} className="mt-3 underline">
+          Try again
+        </button>
+      </div>
+    );
+  const bundles = data.offers.filter((o) => o.tier_ids.length > 1);
+  const tools = data.tools.filter((tool) => {
+    const tiers = data.tiers.filter((t) => t.tool_id === tool.id);
+    const free = tiers.some((t) => t.is_free);
+    const paid = data.offers.some((o) =>
+      o.tier_ids.some((id) => tiers.some((t) => t.id === id)),
+    );
+    return (
+      [tool.name, tool.subtitle, tool.description]
+        .join(" ")
+        .toLowerCase()
+        .includes(query.toLowerCase()) &&
+      (filter === "all" ||
+        (filter === "free" && free) ||
+        (filter === "pro" && paid))
+    );
+  });
   return (
-    <section className="space-y-6 p-4 lg:p-8">
-      <label className="relative block">
-        <span className="sr-only">Search tools</span>
-        <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3" />
-        <input
-          type="search"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search tools by name or keyword"
-          className="h-11 w-full rounded-xl border border-line bg-surface pl-10 pr-4 text-sm text-ink outline-none transition-colors placeholder:text-ink-3 focus:border-ink-3"
-        />
-      </label>
-
-      <div className="flex items-center gap-2">
-        <div className="grid min-w-0 flex-1 grid-cols-3 rounded-lg border border-line bg-surface-2 p-1 sm:inline-flex sm:w-auto sm:flex-none">
-          <FilterButton on={filter === "all"} onClick={() => setFilter("all")}>All</FilterButton>
-          <FilterButton on={filter === "free"} onClick={() => setFilter("free")}>Free</FilterButton>
-          <FilterButton on={filter === "paid"} onClick={() => setFilter("paid")}>Paid</FilterButton>
+    <section className="mx-auto max-w-7xl space-y-7 p-4 lg:p-8">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[.2em] text-ink-3">
+            THE FXNOD TOOLKIT
+          </p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight">
+            Find your trading edge.
+          </h1>
+          <p className="mt-2 text-sm text-ink-2">
+            Start free. Choose the plan that fits the way you trade.
+          </p>
         </div>
-        <div className="ml-auto inline-flex shrink-0 rounded-lg border border-line bg-surface-2 p-1">
-          <ViewButton label="Grid view" on={view === "grid"} onClick={() => setView("grid")}>
-            <LayoutGrid className="h-4 w-4" />
-          </ViewButton>
-          <ViewButton label="List view" on={view === "list"} onClick={() => setView("list")}>
-            <List className="h-4 w-4" />
-          </ViewButton>
+        <Link
+          href={"/subscriptions" as Route}
+          className="flex items-center gap-2 text-sm text-ink-2"
+        >
+          Your active tools
+          <ArrowUpRight className="h-4 w-4" />
+        </Link>
+      </div>
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <label className="relative flex-1">
+          <span className="sr-only">Search tools</span>
+          <Search className="absolute left-3 top-3.5 h-4 w-4 text-ink-3" />
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search tools, platforms, strategies…"
+            className="h-11 w-full rounded-xl border border-line bg-surface pl-10 pr-4 text-sm outline-none focus:border-ink-3"
+          />
+        </label>
+        <div className="flex gap-3">
+          <div className="flex flex-1 rounded-xl border border-line bg-surface p-1">
+            {[
+              ["all", "All tools"],
+              ["free", "Free plans"],
+              ["pro", "Pro plans"],
+              ["bundles", "Bundles"],
+            ].map(([key, label]) => (
+              <button
+                key={key}
+                aria-pressed={filter === key}
+                onClick={() => setFilter(key)}
+                className={cn(
+                  "rounded-lg px-3 py-1.5 text-xs font-medium sm:text-sm",
+                  filter === key ? "bg-ink text-bg" : "text-ink-3",
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <div className="flex rounded-xl border border-line bg-surface p-1">
+            {(["grid", "list"] as const).map((v) => (
+              <button
+                key={v}
+                aria-label={`${v} view`}
+                aria-pressed={view === v}
+                onClick={() => setView(v)}
+                className={cn(
+                  "rounded-lg p-2",
+                  view === v ? "bg-ink text-bg" : "text-ink-3",
+                )}
+              >
+                {v === "grid" ? (
+                  <LayoutGrid className="h-4 w-4" />
+                ) : (
+                  <List className="h-4 w-4" />
+                )}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
-
-      {showFree && (
-        <ToolSection
-          title="Free"
-          blurb="From FXNOD. No monthly fee."
-          tools={freeTools}
-          view={view}
-          isActive={isActive}
-          onAdd={(id) => setActive(id, true)}
-        />
-      )}
-
-      {showPaid && (
-        <ToolSection
-          title="Subscriptions"
-          blurb="Pay from the FXNOD Wallet. Your own venue keys."
-          tools={paidTools}
-          view={view}
-          divided={showFree}
-          isActive={isActive}
-          onAdd={(id) => setActive(id, true)}
-        />
-      )}
-
-      {!showFree && !showPaid && (
-        <p className="rounded-2xl border border-dashed border-line bg-surface px-5 py-10 text-center text-sm text-ink-3">
-          No tools match that search.
+      {error && (
+        <p
+          role="alert"
+          className="rounded-xl bg-red-400/10 p-3 text-sm text-red-400"
+        >
+          {error}
         </p>
       )}
-    </section>
-  );
-}
-
-function matchesQuery(tool: FxnodTool, needle: string) {
-  if (!needle) return true;
-  const haystack = [tool.name, tool.subtitle, tool.description, tool.price ?? "", ...tool.badges]
-    .join(" ")
-    .toLowerCase();
-  return haystack.includes(needle);
-}
-
-function ToolSection({
-  title,
-  blurb,
-  tools,
-  view,
-  divided,
-  isActive,
-  onAdd,
-}: {
-  title: string;
-  blurb: string;
-  tools: FxnodTool[];
-  view: View;
-  divided?: boolean;
-  isActive: (id: string) => boolean;
-  onAdd: (id: string) => void;
-}) {
-  return (
-    <div className={cn("space-y-4", divided && "mt-8 border-t border-line pt-6")}>
-      <div>
-        <h2 className="mb-1 text-sm font-bold uppercase tracking-wider text-ink">{title}</h2>
-        <p className="text-sm text-ink-2">{blurb}</p>
-      </div>
-      <div className={cn(view === "grid" ? "grid grid-cols-1 gap-4 md:grid-cols-2" : "flex flex-col gap-3")}>
-        {tools.map((tool) => (
-          <MarketplaceCard
-            key={tool.id}
-            tool={tool}
-            view={view}
-            active={isActive(tool.id)}
-            onAdd={() => onAdd(tool.id)}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function MarketplaceCard({
-  tool,
-  view,
-  active,
-  onAdd,
-}: {
-  tool: FxnodTool;
-  view: View;
-  active: boolean;
-  onAdd: () => void;
-}) {
-  // A paid tool is switched on by its purchase, and none can be bought yet.
-  // The button used to read "Subscribe" and mark the tool active in this
-  // browser without charging anything; the server refuses that now.
-  const paid = tool.kind === "paid";
-  const label = paid ? "Coming soon" : "Add Tool";
-  const list = view === "list";
-
-  return (
-    <ToolCard
-      tool={tool}
-      view={view}
-      headerExtra={
-        tool.kind === "paid" && tool.price ? (
-          <p className="shrink-0 text-sm font-semibold text-ink">{tool.price}</p>
-        ) : active ? (
-          <ActiveBadge />
-        ) : null
-      }
-      badgeExtra={tool.kind === "paid" && active ? <ActiveBadge /> : null}
-      actions={
-        <button
-          type="button"
-          onClick={paid ? undefined : onAdd}
-          disabled={active || paid}
-          className={cn(
-            "h-9 rounded-lg bg-black px-4 text-sm font-medium text-white transition-colors hover:bg-gray-800 disabled:cursor-default disabled:opacity-45 dark:bg-white dark:text-black dark:hover:bg-zinc-200",
-            list ? "w-full sm:w-auto sm:min-w-[8.5rem]" : "w-full",
+      {filter !== "bundles" && (
+        <div className={cn("grid gap-4", view === "grid" && "md:grid-cols-2")}>
+          {tools.map((tool) => {
+            const tiers = data.tiers.filter((t) => t.tool_id === tool.id);
+            const free = tiers.find((t) => t.is_free);
+            const offers = data.offers.filter((o) =>
+              o.tier_ids.some((id) => tiers.some((t) => t.id === id)),
+            );
+            const minimum = offers.reduce<string | null>(
+              (min, o) =>
+                min === null || Number(o.price) < Number(min) ? o.price : min,
+              null,
+            );
+            const soon = tool.status === "coming_soon";
+            return (
+              <ToolCard
+                key={tool.id}
+                tool={cardTool(tool, data)}
+                view={view}
+                headerExtra={
+                  tool.access.active ? (
+                    <ActiveBadge />
+                  ) : (
+                    <span className="text-sm font-semibold">
+                      {soon
+                        ? "Coming soon"
+                        : free
+                          ? "Free plan"
+                          : minimum
+                            ? `From ${money(minimum, data.currency)}`
+                            : "Plans coming soon"}
+                    </span>
+                  )
+                }
+                badgeExtra={
+                  offers.length > 0 ? (
+                    <span className="rounded-full bg-amber-400/10 px-2 py-0.5 text-[10px] font-medium text-amber-400">
+                      {free ? "Pro available" : "Premium"}
+                    </span>
+                  ) : null
+                }
+                actions={
+                  <div className="space-y-3">
+                    {free && (
+                      <p className="text-xs text-ink-3">
+                        {tool.access.owned && !tool.access.renewal_due
+                          ? `${tool.access.tier_name} plan active`
+                          : `${free.name} · ${free.features[0] ?? "No subscription fee"}`}
+                      </p>
+                    )}
+                    <div className="flex gap-2">
+                      {tool.access.active && tool.href ? (
+                        <Link
+                          href={tool.href as Route}
+                          className="flex h-10 flex-1 items-center justify-center rounded-xl bg-ink px-4 text-sm font-medium text-bg"
+                        >
+                          Open tool
+                        </Link>
+                      ) : (
+                        <button
+                          disabled={
+                            soon || !tool.access.allowed || activation.isPending
+                          }
+                          onClick={() => activate(tool.id)}
+                          className="flex h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-ink px-4 text-sm font-medium text-bg disabled:opacity-40"
+                        >
+                          {activation.isPending &&
+                            activation.variables?.id === tool.id && (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            )}
+                          {soon
+                            ? "Coming soon"
+                            : tool.access.allowed
+                              ? "Activate tool"
+                              : "Plan required"}
+                        </button>
+                      )}
+                      {!!offers.length && (
+                        <button
+                          onClick={() => setSelected({ toolId: tool.id })}
+                          className="h-10 flex-1 rounded-xl border border-line px-4 text-sm font-medium hover:bg-surface-2"
+                        >
+                          {tool.access.source === "purchase" ||
+                          tool.access.source === "legacy"
+                            ? "Manage plan"
+                            : "View plans"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                }
+              />
+            );
+          })}
+        </div>
+      )}
+      {(filter === "all" || filter === "bundles") && (
+        <div className="border-t border-line pt-6">
+          <div className="mb-4 flex items-center gap-3">
+            <Package className="h-5 w-5 text-ink-3" />
+            <div>
+              <h2 className="font-semibold">Better together</h2>
+              <p className="text-sm text-ink-3">One offer. Multiple tools.</p>
+            </div>
+          </div>
+          {bundles.length ? (
+            <div className="grid gap-4 md:grid-cols-2">
+              {bundles.map((offer) => (
+                <article
+                  key={offer.id}
+                  className="rounded-2xl border border-line bg-surface p-5"
+                >
+                  <span className="text-xs font-semibold uppercase tracking-wider text-amber-400">
+                    Bundle offer
+                  </span>
+                  <h3 className="mt-2 text-lg font-semibold">{offer.name}</h3>
+                  <p className="mt-2 text-sm text-ink-2">{offer.description}</p>
+                  <div className="my-4 flex flex-wrap gap-2">
+                    {offer.tier_ids.map((id) => {
+                      const tier = data.tiers.find((t) => t.id === id);
+                      return (
+                        <span
+                          key={id}
+                          className="rounded-lg bg-bg px-2 py-1 text-xs"
+                        >
+                          {data.tools.find((t) => t.id === tier?.tool_id)?.name}{" "}
+                          · {tier?.name}
+                        </span>
+                      );
+                    })}
+                  </div>
+                  <div className="flex items-end justify-between gap-3">
+                    <div>
+                      {offer.compare_at && (
+                        <p className="text-xs text-ink-3 line-through">
+                          {money(offer.compare_at, data.currency)}
+                        </p>
+                      )}
+                      <p className="text-xl font-semibold">
+                        {money(offer.price, data.currency)}
+                      </p>
+                      <p className="mt-1 text-xs text-ink-3">
+                        {term(offer)} · one-time payment
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setSelected({ bundleId: offer.id })}
+                      className="rounded-xl bg-ink px-4 py-2.5 text-sm font-semibold text-bg"
+                    >
+                      View bundle
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p className="rounded-xl border border-dashed border-line p-6 text-sm text-ink-3">
+              Bundle offers will appear here when available.
+            </p>
           )}
-        >
-          {label}
-        </button>
-      }
-    />
-  );
-}
-
-function FilterButton({
-  on,
-  onClick,
-  children,
-}: {
-  on: boolean;
-  onClick: () => void;
-  children: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "rounded-md px-3 py-1.5 text-center text-sm font-medium transition-colors",
-        on ? "bg-black text-white shadow-sm dark:bg-white dark:text-black" : "text-ink-2 hover:text-ink",
+        </div>
       )}
-    >
-      {children}
-    </button>
-  );
-}
-
-function ViewButton({
-  label,
-  on,
-  onClick,
-  children,
-}: {
-  label: string;
-  on: boolean;
-  onClick: () => void;
-  children: ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      aria-pressed={on}
-      onClick={onClick}
-      className={cn(
-        "grid h-8 w-8 place-items-center rounded-md transition-colors",
-        on ? "bg-black text-white dark:bg-white dark:text-black" : "text-ink-2 hover:text-ink",
+      {filter !== "bundles" && !tools.length && (
+        <p className="py-10 text-center text-sm text-ink-3">
+          No tools match your search.
+        </p>
       )}
-    >
-      {children}
-    </button>
+      {selected && (
+        <PlanDialog
+          catalog={data}
+          {...selected}
+          onClose={() => setSelected(null)}
+        />
+      )}
+    </section>
   );
 }

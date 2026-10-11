@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { BotMembershipBanner } from "@/components/tools/BotMembershipBanner";
 import { AccountBadge, LaneChip, StatusBadge } from "@/components/autohub/pieces";
 import { ENDED_POLL_MS, IDLE_POLL_MS, RUN_POLL_MS, stopReasonLabel } from "@/components/autohub/runState";
 import { cn } from "@/lib/cn";
@@ -81,6 +82,8 @@ export default function AutoHubPage() {
           so do its limits.
         </p>
       </header>
+
+      <BotMembershipBanner toolId="autohub" />
 
       {activeRuns.length > 0 && (
         <div className="space-y-4">
@@ -189,7 +192,7 @@ export default function AutoHubPage() {
       )}
 
       <p className="text-xs leading-relaxed text-ink-3 max-w-2xl">
-        Auto Hub has no subscription. FXNod earns a markup that Deriv takes from each real-money
+        Bot access is provided by your active Free or Pro plan in Discover. FXNOD also earns a markup that Deriv takes from each real-money
         payout; each bot shows its rate. Demo trades carry none. No bot can guarantee a profit,
         and a bot can lose up to the stop loss you give it.
       </p>
