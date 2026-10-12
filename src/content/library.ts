@@ -6,6 +6,7 @@
  * guide's own page, the sitemap) reads from here.
  */
 import { GUIDES, type Guide, type GuideCta } from "./guides";
+import { AUTOHUB_BOT_GUIDES } from "./autohubBots";
 import { AUTOMATION_GUIDES } from "./learnAutomation";
 import { BASICS_GUIDES } from "./learnBasics";
 import { BOT_GUIDES } from "./learnBots";
@@ -41,6 +42,16 @@ export const GUIDE_SECTIONS: GuideSection[] = [
       text: "Create an FXNOD account, connect your Deriv demo account, and use every tool with virtual funds.",
     },
     guides: GUIDES,
+  },
+  {
+    id: "auto-hub-bots",
+    title: "Auto Hub bots",
+    intro: "One guide per ready-made bot: the contract it trades, when it enters, how its stake moves and how to start it.",
+    cta: {
+      title: "Start one on your Deriv demo account",
+      text: "Every Auto Hub bot runs on FXNOD's servers and cannot start without a stop loss. Connect your Deriv demo account, pick a bot, and watch a full session with virtual funds.",
+    },
+    guides: AUTOHUB_BOT_GUIDES,
   },
   {
     id: "automated-trading",

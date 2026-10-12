@@ -414,7 +414,7 @@ export const STAKING_GUIDES: Guide[] = [
       { type: "h2", text: "In FXNOD" },
       {
         type: "p",
-        text: "Same stake is the recommended setting in dBot, and every Auto Hub bot uses the same stake on every trade. Combined with the required stop loss, the most a session can lose is known before it starts.",
+        text: "Same stake is the recommended setting in dBot, and about half of the Auto Hub bots use the same stake on every trade. Combined with the required stop loss, the most a session can lose is known before it starts.",
       },
       RISK_NOTE,
     ],
