@@ -32,9 +32,7 @@ function cardTool(tool: CommerceTool, catalog: Catalog): FxnodTool {
     ...tool,
     href: tool.href ?? undefined,
     icon: "/assets/fxnod-mark.png",
-    kind: catalog.tiers.some((t) => t.tool_id === tool.id && t.is_free)
-      ? "free"
-      : "paid",
+    kind: "paid",
   };
 }
 
@@ -75,7 +73,11 @@ export default function ToolsPage() {
   const bundles = data.offers.filter((o) => o.tier_ids.length > 1);
   const tools = data.tools.filter((tool) => {
     const tiers = data.tiers.filter((t) => t.tool_id === tool.id);
-    const free = tiers.some((t) => t.is_free);
+    const zero = data.offers.some(
+      (o) =>
+        Number(o.price) === 0 &&
+        o.tier_ids.some((id) => tiers.some((t) => t.id === id)),
+    );
     const paid = data.offers.some((o) =>
       o.tier_ids.some((id) => tiers.some((t) => t.id === id)),
     );
@@ -85,7 +87,7 @@ export default function ToolsPage() {
         .toLowerCase()
         .includes(query.toLowerCase()) &&
       (filter === "all" ||
-        (filter === "free" && free) ||
+        (filter === "zero" && zero) ||
         (filter === "pro" && paid))
     );
   });
@@ -127,8 +129,8 @@ export default function ToolsPage() {
           <div className="flex flex-1 rounded-xl border border-line bg-surface p-1">
             {[
               ["all", "All tools"],
-              ["free", "Free plans"],
-              ["pro", "Pro plans"],
+              ["zero", "$0 offers"],
+              ["pro", "Available plans"],
               ["bundles", "Bundles"],
             ].map(([key, label]) => (
               <button
@@ -178,7 +180,6 @@ export default function ToolsPage() {
         <div className={cn("grid gap-4", view === "grid" && "md:grid-cols-2")}>
           {tools.map((tool) => {
             const tiers = data.tiers.filter((t) => t.tool_id === tool.id);
-            const free = tiers.find((t) => t.is_free);
             const offers = data.offers.filter((o) =>
               o.tier_ids.some((id) => tiers.some((t) => t.id === id)),
             );
@@ -200,28 +201,26 @@ export default function ToolsPage() {
                     <span className="text-sm font-semibold">
                       {soon
                         ? "Coming soon"
-                        : free
-                          ? "Free plan"
-                          : minimum
-                            ? `From ${money(minimum, data.currency)}`
-                            : "Plans coming soon"}
+                        : minimum !== null
+                          ? `From ${money(minimum, data.currency)}`
+                          : "Plans coming soon"}
                     </span>
                   )
                 }
                 badgeExtra={
                   offers.length > 0 ? (
                     <span className="rounded-full bg-amber-400/10 px-2 py-0.5 text-[10px] font-medium text-amber-400">
-                      {free ? "Pro available" : "Premium"}
+                      Plan checkout required
                     </span>
                   ) : null
                 }
                 actions={
                   <div className="space-y-3">
-                    {free && (
+                    {tool.access.allowed && (
                       <p className="text-xs text-ink-3">
                         {tool.access.owned && !tool.access.renewal_due
                           ? `${tool.access.tier_name} plan active`
-                          : `${free.name} · ${free.features[0] ?? "No subscription fee"}`}
+                          : `${tool.access.tier_name} · ${tool.access.expires_at ? `Access until ${new Date(tool.access.expires_at).toLocaleDateString()}` : "Lifetime access"}`}
                       </p>
                     )}
                     <div className="flex gap-2">
@@ -232,7 +231,7 @@ export default function ToolsPage() {
                         >
                           Open tool
                         </Link>
-                      ) : (
+                      ) : tool.access.allowed ? (
                         <button
                           disabled={
                             soon || !tool.access.allowed || activation.isPending
@@ -250,8 +249,20 @@ export default function ToolsPage() {
                               ? "Activate tool"
                               : "Plan required"}
                         </button>
+                      ) : (
+                        <button
+                          disabled={soon || !offers.length}
+                          onClick={() => setSelected({ toolId: tool.id })}
+                          className="flex h-10 flex-1 items-center justify-center rounded-xl bg-ink px-4 text-sm font-medium text-bg disabled:opacity-40"
+                        >
+                          {soon
+                            ? "Coming soon"
+                            : offers.length
+                              ? "Choose a plan"
+                              : "Plans coming soon"}
+                        </button>
                       )}
-                      {!!offers.length && (
+                      {!!offers.length && tool.access.allowed && (
                         <button
                           onClick={() => setSelected({ toolId: tool.id })}
                           className="h-10 flex-1 rounded-xl border border-line px-4 text-sm font-medium hover:bg-surface-2"

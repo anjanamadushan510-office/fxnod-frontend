@@ -44,6 +44,10 @@ export function PlanDialog({
         ),
   );
   const [selected, setSelected] = useState<Offer | undefined>(offers[0]);
+  const initialOffer = offers.find((offer) => offer.months === 1) ?? offers[0];
+  const [period, setPeriod] = useState(initialOffer ? term(initialOffer) : "");
+  const periods = [...new Set(offers.map(term))];
+  const visibleOffers = offers.filter((offer) => term(offer) === period);
   const [coupon, setCoupon] = useState("");
   const [quote, setQuote] = useState<Quote | null>(null);
   const [busy, setBusy] = useState(false);
@@ -57,12 +61,13 @@ export function PlanDialog({
     const timer = setInterval(update, 1000);
     return () => clearInterval(timer);
   }, [quote]);
-  async function review() {
-    if (!selected) return;
+  async function review(offer = selected) {
+    if (!offer || busy) return;
+    setSelected(offer);
     setBusy(true);
     setError("");
     try {
-      setQuote(await commerce.quote(selected.id, coupon.trim()));
+      setQuote(await commerce.quote(offer.id, coupon.trim()));
     } catch (e) {
       setError(commerceError(e));
     } finally {
@@ -99,7 +104,9 @@ export function PlanDialog({
     >
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-[70] bg-black/70 backdrop-blur-sm" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-[71] max-h-[90dvh] w-[calc(100%-2rem)] max-w-2xl -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl border border-line bg-surface p-6 shadow-2xl sm:p-8">
+        <Dialog.Content
+          className={`fixed left-1/2 top-1/2 z-[71] max-h-[90dvh] w-[calc(100%-2rem)] ${quote || success ? "max-w-2xl" : "max-w-6xl"} -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl border border-line bg-surface p-6 shadow-2xl sm:p-8`}
+        >
           <Dialog.Close
             disabled={busy}
             aria-label="Close plans"
@@ -137,86 +144,138 @@ export function PlanDialog({
             <>
               {!quote ? (
                 <>
-                  <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                    {offers.map((offer) => (
+                  <div
+                    className="mt-6 flex flex-wrap justify-center gap-2"
+                    aria-label="Access period"
+                  >
+                    {periods.map((value) => (
                       <button
-                        key={offer.id}
+                        key={value}
+                        disabled={busy}
+                        aria-pressed={period === value}
                         onClick={() => {
-                          setSelected(offer);
+                          setPeriod(value);
+                          setSelected(
+                            offers.find((offer) => term(offer) === value),
+                          );
                           setError("");
                         }}
                         className={cn(
-                          "relative rounded-xl border p-4 text-left transition",
-                          selected?.id === offer.id
-                            ? "border-ink bg-surface-2 ring-1 ring-ink"
-                            : "border-line hover:border-ink-3",
+                          "rounded-full border px-4 py-2 text-sm",
+                          period === value
+                            ? "border-ink bg-ink text-bg"
+                            : "border-line text-ink-2",
                         )}
-                        aria-pressed={selected?.id === offer.id}
                       >
-                        {offer.featured && (
-                          <span className="mb-2 inline-flex rounded-full bg-emerald-400/10 px-2 py-1 text-[10px] font-semibold text-emerald-400">
-                            RECOMMENDED
-                          </span>
-                        )}
-                        <span className="block text-sm font-semibold text-ink">
-                          {offer.name}
-                        </span>
-                        <span className="mt-1 block text-xs text-ink-3">
-                          {term(offer)}
-                        </span>
-                        <span className="mt-4 block text-xl font-semibold text-ink">
-                          {money(offer.price, catalog.currency)}
-                        </span>
-                        {offer.compare_at && (
-                          <span className="text-xs text-ink-3 line-through">
-                            {money(offer.compare_at, catalog.currency)}
-                          </span>
-                        )}
+                        {value}
                       </button>
                     ))}
                   </div>
-                  {selected && (
-                    <div className="mt-5 rounded-xl bg-bg p-4">
-                      <p className="text-sm text-ink-2">
-                        {selected.description}
-                      </p>
-                      <ul className="mt-3 space-y-2">
-                        {selected.tier_ids.map((id) => {
-                          const tier = catalog.tiers.find((t) => t.id === id);
-                          return (
-                            tier && (
-                              <li key={id} className="text-sm text-ink">
-                                <strong>
-                                  {
-                                    catalog.tools.find(
-                                      (t) => t.id === tier.tool_id,
-                                    )?.name
-                                  }{" "}
-                                  · {tier.name}
-                                </strong>
-                                <ul className="mt-2 space-y-1">
-                                  {tier.features.map((f) => (
-                                    <li
-                                      key={f}
-                                      className="flex gap-2 text-ink-2"
-                                    >
-                                      <Check className="h-4 w-4 shrink-0 text-emerald-400" />
-                                      {f}
-                                    </li>
-                                  ))}
-                                </ul>
-                              </li>
-                            )
-                          );
-                        })}
-                      </ul>
-                    </div>
-                  )}
+                  <div
+                    className={cn(
+                      "mt-6 grid gap-4",
+                      visibleOffers.length > 1 && "md:grid-cols-2",
+                      visibleOffers.length > 2 && "xl:grid-cols-3",
+                    )}
+                  >
+                    {visibleOffers.map((offer) => (
+                      <article
+                        key={offer.id}
+                        className={cn(
+                          "flex flex-col rounded-2xl border p-6",
+                          offer.featured
+                            ? "border-emerald-400 bg-surface-2"
+                            : "border-line bg-bg",
+                        )}
+                      >
+                        <div className="mb-3 min-h-6">
+                          {offer.featured && (
+                            <span className="rounded-full bg-emerald-400/10 px-2 py-1 text-xs font-semibold text-emerald-400">
+                              Recommended
+                            </span>
+                          )}
+                        </div>
+                        <h3 className="text-xl font-semibold text-ink">
+                          {offer.name}
+                        </h3>
+                        <p className="mt-2 min-h-10 text-sm text-ink-3">
+                          {offer.description}
+                        </p>
+                        <div className="mt-6">
+                          <div className="min-h-5 text-sm text-ink-3">
+                            {offer.compare_at &&
+                              Number(offer.compare_at) >
+                                Number(offer.price) && (
+                                <span className="line-through">
+                                  {money(offer.compare_at, catalog.currency)}
+                                </span>
+                              )}
+                          </div>
+                          <p className="text-3xl font-semibold text-ink">
+                            {money(offer.price, catalog.currency)}
+                          </p>
+                          <p className="mt-1 text-xs text-ink-3">
+                            {term(offer)} ·{" "}
+                            {offer.months || offer.days
+                              ? "One payment for the full period"
+                              : "One-time payment"}
+                          </p>
+                          {Number(offer.price) === 0 && (
+                            <p className="mt-2 text-xs text-emerald-400">
+                              Temporary access · one activation per account
+                            </p>
+                          )}
+                        </div>
+                        <button
+                          disabled={busy}
+                          onClick={() => void review(offer)}
+                          className="mt-5 flex h-11 items-center justify-center gap-2 rounded-xl bg-ink text-sm font-semibold text-bg disabled:opacity-50"
+                        >
+                          {busy && selected?.id === offer.id && (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          )}
+                          {Number(offer.price) === 0
+                            ? "Activate $0 package"
+                            : "Get plan"}
+                        </button>
+                        <ul className="mt-6 space-y-3 border-t border-line pt-5 text-sm text-ink-2">
+                          {offer.tier_ids.map((id) => {
+                            const tier = catalog.tiers.find(
+                              (item) => item.id === id,
+                            );
+                            return (
+                              tier && (
+                                <li key={id}>
+                                  <p className="mb-2 font-semibold text-ink">
+                                    {
+                                      catalog.tools.find(
+                                        (tool) => tool.id === tier.tool_id,
+                                      )?.name
+                                    }{" "}
+                                    · {tier.name}
+                                  </p>
+                                  <ul className="space-y-2">
+                                    {tier.features.map((feature) => (
+                                      <li key={feature} className="flex gap-2">
+                                        <Check className="h-4 w-4 shrink-0 text-emerald-400" />
+                                        {feature}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </li>
+                              )
+                            );
+                          })}
+                        </ul>
+                      </article>
+                    ))}
+                  </div>
                   <label className="mt-5 block text-xs font-medium text-ink-2">
                     Coupon code (optional)
                     <div className="mt-2 flex items-center rounded-xl border border-line px-3">
                       <TicketPercent className="h-4 w-4 text-ink-3" />
                       <input
+                        disabled={busy}
                         value={coupon}
                         onChange={(e) =>
                           setCoupon(e.target.value.toUpperCase())
@@ -233,17 +292,9 @@ export function PlanDialog({
                     tier is not credited. Bundle access applies to every
                     included tool.
                   </p>
-                  <button
-                    disabled={!selected || busy}
-                    onClick={review}
-                    className="mt-5 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-ink font-medium text-bg disabled:opacity-50"
-                  >
-                    {busy && <Loader2 className="h-4 w-4 animate-spin" />}Review
-                    purchase
-                  </button>
                   {!offers.length && (
                     <p className="mt-3 text-sm text-ink-3">
-                      No paid offers are available for this tool yet.
+                      No pricing packages are available for this tool yet.
                     </p>
                   )}
                 </>
@@ -298,12 +349,14 @@ export function PlanDialog({
                       ? "Processing…"
                       : `Confirm · ${money(quote.total, quote.currency)}`}
                   </button>
-                  <Link
-                    href={"/wallet" as Route}
-                    className="block text-center text-sm text-ink-2 underline"
-                  >
-                    Add funds to wallet
-                  </Link>
+                  {Number(quote.total) > 0 && (
+                    <Link
+                      href={"/wallet" as Route}
+                      className="block text-center text-sm text-ink-2 underline"
+                    >
+                      Add funds to wallet
+                    </Link>
+                  )}
                 </div>
               )}
               {error && (

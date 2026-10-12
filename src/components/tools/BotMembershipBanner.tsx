@@ -5,7 +5,7 @@ import type { Route } from "next";
 import { ArrowUpRight, ShieldCheck } from "lucide-react";
 import { useCommerce } from "@/hooks/useCommerce";
 
-/** Reflect the catalog without making paid access a default for free tools. */
+/** Only checked-out plans grant access, including time-limited $0 offers. */
 export function BotMembershipBanner({
   toolId,
 }: {
@@ -24,12 +24,12 @@ export function BotMembershipBanner({
           <p className="text-sm font-medium text-ink">
             {real
               ? "Real-account bot access is available"
-              : "Start with the free demo plan"}
+              : "Choose a plan to run this tool"}
           </p>
           <p className="mt-1 text-xs text-ink-3">
             {real
               ? "View your membership and access period in Active Tools."
-              : "Choose a Pro offer in Discover to run bots on a real account."}
+              : "Review packages, features and access periods in Discover."}
           </p>
         </div>
       </div>

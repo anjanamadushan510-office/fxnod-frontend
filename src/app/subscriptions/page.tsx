@@ -104,7 +104,7 @@ export default function SubscriptionsPage() {
                   <h2 className="font-semibold">{tool.name}</h2>
                   <p className="text-xs text-ink-3">
                     {tool.access.tier_name ?? "No active"} plan
-                    {tool.access.renewal_due ? " · Paid access expired" : ""}
+                    {tool.access.renewal_due ? " · Access expired" : ""}
                   </p>
                 </div>
                 <span
@@ -122,13 +122,13 @@ export default function SubscriptionsPage() {
                 {tool.access.expires_at
                   ? `Access until ${new Date(tool.access.expires_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}`
                   : tool.access.source === "free"
-                    ? "Free plan · no expiry"
+                    ? "Plan activation required"
                     : tool.access.allowed
                       ? "Lifetime access"
                       : "Access expired"}
               </p>
               <div className="mt-5 flex flex-wrap gap-2">
-                {tool.href && (
+                {tool.href && tool.access.allowed && (
                   <Link
                     href={tool.href as Route}
                     className="flex h-10 flex-1 items-center justify-center rounded-xl bg-ink px-4 text-sm font-medium text-bg"
