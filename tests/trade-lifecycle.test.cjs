@@ -155,3 +155,15 @@ test('history reconciliation closes a position when the terminal WebSocket frame
   assert.equal(store.getState().positions[0].outcome, 'won');
   assert.equal(store.getState().positions[0].pnl, 9.01);
 });
+
+test('chart repaint stays bounded for a 100-year expiry and never inserts fake prices', () => {
+  const { contractChartData } = load('src/components/options/positions/contractChartData.ts', {});
+  const data = contractChartData({ ticks: [{ time: 100, value: 10, kind: 'normal' },
+    { time: 100, value: 11, kind: 'normal' }], expiryTime: 100 + 100 * 365 * 86400, duration: 'Open' });
+  assert.equal(data.length, 61);
+  assert.equal(data[0].value, 11);
+  assert.equal(data.slice(1).every((point) => point.value === undefined), true);
+  assert.equal(data.at(-1).time, 160);
+  assert.equal(contractChartData({ ticks: [], duration: 'Open' }).length, 0);
+  assert.equal(contractChartData({ ticks: [{ time: 100, value: 10, kind: 'exit' }], duration: '5 ticks', expiryTime: 999999 }).length, 1);
+});

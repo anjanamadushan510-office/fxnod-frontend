@@ -1,5 +1,7 @@
 "use client";
 
+import { contractChartData } from "./contractChartData";
+
 import { useEffect, useRef } from "react";
 import { useTheme } from "next-themes";
 import {
@@ -94,38 +96,9 @@ export function ContractDetailChart({ detail }: { detail: ContractDetail }) {
     });
     seriesRef.current = series;
 
-    const chartData: any[] = detail.ticks.map((t) => ({ time: t.time as UTCTimestamp, value: t.value }));
+    const chartData = contractChartData(detail);
 
-    if (detail.expiryTime && detail.expiryTime > detail.exitTime) {
-      const lastTime = detail.ticks.length > 0 ? detail.ticks[detail.ticks.length - 1].time : detail.exitTime;
-      for (let t = lastTime + 1; t <= detail.expiryTime; t++) {
-        chartData.push({ time: t as UTCTimestamp });
-      }
-    }
-
-    // Add forward whitespace for open tick contracts to prevent x-axis squishing
-    const hasExit = detail.ticks.some((t) => t.kind === "exit");
-    if (!hasExit && detail.ticks.length > 0) {
-      const match = detail.duration.match(/(\d+)\/(\d+)\s+ticks?/i);
-      let missingTicks = 0;
-      if (match) {
-        missingTicks = parseInt(match[2], 10) - parseInt(match[1], 10);
-      } else if (detail.duration.includes("tick")) {
-        const totalMatch = detail.duration.match(/(\d+)\s+ticks?/i);
-        if (totalMatch) {
-          missingTicks = Math.max(0, parseInt(totalMatch[1], 10) - detail.ticks.length + 1);
-        }
-      }
-      // Guarantee at least 1 tick of forward space if it's open
-      missingTicks = Math.max(1, missingTicks);
-
-      const lastTime = detail.ticks[detail.ticks.length - 1].time;
-      for (let i = 1; i <= missingTicks; i++) {
-        chartData.push({ time: (lastTime + i) as UTCTimestamp });
-      }
-    }
-
-    series.setData(chartData);
+    series.setData(chartData.map((point) => ({ ...point, time: point.time as UTCTimestamp })));
 
     // Entry barrier line (dashed) for contracts that have a distinct fixed barrier
     const isDigitContract =

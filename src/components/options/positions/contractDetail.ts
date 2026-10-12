@@ -251,174 +251,21 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
   let exitSpot = Number((h as any).exit_spot) || 0;
   let entryTime = startTime + 1;
   
-  const isAccu = h.frontend_contract_type === "accumulators" || h.frontend_contract_type === "ACCU" || (h as any).contract_type === "ACCU";
-  const isTurbos = h.frontend_contract_type === "turbos" || h.frontend_contract_type === "TURBOSLONG" || h.frontend_contract_type === "TURBOSSHORT" || (h as any).contract_type?.includes("TURBOS");
-
-  let ticks: ContractTick[] = [];
-  const ts = (h as any).tick_stream;
-  if (ts && Array.isArray(ts) && ts.length > 0) {
-    if (backendDurUnit === "t" && backendDurSecs > 0) {
-      const isTouch = h.frontend_contract_type?.toLowerCase().includes("touch") || (h as any).contract_type?.toUpperCase().includes("TOUCH");
-      // Turbos also needs a synthetic start point (white circle before bubble 1)
-      // Only Touch and Accu use entry spot as the first unnumbered point
-      const needsSyntheticStart = !isAccu && !isTouch;
-      
-      let entryIdx = -1;
-      for (let i = 0; i < ts.length; i++) {
-        if (ts[i].epoch > startTime) {
-          entryIdx = i;
-          break;
-        }
-      }
-      
-      // For Turbos, Deriv's tick_stream starts one tick BEFORE the actual entry spot
-      // (the pre-contract market tick). Find the real entry by matching entrySpot value
-      // using a forward search from the first tick after startTime.
-      if (isTurbos && entryIdx >= 0 && entrySpot > 0) {
-        for (let i = entryIdx; i < Math.min(ts.length, entryIdx + 5); i++) {
-          const val = Number(ts[i].tick_display_value) || Number(ts[i].tick) || 0;
-          if (Math.abs(val - entrySpot) < 0.000001) {
-            entryIdx = i;
-            break;
-          }
-        }
-      }
-      
-      const typeStr = (h.frontend_contract_type || h.contract_type || (h as any).contract_type || "").toUpperCase();
-      const isDigit = typeStr.includes("DIGIT") || typeStr === "EVEN_ODD" || typeStr === "MATCHES_DIFFERS" || typeStr === "OVER_UNDER" || typeStr.includes("TURBOS");
-      
-      if (entryIdx === -1) entryIdx = Math.max(0, ts.length - backendDurSecs);
-
-      // Unified exit index:
-      // Digits (e.g. Even/Odd): N ticks INCLUSIVE of entry spot. -> exitIdx = entryIdx + N - 1
-      // Non-Digits (e.g. Turbos): N ticks AFTER entry spot. -> exitIdx = entryIdx + N
-      const targetExitIdx = entryIdx + (isDigit ? backendDurSecs - 1 : backendDurSecs);
-      const maxExitIdx = Math.min(ts.length - 1, targetExitIdx);
-      let exitIdx = maxExitIdx;
-      
-      // Always slice from entryIdx (entry spot) onwards
-      const elapsed = ts.slice(entryIdx, exitIdx + 1);
-      
-      ticks = elapsed.map((t: any, i: number) => ({
-        time: t.epoch || (startTime + i + 1),
-        value: Number(t.tick_display_value) || Number(t.tick) || 0,
-        kind: "normal" as any
-      }));
-      
-      // Prepend a "pre-start" line from startTime to entry spot to visually anchor the chart.
-      // This point has `kind = "pre-start"` so it will NOT receive any circular marker.
-      if (ticks.length > 0 && ticks[0].time > startTime) {
-          ticks.unshift({
-              time: startTime,
-              value: ticks[0].value,
-              kind: "pre-start" as any
-          });
-      }
-      
-      // Expected total:
-      // Digits: N points (plus the 1 pre-start) = N + 1
-      // Non-Digits: N points after entry + entry = N + 1 (plus the 1 pre-start) = N + 2
-      const expectedPoints = isDigit ? backendDurSecs + 1 : backendDurSecs + 2;
-      const isEarlyExit = (ts.length - 1) < targetExitIdx;
-      
-      if (!isEarlyExit) {
-          while (ticks.length < expectedPoints) {
-              ticks.push({
-                  time: ticks[ticks.length - 1].time + 1,
-                  value: exitSpot > 0 ? exitSpot : ticks[ticks.length - 1].value,
-                  kind: "normal" as any
-              });
-          }
-          if (ticks.length > expectedPoints) {
-              ticks = ticks.slice(0, expectedPoints);
-          }
-      }
-      
-      if (ticks.length > 0) {
-          // For non-digits, the entry spot (index 1, because 0 is pre-start) gets a hollow circle marker (kind="entry").
-          // For digits, the entry spot IS the first evaluated tick, so it gets a numbered bubble (kind="normal").
-          if (!isDigit && ticks.length > 1) {
-              ticks[1].kind = "entry";
-          }
-          ticks[ticks.length - 1].kind = "exit";
-      }
-      
-      // Compute entry spot/time
-      const entryIndex = ticks.length > 1 ? 1 : 0;
-      if (ticks.length > entryIndex) {
-        entrySpot = entrySpot || ticks[entryIndex].value;
-        entryTime = ticks[entryIndex].time;
-      }
-    } else {
-      ticks = ts.map((t: any, i: number) => {
-        const time = t.epoch || (startTime + i);
-        const value = Number(t.tick_display_value) || Number(t.tick) || 0;
-        let kind: "entry" | "exit" | "normal" | "pre-start" = "normal";
-        if (i === ts.length - 1) kind = "exit";
-        return { time, value, kind };
-      });
-      if (ticks.length > 0) {
-        ticks[0].kind = "entry";
-        if (ticks.length > 1) {
-          ticks[ticks.length - 1].kind = "exit";
-        }
-      }
-    }
-
-    if (isAccu && ticks.length > 0) {
-      if (exitSpot > 0) {
-         let actualExitIdx = -1;
-         const exitTickTime = Number((h as any).exit_tick_time) || 0;
-         for (let i = ticks.length - 1; i >= 0; i--) {
-             if (exitTickTime > 0 && ticks[i].time === exitTickTime) {
-                 actualExitIdx = i;
-                 break;
-             }
-             if (exitTickTime === 0 && Math.abs(ticks[i].value - exitSpot) < 0.000001) {
-                 actualExitIdx = i;
-                 break;
-             }
-         }
-         if (actualExitIdx !== -1 && actualExitIdx < ticks.length - 1) {
-             ticks = ticks.slice(0, actualExitIdx + 1);
-             ticks.forEach(t => { if (t.kind === "exit") t.kind = "normal"; });
-             ticks[ticks.length - 1].kind = "exit";
-         }
-      }
-
-      if (entrySpot > 0) {
-         let actualEntryIdx = -1;
-         for(let i = 0; i < Math.min(ticks.length, 5); i++) {
-             if (Math.abs(ticks[i].value - entrySpot) < 0.000001) {
-                 actualEntryIdx = i;
-                 break;
-             }
-         }
-         if (actualEntryIdx > 0) {
-             for(let i=0; i<actualEntryIdx; i++) {
-                 ticks[i].kind = "pre-start";
-             }
-             ticks[actualEntryIdx].kind = "entry";
-         }
-      }
-    }
-
-    if (ticks.length > 0) {
-      if (exitSpot === 0) exitSpot = ticks[ticks.length - 1].value;
-      
-      // Sync times with authoritative tick stream for BOTH tick and time contracts
-      if (ticks[0].time <= startTime && !isAccu && !isTurbos) {
-        startTime = ticks[0].time;
-      } else if ((isAccu || isTurbos) && ticks[0].time < startTime) {
-        startTime = ticks[0].time; // Fallback if tick stream somehow started earlier
-      }
-      exitTime = ticks[ticks.length - 1].time;
-    }
-  } else if (entrySpot && exitSpot) {
-    if (exitTime === startTime) exitTime = startTime + 5; // fallback
-    const isTickFallback = backendDurUnit === "t";
-    const numPoints = isTickFallback ? Math.max(5, backendDurSecs) : Math.max(10, backendDurSecs);
-    ticks = genTicks(entrySpot, exitSpot, startTime, exitTime, numPoints);
+  const observed = Array.isArray(h.tick_stream) ? h.tick_stream : [];
+  const byTime = new Map<number, ContractTick>();
+  for (const tick of observed) {
+    const time = Number(tick.epoch);
+    const value = Number(tick.tick_display_value ?? tick.tick);
+    if (Number.isFinite(time) && Number.isFinite(value)) byTime.set(time, { time, value, kind: "normal" });
+  }
+  const ticks = [...byTime.values()].sort((a, b) => a.time - b.time);
+  if (ticks.length) {
+    ticks[0].kind = "entry";
+    ticks[ticks.length - 1].kind = "exit";
+    entryTime = ticks[0].time;
+    exitTime = ticks[ticks.length - 1].time;
+    entrySpot = entrySpot || ticks[0].value;
+    exitSpot = exitSpot || ticks[ticks.length - 1].value;
   }
 
 		const seconds = Math.max(1, exitTime - startTime);
