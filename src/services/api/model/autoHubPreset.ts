@@ -45,4 +45,6 @@ export interface AutoHubPreset {
   take_profit: string;
   /** Decimal string. What the stake is multiplied by after a losing trade. Zero for a plan that keeps the same stake. */
   multiplier: string;
+  /** Decimal string. The profit at which each position is closed, for a contract that stays open until an order closes it (Accumulators, Multipliers). Zero for a contract that ends by itself. */
+  contract_take_profit: string;
 }

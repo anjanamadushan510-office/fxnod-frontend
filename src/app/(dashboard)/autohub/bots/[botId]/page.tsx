@@ -467,6 +467,9 @@ function PlanPicker({
         const active = plan.id === selected;
         // Zero means the stake never changes; anything else multiplies it.
         const multiplies = compareAmounts(plan.multiplier, "0") > 0;
+        // A position that stays open until an order closes it carries its own
+        // take profit; a contract that ends by itself has none.
+        const closesAt = compareAmounts(plan.contract_take_profit, "0") > 0;
         return (
           <button
             key={plan.id}
@@ -488,6 +491,7 @@ function PlanPicker({
               {multiplies
                 ? `After a loss the stake is multiplied by ${plan.multiplier}, and no stake is placed that could take the loss past ${plan.stop_loss}.`
                 : "The stake stays the same on every trade."}
+              {closesAt && ` Each position is closed at a profit of ${plan.contract_take_profit}.`}
             </p>
           </button>
         );
