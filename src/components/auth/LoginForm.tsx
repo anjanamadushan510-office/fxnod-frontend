@@ -161,7 +161,7 @@ export function LoginForm() {
             The Ultimate Trading Hub
           </h2>
           <p id="slide-copy" className="text-sm text-zinc-300 max-w-md leading-relaxed mb-6">
-            Build and run your own Deriv strategies. Free with markup, or monthly from your wallet.
+            Build and run your own Deriv strategies. Choose a tool package and access period from your FXNOD Wallet.
           </p>
           <div className="flex gap-2" id="slide-dots">
             <button

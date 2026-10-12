@@ -14,7 +14,7 @@ function getRouteTitle(pathname: string) {
   if (pathname.startsWith("/option")) return { title: "Options", subtitle: "dTrader · dBot on Deriv" };
   if (pathname.startsWith("/dbot")) return { title: "dBot", subtitle: "Automated trading on Deriv" };
   if (pathname.startsWith("/autohub")) return { title: "Auto Hub", subtitle: "Ready-made bots on Deriv" };
-  if (pathname.startsWith("/tools")) return { title: "Discover", subtitle: "Free tools and paid subscriptions" };
+  if (pathname.startsWith("/tools")) return { title: "Discover", subtitle: "Tool packages, bundles and access periods" };
   if (pathname.startsWith("/subscriptions")) return { title: "Active Tools", subtitle: "Tools you have turned on" };
   if (pathname.startsWith("/venues")) return { title: "Connected Accounts", subtitle: "Live APIs" };
   if (pathname.startsWith("/wallet")) return { title: "Wallet", subtitle: "Top up, then pay for tools" };

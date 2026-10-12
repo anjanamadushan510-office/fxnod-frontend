@@ -102,7 +102,7 @@ export default function ToolsPage() {
             Find your trading edge.
           </h1>
           <p className="mt-2 text-sm text-ink-2">
-            Start free. Choose the plan that fits the way you trade.
+            Compare packages, features and access periods for every tool.
           </p>
         </div>
         <Link
