@@ -28,11 +28,19 @@ import {
   useStartAutoHubRun,
 } from "@/services/api/endpoints/auto-hub/auto-hub";
 import { useGetBotLimits } from "@/services/api/endpoints/bots/bots";
-import type { AutoHubBot, StartAutoHubRunRequest } from "@/services/api/model";
+import type { AutoHubBot, AutoHubPreset, StartAutoHubRunRequest } from "@/services/api/model";
 
-/** What the user has filled in. Amounts stay the strings they typed. */
+/**
+ * What the user has filled in. Amounts stay the strings they typed.
+ *
+ * A bot is set up one of two ways and the catalogue says which: a bot that
+ * lists presets is started by choosing one, and its three amounts are the
+ * plan's; a bot that lists none takes the three amounts typed here.
+ */
 interface Draft {
   symbols: string[];
+  /** The id of the chosen plan, or empty while none is chosen. */
+  preset: string;
   stake: string;
   stopLoss: string;
   takeProfit: string;
@@ -46,6 +54,8 @@ function draftKey(botId: string) {
 function freshDraft(bot: AutoHubBot): Draft {
   return {
     symbols: [],
+    // No plan is chosen for the user: which stop loss to accept is theirs.
+    preset: "",
     stake: bot.default_stake,
     stopLoss: bot.default_stop_loss,
     takeProfit: bot.default_take_profit,
@@ -83,6 +93,8 @@ function storedDraft(bot: AutoHubBot): Draft | null {
     }
     return {
       symbols: parsed.symbols.filter((s): s is string => typeof s === "string"),
+      // A plan the bot no longer has is dropped, so the choice is made again.
+      preset: bot.presets.some((p) => p.id === parsed.preset) ? (parsed.preset as string) : "",
       stake: parsed.stake,
       stopLoss: parsed.stopLoss,
       takeProfit: parsed.takeProfit,
@@ -182,6 +194,10 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
           : `Choose at least ${bot.min_markets} market${bot.min_markets === 1 ? "" : "s"}.`,
       );
     }
+    if (bot.presets.length > 0) {
+      if (!bot.presets.some((p) => p.id === draft.preset)) found.push("Choose a plan.");
+      return [...found, ...settings.errors];
+    }
     if (!isAmount(draft.stake)) {
       found.push("Stake must be an amount, such as 1 or 0.50.");
     } else if (compareAmounts(draft.stake, bot.min_stake) < 0) {
@@ -196,6 +212,7 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
     return [...found, ...settings.errors];
   }, [bot, draft, settings.errors]);
 
+  const hasPlans = bot.presets.length > 0;
   const real = deriv.linked && !deriv.isVirtual;
   const ready = errors.length === 0;
   const canStart = deriv.linked && !startRun.isPending && (!real || acknowledged);
@@ -213,15 +230,21 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
     }
     const request: StartAutoHubRunRequest = {
       symbols: draft.symbols,
-      stake: draft.stake.trim(),
-      stop_loss: draft.stopLoss.trim(),
       settings: settings.payload,
       // Sent as it is and never defaulted to true: the engine refuses a
       // real-money run without it, and the tick below is the only thing that
       // sets it.
       risk_acknowledged: real && acknowledged,
     };
-    if (draft.takeProfit.trim() !== "") request.take_profit = draft.takeProfit.trim();
+    // One or the other, never both: the engine refuses an amount sent with a
+    // plan, because a plan's amounts are not editable one by one.
+    if (hasPlans) {
+      request.preset = draft.preset;
+    } else {
+      request.stake = draft.stake.trim();
+      request.stop_loss = draft.stopLoss.trim();
+      if (draft.takeProfit.trim() !== "") request.take_profit = draft.takeProfit.trim();
+    }
 
     try {
       const res = await startRun.mutateAsync({ botId: bot.bot_id, data: request });
@@ -286,36 +309,48 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
         </div>
 
         <div className="space-y-6 lg:sticky lg:top-6">
-          <Card title="Stake and limits">
-            <div className="space-y-4">
-              <TextField
-                label="Stake per trade"
-                value={draft.stake}
-                onChange={(stake) => patch({ stake })}
-                maxLength={12}
-                hint={
-                  caps?.max_stake_per_trade
-                    ? `The same for every trade. From ${bot.min_stake} up to ${caps.max_stake_per_trade}.`
-                    : `The same for every trade. From ${bot.min_stake}.`
-                }
+          {hasPlans && (
+            <Card title="Plan">
+              <PlanPicker
+                plans={bot.presets}
+                selected={draft.preset}
+                onChange={(preset) => patch({ preset })}
               />
-              <TextField
-                label="Stop loss"
-                value={draft.stopLoss}
-                onChange={(stopLoss) => patch({ stopLoss })}
-                maxLength={12}
-                hint="The bot stops when its real losses reach this."
-              />
-              <TextField
-                label="Take profit"
-                value={draft.takeProfit}
-                onChange={(takeProfit) => patch({ takeProfit })}
-                maxLength={12}
-                placeholder="No target"
-                hint="The bot stops when its real profit reaches this. Leave empty for no target."
-              />
-            </div>
-          </Card>
+            </Card>
+          )}
+
+          {!hasPlans && (
+            <Card title="Stake and limits">
+              <div className="space-y-4">
+                <TextField
+                  label="Stake per trade"
+                  value={draft.stake}
+                  onChange={(stake) => patch({ stake })}
+                  maxLength={12}
+                  hint={
+                    caps?.max_stake_per_trade
+                      ? `The same for every trade. From ${bot.min_stake} up to ${caps.max_stake_per_trade}.`
+                      : `The same for every trade. From ${bot.min_stake}.`
+                  }
+                />
+                <TextField
+                  label="Stop loss"
+                  value={draft.stopLoss}
+                  onChange={(stopLoss) => patch({ stopLoss })}
+                  maxLength={12}
+                  hint="The bot stops when its real losses reach this."
+                />
+                <TextField
+                  label="Take profit"
+                  value={draft.takeProfit}
+                  onChange={(takeProfit) => patch({ takeProfit })}
+                  maxLength={12}
+                  placeholder="No target"
+                  hint="The bot stops when its real profit reaches this. Leave empty for no target."
+                />
+              </div>
+            </Card>
+          )}
 
           {bot.settings.length > 0 && (
             <Card title="Settings">
@@ -404,6 +439,58 @@ function Shell({ children }: { children: React.ReactNode }) {
       </Link>
       {children}
     </section>
+  );
+}
+
+/**
+ * The bot's money plans, one to choose. Each is a whole: a stop loss with the
+ * starting stake and profit target that go with it, as the engine holds them.
+ * Nothing here is editable, and the engine applies the plan by its id.
+ */
+function PlanPicker({
+  plans,
+  selected,
+  onChange,
+}: {
+  plans: AutoHubPreset[];
+  selected: string;
+  onChange: (id: string) => void;
+}) {
+  return (
+    <div role="radiogroup" aria-label="Plan" className="space-y-3">
+      {plans.map((plan) => {
+        const active = plan.id === selected;
+        // Zero means the stake never changes; anything else multiplies it.
+        const multiplies = compareAmounts(plan.multiplier, "0") > 0;
+        return (
+          <button
+            key={plan.id}
+            type="button"
+            role="radio"
+            aria-checked={active}
+            onClick={() => onChange(plan.id)}
+            className={cn(
+              "w-full rounded-xl border p-4 text-left transition",
+              active ? "border-ink bg-surface-2" : "border-line hover:border-ink-3",
+            )}
+          >
+            <div className="flex items-baseline justify-between gap-3">
+              <span className="text-sm font-semibold text-ink">Stop loss {plan.stop_loss}</span>
+              <span className="text-xs text-ink-3">Take profit {plan.take_profit}</span>
+            </div>
+            <p className="mt-1 text-xs leading-relaxed text-ink-2">
+              Starts at {plan.stake} a trade.{" "}
+              {multiplies
+                ? `After a loss the stake is multiplied by ${plan.multiplier}, and no stake is placed that could take the loss past ${plan.stop_loss}.`
+                : "The stake stays the same on every trade."}
+            </p>
+          </button>
+        );
+      })}
+      <p className="text-[11px] leading-relaxed text-ink-3">
+        A plan sets all three amounts together. They cannot be changed one by one.
+      </p>
+    </div>
   );
 }
 
