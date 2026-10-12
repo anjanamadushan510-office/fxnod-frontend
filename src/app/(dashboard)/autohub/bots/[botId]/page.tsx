@@ -306,6 +306,7 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
               min={bot.min_markets}
               max={bot.max_markets}
               excluded={bot.excluded_symbols}
+              only={bot.allowed_symbols}
               suggested={bot.suggested_symbols}
             />
           </Card>
