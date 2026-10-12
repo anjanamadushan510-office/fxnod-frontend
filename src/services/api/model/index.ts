@@ -50,6 +50,7 @@ export * from './autoHubBot';
 export * from './autoHubEntry';
 export * from './autoHubEntryLane';
 export * from './autoHubEntryOutcome';
+export * from './autoHubPreset';
 export * from './autoHubRun';
 export * from './autoHubRunSettings';
 export * from './autoHubRunStatus';
