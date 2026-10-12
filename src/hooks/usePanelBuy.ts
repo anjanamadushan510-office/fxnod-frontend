@@ -112,7 +112,7 @@ export function usePanelBuy(request: ProposalRequest | null): PanelBuyResult {
       : "idle";
 
   // Strictly require a linked (→ authenticated) account.
-  const canBuy = request !== null && isIdle && linked && !needsReconnect && access.allowed && !pending;
+  const canBuy = request !== null && isIdle && linked && !linkLoading && !needsReconnect && access.allowed && !pending;
 
   const payoutLabel = quoting
     ? "Fetching payout…"

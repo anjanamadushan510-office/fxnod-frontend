@@ -65,6 +65,8 @@ test('package access distinguishes demo, real, manual and expired access', () =>
   access('dtrader', ['manual_trade']);
   assert.equal(hook.useToolTradingAccess('dtrader', true).allowed, true);
   assert.equal(hook.useToolTradingAccess('dtrader', false).allowed, true);
+  catalog.isLoading = true;
+  assert.equal(hook.useToolTradingAccess('dtrader', false).allowed, false);
   access('dtrader', ['bot_real']);
   assert.equal(hook.useToolTradingAccess('dtrader', false).allowed, false);
   catalog = { isLoading: true, isSuccess: false };

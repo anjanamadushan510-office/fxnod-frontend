@@ -200,7 +200,7 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
 
   const real = deriv.linked && !deriv.isVirtual;
   const ready = errors.length === 0;
-  const canStart = deriv.linked && !deriv.needsReconnect && access.allowed && !startRun.isPending && (!real || acknowledged);
+  const canStart = deriv.linked && !deriv.isLoading && !deriv.needsReconnect && access.allowed && !startRun.isPending && (!real || acknowledged);
   const caps = limitsQuery.data;
 
   function patch(change: Partial<Draft>) {

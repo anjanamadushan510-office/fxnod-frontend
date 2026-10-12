@@ -48,7 +48,7 @@ export function RunPanel({ ready, saving, starting, saved, onSave, onRun }: RunP
 
   const busy = saving || starting;
   const real = deriv.linked && !deriv.isVirtual;
-  const canRun = ready && deriv.linked && !deriv.needsReconnect && access.allowed && !busy && (!real || acknowledged);
+  const canRun = ready && deriv.linked && !deriv.isLoading && !deriv.needsReconnect && access.allowed && !busy && (!real || acknowledged);
 
   return (
     <div className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-5">

@@ -7,7 +7,7 @@ export function useToolTradingAccess(toolId: string, isVirtual: boolean) {
   const catalog = useCommerce();
   const tool = catalog.data?.tools.find((item) => item.id === toolId);
   const capability = toolId === "dtrader" ? "manual_trade" : isVirtual ? "bot_demo" : "bot_real";
-  const allowed = catalog.isSuccess && !!tool?.access.allowed && !!tool?.access.capabilities.includes(capability);
+  const allowed = !catalog.isLoading && catalog.isSuccess && !!tool?.access.allowed && !!tool?.access.capabilities.includes(capability);
   const message = catalog.isLoading
     ? "Checking your tool package…"
     : catalog.isError
