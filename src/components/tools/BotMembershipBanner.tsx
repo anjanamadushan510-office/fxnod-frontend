@@ -13,9 +13,9 @@ export function BotMembershipBanner({
 }) {
   const { data } = useCommerce();
   if (!data) return null;
-  const real = data.tools
-    .filter((tool) => tool.id === toolId)
-    .some((tool) => tool.access.capabilities.includes("bot_real"));
+  const tool = data.tools.find((item) => item.id === toolId);
+  const real = !!tool?.access.capabilities.includes("bot_real");
+  const demo = !!tool?.access.capabilities.includes("bot_demo");
   return (
     <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-line bg-surface p-4">
       <div className="flex items-start gap-3">
@@ -24,12 +24,16 @@ export function BotMembershipBanner({
           <p className="text-sm font-medium text-ink">
             {real
               ? "Real-account bot access is available"
-              : "Choose a plan to run this tool"}
+              : demo
+                ? "Demo-account bot access is available"
+                : "Choose a plan to run this tool"}
           </p>
           <p className="mt-1 text-xs text-ink-3">
             {real
               ? "View your membership and access period in Active Tools."
-              : "Review packages, features and access periods in Discover."}
+              : demo
+                ? "Select a demo account to run this package. Upgrade in Discover for real-account trading."
+                : "Review packages, features and access periods in Discover."}
           </p>
         </div>
       </div>

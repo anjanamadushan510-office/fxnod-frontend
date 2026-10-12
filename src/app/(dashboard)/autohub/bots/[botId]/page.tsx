@@ -19,6 +19,7 @@ import { DerivAppConsentModal } from "@/components/bot/DerivAppConsentModal";
 import { TextField } from "@/components/bot/builder/controls";
 import { AccountSection } from "@/components/bot/builder/RunPanel";
 import { useDerivStatus } from "@/hooks/useDerivStatus";
+import { useToolTradingAccess } from "@/hooks/useToolTradingAccess";
 import { cn } from "@/lib/cn";
 import { trackAutoHubStart } from "@/lib/analytics";
 import { parseApiError } from "@/lib/apiError";
@@ -138,6 +139,7 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const deriv = useDerivStatus();
+  const access = useToolTradingAccess("autohub", deriv.isVirtual);
   const limitsQuery = useGetBotLimits();
   const startRun = useStartAutoHubRun();
 
@@ -198,7 +200,7 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
 
   const real = deriv.linked && !deriv.isVirtual;
   const ready = errors.length === 0;
-  const canStart = deriv.linked && !startRun.isPending && (!real || acknowledged);
+  const canStart = deriv.linked && !deriv.needsReconnect && access.allowed && !startRun.isPending && (!real || acknowledged);
   const caps = limitsQuery.data;
 
   function patch(change: Partial<Draft>) {
@@ -206,6 +208,7 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
   }
 
   async function handleStart() {
+    if (!canStart) return;
     if (!ready) {
       setShowErrors(true);
       toast.error(errors[0]);
@@ -331,6 +334,7 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
 
           <div className="bg-panel border border-line rounded-2xl p-5 space-y-5">
             <AccountSection />
+            {access.message && <p className="text-xs text-ink-2" role="status">{access.message} <Link href="/tools">View packages</Link></p>}
 
             {real && (
               <label className="flex items-start gap-3 rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-xs leading-relaxed text-amber-900 dark:text-amber-100">

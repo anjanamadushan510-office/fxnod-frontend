@@ -51,6 +51,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Trading access regression tests
+        run: node --test tests/trading-access.test.cjs
+
       # src/lib/env.ts throws at build time when these are unset, which is the
       # right behaviour for a deployment and means a build cannot run without
       # them. They are placeholders on purpose: CI compiles and type-checks,

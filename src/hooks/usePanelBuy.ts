@@ -10,6 +10,7 @@ import { useOpenPositions } from "@/stores/useOpenPositions";
 import { usePositionsUI } from "@/stores/usePositionsUI";
 import { useTradeOverlays } from "@/stores/useTradeOverlays";
 import { useDerivStatus } from "./useDerivStatus";
+import { useToolTradingAccess } from "./useToolTradingAccess";
 import { useProposalStream } from "./useProposalStream";
 import { trackDtraderTrade } from "@/lib/analytics";
 import type {
@@ -54,7 +55,8 @@ export interface PanelBuyResult {
  */
 export function usePanelBuy(request: ProposalRequest | null): PanelBuyResult {
   const [lastTrade, setLastTrade] = useState<ConfirmResponse | null>(null);
-  const { linked, isVirtual, isLoading: linkLoading } = useDerivStatus();
+  const { linked, isVirtual, needsReconnect, isLoading: linkLoading } = useDerivStatus();
+  const access = useToolTradingAccess("dtrader", isVirtual);
 
   const isIdle = lastTrade === null;
 
@@ -110,7 +112,7 @@ export function usePanelBuy(request: ProposalRequest | null): PanelBuyResult {
       : "idle";
 
   // Strictly require a linked (→ authenticated) account.
-  const canBuy = request !== null && isIdle && linked && !pending;
+  const canBuy = request !== null && isIdle && linked && !needsReconnect && access.allowed && !pending;
 
   const payoutLabel = quoting
     ? "Fetching payout…"
@@ -119,9 +121,13 @@ export function usePanelBuy(request: ProposalRequest | null): PanelBuyResult {
       : null;
 
   const gateMsg =
-    !linkLoading && !linked
+    linkLoading
+      ? "Checking your Deriv connection…"
+      : !linked
       ? "Connect your Deriv account to place trades."
-      : null;
+      : needsReconnect
+        ? "Reconnect your Deriv account before trading."
+        : access.message;
   const errorMsg =
     gateMsg ??
     (placeTrade.error ? detailOf(placeTrade.error) : null) ??
@@ -129,8 +135,8 @@ export function usePanelBuy(request: ProposalRequest | null): PanelBuyResult {
 
   function handleBuy() {
     if (!request) return;
-    if (!linked) {
-      toast.error("Connect your Deriv account to place trades.");
+    if (!canBuy) {
+      if (gateMsg) toast.error(gateMsg);
       return;
     }
     placeTrade.mutate({ data: request });

@@ -7,6 +7,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { cn } from "@/lib/cn";
 import { useDerivStatus, type DerivStatus } from "@/hooks/useDerivStatus";
+import { useToolTradingAccess } from "@/hooks/useToolTradingAccess";
 import {
   useDerivListAccounts,
   useDerivSelectAccount,
@@ -37,6 +38,7 @@ interface RunPanelProps {
  */
 export function RunPanel({ ready, saving, starting, saved, onSave, onRun }: RunPanelProps) {
   const deriv = useDerivStatus();
+  const access = useToolTradingAccess("dbot", deriv.isVirtual);
   const [acknowledged, setAcknowledged] = useState(false);
   const [lastAccount, setLastAccount] = useState(deriv.accountId);
   if (lastAccount !== deriv.accountId) {
@@ -46,7 +48,7 @@ export function RunPanel({ ready, saving, starting, saved, onSave, onRun }: RunP
 
   const busy = saving || starting;
   const real = deriv.linked && !deriv.isVirtual;
-  const canRun = ready && deriv.linked && !busy && (!real || acknowledged);
+  const canRun = ready && deriv.linked && !deriv.needsReconnect && access.allowed && !busy && (!real || acknowledged);
 
   return (
     <div className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-5">
@@ -59,6 +61,7 @@ export function RunPanel({ ready, saving, starting, saved, onSave, onRun }: RunP
       </div>
 
       <AccountSection />
+      {access.message && <p className="text-xs text-ink-2" role="status">{access.message} <Link href="/tools">View packages</Link></p>}
 
       {real && (
         <label className="flex items-start gap-3 rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-xs leading-relaxed text-amber-900 dark:text-amber-100">

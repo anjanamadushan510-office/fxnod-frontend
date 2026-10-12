@@ -7,6 +7,7 @@ import { cn } from "@/lib/cn";
 import { formatMoney } from "@/lib/decimal";
 import { useDerivListAccounts } from "@/services/api/endpoints/trading/trading";
 import type { DerivLinkedAccount } from "@/services/api/model";
+import { useToolTradingAccess } from "@/hooks/useToolTradingAccess";
 
 // A balance Deriv reported longer ago than this is shown with its time.
 const CURRENT_FOR_MS = 60_000;
@@ -59,7 +60,8 @@ export function RunSavedBotDialog({
   const [acknowledged, setAcknowledged] = useState(false);
   const chosen = accounts.find((account) => account.deriv_account_id === chosenId) ?? null;
   const real = Boolean(chosen && !chosen.is_virtual);
-  const canConfirm = Boolean(chosen) && !chosen?.needs_reconnect && !busy && (!real || acknowledged);
+  const access = useToolTradingAccess("dbot", chosen?.is_virtual ?? true);
+  const canConfirm = Boolean(chosen) && !chosen?.needs_reconnect && access.allowed && !busy && (!real || acknowledged);
 
   return (
     <div
@@ -149,6 +151,7 @@ export function RunSavedBotDialog({
           </label>
         )}
 
+        {chosen && access.message && <p className="mt-4 text-sm text-ink-2" role="status">{access.message} <Link href="/tools">View packages</Link></p>}
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <button
             type="button"
