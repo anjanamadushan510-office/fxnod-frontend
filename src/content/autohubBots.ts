@@ -16,10 +16,11 @@ import { compareDecimals, compoundDecimal, sumDecimals } from "@/lib/decimal";
 import {
   FIXED_PLAN_BOTS,
   botGuideSlug,
+  contractTicks,
   escalates,
   stakeStyle,
   type BotPlan,
-  type DigitFamily,
+  type BotFamily,
   type FixedPlanBot,
 } from "./autohubCatalogue";
 import { RISK_NOTE, type Guide, type GuideBlock } from "./guides";
@@ -29,11 +30,32 @@ const TAG = "Auto Hub bot";
 const IMAGE = "/assets/login-slide-3.jpg";
 const OVERVIEW = "auto-hub-ready-made-bots";
 
-const FAMILY: Record<DigitFamily, { name: string; guide: string }> = {
+const FAMILY: Record<BotFamily, { name: string; guide: string }> = {
+  rise_fall: { name: "Rise / Fall", guide: "rise-fall-explained" },
   matches_differs: { name: "Matches / Differs", guide: "matches-differs-explained" },
   even_odd: { name: "Even / Odd", guide: "even-odd-explained" },
   over_under: { name: "Over / Under", guide: "over-under-explained" },
 };
+
+const COUNT = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
+
+/** "one tick", "five ticks". */
+function tickLength(bot: FixedPlanBot): string {
+  const n = contractTicks(bot);
+  return n === 1 ? "one tick" : `${COUNT[n]} ticks`;
+}
+
+/** "one-tick", "five-tick". */
+function tickWord(bot: FixedPlanBot): string {
+  return `${COUNT[contractTicks(bot)]}-tick`;
+}
+
+function isDigitBot(bot: FixedPlanBot): boolean {
+  return bot.family !== "rise_fall";
+}
+
+const VOLATILITY_MARKETS =
+  "Volatility 10, 25, 50, 75 and 100, and the one-second indices from Volatility 10 (1s) to Volatility 100 (1s)";
 
 const SUGGESTED_MARKETS =
   "Volatility 100 (1s), Volatility 100, Volatility 75 (1s), Volatility 75, Volatility 50 (1s) and Volatility 50";
@@ -86,15 +108,20 @@ function multiplierText(plans: BotPlan[]): string {
 }
 
 function payoutText(bot: FixedPlanBot): string {
-  if (bot.winning >= 9) return "Nine digits out of ten win, so a win pays a small fraction of the stake.";
-  if (bot.winning >= 6) return `${bot.winning} digits out of ten win, so a win pays less than the stake.`;
-  if (bot.winning === 5) return "Five digits out of ten win, and a win pays a little less than the stake.";
-  if (bot.winning >= 3) return `${bot.winning} digits out of ten win, so a win pays more than the stake.`;
-  if (bot.winning === 2) return "Two digits out of ten win, so a win pays several times the stake.";
+  const winning = bot.winning ?? 0;
+  if (winning >= 9) return "Nine digits out of ten win, so a win pays a small fraction of the stake.";
+  if (winning >= 6) return `${winning} digits out of ten win, so a win pays less than the stake.`;
+  if (winning === 5) return "Five digits out of ten win, and a win pays a little less than the stake.";
+  if (winning >= 3) return `${winning} digits out of ten win, so a win pays more than the stake.`;
+  if (winning === 2) return "Two digits out of ten win, so a win pays several times the stake.";
   return "One digit out of ten wins, so a win pays several times the stake.";
 }
 
 function contractText(bot: FixedPlanBot): string {
+  if (!isDigitBot(bot)) {
+    const sides = bot.bet === "Rise" ? "Rise" : "Rise or Fall";
+    return `${bot.name} trades one contract only: ${sides}, from Deriv's Rise / Fall family, with a length of ${tickLength(bot)}. A Rise wins when the price at the end of the contract is above the price it started at, and a Fall wins when it is below. A price that ends exactly where it started loses either way. A win pays a little less than the stake, and a losing trade costs the whole stake. Deriv sets the payout, and each trade's result is listed on the run page.`;
+  }
   const lead = `${bot.name} trades one contract only: ${bot.bet}, from Deriv's ${FAMILY[bot.family].name} family, with a length of one tick.`;
   const digit =
     "The contract is decided by the last digit of a tick's price, which is its final decimal digit: a tick at 1234.56 ends in 6.";
@@ -187,16 +214,18 @@ function fixedPlanGuide(bot: FixedPlanBot): Guide {
     published: DATE,
     updated: DATE,
     image: IMAGE,
-    answer: `${bot.name} is a ready-made bot in FXNOD's Auto Hub that buys Deriv's one-tick ${bot.bet} contract, which wins when ${bot.wins}. ${bot.rule} ${stakeSentence} You start it on one market with one of ${planCount} fixed plans, with a stop loss of ${orList(stops)}, and the session ends at the plan's profit target or its stop loss.`,
+    answer: `${bot.name} is a ready-made bot in FXNOD's Auto Hub that buys Deriv's ${tickWord(bot)} ${bot.bet} contract, which wins when ${bot.wins}. ${bot.rule} ${stakeSentence} You start it on one market with one of ${planCount} fixed plans, with a stop loss of ${orList(stops)}, and the session ends at the plan's profit target or its stop loss.`,
     body: [
       { type: "h2", text: `${bot.name} at a glance` },
       {
         type: "table",
         head: ["", bot.name],
         rows: [
-          ["Contract", `${bot.bet}, one tick (Deriv ${FAMILY[bot.family].name})`],
+          ["Contract", `${bot.bet}, ${tickLength(bot)} (Deriv ${FAMILY[bot.family].name})`],
           ["A trade wins when", bot.wins],
-          ["Winning digits", `${bot.winning} of 10`],
+          isDigitBot(bot)
+            ? ["Winning digits", `${bot.winning} of 10`]
+            : ["A price that ends level", "Loses, whichever side was taken"],
           ["Entry", bot.pace],
           ["Stake", ladder ? `Martingale: ${multiplierText(bot.plans)} after a loss` : "Flat: the same on every trade"],
           ["Plans", `Stop loss ${orList(stops)}`],
@@ -238,7 +267,9 @@ function fixedPlanGuide(bot: FixedPlanBot): Guide {
           },
           {
             title: "Choose the market",
-            text: `${bot.name} trades one market. The form suggests ${SUGGESTED_MARKETS}. Jump 100 is not offered for this bot.`,
+            text: isDigitBot(bot)
+              ? `${bot.name} trades one market. The form suggests ${SUGGESTED_MARKETS}. Jump 100 is not offered for this bot.`
+              : `${bot.name} trades one market, and only a Volatility index: ${VOLATILITY_MARKETS}. No other market is offered for this bot.`,
           },
           {
             title: "Choose a plan",
@@ -255,7 +286,9 @@ function fixedPlanGuide(bot: FixedPlanBot): Guide {
     faq: [
       {
         q: `What does the ${bot.name} bot trade?`,
-        a: `${bot.name} buys Deriv's ${bot.bet} contract with a length of one tick. A trade wins when ${bot.wins}, which is ${bot.winning} of the ten possible last digits.`,
+        a: isDigitBot(bot)
+          ? `${bot.name} buys Deriv's ${bot.bet} contract with a length of one tick. A trade wins when ${bot.wins}, which is ${bot.winning} of the ten possible last digits.`
+          : `${bot.name} buys Deriv's ${bot.bet} contract with a length of ${tickLength(bot)}. A trade wins when ${bot.wins}. A price that ends exactly where it started loses.`,
       },
       {
         q: `When does ${bot.name} place a trade?`,

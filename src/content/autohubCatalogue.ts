@@ -1,8 +1,8 @@
 /**
  * The Auto Hub bots, as the public guides describe them.
  *
- * This mirrors the engine's catalogue (internal/autohub/bots.go and
- * bots_digits.go in trading-engine-deriv), which is the copy that counts: the
+ * This mirrors the engine's catalogue (internal/autohub/bots.go,
+ * bots_digits.go and bots_rise_fall.go in trading-engine-deriv), which is the copy that counts: the
  * engine decides every entry and sizes every stake. A bot's contract, entry
  * rule or plans change here in the same commit as they change there, because
  * a guide that describes a bot wrongly is a false public statement about a
@@ -13,6 +13,9 @@
  */
 
 export type DigitFamily = "matches_differs" | "even_odd" | "over_under";
+/** The contract families a plan bot trades, in the order the guides list them. */
+export type BotFamily = DigitFamily | "rise_fall";
+export const BOT_FAMILIES: BotFamily[] = ["matches_differs", "even_odd", "over_under", "rise_fall"];
 
 /** One money plan of a bot. A multiplier of "0" is a flat stake. */
 export interface BotPlan {
@@ -27,13 +30,15 @@ export interface FixedPlanBot {
   id: string;
   name: string;
   tagline: string;
-  family: DigitFamily;
-  /** The contract as it is named on the order: "Over 4", "Differs". */
+  family: BotFamily;
+  /** The contract as it is named on the order: "Over 4", "Differs", "Rise / Fall". */
   bet: string;
+  /** How many ticks each contract lasts. One when left out. */
+  ticks?: number;
   /** Completes "A trade wins when ...". */
   wins: string;
-  /** How many of the ten last digits win. */
-  winning: number;
+  /** How many of the ten last digits win. Digit contracts only. */
+  winning?: number;
   /** The entry rule in a few words, for a table cell. */
   pace: string;
   /** The entry rule as one sentence that names the bot. */
@@ -50,12 +55,13 @@ function plan(stopLoss: string, stake: string, takeProfit: string, multiplier: s
 }
 
 // Plans that several bots share in the engine's catalogue.
-const HALF_LADDER = [plan("20", "0.35", "2", "2.41"), plan("100", "1", "5", "2.13"), plan("500", "5", "25", "2.13")];
-const FOUR_LADDER = [plan("20", "0.35", "1", "1.76"), plan("100", "2", "5", "1.76"), plan("500", "2", "50", "1.99")];
-const SIX_LADDER = [plan("20", "0.35", "1", "3.04"), plan("100", "1", "5", "2.7"), plan("500", "2", "50", "2.7")];
+const HALF_LADDER = [plan("20", "1", "1", "2.17"), plan("100", "1", "5", "2.17"), plan("500", "5", "25", "2.17")];
+const FOUR_LADDER = [plan("20", "0.35", "1", "1.79"), plan("100", "2", "5", "1.79"), plan("500", "2", "25", "1.79")];
+const SIX_LADDER = [plan("20", "0.35", "1", "3.11"), plan("100", "1", "5", "2.76"), plan("500", "5", "25", "2.76")];
 const FLAT_SMALL = [plan("20", "2", "1", "0"), plan("100", "10", "5", "0"), plan("500", "25", "10", "0")];
 const FLAT_WIDE = [plan("20", "5", "1", "0"), plan("100", "25", "5", "0"), plan("500", "25", "10", "0")];
-const FLAT_EVEN = [plan("20", "1", "1", "0"), plan("100", "5", "5", "0"), plan("500", "25", "25", "0")];
+const FLAT_STEADY = [plan("20", "1", "0.4", "0"), plan("100", "5", "2", "0"), plan("500", "25", "10", "0")];
+const PEAK_LADDER = [plan("20", "0.35", "1", "1.32"), plan("100", "0.35", "5", "1.32"), plan("500", "0.35", "25", "1.32")];
 
 /** In the order the Auto Hub page shows them. */
 export const FIXED_PLAN_BOTS: FixedPlanBot[] = [
@@ -75,7 +81,7 @@ export const FIXED_PLAN_BOTS: FixedPlanBot[] = [
     ],
     example:
       "The last digits arrive as 3, 8, 8. The bot buys Differs 8. If the next tick ends in 1 the trade wins; if it ends in 8 the trade loses.",
-    plans: [plan("20", "1", "1", "14.74"), plan("100", "5", "5", "14.74"), plan("500", "25", "25", "14.74")],
+    plans: [plan("20", "1", "1", "16.43"), plan("100", "5", "5", "16.43"), plan("500", "25", "25", "16.43")],
   },
   {
     id: "needle",
@@ -93,7 +99,7 @@ export const FIXED_PLAN_BOTS: FixedPlanBot[] = [
     ],
     example:
       "In the last 50 ticks the digit 6 ended two of them and every other digit ended three or more. The bot buys Matches 6. The trade wins only if the next tick ends in 6.",
-    plans: [plan("100", "0.35", "5", "1.16"), plan("500", "2", "25", "1.16")],
+    plans: [plan("100", "0.35", "5", "1.17"), plan("500", "2", "25", "1.17")],
   },
   {
     id: "steady_nine",
@@ -111,7 +117,7 @@ export const FIXED_PLAN_BOTS: FixedPlanBot[] = [
     ],
     example:
       "A tick ends in 4, so the bot buys Differs 4. The next tick ends in 9 and the trade wins. The bot then buys Differs 9.",
-    plans: [plan("20", "5", "1", "0"), plan("100", "25", "5", "0")],
+    plans: [plan("20", "5", "0.4", "0"), plan("100", "25", "2", "0")],
   },
   {
     id: "even_keel",
@@ -251,11 +257,11 @@ export const FIXED_PLAN_BOTS: FixedPlanBot[] = [
     rule: "Triple Top buys Over 6 once every four ticks.",
     detail: [
       "Triple Top buys a one-tick Over 6, which wins on three digits out of ten. It waits for the result, lets three ticks pass, and buys again, so entries are four ticks apart.",
-      "It reads no pattern in the digits. Every plan starts from 0.35, the smallest stake Deriv takes on a digit contract.",
+      "It reads no pattern in the digits.",
     ],
     example:
       "The bot buys Over 6 and the next tick ends in 6: a loss, because 6 is not over 6. Three ticks pass. On the fourth it buys Over 6 again.",
-    plans: [plan("20", "0.35", "1", "1.5"), plan("100", "0.35", "5", "1.5"), plan("500", "0.35", "25", "1.5")],
+    plans: [plan("20", "0.35", "1", "1.52"), plan("100", "0.35", "5", "1.52"), plan("500", "1", "25", "1.52")],
   },
   {
     id: "twin_peaks",
@@ -273,7 +279,7 @@ export const FIXED_PLAN_BOTS: FixedPlanBot[] = [
     ],
     example:
       "The last digits arrive as 9, 2, 5, 0, 7, 3. The five newest have no 8 or 9, so the bot buys Over 7.",
-    plans: [plan("20", "0.35", "1", "1.31"), plan("100", "0.35", "5", "1.31"), plan("500", "2", "25", "1.31")],
+    plans: PEAK_LADDER,
   },
   {
     id: "seven_wide",
@@ -291,7 +297,7 @@ export const FIXED_PLAN_BOTS: FixedPlanBot[] = [
     ],
     example:
       "The bot buys Over 2. The next tick ends in 3 and the trade wins. It buys Over 2 again; the next tick ends in 1 and that trade loses.",
-    plans: [plan("20", "1", "2", "3.67"), plan("100", "1", "10", "4.14"), plan("500", "5", "50", "4.14")],
+    plans: [plan("20", "1", "1", "3.78"), plan("100", "5", "10", "3.78"), plan("500", "25", "50", "3.78")],
   },
   {
     id: "eight_wide",
@@ -309,7 +315,7 @@ export const FIXED_PLAN_BOTS: FixedPlanBot[] = [
     ],
     example:
       "The last digits arrive as 4, 7, 1. The newest is a 1, so the bot buys Over 1. If the next tick ends in 0 the trade loses and the bot enters again.",
-    plans: [plan("20", "0.35", "1", "6.46"), plan("100", "2", "10", "6.46"), plan("500", "10", "50", "6.46")],
+    plans: [plan("20", "0.35", "1", "6.77"), plan("100", "2", "5", "6"), plan("500", "10", "25", "6")],
   },
   {
     id: "broad_seven",
@@ -381,7 +387,7 @@ export const FIXED_PLAN_BOTS: FixedPlanBot[] = [
     ],
     example:
       "The bot buys Over 3 and the next tick ends in 1: a loss. It buys again and the next tick ends in 3: a second loss. Ten ticks pass with no trade, then it buys Over 3 again.",
-    plans: [plan("20", "2", "1", "0"), plan("100", "10", "5", "0"), plan("500", "25", "25", "0")],
+    plans: FLAT_SMALL,
   },
   {
     id: "top_shelf",
@@ -399,7 +405,7 @@ export const FIXED_PLAN_BOTS: FixedPlanBot[] = [
     ],
     example:
       "The last digits arrive as 9, 4, 0, 6. The three newest are 6 or less, so the bot buys Over 6.",
-    plans: FLAT_EVEN,
+    plans: [plan("100", "2", "2", "0"), plan("500", "10", "10", "0")],
   },
   {
     id: "upper_deck",
@@ -417,7 +423,7 @@ export const FIXED_PLAN_BOTS: FixedPlanBot[] = [
     ],
     example:
       "The bot buys Over 5 and the next tick ends in 5: a loss, because 5 is not over 5. Four ticks pass. On the fifth it buys Over 5 again at the same stake.",
-    plans: FLAT_EVEN,
+    plans: FLAT_STEADY,
   },
   {
     id: "summit_pair",
@@ -435,7 +441,7 @@ export const FIXED_PLAN_BOTS: FixedPlanBot[] = [
     ],
     example:
       "The last digits arrive as 8, 1, 4, 4, 7, 0, 2, 6, 5. The eight newest have no 8 or 9, so the bot buys Over 7.",
-    plans: [plan("100", "2", "2", "0"), plan("500", "10", "10", "0")],
+    plans: PEAK_LADDER,
   },
   {
     id: "low_five",
@@ -491,6 +497,114 @@ export const FIXED_PLAN_BOTS: FixedPlanBot[] = [
       "The bot buys Under 6 and the next tick ends in 8: a loss. Five ticks pass with no trade. Then it buys Under 6 again, at the multiplied stake.",
     plans: SIX_LADDER,
   },
+  {
+    id: "downhill",
+    name: "Downhill",
+    tagline: "Bets against three ticks in a row.",
+    family: "rise_fall",
+    bet: "Rise / Fall",
+    ticks: 5,
+    wins: "the price ends above where it started for a Rise, or below it for a Fall",
+    pace: "After three ticks running one way, on the other side",
+    rule: "Downhill waits until three ticks in a row have moved in the same direction, then takes the opposite side for five ticks.",
+    detail: [
+      "Downhill compares each tick with the one before it. It enters only when the three newest ticks have all moved the same way: each higher than the last, or each lower. A tick that did not move breaks the run.",
+      "After three ticks up it buys a five-tick Fall; after three ticks down it buys a five-tick Rise. When that contract has closed it reads the newest ticks again and waits for the next run of three.",
+    ],
+    example:
+      "The price ticks 100.10, 100.14, 100.19, 100.25: three moves up in a row. The bot buys a Fall lasting five ticks, which wins if the price is below where the contract started when the fifth tick arrives.",
+    plans: HALF_LADDER,
+  },
+  {
+    id: "long_climb",
+    name: "Long Climb",
+    tagline: "Follows three ticks in a row, for ten.",
+    family: "rise_fall",
+    bet: "Rise / Fall",
+    ticks: 10,
+    wins: "the price ends above where it started for a Rise, or below it for a Fall",
+    pace: "After three ticks running one way, on the same side",
+    rule: "Long Climb waits until three ticks in a row have moved in the same direction, then takes that side for ten ticks.",
+    detail: [
+      "Long Climb compares each tick with the one before it. It enters only when the three newest ticks have all moved the same way. A tick that did not move breaks the run.",
+      "After three ticks up it buys a ten-tick Rise; after three ticks down it buys a ten-tick Fall. Ten ticks is the longest contract of the Rise / Fall bots, and only one contract is open at a time.",
+    ],
+    example:
+      "The price ticks 100.25, 100.19, 100.14, 100.10: three moves down in a row. The bot buys a Fall lasting ten ticks, which wins if the price is below where the contract started when the tenth tick arrives.",
+    plans: HALF_LADDER,
+  },
+  {
+    id: "short_climb",
+    name: "Short Climb",
+    tagline: "Follows two ticks in a row, for five.",
+    family: "rise_fall",
+    bet: "Rise / Fall",
+    ticks: 5,
+    wins: "the price ends above where it started for a Rise, or below it for a Fall",
+    pace: "After two ticks running one way, on the same side",
+    rule: "Short Climb waits until two ticks in a row have moved in the same direction, then takes that side for five ticks.",
+    detail: [
+      "Short Climb compares each tick with the one before it. It enters when the two newest ticks have both moved the same way. A tick that did not move breaks the run.",
+      "After two ticks up it buys a five-tick Rise; after two ticks down it buys a five-tick Fall. It asks for a shorter run than Long Climb and holds each contract for half as long.",
+    ],
+    example:
+      "The price ticks 100.10, 100.14, 100.19: two moves up in a row. The bot buys a Rise lasting five ticks, which wins if the price is above where the contract started when the fifth tick arrives.",
+    plans: HALF_LADDER,
+  },
+  {
+    id: "quick_dip",
+    name: "Quick Dip",
+    tagline: "One tick, against the last one.",
+    family: "rise_fall",
+    bet: "Rise / Fall",
+    ticks: 1,
+    wins: "the price ends above where it started for a Rise, or below it for a Fall",
+    pace: "As soon as the last contract closes, against the last tick",
+    rule: "Quick Dip takes the side opposite to the move of the newest tick, for one tick, as soon as its last contract has closed.",
+    detail: [
+      "Quick Dip looks only at the newest tick. If that tick moved up it buys a one-tick Fall; if it moved down it buys a one-tick Rise. If the tick did not move, it waits for one that does.",
+      "It has no other condition and no pause. As soon as a contract has closed it reads the newest tick and enters again, which makes it the fastest of the Rise / Fall bots.",
+    ],
+    example:
+      "The newest tick moved from 100.14 to 100.19, so the bot buys a one-tick Fall. The trade wins if the next tick is below the price the contract started at.",
+    plans: HALF_LADDER,
+  },
+  {
+    id: "slow_slope",
+    name: "Slow Slope",
+    tagline: "Rise, then Fall, at a steady stake.",
+    family: "rise_fall",
+    bet: "Rise / Fall",
+    ticks: 5,
+    wins: "the price ends above where it started for a Rise, or below it for a Fall",
+    pace: "Rise and Fall by turns, with 5 ticks out after each",
+    rule: "Slow Slope buys a five-tick Rise and a five-tick Fall by turns, and sits out five ticks after each contract closes.",
+    detail: [
+      "Slow Slope does not read the ticks to choose its side. Its first trade of a session is a Rise, its second a Fall, its third a Rise, and so on, whatever the price has done.",
+      "Each contract lasts five ticks. After it closes the bot lets five ticks pass before it buys the next one.",
+    ],
+    example:
+      "The bot buys a Rise lasting five ticks. It closes, five more ticks pass with no trade, and the bot buys a Fall lasting five ticks.",
+    plans: FLAT_STEADY,
+  },
+  {
+    id: "patient_rise",
+    name: "Patient Rise",
+    tagline: "Rise for ten ticks, at a steady stake.",
+    family: "rise_fall",
+    bet: "Rise",
+    ticks: 10,
+    wins: "the price ends above where it started",
+    pace: "As soon as the last contract closes",
+    rule: "Patient Rise buys a ten-tick Rise as soon as its last contract has closed, and never a Fall.",
+    detail: [
+      "Patient Rise takes one side only. It buys a Rise lasting ten ticks, waits for it to close, and buys the next one. It has no entry condition and no pause.",
+      "Each contract lasts ten ticks and only one is open at a time, so it trades slowly however fast the market ticks.",
+    ],
+    example:
+      "The bot buys a Rise at 100.10. Ten ticks later the price is 100.31, above where the contract started, so the trade wins. The bot buys the next ten-tick Rise.",
+    plans: FLAT_STEADY,
+  },
 ];
 
 /** The three bots Auto Hub opened with: the user sets their amounts. */
@@ -532,4 +646,9 @@ export function escalates(p: BotPlan): boolean {
 /** "Flat" or "Martingale" for a bot, read from its plans. */
 export function stakeStyle(bot: FixedPlanBot): "Flat" | "Martingale" {
   return bot.plans.some(escalates) ? "Martingale" : "Flat";
+}
+
+/** How many ticks a bot's contract lasts. */
+export function contractTicks(bot: FixedPlanBot): number {
+  return bot.ticks ?? 1;
 }

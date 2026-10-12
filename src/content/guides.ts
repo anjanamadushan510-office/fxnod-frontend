@@ -17,8 +17,9 @@ import {
   FIXED_PLAN_BOTS,
   OWN_AMOUNT_BOTS,
   botGuideSlug,
+  contractTicks,
   stakeStyle,
-  type DigitFamily,
+  type BotFamily,
 } from "./autohubCatalogue";
 
 export type GuideBlock =
@@ -69,13 +70,13 @@ export const RISK_NOTE: GuideBlock = {
 };
 
 /** The plan bots of one contract family, as a table of the overview guide. */
-function planBotTable(family: DigitFamily): GuideBlock {
+function planBotTable(family: BotFamily): GuideBlock {
   return {
     type: "table",
     head: ["Bot", "Contract", "Enters", "Stake", "Plans (stop loss)"],
     rows: FIXED_PLAN_BOTS.filter((bot) => bot.family === family).map((bot) => [
       bot.name,
-      bot.bet,
+      family === "rise_fall" ? `${bot.bet}, ${contractTicks(bot)} ${contractTicks(bot) === 1 ? "tick" : "ticks"}` : bot.bet,
       bot.pace,
       stakeStyle(bot),
       bot.plans.map((p) => p.stopLoss).join(", "),
@@ -396,12 +397,12 @@ export const GUIDES: Guide[] = [
   {
     slug: "auto-hub-ready-made-bots",
     title: "FXNOD Auto Hub: every ready-made Deriv bot and how it trades",
-    description: `Auto Hub has ${AUTOHUB_BOT_COUNT} ready-made Deriv digit bots. What each one trades, when it enters, whether its stake is flat or Martingale, and how to start one.`,
+    description: `Auto Hub has ${AUTOHUB_BOT_COUNT} ready-made Deriv bots. What each one trades, when it enters, whether its stake is flat or Martingale, and how to start one.`,
     tag: "Auto Hub",
     published: "2026-10-06",
     updated: "2026-10-12",
     image: "/assets/login-slide-3.jpg",
-    answer: `Auto Hub is a set of bots that FXNOD has already built. You do not design anything: pick a bot, choose its market, choose its amounts, and start it. There are ${AUTOHUB_BOT_COUNT} bots. All of them trade Deriv's one-tick digit contracts: Matches / Differs, Even / Odd and Over / Under. ${FIXED_PLAN_BOTS.length} are started with a fixed plan that sets the stop loss, the stake and the profit target together, and three take amounts you set yourself.`,
+    answer: `Auto Hub is a set of bots that FXNOD has already built. You do not design anything: pick a bot, choose its market, choose its amounts, and start it. There are ${AUTOHUB_BOT_COUNT} bots. They trade Deriv's digit contracts (Matches / Differs, Even / Odd and Over / Under) and Rise / Fall, in contracts of one to ten ticks. ${FIXED_PLAN_BOTS.length} are started with a fixed plan that sets the stop loss, the stake and the profit target together, and three take amounts you set yourself.`,
     body: [
       { type: "h2", text: "Auto Hub or dBot?" },
       {
@@ -422,8 +423,8 @@ export const GUIDES: Guide[] = [
       {
         type: "list",
         items: [
-          "The contract. One digit contract with a length of one tick, such as Over 4 or Differs. It decides which last digits win and how much a win pays.",
-          "The entry rule. When the bot buys: on every tick, once every few ticks, or after a pattern in the last digits.",
+          "The contract. One contract and one length, such as a one-tick Over 4 or a five-tick Rise / Fall. It decides what wins and how much a win pays.",
+          "The entry rule. When the bot buys: on every tick, once every few ticks, or after a pattern in the last digits or in the direction of the last ticks.",
           "The stake plan. Flat, where every trade has the same stake, or Martingale, where the stake is multiplied after a loss and returns to the start after a win.",
           "The limits. A stop loss and a profit target. A bot cannot be started without a stop loss.",
         ],
@@ -443,6 +444,12 @@ export const GUIDES: Guide[] = [
       planBotTable("even_odd"),
       { type: "h2", text: "Over / Under bots" },
       planBotTable("over_under"),
+      { type: "h2", text: "Rise / Fall bots" },
+      {
+        type: "p",
+        text: "A Rise wins when the price ends above where the contract started, and a Fall when it ends below. A price that ends exactly where it started loses either way. These bots trade the Volatility indices only.",
+      },
+      planBotTable("rise_fall"),
       { type: "h2", text: "Bots that take your own amounts" },
       {
         type: "p",
@@ -512,7 +519,7 @@ export const GUIDES: Guide[] = [
       },
       {
         q: "What do Auto Hub bots trade?",
-        a: "Deriv's one-tick digit contracts: Matches / Differs, Even / Odd and Over / Under. Each bot trades one of them.",
+        a: "Deriv's digit contracts (Matches / Differs, Even / Odd and Over / Under) and Rise / Fall, in contracts of one to ten ticks. Each bot trades one of them.",
       },
       {
         q: "Does Auto Hub use Martingale?",
