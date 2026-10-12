@@ -7,6 +7,7 @@ import { useOpenPositions } from "@/stores/useOpenPositions";
 import { useAccountBalance } from "@/stores/useAccountBalance";
 import { useQueryClient } from "@tanstack/react-query";
 import { getGetTradeHistoryQueryKey } from "@/services/api/endpoints/trading/trading";
+import { useAuthStore } from "@/stores/authStore";
 import { useDerivStatus } from "@/hooks/useDerivStatus";
 
 export type PositionsSocketStatus =
@@ -42,7 +43,8 @@ export function usePositionsWebSocket(enabled = true): PositionsSocketStatus {
   const attemptsRef = useRef(0);
   const cancelledRef = useRef(false);
 
-  const { accountId, isLoading } = useDerivStatus();
+  const { accountId, isLoading, linked, currency } = useDerivStatus();
+  const userId = useAuthStore((state) => state.user?.id);
 
   // Held in a ref so the reconnect timer always calls the latest closure.
   const connectRef = useRef<() => void>(() => {});
@@ -55,7 +57,7 @@ export function usePositionsWebSocket(enabled = true): PositionsSocketStatus {
     wsRef.current = ws;
 
     ws.onopen = () => {
-      if (cancelledRef.current) return;
+      if (cancelledRef.current || wsRef.current !== ws) return;
       attemptsRef.current = 0;
       setStatus("open");
       
@@ -71,7 +73,7 @@ export function usePositionsWebSocket(enabled = true): PositionsSocketStatus {
     };
 
     ws.onmessage = (event) => {
-      if (cancelledRef.current) return;
+      if (cancelledRef.current || wsRef.current !== ws) return;
       const msg = parsePositionsMessage(event.data as string);
       if (!msg) return;
       const store = useOpenPositions.getState();
@@ -91,7 +93,7 @@ export function usePositionsWebSocket(enabled = true): PositionsSocketStatus {
           if (Array.isArray(data)) {
             data.forEach((acc: any) => {
               if (acc.balance !== undefined) {
-                useAccountBalance.getState().setBalance(acc.balance, acc.currency, acc.id || acc.loginid);
+                useAccountBalance.getState().setBalance(acc.balance, acc.currency, acc.id || acc.loginid || accountId);
               }
             });
           } else if (data) {
@@ -103,7 +105,7 @@ export function usePositionsWebSocket(enabled = true): PositionsSocketStatus {
               });
             }
             if (data.balance !== undefined) {
-              useAccountBalance.getState().setBalance(data.balance, data.currency, data.id || data.loginid);
+              useAccountBalance.getState().setBalance(data.balance, data.currency, data.id || data.loginid || accountId);
             }
           }
           break;
@@ -114,15 +116,15 @@ export function usePositionsWebSocket(enabled = true): PositionsSocketStatus {
     };
 
     ws.onerror = () => {
-      if (!cancelledRef.current) setStatus("error");
+      if (!cancelledRef.current && wsRef.current === ws) setStatus("error");
     };
 
     ws.onclose = () => {
+      if (cancelledRef.current || wsRef.current !== ws) return;
       if (pingRef.current) {
         clearInterval(pingRef.current);
         pingRef.current = null;
       }
-      if (cancelledRef.current) return;
       setStatus("closed");
       const delay = Math.min(MAX_BACKOFF_MS, 2 ** attemptsRef.current * 1000);
       attemptsRef.current += 1;
@@ -131,11 +133,14 @@ export function usePositionsWebSocket(enabled = true): PositionsSocketStatus {
   };
 
   useEffect(() => {
-    if (!enabled || isLoading) {
-      if (!enabled) setStatus("idle");
+    useAccountBalance.getState().setOwner(userId ?? null);
+    useAccountBalance.getState().selectAccount(accountId ?? "", currency);
+    if (!enabled || isLoading || !linked || !accountId) {
+      setStatus("idle");
       return;
     }
     cancelledRef.current = false;
+    attemptsRef.current = 0;
     connectRef.current();
 
     return () => {
@@ -145,7 +150,7 @@ export function usePositionsWebSocket(enabled = true): PositionsSocketStatus {
       wsRef.current?.close();
       wsRef.current = null;
     };
-  }, [enabled, accountId, isLoading]);
+  }, [enabled, accountId, isLoading, linked, userId, currency]);
 
   return status;
 }

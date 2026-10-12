@@ -18,7 +18,7 @@ interface TopBarProps {
   contractType: ContractTypeId;
   onContractTypeChange: (id: ContractTypeId) => void;
   accountMode: OptionsAccountMode;
-  accountBalance: number;
+  accountBalance: number | null;
   onAccountOpen?: () => void;
   onDeposit?: () => void;
 }

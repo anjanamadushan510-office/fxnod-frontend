@@ -51,8 +51,8 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Trading access regression tests
-        run: node --test tests/trading-access.test.cjs
+      - name: Trading and account balance regression tests
+        run: node --test tests/*.test.cjs
 
       # src/lib/env.ts throws at build time when these are unset, which is the
       # right behaviour for a deployment and means a build cannot run without
