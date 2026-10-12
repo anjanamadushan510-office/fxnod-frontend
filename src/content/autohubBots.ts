@@ -39,7 +39,7 @@ const SUGGESTED_MARKETS =
   "Volatility 100 (1s), Volatility 100, Volatility 75 (1s), Volatility 75, Volatility 50 (1s) and Volatility 50";
 
 /** "1" -> "1.00", "0.35" -> "0.35". */
-function money(value: string): string {
+export function money(value: string): string {
   const [whole, fraction = ""] = value.split(".");
   return `${whole}.${(fraction + "00").slice(0, 2)}`;
 }
@@ -64,7 +64,7 @@ interface LosingRun {
 }
 
 /** What a plan stakes if every trade loses, from a session that is level. */
-function losingRun(p: BotPlan): LosingRun {
+export function losingRun(p: BotPlan): LosingRun {
   const stakes = [p.stake];
   for (let step = 1; ; step++) {
     const lost = sumDecimals(stakes);

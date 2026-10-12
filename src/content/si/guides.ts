@@ -25,7 +25,7 @@ import type { GuideBlock, GuideCta, LocalGuide } from "../guides";
 const DATE = "2026-10-10";
 const CHECKED = "2026 ඔක්තෝබර් 10";
 
-const RISK: GuideBlock = {
+export const RISK: GuideBlock = {
   type: "note",
   title: "අවදානම් දැනුම්දීම",
   text: "Options සහ multipliers කියන්නේ ඉහළ අවදානමක් තියෙන products. ඕනෑම trade එකකදී ඔබේ සම්පූර්ණ stake එකම නැති වෙන්න පුළුවන්, සහ bot එකකට ඒක ඔබ අතින් කරනවාට වඩා ඉක්මනින් නැති කරන්න පුළුවන්. මේ පිටුවේ තියෙන කිසිම දෙයක් මූල්‍ය උපදෙසක් නෙවෙයි. හැම දෙයක්ම මුලින්ම Deriv demo account එකක අත්හදා බලන්න.",
