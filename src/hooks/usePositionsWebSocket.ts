@@ -133,6 +133,7 @@ export function usePositionsWebSocket(enabled = true): PositionsSocketStatus {
   };
 
   useEffect(() => {
+    useOpenPositions.getState().setScope(userId && accountId ? `${userId}:${accountId}` : null);
     useAccountBalance.getState().setOwner(userId ?? null);
     useAccountBalance.getState().selectAccount(accountId ?? "", currency);
     if (!enabled || isLoading || !linked || !accountId) {

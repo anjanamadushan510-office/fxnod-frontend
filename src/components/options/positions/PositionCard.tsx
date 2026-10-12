@@ -8,6 +8,7 @@ import { formatTradeTypeLabel } from "./contractDetail";
 
 interface PositionCardProps {
   position: Position;
+  selling?: boolean;
   /** Optional: open the contract details page. */
   onOpenDetails?: (id: string) => void;
   /** Optional: sell early (resale offered). When absent → "Resale not offered". */
@@ -38,13 +39,14 @@ function useCountdown(expiryTime?: number) {
  */
 function PositionCardInner({
   position,
+  selling = false,
   onOpenDetails,
   onSell,
 }: PositionCardProps) {
   const pnlPositive = position.pnl >= 0;
   const tradeType = formatTradeTypeLabel(position.contractType, position.side);
   const remain = useCountdown(position.isTick ? undefined : position.expiryTime);
-  const statusDisplay = remain != null ? `${remain} secs` : (position.status ?? "—");
+  const statusDisplay = remain != null ? (remain > 0 ? `${remain} secs` : "Awaiting settlement…") : (position.status ?? "—");
 
   return (
     <article className="flex flex-col gap-2 rounded-[10px] border border-opt-line bg-opt-bg-elev px-3 py-2.5">
@@ -73,7 +75,7 @@ function PositionCardInner({
       <div className="flex items-center justify-between text-[12px]">
         <span className="text-opt-ink-2">{tradeType}</span>
         <span className="font-mono font-medium tabular-nums text-opt-ink">
-          {position.stake.toFixed(2)} USD
+          {position.stake.toFixed(2)} {position.currency ?? "USD"}
         </span>
       </div>
 
@@ -90,14 +92,15 @@ function PositionCardInner({
           )}
         >
           {pnlPositive ? "+" : ""}
-          {position.pnl.toFixed(2)} USD
+          {position.pnl.toFixed(2)} {position.currency ?? "USD"}
         </span>
       </div>
 
       {/* Resale slot */}
-      {onSell ? (
+      {onSell && position.canSell ? (
         <button
           type="button"
+          disabled={selling || !!position.outcome}
           onClick={() => position.contractId && onSell(position.contractId)}
           className={cn(
             "rounded-md px-3 py-1.5 text-center font-mono text-[12px] font-semibold tabular-nums transition-[filter] hover:brightness-110",
@@ -106,10 +109,10 @@ function PositionCardInner({
               : "bg-opt-ink text-opt-bg"
           )}
         >
-          {position.contractType.toLowerCase().includes("mult") ? (
+          {selling ? "Closing…" : position.contractType.toLowerCase().includes("mult") ? (
             "Close"
           ) : (
-            <>Sell {position.contractValue.toFixed(2)} USD</>
+            <>Sell {position.contractValue.toFixed(2)} {position.currency ?? "USD"}</>
           )}
         </button>
       ) : (

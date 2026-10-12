@@ -5,6 +5,10 @@ import { useEffect, useState } from "react";
 export type PositionContractType = string;
 export interface Position {
   id: string;
+  currency?: string;
+  payout?: number;
+  canSell?: boolean;
+  updatedAt?: number;
   /** Deriv contract id — the correlation key for the positions WS stream.
    *  Undefined for legacy/mock rows that predate real execution. */
   contractId?: string;

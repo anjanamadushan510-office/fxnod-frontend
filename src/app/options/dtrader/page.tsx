@@ -111,7 +111,7 @@ function OptionsPageInner() {
   const positionsOpen = usePositionsUI((s) => s.open);
   const togglePositions = usePositionsUI((s) => s.toggle);
   const setPositionsOpen = usePositionsUI((s) => s.setOpen);
-  const positionsCount = useOpenPositions((s) => s.positions.length);
+  const positionsCount = useOpenPositions((s) => s.positions.filter((p) => !p.outcome).length);
 
   // Sync Reports modal open state with URL
   useEffect(() => {
@@ -138,7 +138,7 @@ function OptionsPageInner() {
   // Real-time P/L stream — runs whenever authenticated (needs the access token
   // for the WS handshake) and the feature flag is on.
   const authed = useAuthStore((s) => s.status === "authenticated");
-  usePositionsWebSocket(POSITIONS_WS_ENABLED && authed);
+  const positionsSocketStatus = usePositionsWebSocket(POSITIONS_WS_ENABLED && authed);
 
   // Market + contract type are URL-driven (`?symbol=`, `?trade_type=`),
   // alongside chart_type + interval. No local state for either.
@@ -191,6 +191,7 @@ function OptionsPageInner() {
         drawerOpen={positionsOpen}
         drawer={
           <PositionsDrawer
+            socketStatus={positionsSocketStatus}
             open={positionsOpen}
             onClose={() => setPositionsOpen(false)}
           />

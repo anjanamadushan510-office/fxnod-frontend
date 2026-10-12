@@ -56,7 +56,7 @@ export function BuyButton({
             className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/40 border-t-white"
           />
         )}
-        {label}
+        {loading ? "Placing trade…" : label}
       </span>
       {payoutLabel && (
         <span className="font-mono text-[12px] font-medium text-white/90 tabular-nums">

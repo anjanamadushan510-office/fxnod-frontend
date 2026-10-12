@@ -14,11 +14,12 @@ import { useTradeOverlays } from "@/stores/useTradeOverlays";
  * WebSocket stream (usePositionsWebSocket) via applySnapshot / applyUpdate /
  * markClosed, matched on `contractId`.
  *
- * `tick()` is the legacy random-drift placeholder — remove it (and the
- * PositionsDrawer interval) once the WS stream is the source of P/L.
+ * Settled rows remain available while the history database catches up.
  */
 interface OpenPositionsState {
   positions: Position[];
+  scope: string | null;
+  setScope: (scope: string | null) => void;
   /** Append a new open position (id + starting P/L are filled in). */
   add: (p: Omit<Position, "id" | "pnl">) => void;
   /** Upsert one contract's live fields from a stream frame. */
@@ -27,46 +28,37 @@ interface OpenPositionsState {
   applySnapshot: (frames: PositionFrame[]) => void;
   /** Mark a contract settled (won/lost + final P/L). */
   markClosed: (frame: PositionFrame) => void;
-  /** Drift every position's P/L (placeholder until the positions WS stream). */
-  tick: () => void;
   clear: () => void;
 }
 
-export const useOpenPositions = create<OpenPositionsState>((set) => ({
+export const useOpenPositions = create<OpenPositionsState>((set, get) => ({
   positions: [],
-  add: (p) =>
-    set((s) => ({
-      positions: [
-        { ...p, id: crypto.randomUUID(), pnl: 0 } as Position,
-        ...s.positions,
-      ],
-    })),
-  applyUpdate: (frame) =>
-    set((s) => ({ positions: upsert(s.positions, frame) })),
-  applySnapshot: (frames) =>
-    set((s) => ({ positions: frames.reduce(upsert, s.positions) })),
-  markClosed: (frame) =>
-    set((s) => {
-      setTimeout(() => {
-        useOpenPositions.setState((curr) => ({
-          positions: curr.positions.filter((p) => p.contractId !== frame.contract_id),
-        }));
-        useTradeOverlays.getState().removeOverlay(frame.contract_id);
-      }, 3000);
-
-      return {
-        positions: s.positions.map((p) =>
-          p.contractId === frame.contract_id ? { ...p, ...framePatch(frame) } : p,
-        ),
-      };
-    }),
-  tick: () =>
-    set((s) => ({
-      positions: s.positions.map((p) => ({
-        ...p,
-        pnl: +(p.pnl + (Math.random() - 0.5) * 0.1).toFixed(2),
-      })),
-    })),
+  scope: null,
+  setScope: (scope) => {
+    if (get().scope === scope) return;
+    useTradeOverlays.getState().clearAll();
+    set({ scope, positions: [] });
+  },
+  add: (p) => set((state) => {
+    const existing = state.positions.find((row) => row.contractId === p.contractId);
+    // Broker updates (even settlement) may arrive before the HTTP buy reply.
+    // The reply must enrich that row rather than reset its live state.
+    if (existing) return { positions: state.positions.map((row) => row === existing
+      ? { ...p, ...existing, marketId: p.marketId, marketName: p.marketName,
+          contractType: p.contractType, side: p.side, payout: existing.payout ?? p.payout,
+          startTime: existing.startTime ?? p.startTime, currency: existing.currency ?? p.currency } : row) };
+    return { positions: [{ ...p, id: crypto.randomUUID(), pnl: 0 }, ...state.positions] };
+  }),
+  applyUpdate: (frame) => set((state) => ({ positions: upsert(state.positions, frame) })),
+  applySnapshot: (frames) => set((state) => ({ positions: frames.reduce(upsert, state.positions) })),
+  markClosed: (frame) => {
+    useTradeOverlays.getState().removeOverlay(frame.contract_id);
+    set((state) => {
+      const positions = upsert(state.positions, frame);
+      let retained = 0;
+      return { positions: positions.filter((row) => !row.outcome || retained++ < 200) };
+    });
+  },
   clear: () => set({ positions: [] }),
 }));
 
@@ -82,6 +74,9 @@ function upsert(list: Position[], frame: PositionFrame): Position[] {
     }
     return [frameToPosition(frame), ...list];
   }
+  const existing = list[idx]!;
+  if (existing.outcome && frame.status === "open") return list;
+  if (frame.status === "open" && frame.updated_at && existing.updatedAt && frame.updated_at < existing.updatedAt) return list;
   const next = list.slice();
   next[idx] = { ...next[idx]!, ...framePatch(frame, next[idx]) };
   return next;
@@ -91,21 +86,28 @@ function upsert(list: Position[], frame: PositionFrame): Position[] {
 function framePatch(frame: PositionFrame, existing?: Position): Partial<Position> {
   const patch: Partial<Position> = {
     pnl: toNum(frame.profit) ?? 0,
+    updatedAt: frame.updated_at,
     outcome:
       frame.status === "won" || frame.status === "lost" ? frame.status : null,
   };
   
-  if (frame.tickStream && existing) {
+  const tickStream = frame.tick_stream ?? frame.tickStream;
+  if (tickStream && existing) {
     const existingTicks = existing.tickStream || [];
-    const newTicks = frame.tickStream;
+    const newTicks = tickStream;
     const tickMap = new Map();
     existingTicks.forEach((t: any) => tickMap.set(t.epoch, t));
     newTicks.forEach((t: any) => tickMap.set(t.epoch, t));
     patch.tickStream = Array.from(tickMap.values()).sort((a: any, b: any) => a.epoch - b.epoch);
-  } else if (frame.tickStream) {
-    patch.tickStream = frame.tickStream;
+  } else if (tickStream) {
+    patch.tickStream = tickStream;
   }
   if (frame.ticks_total != null) patch.ticksTotal = frame.ticks_total;
+  if (frame.start_time != null) patch.startTime = frame.start_time;
+  if (frame.expiry_time != null) patch.expiryTime = frame.expiry_time;
+  if (frame.currency) patch.currency = frame.currency;
+  if (frame.is_valid_to_sell != null) patch.canSell = frame.is_valid_to_sell;
+  if (frame.payout != null) patch.payout = toNum(frame.payout);
   
   const value = toNum(frame.bid_price);
   if (value !== undefined) patch.contractValue = value;
@@ -155,6 +157,11 @@ function frameToPosition(frame: PositionFrame): Position {
     sell_transaction_id: frame.sell_transaction_id,
     display_number_of_contracts: frame.display_number_of_contracts,
     commission: toNum(frame.commission),
+    tickStream: frame.tick_stream ?? frame.tickStream,
+    updatedAt: frame.updated_at,
+    currency: frame.currency,
+    payout: toNum(frame.payout),
+    canSell: frame.is_valid_to_sell,
   };
 }
 

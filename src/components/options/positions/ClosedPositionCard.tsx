@@ -41,7 +41,7 @@ export function ClosedPositionCard({
       <div className="flex items-center justify-between text-[12px]">
         <span className="text-opt-ink-2">{contract.tradeTypeLabel}</span>
         <span className="font-mono font-medium tabular-nums text-opt-ink">
-          {contract.stake.toFixed(2)} USD
+          {contract.stake.toFixed(2)} {contract.currency ?? "USD"}
         </span>
       </div>
 
@@ -57,7 +57,7 @@ export function ClosedPositionCard({
           )}
         >
           {lost ? "" : "+"}
-          {contract.pnl.toFixed(2)} USD
+          {contract.pnl.toFixed(2)} {contract.currency ?? "USD"}
         </span>
       </div>
     </article>

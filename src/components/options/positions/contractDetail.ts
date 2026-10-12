@@ -20,6 +20,7 @@ export interface ContractTick {
 
 export interface ContractDetail {
   id: string;
+  currency?: string;
   marketId: string;
   marketName: string;
   type: string;
@@ -456,6 +457,7 @@ export function historyToDetail(h: TradeHistoryEntry): ContractDetail {
       tradeTypeLabel: formatTradeTypeLabel(h.frontend_contract_type, h.side),
       side: h.side === "fall" ? "fall" : "rise",
       growthRate: Number((h as any).growth_rate) || undefined,
+      currency: h.currency,
       outcome: won ? "won" : "lost",
       stake,
       payout,
@@ -494,152 +496,31 @@ function parseBarrier(barrierVal: string | number | null | undefined, entrySpot:
 /** Best-effort ContractDetail for an in-progress open position. */
 export function simPositionToDetail(p: Position): ContractDetail {
   const entry = p.entrySpot ?? 0;
-  const exit = p.exitSpot ?? p.currentSpot ?? +(entry + p.pnl * 0.1).toFixed(entry < 10 ? 4 : 2);
-  let start = p.startTime || (Math.floor(Date.now() / 1000) - 5);
-  let now = Math.floor(Date.now() / 1000);
-  if (now < start + 1) now = start + 1;
-  const won = p.pnl >= 0;
-  const side = p.side === "fall" ? "fall" : "rise";
-
-  const isTick = p.isTick || (p.status && p.status.includes("tick"));
-  const numPoints = isTick ? Math.max(5, now - start) : Math.max(10, Math.min(100, now - start));
-
-  let ticks: any[] = [];
-  let foundExit = false;
-  if (p.tickStream && p.tickStream.length > 0) {
-    let ts = p.tickStream;
-    const isAccu = p.contractType === "accumulators" || p.contractType === "ACCU" || (p as any).contract_type === "ACCU";
-    const isTurbos = p.contractType === "turbos" || p.contractType === "TURBOSLONG" || p.contractType === "TURBOSSHORT" || (p as any).contract_type?.includes("TURBOS");
-    const isTouch = p.contractType?.toLowerCase().includes("touch") || (p as any).contract_type?.toLowerCase().includes("touch");
-    const needsSyntheticStart = !isAccu && !isTouch; // Turbos also needs synthetic start
-    
-    let entryIdx = -1;
-    for (let i = 0; i < ts.length; i++) {
-        const tEpoch = ts[i].epoch || (start + i);
-        if (tEpoch > start) { entryIdx = i; break; }
-    }
-    if (entryIdx === -1) entryIdx = 0;
-    const typeStr = (p.contractType || (p as any).contract_type || "").toUpperCase();
-    const isDigit = typeStr.includes("DIGIT") || typeStr === "EVEN_ODD" || typeStr === "MATCHES_DIFFERS" || typeStr === "OVER_UNDER" || typeStr.includes("TURBOS");
-
-    const targetExitIdx = entryIdx + (isDigit ? numPoints - 1 : numPoints);
-
-    if ((p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost") && exit > 0) {
-      const maxExitIdx = Math.min(ts.length - 1, targetExitIdx);
-      let exitIdx = maxExitIdx;
-      ts = ts.slice(entryIdx, exitIdx + 1);
-    } else {
-      ts = ts.slice(entryIdx);
-    }
-    
-    ticks = ts.map((t: any, i: number) => ({
-      time: t.epoch || (start + i),
-      value: Number(t.tick_display_value) || Number(t.tick) || 0,
-      kind: "normal" as any,
-    }));
-    
-    if (ticks.length > 0 && ticks[0].time > start) {
-        ticks.unshift({
-            time: start,
-            value: ticks[0].value,
-            kind: "pre-start" as any
-        });
-    }
-    
-    // Expected points
-    const expectedPoints = isDigit ? numPoints + 1 : numPoints + 2;
-    if ((p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost")) {
-        let originalEntryIdx = -1;
-        for (let i = 0; i < (p.tickStream || []).length; i++) {
-            const tEpoch = (p.tickStream || [])[i].epoch || (start + i);
-            if (tEpoch > start) { originalEntryIdx = i; break; }
-        }
-        if (originalEntryIdx === -1) originalEntryIdx = 0;
-        
-        const originalTargetExitIdx = originalEntryIdx + (isDigit ? numPoints - 1 : numPoints);
-        const isEarlyExit = ((p.tickStream || []).length - 1) < originalTargetExitIdx;
-        
-        if (!isEarlyExit) {
-            while (ticks.length < expectedPoints) {
-                ticks.push({
-                    time: ticks[ticks.length - 1].time + 1,
-                    value: exit,
-                    kind: "normal" as any
-                });
-            }
-            if (ticks.length > expectedPoints) {
-                ticks = ticks.slice(0, expectedPoints);
-            }
-        }
-    }
-    
-    if (ticks.length > 0) {
-        if (!isDigit && ticks.length > 1) {
-            ticks[1].kind = "entry" as any;
-        }
-    }
-      
-    const isClosed = p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost";
-      if (isClosed && !foundExit && exit > 0 && isTick) {
-        ticks.push({
-          time: ticks[ticks.length - 1].time + 1,
-          value: exit,
-          kind: "exit"
-        });
-      } else if (isClosed) {
-        ticks[ticks.length - 1].kind = "exit";
-      }
-      
-      // Sync times with authoritative tick stream
-      if (ticks[0].time <= start && !isAccu && !isTurbos) {
-          start = ticks[0].time - 1;
-      } else if ((isAccu || isTurbos) && ticks[0].time < start) {
-          start = ticks[0].time;
-      }
-  } else {
-    ticks = genTicks(entry, exit || entry, start, now, numPoints);
+  const exit = p.exitSpot ?? p.currentSpot ?? entry;
+  const start = p.startTime ?? 0;
+  const isClosed = !!p.outcome;
+  const ticks: ContractTick[] = (p.tickStream ?? []).map((tick) => ({
+    time: Number(tick.epoch), value: Number(tick.tick_display_value ?? tick.tick), kind: "normal" as const,
+  })).filter((tick) => Number.isFinite(tick.time) && Number.isFinite(tick.value))
+    .sort((a, b) => a.time - b.time);
+  if (ticks.length) {
+    ticks[0].kind = "entry";
+    if (isClosed) ticks[ticks.length - 1].kind = "exit";
   }
-
-  const isClosed = p.status === "won" || p.status === "lost" || p.outcome === "won" || p.outcome === "lost";
-  let endedEarly = false;
-  if (isTick && isClosed) {
-    const requestedTicks = parseInt(p.status || "0", 10) || 5;
-    if (ticks.length > 0 && (ticks.length - 1) < requestedTicks) {
-      endedEarly = true;
-    }
-  }
-
+  const side = p.side === "fall" || p.side === "down" ? "fall" : "rise";
   return {
-    id: p.id,
-    marketId: p.marketId,
-    marketName: p.marketName,
-    type: p.contractType,
-    tradeTypeLabel: formatTradeTypeLabel(p.contractType, side),
-    side,
-    growthRate: p.growthRate,
-    outcome: won ? "won" : "lost",
-    stake: p.stake,
-    payout: +(p.stake * 1.92).toFixed(2),
-    contractValue: p.contractValue,
-    pnl: p.pnl,
-    buyPrice: p.stake,
-    sellPrice: p.contractValue,
-    derivContractId: p.contractId ? Number(p.contractId) : 4290000123,
-    buyTransactionId: (p as any).buy_transaction_id ? Number((p as any).buy_transaction_id) : 17000000001,
-    sellTransactionId: (p as any).sell_transaction_id ? Number((p as any).sell_transaction_id) : 0,
-    duration: p.status ?? "Open",
-    barrier: parseBarrier(p.barrier, entry),
-    startTime: start,
-    entrySpot: entry,
-    entryTime: ticks.length > 0 ? ticks[0].time : start,
-    exitSpot: exit,
-    exitTime: isClosed && ticks.length > 0 ? ticks[ticks.length - 1].time + (endedEarly ? 1 : 0) : now,
-    expiryTime: p.expiryTime,
-    payoutPerPoint: (p.contractType === "vanillas" || p.contractType === "turbos" || p.contractType === "VANILLALONGCALL" || p.contractType === "VANILLALONGPUT" || p.contractType === "TURBOSLONG" || p.contractType === "TURBOSSHORT") ? ((p as any).display_number_of_contracts ? Number((p as any).display_number_of_contracts) : p.stake) : undefined,
-    commission: p.commission,
-    ticks: ticks as any,
+    id: p.id, currency: p.currency, marketId: p.marketId, marketName: p.marketName,
+    type: p.contractType, tradeTypeLabel: formatTradeTypeLabel(p.contractType, p.side), side,
+    growthRate: p.growthRate, outcome: p.outcome ?? (p.pnl >= 0 ? "won" : "lost"),
+    stake: p.stake, payout: p.payout ?? 0, contractValue: p.contractValue, pnl: p.pnl,
+    buyPrice: p.stake, sellPrice: p.contractValue,
+    derivContractId: Number(p.contractId) || 0,
+    buyTransactionId: p.buy_transaction_id ?? 0, sellTransactionId: p.sell_transaction_id ?? 0,
+    duration: p.status ?? "Open", barrier: parseBarrier(p.barrier, entry),
+    startTime: start, entrySpot: entry, entryTime: ticks[0]?.time ?? start,
+    exitSpot: exit, exitTime: ticks[ticks.length - 1]?.time ?? p.updatedAt ?? start,
+    expiryTime: p.expiryTime, commission: p.commission,
+    payoutPerPoint: p.display_number_of_contracts ? Number(p.display_number_of_contracts) : undefined,
+    ticks,
   };
 }
-
-
-

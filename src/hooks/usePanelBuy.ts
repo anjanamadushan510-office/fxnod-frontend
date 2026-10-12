@@ -61,8 +61,8 @@ export function usePanelBuy(request: ProposalRequest | null): PanelBuyResult {
   const isIdle = lastTrade === null;
 
   // Always-current request for the async success handler (avoid stale closure).
-  const requestRef = useRef(request);
-  requestRef.current = request;
+  const inFlight = useRef(false);
+  const submitted = useRef<{ scope: string | null; isVirtual: boolean; live: ReturnType<typeof useLiveMarket.getState> } | null>(null);
 
   // Quote is for display only (single-phase trade re-quotes server-side).
   const {
@@ -78,16 +78,19 @@ export function usePanelBuy(request: ProposalRequest | null): PanelBuyResult {
 
   const placeTrade = usePlaceTrade({
     mutation: {
-      onSuccess: (trade) => {
-        setLastTrade(trade);
+      retry: false,
+      onSuccess: (trade, variables) => {
+        const execution = submitted.current;
+        if (execution?.scope === useOpenPositions.getState().scope) setLastTrade(trade);
         toast.success("Trade placed", {
           description: `Buy ${trade.buy_price} · payout ${trade.payout_amount} · #${trade.trade_id}`,
         });
-        if (requestRef.current) {
-          applyPostTrade(requestRef.current, trade);
-          trackDtraderTrade(isVirtual, requestRef.current.contract_type || "rise_fall", requestRef.current.symbol);
+        if (execution && execution.scope === useOpenPositions.getState().scope) {
+          applyPostTrade(variables.data as ProposalRequest, trade, execution.live);
         }
+        trackDtraderTrade(execution?.isVirtual ?? isVirtual, variables.data.contract_type || "rise_fall", variables.data.symbol);
       },
+      onSettled: () => { inFlight.current = false; },
       onError: (e) => {
         const failedAtUTC = new Date().toISOString();
         console.error(
@@ -97,8 +100,10 @@ export function usePanelBuy(request: ProposalRequest | null): PanelBuyResult {
             failed_at_utc: failedAtUTC,
           },
         );
-        toast.error("Trade failed", {
-          description: detailOf(e) ?? "Please try again.",
+        const hasResponse = !!(e as { response?: unknown }).response;
+        if (!hasResponse) usePositionsUI.getState().setOpen(true);
+        toast.error(hasResponse ? "Trade failed" : "Confirmation unavailable", {
+          description: detailOf(e) ?? "Check your positions before trying again. The request may have reached Deriv.",
         });
       },
     },
@@ -134,12 +139,14 @@ export function usePanelBuy(request: ProposalRequest | null): PanelBuyResult {
     quoteError;
 
   function handleBuy() {
-    if (!request) return;
+    if (!request || inFlight.current) return;
     if (!canBuy) {
       if (gateMsg) toast.error(gateMsg);
       return;
     }
-    placeTrade.mutate({ data: request });
+    inFlight.current = true;
+    submitted.current = { scope: useOpenPositions.getState().scope, isVirtual, live: useLiveMarket.getState() };
+    placeTrade.mutate({ data: { ...request } });
   }
 
   function handleNewTrade() {
@@ -172,15 +179,16 @@ import { formatTradeTypeLabel } from "@/components/options/positions/contractDet
  * captured at execution + `now`. Swap these for the response fields the moment
  * the backend includes them.
  */
-function applyPostTrade(request: ProposalRequest, trade: ConfirmResponse) {
-  const live = useLiveMarket.getState();
+function applyPostTrade(request: ProposalRequest, trade: ConfirmResponse, live: ReturnType<typeof useLiveMarket.getState>) {
   const rawSymbol = request.symbol;
   const symbol = fromDerivSymbol(rawSymbol) ?? rawSymbol;
   const side = request.side ?? (request.contract_type === "accumulators" ? "accum" : "rise");
   const stake = Number(request.stake) || Number(trade.buy_price) || 0;
-  const entry = live.price ?? 0;
+  const brokerPosition = useOpenPositions.getState().positions.find((p) => p.contractId === trade.deriv_contract_id);
+  const entry = brokerPosition?.entrySpot ?? live.price ?? 0;
   const now = Math.floor(Date.now() / 1000);
 
+  usePositionsUI.getState().setTab("open");
   usePositionsUI.getState().setOpen(true);
 
   useOpenPositions.getState().add({
@@ -194,13 +202,16 @@ function applyPostTrade(request: ProposalRequest, trade: ConfirmResponse) {
     side,
     status: durationLabel(request),
     stake,
+    payout: Number(trade.payout_amount),
+    currency: request.currency ?? "USD",
+    startTime: now,
     contractValue: Number(trade.buy_price) || stake,
     entrySpot: entry || undefined,
     expiryTime: now + durationSeconds(request),
     isTick: request.duration_unit === "t" || request.duration_unit == null,
   });
 
-  if (entry > 0) {
+  if (entry > 0 && !useOpenPositions.getState().positions.find((p) => p.contractId === trade.deriv_contract_id)?.outcome) {
     useTradeOverlays.getState().addOverlay({
       id: trade.deriv_contract_id,
       symbol,

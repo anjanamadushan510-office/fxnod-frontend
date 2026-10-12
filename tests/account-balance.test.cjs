@@ -90,7 +90,7 @@ test('account switching discards late socket frames and preserves the new keepal
     },
     '@/services/positionsStream': { parsePositionsMessage: JSON.parse },
     '@/services/ws': { buildWsUrl: () => 'ws://test.invalid' },
-    '@/stores/useOpenPositions': { useOpenPositions: { getState: () => ({}) } },
+    '@/stores/useOpenPositions': { useOpenPositions: { getState: () => ({ setScope() {} }) } },
     '@/stores/useAccountBalance': { useAccountBalance: store },
     '@tanstack/react-query': { useQueryClient: () => ({ invalidateQueries() {} }) },
     '@/services/api/endpoints/trading/trading': { getGetTradeHistoryQueryKey: () => [] },

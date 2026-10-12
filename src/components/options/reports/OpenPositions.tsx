@@ -2,7 +2,8 @@ import { Clock } from "lucide-react";
 import { useOpenPositions } from "@/stores/useOpenPositions";
 
 export function OpenPositions() {
-  const positions = useOpenPositions((s) => s.positions);
+  const allPositions = useOpenPositions((s) => s.positions);
+  const positions = allPositions.filter((p) => !p.outcome);
 
   if (positions.length === 0) {
     return (
