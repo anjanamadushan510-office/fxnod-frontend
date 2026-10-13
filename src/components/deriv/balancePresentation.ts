@@ -5,12 +5,24 @@ export function accountBalanceText(
   account: Pick<DerivLinkedAccount, "balance" | "currency">,
 ) {
   const raw = account.balance;
-  if (typeof raw !== "string" || !/^-?\d+(\.\d+)?$/.test(raw))
+  const match =
+    typeof raw === "string"
+      ? /^(-?)(\d+)(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/.exec(raw)
+      : null;
+  if (!match) return "Balance unavailable";
+  const [, sign, whole, fraction = "", exponentText = "0"] = match;
+  const exponent = Number(exponentText);
+  if (!Number.isInteger(exponent) || Math.abs(exponent) > 40)
     return "Balance unavailable";
-  const negative = raw.startsWith("-");
-  const [whole, fraction = ""] = (negative ? raw.slice(1) : raw).split(".");
-  const digits = fraction.replace(/0+$/, "").padEnd(2, "0");
-  return `${negative ? "-" : ""}${BigInt(whole).toLocaleString("en-US")}.${digits} ${account.currency}`;
+  const allDigits = whole + fraction;
+  const point = whole.length + exponent;
+  const integerDigits =
+    point <= 0 ? "0" : allDigits.slice(0, point).padEnd(point, "0");
+  const fractionalDigits =
+    point <= 0 ? "0".repeat(-point) + allDigits : allDigits.slice(point);
+  const digits = fractionalDigits.replace(/0+$/, "").padEnd(2, "0");
+  const negative = sign === "-" && /[1-9]/.test(allDigits);
+  return `${negative ? "-" : ""}${BigInt(integerDigits).toLocaleString("en-US")}.${digits} ${account.currency}`;
 }
 export function balanceReportedAt(updatedAt?: string) {
   if (!updatedAt || !Number.isFinite(Date.parse(updatedAt)))

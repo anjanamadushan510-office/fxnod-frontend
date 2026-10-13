@@ -67,9 +67,7 @@ export function DashboardQuickActions() {
                         : "Package required"}
                 </span>
               </div>
-              <p className="mt-4 text-xs text-ink-3">
-                {tool?.name ?? item.name}
-              </p>
+              <p className="mt-4 text-xs text-ink-3">{item.name}</p>
               <h3 className="mt-1 text-lg font-semibold text-ink">
                 {item.heading}
               </h3>

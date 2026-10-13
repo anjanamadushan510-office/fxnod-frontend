@@ -34,6 +34,14 @@ test("account balances preserve small amounts and never invent an unknown zero",
     "0.00 USD",
   );
   assert.equal(
+    accountBalanceText({ balance: "0E-8", currency: "USDT" }),
+    "0.00 USDT",
+  );
+  assert.equal(
+    accountBalanceText({ balance: "1.25E-7", currency: "BTC" }),
+    "0.000000125 BTC",
+  );
+  assert.equal(
     accountBalanceText({ balance: "0.00000001", currency: "BTC" }),
     "0.00000001 BTC",
   );
@@ -41,7 +49,7 @@ test("account balances preserve small amounts and never invent an unknown zero",
     accountBalanceText({ balance: "9007199254740993.01", currency: "USD" }),
     "9,007,199,254,740,993.01 USD",
   );
-  for (const balance of [undefined, "", "NaN", "1e-5"])
+  for (const balance of [undefined, "", "NaN", "1e-100"])
     assert.equal(
       accountBalanceText({ balance, currency: "USD" }),
       "Balance unavailable",
