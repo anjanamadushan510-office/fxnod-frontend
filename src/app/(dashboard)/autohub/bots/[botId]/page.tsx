@@ -14,12 +14,18 @@ import {
   type SettingValue,
   type SettingValues,
 } from "@/components/autohub/SettingFields";
-import { compareAmounts, consentRequired, isAmount } from "@/components/autohub/runState";
+import {
+  compareAmounts,
+  consentRequired,
+  isAmount,
+} from "@/components/autohub/runState";
 import { DerivAppConsentModal } from "@/components/bot/DerivAppConsentModal";
 import { TextField } from "@/components/bot/builder/controls";
 import { AccountSection } from "@/components/bot/builder/RunPanel";
 import { useDerivStatus } from "@/hooks/useDerivStatus";
 import { useToolTradingAccess } from "@/hooks/useToolTradingAccess";
+import { useBotFavourites } from "@/hooks/useBotFavourites";
+import { FavouriteButton } from "@/components/autohub/FavouriteButton";
 import { cn } from "@/lib/cn";
 import { trackAutoHubStart } from "@/lib/analytics";
 import { parseApiError } from "@/lib/apiError";
@@ -29,7 +35,11 @@ import {
   useStartAutoHubRun,
 } from "@/services/api/endpoints/auto-hub/auto-hub";
 import { useGetBotLimits } from "@/services/api/endpoints/bots/bots";
-import type { AutoHubBot, AutoHubPreset, StartAutoHubRunRequest } from "@/services/api/model";
+import type {
+  AutoHubBot,
+  AutoHubPreset,
+  StartAutoHubRunRequest,
+} from "@/services/api/model";
 
 /**
  * What the user has filled in. Amounts stay the strings they typed.
@@ -90,12 +100,15 @@ function storedDraft(bot: AutoHubBot): Draft | null {
     const settings: SettingValues = {};
     for (const key of Object.keys(defaults)) {
       const value = (parsed.settings as SettingValues)[key];
-      settings[key] = typeof value === typeof defaults[key] ? value : defaults[key];
+      settings[key] =
+        typeof value === typeof defaults[key] ? value : defaults[key];
     }
     return {
       symbols: parsed.symbols.filter((s): s is string => typeof s === "string"),
       // A plan the bot no longer has is dropped, so the choice is made again.
-      preset: bot.presets.some((p) => p.id === parsed.preset) ? (parsed.preset as string) : "",
+      preset: bot.presets.some((p) => p.id === parsed.preset)
+        ? (parsed.preset as string)
+        : "",
       stake: parsed.stake,
       stopLoss: parsed.stopLoss,
       takeProfit: parsed.takeProfit,
@@ -130,7 +143,9 @@ export default function AutoHubBotPage() {
     return (
       <Shell>
         <div className="bg-panel border border-line rounded-2xl p-8 max-w-lg">
-          <h2 className="font-display text-lg font-semibold mb-2">This bot could not be opened</h2>
+          <h2 className="font-display text-lg font-semibold mb-2">
+            This bot could not be opened
+          </h2>
           <p className="text-sm text-ink-2">
             {botsQuery.isError
               ? "The trading engine may be unavailable. Please try again shortly."
@@ -148,6 +163,7 @@ export default function AutoHubBotPage() {
 }
 
 function BotSetup({ bot }: { bot: AutoHubBot }) {
+  const favourites = useBotFavourites();
   const router = useRouter();
   const queryClient = useQueryClient();
   const deriv = useDerivStatus();
@@ -185,7 +201,10 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
     setAcknowledged(false);
   }
 
-  const settings = useMemo(() => readSettings(bot.settings, draft.settings), [bot.settings, draft.settings]);
+  const settings = useMemo(
+    () => readSettings(bot.settings, draft.settings),
+    [bot.settings, draft.settings],
+  );
 
   const errors = useMemo(() => {
     const found: string[] = [];
@@ -197,7 +216,8 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
       );
     }
     if (bot.presets.length > 0) {
-      if (!bot.presets.some((p) => p.id === draft.preset)) found.push("Choose a plan.");
+      if (!bot.presets.some((p) => p.id === draft.preset))
+        found.push("Choose a plan.");
       return [...found, ...settings.errors];
     }
     if (!isAmount(draft.stake)) {
@@ -206,7 +226,9 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
       found.push(`The smallest stake for ${bot.name} is ${bot.min_stake}.`);
     }
     if (!isAmount(draft.stopLoss)) {
-      found.push("Stop loss must be an amount above zero. A bot cannot run without one.");
+      found.push(
+        "Stop loss must be an amount above zero. A bot cannot run without one.",
+      );
     }
     if (draft.takeProfit.trim() !== "" && !isAmount(draft.takeProfit)) {
       found.push("Take profit must be an amount above zero, or left empty.");
@@ -217,7 +239,13 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
   const hasPlans = bot.presets.length > 0;
   const real = deriv.linked && !deriv.isVirtual;
   const ready = errors.length === 0;
-  const canStart = deriv.linked && !deriv.isLoading && !deriv.needsReconnect && access.allowed && !startRun.isPending && (!real || acknowledged);
+  const canStart =
+    deriv.linked &&
+    !deriv.isLoading &&
+    !deriv.needsReconnect &&
+    access.allowed &&
+    !startRun.isPending &&
+    (!real || acknowledged);
   const caps = limitsQuery.data;
 
   function patch(change: Partial<Draft>) {
@@ -246,13 +274,19 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
     } else {
       request.stake = draft.stake.trim();
       request.stop_loss = draft.stopLoss.trim();
-      if (draft.takeProfit.trim() !== "") request.take_profit = draft.takeProfit.trim();
+      if (draft.takeProfit.trim() !== "")
+        request.take_profit = draft.takeProfit.trim();
     }
 
     try {
-      const res = await startRun.mutateAsync({ botId: bot.bot_id, data: request });
+      const res = await startRun.mutateAsync({
+        botId: bot.bot_id,
+        data: request,
+      });
       trackAutoHubStart(res.run.is_virtual, bot.bot_id);
-      await queryClient.invalidateQueries({ queryKey: getListAutoHubRunsQueryKey() });
+      await queryClient.invalidateQueries({
+        queryKey: getListAutoHubRunsQueryKey(),
+      });
       try {
         window.localStorage.removeItem(draftKey(bot.bot_id));
       } catch {
@@ -279,8 +313,33 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
   return (
     <>
       <header className="mb-8">
-        <h1 className="text-2xl font-semibold text-ink">{bot.name}</h1>
-        <p className="text-sm text-ink-2 mt-1 max-w-2xl leading-relaxed">{bot.description}</p>
+        <Link
+          href="/autohub"
+          className="text-sm text-ink-3 hover:text-ink inline-block mb-4"
+        >
+          ← Bot library
+        </Link>
+        <div className="flex items-start justify-between gap-4">
+          <h1 className="text-2xl font-semibold text-ink">{bot.name}</h1>
+          <FavouriteButton
+            name={bot.name}
+            selected={favourites.ids.has(bot.bot_id)}
+            disabled={!favourites.ready || favourites.saving}
+            onClick={() => favourites.toggle(bot.bot_id)}
+          />
+        </div>
+        {favourites.isError && (
+          <button
+            type="button"
+            onClick={favourites.retry}
+            className="mt-2 text-xs text-ink-3 underline"
+          >
+            Could not load favourites. Retry
+          </button>
+        )}
+        <p className="text-sm text-ink-2 mt-1 max-w-2xl leading-relaxed">
+          {bot.description}
+        </p>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_22rem] gap-6 items-start">
@@ -288,7 +347,10 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
           <Card title="How it works">
             <ol className="space-y-3">
               {bot.guide.map((line, index) => (
-                <li key={line} className="flex gap-3 text-sm text-ink-2 leading-relaxed">
+                <li
+                  key={line}
+                  className="flex gap-3 text-sm text-ink-2 leading-relaxed"
+                >
                   <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-surface-2 text-[10px] font-semibold text-ink-2 tabular-nums">
                     {index + 1}
                   </span>
@@ -370,7 +432,11 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
 
           <div className="bg-panel border border-line rounded-2xl p-5 space-y-5">
             <AccountSection />
-            {access.message && <p className="text-xs text-ink-2" role="status">{access.message} <Link href="/tools">View packages</Link></p>}
+            {access.message && (
+              <p className="text-xs text-ink-2" role="status">
+                {access.message} <Link href="/tools">View packages</Link>
+              </p>
+            )}
 
             {real && (
               <label className="flex items-start gap-3 rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-xs leading-relaxed text-amber-900 dark:text-amber-100">
@@ -381,8 +447,9 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
                   className="mt-0.5 h-4 w-4 shrink-0 accent-amber-400"
                 />
                 <span>
-                  I understand this bot trades <strong>real money</strong> on its own and can lose
-                  up to its stop loss, and that past results do not predict future ones.
+                  I understand this bot trades <strong>real money</strong> on
+                  its own and can lose up to its stop loss, and that past
+                  results do not predict future ones.
                 </span>
               </label>
             )}
@@ -401,7 +468,9 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
               onClick={handleStart}
               className={cn(
                 "w-full h-11 rounded-lg text-sm font-medium transition disabled:opacity-45 disabled:cursor-not-allowed",
-                real ? "bg-amber-400 text-black hover:bg-amber-300" : "bg-ink text-surface hover:opacity-80",
+                real
+                  ? "bg-amber-400 text-black hover:bg-amber-300"
+                  : "bg-ink text-surface hover:opacity-80",
               )}
             >
               {startRun.isPending
@@ -415,7 +484,8 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
               {bot.markup_pct
                 ? `On real money, Deriv takes a ${bot.markup_pct}% markup from each payout for FXNod. Demo trades carry none.`
                 : "Demo trades carry no markup."}{" "}
-              The bot runs on the server and keeps its limits with this page closed.
+              The bot runs on the server and keeps its limits with this page
+              closed.
             </p>
           </div>
         </div>
@@ -439,7 +509,10 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
 function Shell({ children }: { children: React.ReactNode }) {
   return (
     <section className="p-4 lg:p-8">
-      <Link href={"/autohub" as Route} className="-mt-2 mb-2 block w-fit py-2 text-xs text-ink-3 hover:text-ink">
+      <Link
+        href={"/autohub" as Route}
+        className="-mt-2 mb-2 block w-fit py-2 text-xs text-ink-3 hover:text-ink"
+      >
         &larr; Auto Hub
       </Link>
       {children}
@@ -479,12 +552,18 @@ function PlanPicker({
             onClick={() => onChange(plan.id)}
             className={cn(
               "w-full rounded-xl border p-4 text-left transition",
-              active ? "border-ink bg-surface-2" : "border-line hover:border-ink-3",
+              active
+                ? "border-ink bg-surface-2"
+                : "border-line hover:border-ink-3",
             )}
           >
             <div className="flex items-baseline justify-between gap-3">
-              <span className="text-sm font-semibold text-ink">Stop loss {plan.stop_loss}</span>
-              <span className="text-xs text-ink-3">Take profit {plan.take_profit}</span>
+              <span className="text-sm font-semibold text-ink">
+                Stop loss {plan.stop_loss}
+              </span>
+              <span className="text-xs text-ink-3">
+                Take profit {plan.take_profit}
+              </span>
             </div>
             <p className="mt-1 text-xs leading-relaxed text-ink-2">
               Starts at {plan.stake} a trade.{" "}
@@ -497,16 +576,25 @@ function PlanPicker({
         );
       })}
       <p className="text-[11px] leading-relaxed text-ink-3">
-        A plan sets all three amounts together. They cannot be changed one by one.
+        A plan sets all three amounts together. They cannot be changed one by
+        one.
       </p>
     </div>
   );
 }
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
+function Card({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="bg-surface border border-line rounded-2xl p-5">
-      <h2 className="text-sm font-semibold text-ink tracking-wide uppercase mb-4">{title}</h2>
+      <h2 className="text-sm font-semibold text-ink tracking-wide uppercase mb-4">
+        {title}
+      </h2>
       {children}
     </div>
   );

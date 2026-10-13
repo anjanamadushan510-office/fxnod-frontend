@@ -6,8 +6,17 @@ import type { Route } from "next";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { BotMembershipBanner } from "@/components/tools/BotMembershipBanner";
-import { AccountBadge, LaneChip, StatusBadge } from "@/components/autohub/pieces";
-import { ENDED_POLL_MS, IDLE_POLL_MS, RUN_POLL_MS, stopReasonLabel } from "@/components/autohub/runState";
+import {
+  AccountBadge,
+  LaneChip,
+  StatusBadge,
+} from "@/components/autohub/pieces";
+import {
+  ENDED_POLL_MS,
+  IDLE_POLL_MS,
+  RUN_POLL_MS,
+  stopReasonLabel,
+} from "@/components/autohub/runState";
 import { cn } from "@/lib/cn";
 import { decimalSign, formatMoney, sumDecimals } from "@/lib/decimal";
 import { parseApiError } from "@/lib/apiError";
@@ -17,7 +26,8 @@ import {
   useListAutoHubRuns,
   useStopAutoHubRun,
 } from "@/services/api/endpoints/auto-hub/auto-hub";
-import type { AutoHubBot, AutoHubRun } from "@/services/api/model";
+import { BotLibrary } from "@/components/autohub/BotLibrary";
+import type { AutoHubRun } from "@/services/api/model";
 
 // Two questions, each answered by the engine: what is running on this
 // account, and what finished most recently. The page used to fetch the newest
@@ -45,7 +55,10 @@ export default function AutoHubPage() {
         (query.state.data?.runs ?? []).length > 0 ? RUN_POLL_MS : IDLE_POLL_MS,
     },
   });
-  const activeRuns = useMemo(() => runsQuery.data?.runs ?? [], [runsQuery.data]);
+  const activeRuns = useMemo(
+    () => runsQuery.data?.runs ?? [],
+    [runsQuery.data],
+  );
   const endedQuery = useListAutoHubRuns(ENDED_RUNS_PARAMS, {
     // A finished run is a record; the list only changes when a live one ends.
     query: { refetchInterval: activeRuns.length > 0 ? ENDED_POLL_MS : false },
@@ -53,7 +66,10 @@ export default function AutoHubPage() {
   const stopRun = useStopAutoHubRun();
 
   const bots = useMemo(() => botsQuery.data?.bots ?? [], [botsQuery.data]);
-  const finishedRuns = useMemo(() => endedQuery.data?.runs ?? [], [endedQuery.data]);
+  const finishedRuns = useMemo(
+    () => endedQuery.data?.runs ?? [],
+    [endedQuery.data],
+  );
 
   // One currency across runs is the normal case. If it is not, a single total
   // would add dollars to something else, so none is shown.
@@ -66,7 +82,9 @@ export default function AutoHubPage() {
   async function handleStop(run: AutoHubRun) {
     try {
       await stopRun.mutateAsync({ id: run.run_id });
-      await queryClient.invalidateQueries({ queryKey: getListAutoHubRunsQueryKey() });
+      await queryClient.invalidateQueries({
+        queryKey: getListAutoHubRunsQueryKey(),
+      });
     } catch (err) {
       toast.error(parseApiError(err, "Could not stop the bot.").message);
     }
@@ -77,9 +95,9 @@ export default function AutoHubPage() {
       <header>
         <h1 className="text-2xl font-semibold text-ink">Auto Hub</h1>
         <p className="text-sm text-ink-2 mt-1 max-w-2xl leading-relaxed">
-          Ready-made bots for your Deriv account. Pick one, set your stake and limits, and start
-          it. It runs on FXNod&rsquo;s servers, so it keeps going when you close this page, and
-          so do its limits.
+          Ready-made bots for your Deriv account. Pick one, set your stake and
+          limits, and start it. It runs on FXNod&rsquo;s servers, so it keeps
+          going when you close this page, and so do its limits.
         </p>
       </header>
 
@@ -88,7 +106,9 @@ export default function AutoHubPage() {
       {activeRuns.length > 0 && (
         <div className="space-y-4">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="text-sm font-bold text-ink tracking-wider uppercase">Running now</h2>
+            <h2 className="text-sm font-bold text-ink tracking-wider uppercase">
+              Running now
+            </h2>
             {runningPnl !== null && (
               <span className="text-sm text-ink-2">
                 Realised{" "}
@@ -120,37 +140,48 @@ export default function AutoHubPage() {
         </div>
       )}
 
-      <div className="space-y-4">
-        <h2 className="text-sm font-bold text-ink tracking-wider uppercase">Bots</h2>
-        {botsQuery.isPending ? (
-          <p className="text-sm text-ink-3">Loading bots…</p>
-        ) : botsQuery.isError ? (
-          <div className="bg-surface border border-line rounded-2xl p-6 max-w-lg">
-            <p className="text-sm text-ink-2">
-              The bots could not be loaded. The trading engine may be unavailable.
-            </p>
-            <button
-              type="button"
-              onClick={() => botsQuery.refetch()}
-              className="mt-4 h-9 px-4 rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-80"
-            >
-              Try again
-            </button>
-          </div>
-        ) : bots.length === 0 ? (
-          <p className="text-sm text-ink-2">No bots are available right now.</p>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 min-w-0">
-            {bots.map((bot) => (
-              <BotCard key={bot.bot_id} bot={bot} />
-            ))}
-          </div>
-        )}
-      </div>
+      {botsQuery.isPending ? (
+        <div
+          role="status"
+          className="grid md:grid-cols-2 xl:grid-cols-3 gap-4"
+          aria-label="Loading bots"
+        >
+          {[1, 2, 3].map((id) => (
+            <div
+              key={id}
+              className="h-64 rounded-2xl bg-surface-2 animate-pulse"
+            />
+          ))}
+          <span className="sr-only">Loading bot library…</span>
+        </div>
+      ) : botsQuery.isError ? (
+        <div
+          role="alert"
+          className="bg-surface border border-line rounded-2xl p-6"
+        >
+          <p className="text-sm text-ink-2">
+            The bots could not be loaded. Please try again.
+          </p>
+          <button
+            type="button"
+            onClick={() => botsQuery.refetch()}
+            className="mt-4 h-10 px-4 rounded-lg bg-ink text-surface text-sm font-medium"
+          >
+            Try again
+          </button>
+        </div>
+      ) : (
+        <BotLibrary
+          bots={bots}
+          runningIds={new Set(activeRuns.map((run) => run.bot_id))}
+        />
+      )}
 
       {finishedRuns.length > 0 && (
         <div className="space-y-4">
-          <h2 className="text-sm font-bold text-ink tracking-wider uppercase">Recent runs</h2>
+          <h2 className="text-sm font-bold text-ink tracking-wider uppercase">
+            Recent runs
+          </h2>
           <div className="bg-surface border border-line rounded-2xl divide-y divide-line/60 overflow-hidden">
             {finishedRuns.map((run) => (
               <Link
@@ -160,12 +191,16 @@ export default function AutoHubPage() {
               >
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm font-medium text-ink">{run.bot_name}</span>
+                    <span className="text-sm font-medium text-ink">
+                      {run.bot_name}
+                    </span>
                     <AccountBadge isVirtual={run.is_virtual} />
                   </div>
                   <p className="text-xs text-ink-3 mt-0.5">
                     {new Date(run.ended_at ?? run.created_at).toLocaleString()}
-                    {stopReasonLabel(run.stop_reason) ? ` · ${stopReasonLabel(run.stop_reason)}` : ""}
+                    {stopReasonLabel(run.stop_reason)
+                      ? ` · ${stopReasonLabel(run.stop_reason)}`
+                      : ""}
                   </p>
                 </div>
                 <div className="text-right">
@@ -192,8 +227,9 @@ export default function AutoHubPage() {
       )}
 
       <p className="text-xs leading-relaxed text-ink-3 max-w-2xl">
-        Bot access is provided by your active Free or Pro plan in Discover. FXNOD also earns a markup that Deriv takes from each real-money
-        payout; each bot shows its rate. Demo trades carry none. No bot can guarantee a profit,
+        Bot access requires an active Auto Hub package from Discover. FXNOD also
+        earns a markup that Deriv takes from each real-money payout; each bot
+        shows its rate. Demo trades carry none. No bot can guarantee a profit,
         and a bot can lose up to the stop loss you give it.
       </p>
     </section>
@@ -201,44 +237,6 @@ export default function AutoHubPage() {
 }
 
 // ─── pieces ─────────────────────────────────────────────────────────────────
-
-function BotCard({ bot }: { bot: AutoHubBot }) {
-  const facts = [
-    bot.duration_unit === "t"
-      ? `${bot.duration}-tick trades`
-      : `${bot.duration}${bot.duration_unit} trades`,
-    bot.max_markets === 1 ? "One market" : `Up to ${bot.max_markets} markets`,
-    bot.has_shadow_lane ? "Shadow lane" : null,
-    bot.markup_pct ? `${bot.markup_pct}% markup on payout` : null,
-  ].filter((fact): fact is string => fact !== null);
-
-  return (
-    <article className="bg-surface border border-line rounded-2xl p-5 flex flex-col min-w-0 transition-colors hover:bg-surface-2">
-      <h3 className="font-medium text-ink text-lg">{bot.name}</h3>
-      <p className="text-xs text-ink-3 mt-0.5">{bot.tagline}</p>
-
-      <p className="text-sm text-ink-2 leading-relaxed mt-4 flex-1">{bot.description}</p>
-
-      <ul className="flex flex-wrap gap-1.5 mt-4">
-        {facts.map((fact) => (
-          <li
-            key={fact}
-            className="rounded-md border border-line px-2 py-0.5 text-[11px] text-ink-2"
-          >
-            {fact}
-          </li>
-        ))}
-      </ul>
-
-      <Link
-        href={`/autohub/bots/${bot.bot_id}` as Route}
-        className="mt-5 flex justify-center items-center h-10 rounded-lg bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-sm font-medium transition-colors"
-      >
-        Set up
-      </Link>
-    </article>
-  );
-}
 
 function RunCard({
   run,
@@ -261,14 +259,20 @@ function RunCard({
             {run.shadow && <LaneChip lane={run.shadow.lane} />}
           </div>
           <p className="text-xs text-ink-3 mt-1">
-            {run.symbols.length === 1 ? run.symbols[0] : `${run.symbols.length} markets`} · stake{" "}
-            {formatMoney(run.stake)}
+            {run.symbols.length === 1
+              ? run.symbols[0]
+              : `${run.symbols.length} markets`}{" "}
+            · stake {formatMoney(run.stake)}
           </p>
         </div>
         <span
           className={cn(
             "text-lg font-semibold tabular-nums shrink-0",
-            tone < 0 ? "text-red-400" : tone > 0 ? "text-emerald-400" : "text-ink",
+            tone < 0
+              ? "text-red-400"
+              : tone > 0
+                ? "text-emerald-400"
+                : "text-ink",
           )}
         >
           {formatMoney(run.realized_pnl)}
