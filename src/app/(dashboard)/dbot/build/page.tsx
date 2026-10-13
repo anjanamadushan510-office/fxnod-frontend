@@ -56,7 +56,7 @@ import { BotStartConflictCode, type BotStartConflict } from "@/services/api/mode
  *   ?template=<id>   start from a ready-made bot
  *   (neither)        start blank
  *
- * A bot is saved to the user's account as a preset, the same record the dBot
+ * A bot is saved to the user's account as a preset, the same record the FXNOD Bot Builder
  * workspace reads, and runs through the same start endpoint — so nothing here
  * can start a run the workspace could not.
  */

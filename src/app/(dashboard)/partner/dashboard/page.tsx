@@ -206,8 +206,8 @@ export default function PartnerOverviewPage() {
           <p className="mb-2 text-[11px] uppercase tracking-[0.14em] text-ink-3">02</p>
           <h3 className="mb-2 font-medium text-ink">They run a bot</h3>
           <p className="text-sm leading-relaxed text-ink-2">
-            You earn a share of what FXNOD earns on their dBot and Auto Hub trades on a real account. Demo
-            trades and dTrader earn nothing.
+            You earn a share of what FXNOD earns on their FXNOD Bot Builder and Auto Hub trades on a real account. Demo
+            trades and FXNOD Trader earn nothing.
           </p>
         </article>
         <article className="rounded-2xl border border-line bg-surface p-5">

@@ -24,6 +24,11 @@ import { TextField } from "@/components/bot/builder/controls";
 import { AccountSection } from "@/components/bot/builder/RunPanel";
 import { useDerivStatus } from "@/hooks/useDerivStatus";
 import { useToolTradingAccess } from "@/hooks/useToolTradingAccess";
+import { useDerivAccounts } from "@/hooks/useDerivAccounts";
+import {
+  accountBalanceText,
+  balanceReportedAt,
+} from "@/components/deriv/balancePresentation";
 import { BotJourney } from "@/components/autohub/BotJourney";
 import { StartReview } from "@/components/autohub/StartReview";
 import { repeatValues } from "@/components/autohub/journey";
@@ -199,12 +204,17 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
     },
   });
   const [reviewing, setReviewing] = useState(false);
+  const [refreshingReview, setRefreshingReview] = useState(false);
   const [createdRunId, setCreatedRunId] = useState<string | null>(null);
   const submitting = useRef(false);
   const restoredKey = useRef("");
   const router = useRouter();
   const queryClient = useQueryClient();
   const deriv = useDerivStatus();
+  const accounts = useDerivAccounts();
+  const selectedAccount = accounts.data?.accounts.find(
+    (account) => account.deriv_account_id === deriv.accountId,
+  );
   const access = useToolTradingAccess("autohub", deriv.isVirtual);
   const activeParams = { state: "active", limit: 100 } as const;
   const runningQuery = useListAutoHubRuns(activeParams, {
@@ -324,6 +334,7 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
   const canStart =
     restored &&
     !createdRunId &&
+    !refreshingReview &&
     deriv.linked &&
     !deriv.isLoading &&
     !deriv.needsReconnect &&
@@ -336,7 +347,7 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
     setDraft((current) => ({ ...current, ...change }));
   }
 
-  function handleReview() {
+  async function handleReview() {
     if (!canStart) return;
     if (!ready) {
       setShowErrors(true);
@@ -345,6 +356,12 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
         .getElementById("setup-errors")
         ?.scrollIntoView({ block: "center" });
       return;
+    }
+    setRefreshingReview(true);
+    try {
+      await accounts.refetch();
+    } finally {
+      setRefreshingReview(false);
     }
     setReviewing(true);
   }
@@ -676,11 +693,13 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
                   : "bg-ink text-surface hover:opacity-80",
               )}
             >
-              {createdRunId
-                ? "Opening live run…"
-                : startRun.isPending
-                  ? "Starting your run…"
-                  : "Review & start run"}
+              {refreshingReview
+                ? "Refreshing account balance…"
+                : createdRunId
+                  ? "Opening live run…"
+                  : startRun.isPending
+                    ? "Starting your run…"
+                    : "Review & start run"}
             </button>
 
             <p className="text-[11px] leading-relaxed text-ink-3">
@@ -702,6 +721,12 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
         allowed={canStart && ready}
         name={bot.name}
         accountId={deriv.accountId}
+        balance={
+          selectedAccount
+            ? accountBalanceText(selectedAccount)
+            : "Balance unavailable"
+        }
+        balanceTime={balanceReportedAt(selectedAccount?.balance_updated_at)}
         isVirtual={deriv.isVirtual}
         currency={deriv.currency}
         markets={draft.symbols}

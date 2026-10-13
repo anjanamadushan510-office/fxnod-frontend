@@ -7,7 +7,7 @@ import type { CommissionRate } from "@/services/api/model";
 const RULES: { title: string; body: string }[] = [
   {
     title: "What earns",
-    body: "Trades that dBot and Auto Hub place on a real Deriv account. Demo accounts and manual trades in dTrader earn nothing.",
+    body: "Trades that FXNOD Bot Builder and Auto Hub place on a real Deriv account. Demo accounts and manual trades in FXNOD Trader earn nothing.",
   },
   {
     title: "What a rate is a share of",

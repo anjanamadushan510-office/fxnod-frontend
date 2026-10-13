@@ -9,9 +9,9 @@ import { cn } from "@/lib/cn";
  * /options — platform picker.
  *
  * "Options" in the nav used to jump straight into manual trading. It now lands
- * here, because options trading is no longer one product: dTrader is the manual
- * ticket, dBot is the automated one, and more platforms are planned. Sending
- * someone directly to dTrader would make every future platform a second-class
+ * here, because options trading is no longer one product: FXNOD Trader is the manual
+ * ticket, FXNOD Bot Builder is the automated one, and more platforms are planned. Sending
+ * someone directly to FXNOD Trader would make every future platform a second-class
  * citizen reachable only from inside another one.
  *
  * Deliberately a server component — it is static links and copy, so there is no
@@ -33,23 +33,23 @@ interface Platform {
 const PLATFORMS: Platform[] = [
   {
     key: "dtrader",
-    name: "dTrader",
+    name: "FXNOD Trader",
     tagline: "Trade manually",
     description:
       "Place options trades yourself with live charts, market picker and full contract control.",
     href: "/options/dtrader" as Route,
     icon: <BarsIcon className="h-7 w-7" />,
-    cta: "Open dTrader",
+    cta: "Open FXNOD Trader",
   },
   {
     key: "dbot",
-    name: "dBot",
+    name: "FXNOD Bot Builder",
     tagline: "Trade automatically",
     description:
       "Run an automated strategy with your own stake, take-profit and session limits. Stops itself when a limit is reached.",
     href: "/dbot" as Route,
     icon: <AppsGridIcon className="h-7 w-7" />,
-    cta: "Open dBot",
+    cta: "Open FXNOD Bot Builder",
   },
 ];
 

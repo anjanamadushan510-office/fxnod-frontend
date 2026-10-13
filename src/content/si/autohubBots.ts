@@ -660,7 +660,7 @@ function fixedPlanGuide(bot: FixedPlanBot): LocalGuide {
       },
       {
         q: `${bot.name} එකේ stake එක හෝ stop loss එක වෙනස් කරන්න පුළුවන්ද?`,
-        a: `වෙන වෙනම බැහැ. Stop loss ${orList(stops)} තියෙන plans ${planCount} එකක් තෝරනවා, සහ plan එකෙන් stake එකයි profit target එකයි ඒකත් එක්කම set වෙනවා. හැම ගානක්ම ඔබම set කරන්න ඕන නම් dBot එකේ bot එකක් හදන්න.`,
+        a: `වෙන වෙනම බැහැ. Stop loss ${orList(stops)} තියෙන plans ${planCount} එකක් තෝරනවා, සහ plan එකෙන් stake එකයි profit target එකයි ඒකත් එක්කම set වෙනවා. හැම ගානක්ම ඔබම set කරන්න ඕන නම් FXNOD Bot Builder එකේ bot එකක් හදන්න.`,
       },
       {
         q: `Page එක close කළාමත් ${bot.name} දුවනවද?`,
@@ -986,10 +986,10 @@ const OVERVIEW_GUIDE: LocalGuide = {
   image: IMAGE,
   answer: `Auto Hub කියන්නේ FXNOD කලින්ම හදලා තියෙන bots එකතුවක්. ඔබ මුකුත් design කරන්න ඕන නැහැ: bot එකක් තෝරලා, market එක තෝරලා, ගණන් තෝරලා start කරනවා. Bots ${AUTOHUB_BOT_COUNT}ක් තියෙනවා. ඒවා trade කරන්නේ Deriv ගේ digit contracts (Matches / Differs, Even / Odd සහ Over / Under) සහ Rise / Fall, tick එකක සිට ticks දහයක් දක්වා දිග contracts වලින්. ${FIXED_PLAN_BOTS.length}ක් start කරන්නේ stop loss එක, stake එක සහ profit target එක එකට set කරන fixed plan එකකින්, සහ තුනකට ගණන් ඔබම දෙනවා.`,
   body: [
-    { type: "h2", text: "Auto Hub ද dBot ද?" },
+    { type: "h2", text: "Auto Hub ද FXNOD Bot Builder ද?" },
     {
       type: "table",
-      head: ["", "dBot", "Auto Hub"],
+      head: ["", "FXNOD Bot Builder", "Auto Hub"],
       rows: [
         ["Strategy එක design කරන්නේ", "ඔබ", "FXNOD"],
         ["ඔබ set කරන්නේ", "Trade type එක, markets, entry rule එක, stake sizing, limits", "Market එක සහ plan එකක්, නැත්නම් market එක සහ ඔබේ ගණන්, සහ bot එක දෙන settings කිහිපය"],
@@ -1097,7 +1097,7 @@ const OVERVIEW_GUIDE: LocalGuide = {
         "දුවන්නේ FXNOD servers වල. Page එක close කළාට ඒක නවතින්නෙත් නැහැ, limits off වෙන්නෙත් නැහැ.",
         "එක වෙලාවකට තියාගන්නේ එක trade එකයි.",
         "Start කරපු Deriv account එකම (demo හෝ real) නවතිනකන් trade කරනවා.",
-        "Auto Hub එකටයි dBot එකටයි account එකක safety limits පොදුයි: එකක පාඩුවක් දෙකටම තියෙන මුළු පාඩු සීමාවට ගණන් වෙනවා, සහ එක වෙලාවකට දුවන්න පුළුවන් bots ගණනට දෙකේම bots ගණන් වෙනවා.",
+        "Auto Hub එකටයි FXNOD Bot Builder එකටයි account එකක safety limits පොදුයි: එකක පාඩුවක් දෙකටම තියෙන මුළු පාඩු සීමාවට ගණන් වෙනවා, සහ එක වෙලාවකට දුවන්න පුළුවන් bots ගණනට දෙකේම bots ගණන් වෙනවා.",
         "FXNOD app එක දැනට English වලින්. ඒ නිසා bot නම්, buttons සහ labels මේ guide එකේ තියෙන්නේ screen එකේ පේන විදිහටමයි.",
       ],
     },
@@ -1122,7 +1122,7 @@ const OVERVIEW_GUIDE: LocalGuide = {
     },
     {
       q: "Auto Hub bot එකක් trade කරන විදිහ වෙනස් කරන්න පුළුවන්ද?",
-      a: "Bot එක දෙන settings වලින් විතරයි, උදාහරණයක් විදිහට Matches / Differs එකේ digit එක හෝ Shadow Fade එකේ Go live below ප්‍රතිශතය. Strategy එක වෙනස් කරන්න බැහැ. ඔබේම එකක් design කරන්න නම් dBot පාවිච්චි කරන්න.",
+      a: "Bot එක දෙන settings වලින් විතරයි, උදාහරණයක් විදිහට Matches / Differs එකේ digit එක හෝ Shadow Fade එකේ Go live below ප්‍රතිශතය. Strategy එක වෙනස් කරන්න බැහැ. ඔබේම එකක් design කරන්න නම් FXNOD Bot Builder පාවිච්චි කරන්න.",
     },
     {
       q: "Bot එකක් කොච්චර වෙලා දුවනවද?",

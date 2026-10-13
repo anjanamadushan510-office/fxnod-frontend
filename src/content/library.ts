@@ -59,7 +59,7 @@ export const GUIDE_SECTIONS: GuideSection[] = [
     intro: "What a trading bot is, how to choose and test one, and how to limit what it can lose.",
     cta: {
       title: "Run a bot that keeps its limits",
-      text: "FXNOD's bots run on its servers and will not start without a stop loss, so your limits hold when your device is off. Build one in dBot or start a ready-made one in Auto Hub, on your Deriv demo account first.",
+      text: "FXNOD's bots run on its servers and will not start without a stop loss, so your limits hold when your device is off. Build one in FXNOD Bot Builder or start a ready-made one in Auto Hub, on your Deriv demo account first.",
     },
     guides: [...BOT_GUIDES, ...BOT_MORE_GUIDES, ...AUTOMATION_GUIDES],
   },
@@ -69,7 +69,7 @@ export const GUIDE_SECTIONS: GuideSection[] = [
     intro: "Charts, risk and discipline: what to understand before any tool is useful.",
     cta: {
       title: "Practise it with virtual funds",
-      text: "FXNOD's dTrader gives you a live chart and Deriv's contracts on your demo account. There is nothing to install and no subscription.",
+      text: "FXNOD Trader gives you a live chart and Deriv's contracts on your demo account. There is nothing to install and no subscription.",
     },
     guides: BASICS_GUIDES,
   },
@@ -79,7 +79,7 @@ export const GUIDE_SECTIONS: GuideSection[] = [
     intro: "Why prices move, what news and volatility do, and how the common indicators and orders work.",
     cta: {
       title: "Watch it on a live chart",
-      text: "Open dTrader with your Deriv demo account, pick a market, and see how the price behaves tick by tick, with virtual funds.",
+      text: "Open FXNOD Trader with your Deriv demo account, pick a market, and see how the price behaves tick by tick, with virtual funds.",
     },
     guides: MARKET_GUIDES,
   },
@@ -89,7 +89,7 @@ export const GUIDE_SECTIONS: GuideSection[] = [
     intro: "What each tool measures, how it is calculated, and where it stops being useful.",
     cta: {
       title: "Put it on a chart",
-      text: "dTrader's chart has moving averages, RSI and Bollinger Bands, and a bot in dBot can use indicators to choose its side. Try both on your Deriv demo account.",
+      text: "FXNOD Trader's chart has moving averages, RSI and Bollinger Bands, and a bot in FXNOD Bot Builder can use indicators to choose its side. Try both on your Deriv demo account.",
     },
     guides: CHART_GUIDES,
   },
@@ -109,7 +109,7 @@ export const GUIDE_SECTIONS: GuideSection[] = [
     intro: "Sizing a trade, surviving a drawdown, testing an idea, and choosing who to trust.",
     cta: {
       title: "Test your rules before you fund them",
-      text: "Turn a rule into a bot in dBot by answering questions, run it on your Deriv demo account, and read the result trade by trade.",
+      text: "Turn a rule into a bot in FXNOD Bot Builder by answering questions, run it on your Deriv demo account, and read the result trade by trade.",
     },
     guides: PRACTICE_GUIDES,
   },
@@ -149,7 +149,7 @@ export const GUIDE_SECTIONS: GuideSection[] = [
     intro: "One guide per contract: what wins, what it pays, and the win rate it needs to break even.",
     cta: {
       title: "Try this contract on demo",
-      text: "Every trade type in these guides is in FXNOD's dTrader, and a bot in dBot can buy it. Read the quoted payout and try it with Deriv's virtual funds.",
+      text: "Every trade type in these guides is in FXNOD Trader, and a bot in FXNOD Bot Builder can buy it. Read the quoted payout and try it with Deriv's virtual funds.",
     },
     guides: CONTRACT_GUIDES,
   },
@@ -159,7 +159,7 @@ export const GUIDE_SECTIONS: GuideSection[] = [
     intro: "What each family of synthetic index is built to do, and what that means for a trade.",
     cta: {
       title: "Trade a synthetic index on demo",
-      text: "Pick any index your Deriv account offers in dTrader, or let a bot trade it at a flat stake with a required stop loss. Virtual funds first.",
+      text: "Pick any index your Deriv account offers in FXNOD Trader, or let a bot trade it at a flat stake with a required stop loss. Virtual funds first.",
     },
     guides: SYNTHETIC_GUIDES,
   },
@@ -169,7 +169,7 @@ export const GUIDE_SECTIONS: GuideSection[] = [
     intro: "Martingale and its relatives, worked through step by step, and what no staking system can change.",
     cta: {
       title: "See the stakes before you start",
-      text: "dBot shows the stakes of a losing streak before a bot runs, will not start without a stop loss, and caps the largest stake. Try any stake setting on your Deriv demo account.",
+      text: "FXNOD Bot Builder shows the stakes of a losing streak before a bot runs, will not start without a stop loss, and caps the largest stake. Try any stake setting on your Deriv demo account.",
     },
     guides: STAKING_GUIDES,
   },

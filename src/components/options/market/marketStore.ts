@@ -99,7 +99,7 @@ export const useMarketStore = create<MarketStoreState>((set, get) => ({
       return (indexA === -1 ? 99 : indexA) - (indexB === -1 ? 99 : indexB);
     });
 
-    // MERGE into existing store instead of overwriting — important for dBot which
+    // MERGE into existing store instead of overwriting — important for FXNOD Bot Builder which
     // loads one strategy's markets at a time, but all must remain findable
     // for findMarket() calls (e.g. showing market name in the dropdown).
     set((prev) => ({

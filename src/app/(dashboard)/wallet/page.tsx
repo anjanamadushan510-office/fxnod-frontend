@@ -41,7 +41,7 @@ export default function WalletPage() {
           <ol className="text-sm text-ink-2 space-y-2 list-decimal pl-4">
             <li>Top up via the gateway</li>
             <li>Send a balance to Deriv</li>
-            <li>Trade with dTrader or dBot</li>
+            <li>Trade with FXNOD Trader or FXNOD Bot Builder</li>
           </ol>
         </article>
       </div>

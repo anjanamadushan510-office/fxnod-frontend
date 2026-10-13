@@ -67,7 +67,7 @@ export function levelMeaning(level: number): string {
 }
 
 const PRODUCTS: Record<string, string> = {
-  dbot_subscription: "dBot subscriptions",
+  dbot_subscription: "FXNOD Bot Builder subscriptions",
   trade_markup: "Trading",
 };
 

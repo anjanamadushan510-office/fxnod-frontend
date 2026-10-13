@@ -300,7 +300,7 @@ export default function DBotDashboardPage() {
     <section className="p-4 lg:p-8 space-y-8">
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between sm:gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-ink">dBot</h1>
+          <h1 className="text-2xl font-semibold text-ink">FXNOD Bot Builder</h1>
           <p className="text-sm text-ink-2 mt-1">Build a bot in plain language</p>
         </div>
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:gap-3">

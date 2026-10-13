@@ -176,20 +176,20 @@ export const GUIDES: Guide[] = [
 
   {
     slug: "dtrader-manual-trading",
-    title: "How to trade manually on Deriv with FXNOD dTrader",
+    title: "How to trade manually on Deriv with FXNOD Trader",
     description:
-      "dTrader is FXNOD's manual trading screen for Deriv: a live chart, a market picker and ten trade types. Here is how to place a trade and what each type means.",
-    tag: "dTrader",
+      "FXNOD Trader is FXNOD's manual trading screen for Deriv: a live chart, a market picker and ten trade types. Here is how to place a trade and what each type means.",
+    tag: "FXNOD Trader",
     published: "2026-10-06",
     updated: "2026-10-06",
     image: "/assets/login-slide-1.jpg",
     answer:
-      "dTrader is FXNOD's manual trading screen for Deriv. Pick a market, pick a trade type such as Rise/Fall or Multipliers, set your stake and duration, read the payout Deriv quotes, and press Buy. The trade is placed on your own Deriv account and stays on the chart until it settles.",
+      "FXNOD Trader is FXNOD's manual trading screen for Deriv. Pick a market, pick a trade type such as Rise/Fall or Multipliers, set your stake and duration, read the payout Deriv quotes, and press Buy. The trade is placed on your own Deriv account and stays on the chart until it settles.",
     body: [
-      { type: "h2", text: "What dTrader is" },
+      { type: "h2", text: "What FXNOD Trader is" },
       {
         type: "p",
-        text: "dTrader is one screen with three parts: a live chart, a market picker and an order panel. You decide every trade yourself. It runs on the Deriv account you connected to FXNOD, demo or real, and you open it from Options in the FXNOD menu.",
+        text: "FXNOD Trader is one screen with three parts: a live chart, a market picker and an order panel. You decide every trade yourself. It runs on the Deriv account you connected to FXNOD, demo or real, and you open it from Options in the FXNOD menu.",
       },
       { type: "h2", text: "The ten trade types" },
       {
@@ -210,7 +210,7 @@ export const GUIDES: Guide[] = [
       },
       {
         type: "p",
-        text: "If a name is new to you, open the trade types guide inside dTrader. It shows a short animation for each type, which is quicker than any description.",
+        text: "If a name is new to you, open the trade types guide inside FXNOD Trader. It shows a short animation for each type, which is quicker than any description.",
       },
       { type: "h2", text: "Placing a trade, step by step" },
       {
@@ -250,22 +250,22 @@ export const GUIDES: Guide[] = [
       { type: "h2", text: "What it costs" },
       {
         type: "p",
-        text: "dTrader is free to use and there is no subscription. The stake, the payout and the result of every trade are the ones on your Deriv account.",
+        text: "FXNOD Trader requires an active tool package. Review current pricing and access periods in Discover. The stake, the payout and the result of every trade are the ones on your Deriv account.",
       },
       RISK_NOTE,
     ],
     faq: [
       {
-        q: "Is FXNOD dTrader the same as Deriv's own trading app?",
-        a: "No. FXNOD's dTrader is a separate interface built by FXNOD. It places trades on your Deriv account through Deriv's API, so the contracts and prices come from Deriv, but FXNOD is an independent product and is not affiliated with Deriv.",
+        q: "Is FXNOD Trader the same as Deriv's own trading app?",
+        a: "No. FXNOD Trader is a separate interface built by FXNOD. It places trades on your Deriv account through Deriv's API, so the contracts and prices come from Deriv, but FXNOD is an independent product and is not affiliated with Deriv.",
       },
       {
         q: "Do I need to deposit money into FXNOD to trade?",
-        a: "No. dTrader uses the balance in your Deriv account. On a demo account that is Deriv's virtual money.",
+        a: "No. FXNOD Trader uses the balance in your Deriv account. On a demo account that is Deriv's virtual money.",
       },
       {
-        q: "Can I use dTrader on a phone?",
-        a: "Yes. dTrader runs in a phone browser and there is nothing to install.",
+        q: "Can I use FXNOD Trader on a phone?",
+        a: "Yes. FXNOD Trader runs in a phone browser and there is nothing to install.",
       },
       {
         q: "Can I close a trade before it expires?",
@@ -281,15 +281,15 @@ export const GUIDES: Guide[] = [
 
   {
     slug: "build-a-deriv-bot-with-dbot",
-    title: "How to build a Deriv trading bot without code in FXNOD dBot",
+    title: "How to build a Deriv trading bot without code in FXNOD Bot Builder",
     description:
-      "Build a Deriv bot in FXNOD dBot by answering plain questions: what to buy, when to enter, how much to stake and when to stop. No blocks and no code.",
-    tag: "dBot",
+      "Build a Deriv bot in FXNOD Bot Builder by answering plain questions: what to buy, when to enter, how much to stake and when to stop. No blocks and no code.",
+    tag: "FXNOD Bot Builder",
     published: "2026-10-06",
     updated: "2026-10-06",
     image: "/assets/login-slide-2.jpg",
     answer:
-      "In dBot you build a bot by answering questions in plain language: what it should buy, on which markets, when it should enter, how much it stakes and when it stops. There are no blocks to wire and no code to write. Save the bot, press Run, confirm the Deriv account, and it trades from FXNOD's servers until one of your limits is reached.",
+      "In FXNOD Bot Builder you build a bot by answering questions in plain language: what it should buy, on which markets, when it should enter, how much it stakes and when it stops. There are no blocks to wire and no code to write. Save the bot, press Run, confirm the Deriv account, and it trades from FXNOD's servers until one of your limits is reached.",
     body: [
       { type: "h2", text: "Start from a template, or from nothing" },
       {
@@ -323,7 +323,7 @@ export const GUIDES: Guide[] = [
           },
           {
             title: "The contract terms",
-            text: "Set how long each contract lasts and, where the trade type needs it, the target, multiplier or growth rate. dBot asks Deriv which durations those markets sell and only lets you pick a length that exists on every market you selected.",
+            text: "Set how long each contract lasts and, where the trade type needs it, the target, multiplier or growth rate. FXNOD Bot Builder asks Deriv which durations those markets sell and only lets you pick a length that exists on every market you selected.",
           },
           {
             title: "Indicators (optional)",
@@ -360,19 +360,19 @@ export const GUIDES: Guide[] = [
       { type: "h2", text: "Read this before you choose Martingale" },
       {
         type: "p",
-        text: "Martingale multiplies the stake after every loss so that one win recovers the losses before it. The arithmetic is unforgiving. Starting at 1 and doubling, seven losses in a row means stakes of 1, 2, 4, 8, 16, 32 and 64, which is 127 lost to win back 1. Losing streaks of that length do happen. dBot labels Martingale as high risk. You choose how many steps it may take, and the builder shows the stakes of a losing streak before you start. When the last step loses, or the next stake would be more than one trade is allowed, the session ends with the loss; dBot does not place a smaller stake that could not win the streak back. The stop loss is checked before each trade, so the last trade of a streak can take the session past it. Same stake is the recommended setting for a reason.",
+        text: "Martingale multiplies the stake after every loss so that one win recovers the losses before it. The arithmetic is unforgiving. Starting at 1 and doubling, seven losses in a row means stakes of 1, 2, 4, 8, 16, 32 and 64, which is 127 lost to win back 1. Losing streaks of that length do happen. FXNOD Bot Builder labels Martingale as high risk. You choose how many steps it may take, and the builder shows the stakes of a losing streak before you start. When the last step loses, or the next stake would be more than one trade is allowed, the session ends with the loss; FXNOD Bot Builder does not place a smaller stake that could not win the streak back. The stop loss is checked before each trade, so the last trade of a streak can take the session past it. Same stake is the recommended setting for a reason.",
       },
       { type: "h2", text: "What it costs" },
       {
         type: "p",
-        text: "dBot has no subscription and no sign-up fee. You can build a bot, save it and test it on a demo account before you use real money.",
+        text: "FXNOD Bot Builder has no subscription and no sign-up fee. You can build a bot, save it and test it on a demo account before you use real money.",
       },
       RISK_NOTE,
     ],
     faq: [
       {
-        q: "Is FXNOD dBot the same as Deriv Bot?",
-        a: "No. FXNOD's dBot is a separate bot builder made by FXNOD. It does not use Blockly blocks: you answer questions in plain language instead. The bot trades on your Deriv account through Deriv's API, but FXNOD is an independent product and is not affiliated with Deriv.",
+        q: "Is FXNOD Bot Builder the same as Deriv Bot?",
+        a: "No. FXNOD Bot Builder is a separate bot builder made by FXNOD. It does not use Blockly blocks: you answer questions in plain language instead. The bot trades on your Deriv account through Deriv's API, but FXNOD is an independent product and is not affiliated with Deriv.",
       },
       {
         q: "Does the bot keep running when I close my browser?",
@@ -404,10 +404,10 @@ export const GUIDES: Guide[] = [
     image: "/assets/login-slide-3.jpg",
     answer: `Auto Hub is a set of bots that FXNOD has already built. You do not design anything: pick a bot, choose its market, choose its amounts, and start it. There are ${AUTOHUB_BOT_COUNT} bots. They trade Deriv's digit contracts (Matches / Differs, Even / Odd and Over / Under) and Rise / Fall, in contracts of one to ten ticks. ${FIXED_PLAN_BOTS.length} are started with a fixed plan that sets the stop loss, the stake and the profit target together, and three take amounts you set yourself.`,
     body: [
-      { type: "h2", text: "Auto Hub or dBot?" },
+      { type: "h2", text: "Auto Hub or FXNOD Bot Builder?" },
       {
         type: "table",
-        head: ["", "dBot", "Auto Hub"],
+        head: ["", "FXNOD Bot Builder", "Auto Hub"],
         rows: [
           ["Who designs the strategy", "You do", "FXNOD did"],
           ["What you set", "Trade type, markets, entry rule, stake sizing, limits", "The market and a plan, or the market and your amounts, plus the few settings a bot lists"],
@@ -507,7 +507,7 @@ export const GUIDES: Guide[] = [
           "It runs on FXNOD's servers. Closing the page does not stop it or switch off its limits.",
           "It holds one trade at a time.",
           "It trades the Deriv account it was started on, demo or real, until it stops.",
-          "Auto Hub and dBot share the same safety ceilings on an account: a loss in one counts towards the total loss limit for both, and bots from either count towards the limit on how many run at once.",
+          "Auto Hub and FXNOD Bot Builder share the same safety ceilings on an account: a loss in one counts towards the total loss limit for both, and bots from either count towards the limit on how many run at once.",
         ],
       },
       RISK_NOTE,
@@ -531,7 +531,7 @@ export const GUIDES: Guide[] = [
       },
       {
         q: "Can I change how an Auto Hub bot trades?",
-        a: "Only through the settings a bot lists, such as the digit for Matches / Differs or the Go live below percentage for Shadow Fade. The strategy itself is fixed. To design your own, use dBot.",
+        a: "Only through the settings a bot lists, such as the digit for Matches / Differs or the Go live below percentage for Shadow Fade. The strategy itself is fixed. To design your own, use FXNOD Bot Builder.",
       },
       {
         q: "How long does a bot run?",

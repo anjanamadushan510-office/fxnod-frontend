@@ -347,7 +347,7 @@ function DerivLoginRow({ connection, index }: { connection: DerivConnection; ind
  * each for the account they are on.
  *
  * Read-only on purpose. Approving an app is a Deriv round-trip that only means
- * something in context, so dBot asks for it at the moment a bot that needs it
+ * something in context, so FXNOD Bot Builder asks for it at the moment a bot that needs it
  * is started. This is here so the answer to "why did it ask me again?" is
  * visible rather than guessed at.
  */
@@ -365,7 +365,7 @@ function DerivAppApprovals() {
       </h3>
       <p className="mt-1.5 max-w-2xl text-[12px] leading-relaxed text-ink-3">
         Each bot trades through its own registered Deriv app, so each is approved once,
-        for the account you are trading. dBot asks when you start a bot that needs one —
+        for the account you are trading. FXNOD Bot Builder asks when you start a bot that needs one —
         there is nothing to do here.
       </p>
       <ul className="mt-3 flex flex-wrap gap-2">

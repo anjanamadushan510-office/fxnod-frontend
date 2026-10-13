@@ -70,7 +70,7 @@ interface IconSidebarProps {
  * `positionsOpen` + `onPositionsToggle`.
  */
 export function IconSidebar({
-  brandInitials = "DT",
+  brandInitials = "FT",
   positionsBadge,
   positionsOpen = false,
   onPositionsToggle,

@@ -302,7 +302,7 @@ function fixedPlanGuide(bot: FixedPlanBot): Guide {
       },
       {
         q: `Can I change the stake or stop loss of ${bot.name}?`,
-        a: `Not one by one. You choose one of its ${planCount} plans, with a stop loss of ${orList(stops)}, and the plan sets the stake and the profit target with it. To set every amount yourself, build a bot in dBot.`,
+        a: `Not one by one. You choose one of its ${planCount} plans, with a stop loss of ${orList(stops)}, and the plan sets the stake and the profit target with it. To set every amount yourself, build a bot in FXNOD Bot Builder.`,
       },
       {
         q: `Does ${bot.name} keep running when I close the page?`,

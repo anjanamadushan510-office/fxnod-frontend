@@ -75,7 +75,7 @@ export const DERIV_GUIDES: Guide[] = [
       { type: "h2", text: "Using FXNOD with a Deriv account" },
       {
         type: "p",
-        text: "FXNOD is a separate terminal that works on top of your own Deriv account. You connect by signing in on Deriv's page, and can then trade by hand in dTrader or run a bot, on the demo account first. Your balance stays at Deriv.",
+        text: "FXNOD is a separate terminal that works on top of your own Deriv account. You connect by signing in on Deriv's page, and can then trade by hand in FXNOD Trader or run a bot, on the demo account first. Your balance stays at Deriv.",
       },
       SOURCE_NOTE,
       RISK_NOTE,
@@ -793,8 +793,8 @@ export const DERIV_GUIDES: Guide[] = [
         type: "table",
         head: ["If you want to", "Deriv's own tool", "FXNOD's tool"],
         rows: [
-          ["Trade by hand", "Deriv Trader", "dTrader"],
-          ["Build a bot", "Deriv Bot, with blocks, in your browser", "dBot, by answering questions, running on FXNOD's servers"],
+          ["Trade by hand", "Deriv Trader", "FXNOD Trader"],
+          ["Build a bot", "Deriv Bot, with blocks, in your browser", "FXNOD Bot Builder, by answering questions, running on FXNOD's servers"],
           ["Start a ready-made bot", "Preset strategies in Deriv Bot", "Auto Hub, with fixed published rules and a flat stake"],
         ],
       },
@@ -828,8 +828,8 @@ export const DERIV_GUIDES: Guide[] = [
         a: "It is powerful and demanding. Learn position sizing and leverage on its demo account before using real money.",
       },
       {
-        q: "Is FXNOD dTrader the same as Deriv Trader?",
-        a: "No. FXNOD's dTrader is a separate interface built by FXNOD that places trades on your Deriv account.",
+        q: "Is FXNOD Trader the same as Deriv Trader?",
+        a: "No. FXNOD Trader is a separate interface built by FXNOD that places trades on your Deriv account.",
       },
     ],
     related: ["dtrader-manual-trading", "how-to-trade-on-deriv-for-beginners"],
@@ -1422,7 +1422,7 @@ export const DERIV_GUIDES: Guide[] = [
       { type: "h2", text: "Your history in FXNOD" },
       {
         type: "p",
-        text: "FXNOD shows the trades made through FXNOD. Each bot run has its own page listing its trades, the amount staked, the realised profit or loss and how the run ended, and dTrader lists your open positions. Deriv's Statement remains the complete record of the account, including anything done outside FXNOD.",
+        text: "FXNOD shows the trades made through FXNOD. Each bot run has its own page listing its trades, the amount staked, the realised profit or loss and how the run ended, and FXNOD Trader lists your open positions. Deriv's Statement remains the complete record of the account, including anything done outside FXNOD.",
       },
       { type: "h2", text: "What to do with the history" },
       {
@@ -1504,7 +1504,7 @@ export const DERIV_GUIDES: Guide[] = [
       { type: "h2", text: "In FXNOD" },
       {
         type: "p",
-        text: "dTrader shows the payout Deriv quotes for your exact settings before you buy, lets you star the markets you use, and has indicators and drawing tools on the chart. dBot turns a rule into a bot by asking questions and shows the stakes of a losing streak before you start. Auto Hub starts a ready-made bot from a few settings. All of them run on a demo account.",
+        text: "FXNOD Trader shows the payout Deriv quotes for your exact settings before you buy, lets you star the markets you use, and has indicators and drawing tools on the chart. FXNOD Bot Builder turns a rule into a bot by asking questions and shows the stakes of a losing streak before you start. Auto Hub starts a ready-made bot from a few settings. All of them run on a demo account.",
       },
       { type: "h2", text: "Faster is not the goal" },
       {

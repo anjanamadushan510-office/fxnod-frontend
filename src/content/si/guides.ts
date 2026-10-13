@@ -110,7 +110,7 @@ export const SI_GUIDES: LocalGuide[] = [
       { type: "h2", text: "FXNOD එක්ක" },
       {
         type: "p",
-        text: "FXNOD කියන්නේ ඔබේම Deriv account එක මත වැඩ කරන වෙනම terminal එකක්. Deriv ගේ page එකේ sign in වෙලා connect වෙනවා, ඊට පස්සේ dTrader එකේ අතින් trade කරන්න හෝ bot එකක් දුවන්න පුළුවන්, මුලින්ම demo account එකේ. Phone browser එකේම open වෙනවා, install කරන්න දෙයක් නැහැ. App එක දැනට English වලින්.",
+        text: "FXNOD කියන්නේ ඔබේම Deriv account එක මත වැඩ කරන වෙනම terminal එකක්. Deriv ගේ page එකේ sign in වෙලා connect වෙනවා, ඊට පස්සේ FXNOD Trader එකේ අතින් trade කරන්න හෝ bot එකක් දුවන්න පුළුවන්, මුලින්ම demo account එකේ. Phone browser එකේම open වෙනවා, install කරන්න දෙයක් නැහැ. App එක දැනට English වලින්.",
       },
       SOURCE,
       RISK,
@@ -557,7 +557,7 @@ export const SI_GUIDES: LocalGuide[] = [
       { type: "h2", text: "FXNOD එකේ" },
       {
         type: "p",
-        text: "මේ contract වර්ග ඔක්කොම FXNOD dTrader එකේ තියෙනවා, සහ Buy කරන්න කලින් Deriv quote කරන payout එක පෙන්නනවා. dBot එකේ bot එකකට මේවා buy කරන්න පුළුවන්. හැම එකක්ම Deriv demo account එකේ අත්හදා බලන්න පුළුවන්.",
+        text: "මේ contract වර්ග ඔක්කොම FXNOD Trader එකේ තියෙනවා, සහ Buy කරන්න කලින් Deriv quote කරන payout එක පෙන්නනවා. FXNOD Bot Builder එකේ bot එකකට මේවා buy කරන්න පුළුවන්. හැම එකක්ම Deriv demo account එකේ අත්හදා බලන්න පුළුවන්.",
       },
       SOURCE,
       RISK,
@@ -609,7 +609,7 @@ export const SI_GUIDES: LocalGuide[] = [
       { type: "h2", text: "Bot එක දුවන්නේ කොහෙද" },
       {
         type: "p",
-        text: "සමහර bots දුවන්නේ ඔබේ browser tab එක ඇතුළේ. Tab එක close කළොත්, network එක ගියොත් හෝ phone එක sleep වුණොත් bot එක නවතිනවා, සමහර වෙලාවට trade එකක් open වෙලා තියෙද්දී, stop loss එකක් නැතුව. තවත් bots දුවන්නේ server එකක, ඒ නිසා ඔබේ device එක off වුණත් වැඩ කරනවා. FXNOD bots දෙවෙනි වර්ගයේ: dBot හෝ Auto Hub එකෙන් start කරන bot එකක් FXNOD servers වල දුවනවා, සහ limits හැම trade එකකටම කලින් එතන check වෙනවා.",
+        text: "සමහර bots දුවන්නේ ඔබේ browser tab එක ඇතුළේ. Tab එක close කළොත්, network එක ගියොත් හෝ phone එක sleep වුණොත් bot එක නවතිනවා, සමහර වෙලාවට trade එකක් open වෙලා තියෙද්දී, stop loss එකක් නැතුව. තවත් bots දුවන්නේ server එකක, ඒ නිසා ඔබේ device එක off වුණත් වැඩ කරනවා. FXNOD bots දෙවෙනි වර්ගයේ: FXNOD Bot Builder හෝ Auto Hub එකෙන් start කරන bot එකක් FXNOD servers වල දුවනවා, සහ limits හැම trade එකකටම කලින් එතන check වෙනවා.",
       },
       { type: "h2", text: "Bot එකකට හොඳට කරන්න පුළුවන් දේ සහ බැරි දේ" },
       {
@@ -649,7 +649,7 @@ export const SI_GUIDES: LocalGuide[] = [
       },
       {
         q: "Code කරන්න දැනගන්න ඕනද?",
-        a: "නැහැ. Code නැති builders තියෙනවා. FXNOD dBot එකේ bot එකක් හදන්නේ ප්‍රශ්න වලට උත්තර දීලා.",
+        a: "නැහැ. Code නැති builders තියෙනවා. FXNOD Bot Builder එකේ bot එකක් හදන්නේ ප්‍රශ්න වලට උත්තර දීලා.",
       },
     ],
     related: ["deriv-bot-sinhala", "martingale-sinhala"],
@@ -661,7 +661,7 @@ export const SI_GUIDES: LocalGuide[] = [
     slug: "deriv-bot-sinhala",
     title: "Deriv Bot Sinhala: Deriv වලට bot එකක් පාවිච්චි කරන හැටි",
     description:
-      "Deriv bot සිංහලෙන්: Deriv Bot එකයි FXNOD dBot එකයි අතර වෙනස, XML files වල අවදානම, සහ bot එකක් තෝරන්න ප්‍රශ්න පහක්.",
+      "Deriv bot සිංහලෙන්: Deriv Bot එකයි FXNOD Bot Builder එකයි අතර වෙනස, XML files වල අවදානම, සහ bot එකක් තෝරන්න ප්‍රශ්න පහක්.",
     tag: T_BOTS,
     published: DATE,
     updated: DATE,
@@ -680,10 +680,10 @@ export const SI_GUIDES: LocalGuide[] = [
           "නොමිලේ demo account එකකින් test කරන්න පුළුවන්.",
         ],
       },
-      { type: "h2", text: "Deriv Bot සහ FXNOD dBot" },
+      { type: "h2", text: "Deriv Bot සහ FXNOD Bot Builder" },
       {
         type: "table",
-        head: ["", "Deriv Bot", "FXNOD dBot"],
+        head: ["", "Deriv Bot", "FXNOD Bot Builder"],
         rows: [
           ["හදන්නේ", "Deriv", "FXNOD, ස්වාධීන product එකක්"],
           ["හදන විදිහ", "Visual blocks", "ප්‍රශ්න වලට උත්තර දීලා"],
@@ -727,8 +727,8 @@ export const SI_GUIDES: LocalGuide[] = [
         a: "ඔබට තේරෙන, ඔබේම demo account එකේ test කරපු, flat stake එකක් සහ stop loss එකක් තියෙන එක.",
       },
       {
-        q: "FXNOD dBot කියන්නේ Deriv Bot එකමද?",
-        a: "නැහැ. dBot කියන්නේ FXNOD හදපු, ඔබේ Deriv account එකේ trade කරන වෙනම bot builder එකක්.",
+        q: "FXNOD Bot Builder කියන්නේ Deriv Bot එකමද?",
+        a: "නැහැ. FXNOD Bot Builder කියන්නේ FXNOD හදපු, ඔබේ Deriv account එකේ trade කරන වෙනම bot builder එකක්.",
       },
       {
         q: "Bot එකට මගේ Deriv password එක ඕනද?",
@@ -804,10 +804,10 @@ export const SI_GUIDES: LocalGuide[] = [
           "Ladder එක කැඩුණාට පස්සේ වැඩි base එකකින් නැවත පටන් ගන්න එපා.",
         ],
       },
-      { type: "h2", text: "FXNOD dBot එකේ" },
+      { type: "h2", text: "FXNOD Bot Builder එකේ" },
       {
         type: "p",
-        text: "dBot එක Martingale high risk ලෙස label කරනවා, සහ bot එක start වෙන්න කලින් losing streak එකක stakes පෙන්නනවා. Multiplier එකයි පියවර ගණනයි ඔබ තෝරනවා. වැඩි වුණු stake එකක් ඔබ දාන උපරිම ගානවත්, session එකේ stop loss එකවත් කවදාවත් පහු කරන්නේ නැහැ. Auto Hub bots Martingale පාවිච්චි කරන්නේ නැහැ.",
+        text: "FXNOD Bot Builder එක Martingale high risk ලෙස label කරනවා, සහ bot එක start වෙන්න කලින් losing streak එකක stakes පෙන්නනවා. Multiplier එකයි පියවර ගණනයි ඔබ තෝරනවා. වැඩි වුණු stake එකක් ඔබ දාන උපරිම ගානවත්, session එකේ stop loss එකවත් කවදාවත් පහු කරන්නේ නැහැ. Auto Hub bots Martingale පාවිච්චි කරන්නේ නැහැ.",
       },
       RISK,
     ],
@@ -829,7 +829,7 @@ export const SI_GUIDES: LocalGuide[] = [
     en: "martingale-strategy-explained",
     cta: {
       title: "පටන් ගන්න කලින් stakes ටික බලන්න",
-      text: "dBot එක bot එක start වෙන්න කලින් losing streak එකක stakes පෙන්නනවා, stop loss එකක් නැතුව start වෙන්නේ නැහැ, සහ උපරිම stake එකට සීමාවක් දානවා. ඕනෑම setting එකක් ඔබේ Deriv demo account එකේ අත්හදා බලන්න. App එක දැනට English වලින්.",
+      text: "FXNOD Bot Builder එක bot එක start වෙන්න කලින් losing streak එකක stakes පෙන්නනවා, stop loss එකක් නැතුව start වෙන්නේ නැහැ, සහ උපරිම stake එකට සීමාවක් දානවා. ඕනෑම setting එකක් ඔබේ Deriv demo account එකේ අත්හදා බලන්න. App එක දැනට English වලින්.",
     },
   },
 

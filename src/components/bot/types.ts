@@ -1,5 +1,5 @@
 /**
- * The shape the dBot UI reads a trade in.
+ * The shape the FXNOD Bot Builder UI reads a trade in.
  *
  * `BotRunTrade` from the generated client is the wire type; this is the same
  * trade after `toTradeRows` has parsed its amounts and formatted its time, so
