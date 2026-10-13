@@ -130,3 +130,18 @@ test("favourites query is isolated by account and failed saves roll back", async
   assert.equal(queryOptions.enabled, false);
   assert.equal(guest.ids.size, 0);
 });
+
+test("held positions never display a zero-tick duration", () => {
+  const { durationLabel, contractLabel } = load(
+    "src/components/autohub/catalogue.ts",
+  );
+  assert.equal(
+    durationLabel({ duration: 0, duration_unit: "" }),
+    "Held position",
+  );
+  assert.equal(
+    durationLabel({ duration: 5, duration_unit: "t" }),
+    "5 ticks / trade",
+  );
+  assert.equal(contractLabel("rise_fall"), "Rise / Fall");
+});

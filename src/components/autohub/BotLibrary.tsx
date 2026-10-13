@@ -7,7 +7,7 @@ import { ArrowRight, Bot, Grid2X2, List, Search, Star, X } from "lucide-react";
 import type { AutoHubBot } from "@/services/api/model";
 import { useBotFavourites } from "@/hooks/useBotFavourites";
 import { FavouriteButton } from "./FavouriteButton";
-import { contractLabel, filterBots } from "./catalogue";
+import { contractLabel, durationLabel, filterBots } from "./catalogue";
 import { cn } from "@/lib/cn";
 
 const PAGE_SIZE = 12;
@@ -313,7 +313,7 @@ export function BotLibrary({
                 <ul className="flex flex-wrap gap-2 mt-4 text-[11px] text-ink-2">
                   {[
                     contractLabel(bot.contract_type),
-                    `${bot.duration}${bot.duration_unit === "t" ? " ticks" : bot.duration_unit} / trade`,
+                    durationLabel(bot),
                     bot.max_markets === 1
                       ? "Single market"
                       : `Up to ${bot.max_markets} markets`,

@@ -1,5 +1,13 @@
 import type { AutoHubBot } from "@/services/api/model";
 export const contractLabels: Record<string, string> = {
+  matches_differs: "Matches / Differs",
+  even_odd: "Even / Odd",
+  over_under: "Over / Under",
+  rise_fall: "Rise / Fall",
+  higher_lower: "Higher / Lower",
+  touch_no_touch: "Touch / No Touch",
+  accumulators: "Accumulators",
+  multipliers: "Multipliers",
   CALL: "Rise",
   PUT: "Fall",
   CALLE: "Rise or equal",
@@ -66,4 +74,11 @@ export function filterBots(
         a.name.localeCompare(b.name),
     );
   return result;
+}
+
+export function durationLabel(
+  bot: Pick<AutoHubBot, "duration" | "duration_unit">,
+) {
+  if (bot.duration <= 0) return "Held position";
+  return `${bot.duration}${bot.duration_unit === "t" ? " ticks" : bot.duration_unit} / trade`;
 }
