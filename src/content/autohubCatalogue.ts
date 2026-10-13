@@ -607,32 +607,7 @@ export const FIXED_PLAN_BOTS: FixedPlanBot[] = [
   },
 ];
 
-/** The three bots Auto Hub opened with: the user sets their amounts. */
-export const OWN_AMOUNT_BOTS = [
-  {
-    id: "hot_fade",
-    name: "Hot Fade",
-    bet: "Differs",
-    pace: "After one digit clusters and prints three times running",
-    markets: "1 to 10",
-  },
-  {
-    id: "shadow_fade",
-    name: "Shadow Fade",
-    bet: "Differs",
-    pace: "Hot Fade's entries, scored first and traded only when your rule is met",
-    markets: "1 to 10",
-  },
-  {
-    id: "matches_differs",
-    name: "Matches / Differs",
-    bet: "Matches or Differs",
-    pace: "Every tick, on the digit you pick",
-    markets: "1",
-  },
-] as const;
-
-export const AUTOHUB_BOT_COUNT = FIXED_PLAN_BOTS.length + OWN_AMOUNT_BOTS.length;
+export const AUTOHUB_BOT_COUNT = FIXED_PLAN_BOTS.length;
 
 /** "nine_lives" -> "nine-lives-bot". */
 export function botGuideSlug(id: string): string {

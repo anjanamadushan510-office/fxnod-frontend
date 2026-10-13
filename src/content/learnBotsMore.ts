@@ -69,10 +69,10 @@ export const BOT_MORE_GUIDES: Guide[] = [
           "Shared strategy files are easy to run without reading.",
         ],
       },
-      { type: "h2", text: "Deriv Bot and FXNOD Bot Builder" },
+      { type: "h2", text: "Deriv Bot and Bot Forge" },
       {
         type: "table",
-        head: ["", "Deriv Bot", "FXNOD Bot Builder"],
+        head: ["", "Deriv Bot", "Bot Forge"],
         rows: [
           ["Made by", "Deriv", "FXNOD, an independent product"],
           ["How you build", "Visual blocks", "Answering questions in plain language"],
@@ -103,8 +103,8 @@ export const BOT_MORE_GUIDES: Guide[] = [
         a: "No. Deriv describes it as building with visual blocks, with no coding needed.",
       },
       {
-        q: "Is FXNOD Bot Builder the same as Deriv Bot?",
-        a: "No. FXNOD Bot Builder is a separate bot builder made by FXNOD that trades on your Deriv account.",
+        q: "Is Bot Forge the same as Deriv Bot?",
+        a: "No. Bot Forge is a separate bot builder made by FXNOD that trades on your Deriv account.",
       },
     ],
     related: ["build-a-deriv-bot-with-dbot", "deriv-bot-xml-files"],
@@ -172,7 +172,7 @@ export const BOT_MORE_GUIDES: Guide[] = [
       { type: "h2", text: "FXNOD does not use XML files" },
       {
         type: "p",
-        text: "FXNOD Bot Builder is not a block builder and cannot load a Deriv Bot XML file. A bot there is built by answering questions, its stake rule is one named setting, and it shows the stakes of a losing streak before you start. Auto Hub's bots have their rules written out in full.",
+        text: "Bot Forge is not a block builder and cannot load a Deriv Bot XML file. A bot there is built by answering questions, its stake rule is one named setting, and it shows the stakes of a losing streak before you start. Auto Hub's bots have their rules written out in full.",
       },
       SOURCE_NOTE,
       RISK_NOTE,
@@ -192,7 +192,7 @@ export const BOT_MORE_GUIDES: Guide[] = [
       },
       {
         q: "Can I use Deriv Bot XML files in FXNOD?",
-        a: "No. FXNOD Bot Builder does not use blocks or XML files.",
+        a: "No. Bot Forge does not use blocks or XML files.",
       },
     ],
     related: ["what-is-deriv-bot", "free-deriv-bots"],
@@ -224,7 +224,7 @@ export const BOT_MORE_GUIDES: Guide[] = [
       },
       {
         type: "p",
-        text: "None of these depends on the bot being profitable. Apply the same question to FXNOD: its bots are free to use and it wants you to use its tools, so judge them by the checks below too.",
+        text: "None of these depends on the bot being profitable. Apply the same question to FXNOD: its bots require a tool package and it wants you to use its tools, so judge them by the checks below too.",
       },
       { type: "h2", text: "Six checks" },
       {
@@ -245,7 +245,7 @@ export const BOT_MORE_GUIDES: Guide[] = [
           "Deriv Bot's own quick strategies, which Deriv names and documents.",
           "A bot you build yourself in a no-code builder, from a simple template.",
           "FXNOD's Auto Hub, where each bot's rules are written out and the stake is the same on every trade.",
-          "FXNOD Bot Builder templates, which you can change and run on demo.",
+          "Bot Forge templates, which you can change and run on demo.",
         ],
       },
       { type: "h2", text: "Is a paid bot better?" },
@@ -267,7 +267,7 @@ export const BOT_MORE_GUIDES: Guide[] = [
       },
       {
         q: "Are FXNOD's bots free?",
-        a: "FXNOD Bot Builder and Auto Hub use tool packages; current prices and terms are shown in Discover. Real trades risk your stake.",
+        a: "Bot Forge and Auto Hub use tool packages; current prices and terms are shown in Discover. Real trades risk your stake.",
       },
       {
         q: "Why would anyone share a profitable bot for free?",
@@ -341,7 +341,7 @@ export const BOT_MORE_GUIDES: Guide[] = [
       { type: "h2", text: "In FXNOD" },
       {
         type: "p",
-        text: "No FXNOD bot is described as unable to lose, because none is. A stop loss is required to start any bot, Auto Hub bots use the same stake on every trade, and FXNOD Bot Builder labels Martingale as high risk and shows the stakes of a losing streak before you run it.",
+        text: "No FXNOD bot is described as unable to lose, because none is. A stop loss is required to start any bot, Auto Hub bots use the same stake on every trade, and Bot Forge labels Martingale as high risk and shows the stakes of a losing streak before you run it.",
       },
       RISK_NOTE,
     ],
@@ -379,7 +379,7 @@ export const BOT_MORE_GUIDES: Guide[] = [
         type: "table",
         head: ["Cost", "Typical range", "Notes"],
         rows: [
-          ["The tool", "Free to a monthly fee", "FXNOD Bot Builder and Auto Hub require an active tool package; review current prices in Discover"],
+          ["The tool", "Free to a monthly fee", "Bot Forge and Auto Hub require an active tool package; review current prices in Discover"],
           ["Hosting", "Nothing to a monthly fee", "Needed only for bots that run on your own machine or a VPS"],
           ["Trading capital", "Your choice", "The only cost that is at risk on every trade"],
         ],
@@ -428,7 +428,7 @@ export const BOT_MORE_GUIDES: Guide[] = [
       },
       {
         q: "How much does a trading bot cost?",
-        a: "From nothing to hundreds a month. Price does not indicate quality. FXNOD's bot tools have no subscription and no sign-up fee.",
+        a: "From nothing to hundreds a month. Price does not indicate quality. FXNOD's bot tools require a package; current terms appear in Discover.",
       },
       {
         q: "Do I need a big balance to make a bot profitable?",
@@ -653,7 +653,7 @@ export const BOT_MORE_GUIDES: Guide[] = [
       { type: "h2", text: "With FXNOD" },
       {
         type: "p",
-        text: "You do not need a VPS. Bots started in FXNOD Bot Builder and Auto Hub run on FXNOD's servers, and their limits are checked there before every trade. Your phone or computer only starts and watches them.",
+        text: "You do not need a VPS. Bots started in Bot Forge and Auto Hub run on FXNOD's servers, and their limits are checked there before every trade. Your phone or computer only starts and watches them.",
       },
       RISK_NOTE,
     ],
@@ -1004,7 +1004,7 @@ export const BOT_MORE_GUIDES: Guide[] = [
       { type: "h2", text: "A fair way to find out" },
       {
         type: "p",
-        text: "Run a flat-stake bot on a demo account for a few hundred trades and look at the numbers. It costs nothing and answers the question for your strategy. FXNOD Bot Builder and Auto Hub can be used that way with no subscription and no sign-up fee.",
+        text: "Run a flat-stake bot on a demo account for a few hundred trades and look at the numbers. A demo account uses virtual funds and helps test the strategy; Bot Forge and Auto Hub still require their displayed tool packages.",
       },
       RISK_NOTE,
     ],

@@ -16,7 +16,7 @@ export const SITE_NAME = "FXNOD";
 export const DEPLOYMENT_HOST_SUFFIX = ".vercel.app";
 
 export const SITE_DESCRIPTION =
-  "FXNOD is a trading terminal for Deriv accounts. Trade by hand in FXNOD Trader, build a bot without code in FXNOD Bot Builder, or start a ready-made bot in Auto Hub. Free to use.";
+  "FXNOD is a trading terminal for Deriv accounts. Trade by hand in Trade Pilot, build a bot without code in Bot Forge, or start a ready-made bot in Auto Hub. Check current packages in Discover.";
 
 /** 1280x720, served from /public and excluded from the middleware matcher. */
 export const OG_IMAGE = {

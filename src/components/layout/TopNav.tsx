@@ -10,9 +10,9 @@ import { cn } from "@/lib/cn";
 
 // Helper for dynamic title
 function getRouteTitle(pathname: string) {
-  if (pathname.startsWith("/home")) return { title: "Dashboard", subtitle: "FXNOD Trader · FXNOD Bot Builder on Deriv" };
-  if (pathname.startsWith("/option")) return { title: "Options", subtitle: "FXNOD Trader · FXNOD Bot Builder on Deriv" };
-  if (pathname.startsWith("/dbot")) return { title: "FXNOD Bot Builder", subtitle: "Automated trading on Deriv" };
+  if (pathname.startsWith("/home")) return { title: "Dashboard", subtitle: "Trade Pilot · Bot Forge on Deriv" };
+  if (pathname.startsWith("/option")) return { title: "Options", subtitle: "Trade Pilot · Bot Forge on Deriv" };
+  if (pathname.startsWith("/dbot")) return { title: "Bot Forge", subtitle: "Automated trading on Deriv" };
   if (pathname.startsWith("/autohub")) return { title: "Auto Hub", subtitle: "Ready-made bots on Deriv" };
   if (pathname.startsWith("/tools")) return { title: "Discover", subtitle: "Tool packages, bundles and access periods" };
   if (pathname.startsWith("/subscriptions")) return { title: "Active Tools", subtitle: "Tools you have turned on" };
@@ -21,7 +21,7 @@ function getRouteTitle(pathname: string) {
   if (pathname.startsWith("/transfer")) return { title: "Transfer", subtitle: "Transfer Funds" };
   if (pathname.startsWith("/partner/dashboard")) return { title: "Partner Hub", subtitle: "Share FXNOD, earn on usage" };
   if (pathname.startsWith("/settings")) return { title: "Settings", subtitle: "Account Settings" };
-  return { title: "Dashboard", subtitle: "FXNOD Trader · FXNOD Bot Builder on Deriv" };
+  return { title: "Dashboard", subtitle: "Trade Pilot · Bot Forge on Deriv" };
 }
 
 interface TopNavProps {

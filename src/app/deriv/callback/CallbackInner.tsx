@@ -18,8 +18,8 @@ export const DERIV_STATE_KEY = "deriv_link_state";
 /** sessionStorage key holding the in-app path to return to after linking. */
 export const DERIV_RETURN_TO_KEY = "deriv_return_to";
 /**
- * sessionStorage key naming the FXNOD Bot Builder app being approved. Absent for the
- * FXNOD Trader link. Stored beside the PKCE verifier so a callback can only ever be
+ * sessionStorage key naming the Bot Forge app being approved. Absent for the
+ * Trade Pilot link. Stored beside the PKCE verifier so a callback can only ever be
  * exchanged against the app it was started for.
  */
 export const DERIV_APP_KEY = "deriv_app_key";
@@ -84,7 +84,7 @@ export function CallbackInner() {
     const redirectUri = window.location.origin + "/deriv/callback";
 
     if (appKey) {
-      // One-time approval of a FXNOD Bot Builder app: nothing to pick, the account the
+      // One-time approval of a Bot Forge app: nothing to pick, the account the
       // bot trades is already selected. Back to the bot the user was starting.
       const returnTo = safeReturnPath(sessionStorage.getItem(DERIV_RETURN_TO_KEY));
       derivExchangeAppCode(appKey, { code, code_verifier: codeVerifier, redirect_uri: redirectUri })
@@ -165,7 +165,7 @@ export function CallbackInner() {
       // chosen here from that row — the request carries no token.
       await linkMutation.mutateAsync({ data: { deriv_account_id: account.account } });
 
-      // Return the user to wherever they started the flow (default: FXNOD Trader).
+      // Return the user to wherever they started the flow (default: Trade Pilot).
       const returnTo = safeReturnPath(sessionStorage.getItem(DERIV_RETURN_TO_KEY));
       clearOAuthSession();
       // Refresh the shared link-status cache so the TopBar control + the order

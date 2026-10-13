@@ -5,7 +5,7 @@ import { GUIDES, formatGuideDate } from "@/content/guides";
 import { HOME_FAQ } from "@/content/homeFaq";
 import { OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_URL, absoluteUrl, pageMetadata } from "@/lib/site";
 
-const TITLE = "FXNOD — Deriv trading terminal: FXNOD Trader, FXNOD Bot Builder and Auto Hub";
+const TITLE = "FXNOD — Deriv trading terminal: Trade Pilot, Bot Forge and Auto Hub";
 
 export const metadata: Metadata = {
   ...pageMetadata({ title: TITLE, description: SITE_DESCRIPTION, path: "/" }),
@@ -47,8 +47,8 @@ const STRUCTURED_DATA: Record<string, unknown>[] = [
     operatingSystem: "Web",
     offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
     featureList: [
-      "FXNOD Trader: manual trading on a Deriv account with a live chart and ten trade types",
-      "FXNOD Bot Builder: a bot builder for Deriv that needs no code",
+      "Trade Pilot: manual trading on a Deriv account with a live chart and ten trade types",
+      "Bot Forge: a bot builder for Deriv that needs no code",
       "Auto Hub: ready-made bots for Deriv",
     ],
     publisher: { "@id": `${SITE_URL}/#organization` },

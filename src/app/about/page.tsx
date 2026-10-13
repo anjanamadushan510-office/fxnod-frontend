@@ -53,7 +53,7 @@ export default function AboutPage() {
           <div className="space-y-5 text-zinc-300 leading-relaxed text-[17px]">
             <p className="text-lg sm:text-xl text-zinc-100">
               FXNOD is a web trading terminal for Deriv accounts. You connect your own Deriv account and use it from
-              three tools: FXNOD Trader for placing trades by hand, FXNOD Bot Builder for building a bot without code, and Auto Hub for
+              three tools: Trade Pilot for placing trades by hand, Bot Forge for building a bot without code, and Auto Hub for
               starting a ready-made bot.
             </p>
 
@@ -61,13 +61,13 @@ export default function AboutPage() {
             <ul className="list-disc pl-5 space-y-2 marker:text-zinc-600">
               <li>
                 <Link href={"/guides/dtrader-manual-trading" as Route} className="text-accent hover:underline">
-                  FXNOD Trader
+                  Trade Pilot
                 </Link>
                 : manual trading with a live chart and ten trade types.
               </li>
               <li>
                 <Link href={"/guides/build-a-deriv-bot-with-dbot" as Route} className="text-accent hover:underline">
-                  FXNOD Bot Builder
+                  Bot Forge
                 </Link>
                 : a bot builder that asks plain questions instead of using blocks or code.
               </li>

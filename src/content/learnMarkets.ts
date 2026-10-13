@@ -303,7 +303,7 @@ export const MARKET_GUIDES: Guide[] = [
       { type: "h2", text: "In FXNOD" },
       {
         type: "p",
-        text: "FXNOD Trader's chart can draw moving averages, and FXNOD Bot Builder can use a simple or exponential moving average as an indicator that decides which side a bot takes. An indicator needs enough history to produce a value, so a bot waits until it has one.",
+        text: "Trade Pilot's chart can draw moving averages, and Bot Forge can use a simple or exponential moving average as an indicator that decides which side a bot takes. An indicator needs enough history to produce a value, so a bot waits until it has one.",
       },
       RISK_NOTE,
     ],
@@ -386,7 +386,7 @@ export const MARKET_GUIDES: Guide[] = [
       { type: "h2", text: "In FXNOD" },
       {
         type: "p",
-        text: "RSI is available on the FXNOD Trader chart and as an indicator in FXNOD Bot Builder. A bot that uses it waits until enough candles have formed to calculate a value.",
+        text: "RSI is available on the Trade Pilot chart and as an indicator in Bot Forge. A bot that uses it waits until enough candles have formed to calculate a value.",
       },
       RISK_NOTE,
     ],
@@ -781,7 +781,7 @@ export const MARKET_GUIDES: Guide[] = [
       { type: "h2", text: "Options contracts work differently" },
       {
         type: "p",
-        text: "When you buy a fixed-payout option, there is no order book to rest an order in. The broker quotes a price for the contract and you accept it or not. In FXNOD Trader the order panel shows the payout Deriv quotes for your exact settings before you press Buy. On Multipliers you can attach a stop loss and a take profit, which close the position when the loss or profit reaches the amount you set.",
+        text: "When you buy a fixed-payout option, there is no order book to rest an order in. The broker quotes a price for the contract and you accept it or not. In Trade Pilot the order panel shows the payout Deriv quotes for your exact settings before you press Buy. On Multipliers you can attach a stop loss and a take profit, which close the position when the loss or profit reaches the amount you set.",
       },
       RISK_NOTE,
     ],

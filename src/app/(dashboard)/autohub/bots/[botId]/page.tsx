@@ -27,7 +27,6 @@ import { useToolTradingAccess } from "@/hooks/useToolTradingAccess";
 import { useDerivAccounts } from "@/hooks/useDerivAccounts";
 import {
   accountBalanceText,
-  balanceReportedAt,
 } from "@/components/deriv/balancePresentation";
 import { BotJourney } from "@/components/autohub/BotJourney";
 import { StartReview } from "@/components/autohub/StartReview";
@@ -359,11 +358,17 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
     }
     setRefreshingReview(true);
     try {
-      await accounts.refetch();
+      const latest = await accounts.refetch();
+      if (latest.isError || !latest.data?.accounts?.some(
+        (account) => account.is_selected && account.balance !== undefined,
+      )) {
+        toast.error("Could not load the current Deriv balance. Please try again.");
+        return;
+      }
+      setReviewing(true);
     } finally {
       setRefreshingReview(false);
     }
-    setReviewing(true);
   }
 
   async function handleStart() {
@@ -726,7 +731,6 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
             ? accountBalanceText(selectedAccount)
             : "Balance unavailable"
         }
-        balanceTime={balanceReportedAt(selectedAccount?.balance_updated_at)}
         isVirtual={deriv.isVirtual}
         currency={deriv.currency}
         markets={draft.symbols}

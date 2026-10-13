@@ -384,7 +384,7 @@ export const CONCEPT_GUIDES: Guide[] = [
       { type: "h2", text: "Stops on options and bots" },
       {
         type: "p",
-        text: "A fixed-payout option has no stop: the stake is the loss. There, the equivalent decision is the stake itself and the session's stop loss. A bot in FXNOD cannot start without a session stop loss, and Multipliers in FXNOD Trader let you set a stop loss on the position.",
+        text: "A fixed-payout option has no stop: the stake is the loss. There, the equivalent decision is the stake itself and the session's stop loss. A bot in FXNOD cannot start without a session stop loss, and Multipliers in Trade Pilot let you set a stop loss on the position.",
       },
       RISK_NOTE,
     ],

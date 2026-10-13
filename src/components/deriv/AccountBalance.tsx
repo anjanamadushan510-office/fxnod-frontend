@@ -3,12 +3,14 @@ import { accountBalanceText, balanceReportedAt } from "./balancePresentation";
 export function AccountBalance({
   account,
   compact = false,
+  showUpdatedAt = true,
 }: {
   account: Pick<
     DerivLinkedAccount,
     "balance" | "currency" | "balance_updated_at"
   >;
   compact?: boolean;
+  showUpdatedAt?: boolean;
 }) {
   return (
     <span className="block text-right min-w-0">
@@ -21,11 +23,11 @@ export function AccountBalance({
       >
         {accountBalanceText(account)}
       </span>
-      <span className="block mt-0.5 text-[10px] text-ink-3">
+      {showUpdatedAt && <span className="block mt-0.5 text-[10px] text-ink-3">
         {account.balance === undefined
           ? "Awaiting a Deriv balance"
           : balanceReportedAt(account.balance_updated_at)}
-      </span>
+      </span>}
     </span>
   );
 }

@@ -163,7 +163,7 @@ export const BASICS_GUIDES: Guide[] = [
       { type: "h2", text: "Practise reading, not predicting" },
       {
         type: "p",
-        text: "Open a chart and describe the last twenty candles aloud: who was in control, where the price was rejected, whether the bodies are growing or shrinking. In FXNOD Trader you can switch chart types and timeframes on a live chart with a demo account while you practise.",
+        text: "Open a chart and describe the last twenty candles aloud: who was in control, where the price was rejected, whether the bodies are growing or shrinking. In Trade Pilot you can switch chart types and timeframes on a live chart with a demo account while you practise.",
       },
       RISK_NOTE,
     ],
@@ -643,7 +643,7 @@ export const BASICS_GUIDES: Guide[] = [
       { type: "h2", text: "Testing it yourself" },
       {
         type: "p",
-        text: "Forward testing on a demo account is the simplest honest test: live prices, virtual money, fixed settings. In FXNOD you can build the rules in FXNOD Bot Builder, run them on a Deriv demo account and read the results from the run history. Keep the settings unchanged for the whole test, and decide in advance what result would make you abandon the idea.",
+        text: "Forward testing on a demo account is the simplest honest test: live prices, virtual money, fixed settings. In FXNOD you can build the rules in Bot Forge, run them on a Deriv demo account and read the results from the run history. Keep the settings unchanged for the whole test, and decide in advance what result would make you abandon the idea.",
       },
       RISK_NOTE,
     ],

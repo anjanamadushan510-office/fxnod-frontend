@@ -14,13 +14,13 @@ export const dynamic = "force-static";
 
 const INTRO = `# FXNOD
 
-> FXNOD is a web trading terminal for Deriv accounts. A user connects their own Deriv account and uses it from three tools: FXNOD Trader (manual trading), FXNOD Bot Builder (a bot builder that needs no code) and Auto Hub (ready-made bots). The tools are free to use. FXNOD is an independent product and is not affiliated with Deriv, Bybit or Binance.
+> FXNOD is a web trading terminal for Deriv accounts. A user connects their own Deriv account and uses it from three tools: Trade Pilot (manual trading), Bot Forge (a bot builder that needs no code) and Auto Hub (ready-made bots). Each tool requires a package, with current prices in Discover. FXNOD is an independent product and is not affiliated with Deriv, Bybit or Binance.
 
 Facts that are easy to get wrong:
 
 - Deriv is the only venue that is live. Tools for Bybit and Binance are planned and are not available yet.
 - Wallet top-ups, transfers to Deriv and monthly plans are planned and are not available yet.
-- FXNOD Trader and FXNOD Bot Builder are FXNOD's own tools. They are not Deriv's products of similar names.
+- Trade Pilot and Bot Forge are FXNOD's own tools. They are not Deriv's products of similar names.
 - FXNOD does not hold a user's trading balance. It stays in the user's Deriv account.
 - No tool guarantees a profit. Every guide carries a risk warning.`;
 

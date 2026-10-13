@@ -71,7 +71,7 @@ export const CONTRACT_GUIDES: Guide[] = [
       { type: "h2", text: "In FXNOD" },
       {
         type: "p",
-        text: "Rise/Fall is available in FXNOD Trader, where the order panel shows the payout Deriv quotes before you buy. In FXNOD Bot Builder it is one of the trade types a bot can buy, and two of the templates use it: one follows the last tick and one applies Martingale.",
+        text: "Rise/Fall is available in Trade Pilot, where the order panel shows the payout Deriv quotes before you buy. In Bot Forge it is one of the trade types a bot can buy, and two of the templates use it: one follows the last tick and one applies Martingale.",
       },
       SOURCE_NOTE,
       RISK_NOTE,
@@ -145,7 +145,7 @@ export const CONTRACT_GUIDES: Guide[] = [
       { type: "h2", text: "In FXNOD" },
       {
         type: "p",
-        text: "Higher/Lower is in FXNOD Trader, where you set the target and read the quote before buying, and it is one of the trade types a FXNOD Bot Builder bot can buy.",
+        text: "Higher/Lower is in Trade Pilot, where you set the target and read the quote before buying, and it is one of the trade types a Bot Forge bot can buy.",
       },
       SOURCE_NOTE,
       RISK_NOTE,
@@ -216,7 +216,7 @@ export const CONTRACT_GUIDES: Guide[] = [
       { type: "h2", text: "In FXNOD" },
       {
         type: "p",
-        text: "Touch/No Touch is in FXNOD Trader and is a trade type a FXNOD Bot Builder bot can buy. Read the quoted payout for the exact barrier and duration, and work out the win rate it requires by dividing the stake by the total return.",
+        text: "Touch/No Touch is in Trade Pilot and is a trade type a Bot Forge bot can buy. Read the quoted payout for the exact barrier and duration, and work out the win rate it requires by dividing the stake by the total return.",
       },
       SOURCE_NOTE,
       RISK_NOTE,
@@ -281,7 +281,7 @@ export const CONTRACT_GUIDES: Guide[] = [
       { type: "h2", text: "In FXNOD" },
       {
         type: "p",
-        text: "Matches/Differs is in FXNOD Trader and FXNOD Bot Builder. Auto Hub has a ready-made Matches / Differs bot, which trades one-tick contracts on one market with the same stake every time, and a fade bot that buys Differs after a digit clusters. Each requires a stop loss.",
+        text: "Matches/Differs is in Trade Pilot and Bot Forge. Auto Hub also offers ready-made digit-contract bots with fixed plans. Every bot requires a stop loss.",
       },
       SOURCE_NOTE,
       RISK_NOTE,
@@ -353,7 +353,7 @@ export const CONTRACT_GUIDES: Guide[] = [
       { type: "h2", text: "In FXNOD" },
       {
         type: "p",
-        text: "Even/Odd is in FXNOD Trader and FXNOD Bot Builder. The FXNOD Bot Builder template suggested as a first bot trades Even with the same stake every time and stops at your profit or loss cap. Another template waits for a streak of three and bets the other side.",
+        text: "Even/Odd is in Trade Pilot and Bot Forge. The Bot Forge template suggested as a first bot trades Even with the same stake every time and stops at your profit or loss cap. Another template waits for a streak of three and bets the other side.",
       },
       SOURCE_NOTE,
       RISK_NOTE,
@@ -429,7 +429,7 @@ export const CONTRACT_GUIDES: Guide[] = [
       { type: "h2", text: "In FXNOD" },
       {
         type: "p",
-        text: "Over/Under is in FXNOD Trader and FXNOD Bot Builder. One FXNOD Bot Builder template starts on Under 7, a 70% trade, and takes the other side after a loss.",
+        text: "Over/Under is in Trade Pilot and Bot Forge. One Bot Forge template starts on Under 7, a 70% trade, and takes the other side after a loss.",
       },
       SOURCE_NOTE,
       RISK_NOTE,
@@ -506,7 +506,7 @@ export const CONTRACT_GUIDES: Guide[] = [
       { type: "h2", text: "In FXNOD" },
       {
         type: "p",
-        text: "Accumulators are in FXNOD Trader, where you can set a take profit, and FXNOD Bot Builder has a template that takes a small profit early on each contract.",
+        text: "Accumulators are in Trade Pilot, where you can set a take profit, and Bot Forge has a template that takes a small profit early on each contract.",
       },
       SOURCE_NOTE,
       RISK_NOTE,
@@ -592,7 +592,7 @@ export const CONTRACT_GUIDES: Guide[] = [
       { type: "h2", text: "In FXNOD" },
       {
         type: "p",
-        text: "Multipliers are in FXNOD Trader, where you can set a take profit and a stop loss on the position, and they are a trade type a FXNOD Bot Builder bot can buy.",
+        text: "Multipliers are in Trade Pilot, where you can set a take profit and a stop loss on the position, and they are a trade type a Bot Forge bot can buy.",
       },
       SOURCE_NOTE,
       RISK_NOTE,
@@ -670,7 +670,7 @@ export const CONTRACT_GUIDES: Guide[] = [
       { type: "h2", text: "In FXNOD" },
       {
         type: "p",
-        text: "Turbos are in FXNOD Trader and are a trade type a FXNOD Bot Builder bot can buy. The order panel shows the quote for the settings you chose before you buy.",
+        text: "Turbos are in Trade Pilot and are a trade type a Bot Forge bot can buy. The order panel shows the quote for the settings you chose before you buy.",
       },
       SOURCE_NOTE,
       RISK_NOTE,
@@ -754,7 +754,7 @@ export const CONTRACT_GUIDES: Guide[] = [
       { type: "h2", text: "In FXNOD" },
       {
         type: "p",
-        text: "Vanillas are in FXNOD Trader and are a trade type a FXNOD Bot Builder bot can buy. Check the quote for your strike and duration before buying.",
+        text: "Vanillas are in Trade Pilot and are a trade type a Bot Forge bot can buy. Check the quote for your strike and duration before buying.",
       },
       SOURCE_NOTE,
       RISK_NOTE,

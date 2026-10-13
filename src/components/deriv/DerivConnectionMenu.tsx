@@ -24,7 +24,7 @@ import type { DerivLinkedAccount } from "@/services/api/model";
 /**
  * Top-right Deriv control: connect, switch account, add another Deriv login.
  *
- * FXNOD Trader has had one in its own top bar for a while; FXNOD Bot Builder had nothing, so
+ * Trade Pilot has had one in its own top bar for a while; Bot Forge had nothing, so
  * starting a bot was the first place anyone discovered their account was not
  * connected. This is the dashboard-palette version, self-contained so it can
  * sit on any page in the (dashboard) group.

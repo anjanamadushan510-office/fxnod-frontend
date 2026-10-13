@@ -65,7 +65,7 @@ export const derivApi = {
     sessionStorage.setItem('pkce_code_verifier', codeVerifier);
     sessionStorage.setItem('oauth_state', state);
 
-    // A FXNOD Bot Builder app comes with its client id from the apps list. FXNOD Trader's id is
+    // A Bot Forge app comes with its client id from the apps list. Trade Pilot's id is
     // this environment's, from the API, so a staging build does not keep
     // production's app.
     const clientId = app?.clientId ?? (await dTraderClientId());

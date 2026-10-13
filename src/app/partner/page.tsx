@@ -55,7 +55,7 @@ export default function PartnerProgrammePage() {
         </h1>
         <p className="m-0 mt-4 max-w-[60ch] text-lg leading-relaxed text-[#0a0f1c]/65">
           Invite people to FXNOD and earn a share of what FXNOD earns from them —
-          the markup on their FXNOD Bot Builder trades today, and every paid product we add.
+          the markup on their Bot Forge trades today, and every paid product we add.
           Current tool packages and access requirements are shown in Discover. You
           also earn on the people they invite.
         </p>

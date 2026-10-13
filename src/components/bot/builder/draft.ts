@@ -31,7 +31,7 @@ import { STAKE_PLACES } from "./ladder";
 /**
  * A bot as the builder edits it.
  *
- * `form` is the same state the FXNOD Bot Builder workspace uses, so a bot saved here opens
+ * `form` is the same state the Bot Forge workspace uses, so a bot saved here opens
  * there unchanged and both build their start request through one function —
  * there is exactly one place that turns a configuration into money at risk.
  * The builder only adds what the workspace has no words for: which method the

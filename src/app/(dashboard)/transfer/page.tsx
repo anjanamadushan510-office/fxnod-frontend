@@ -182,7 +182,7 @@ export default function TransferPage() {
               <li>Enter the amount you wish to transfer.</li>
               <li>Funds are instantly deducted from your FXNOD Wallet.</li>
               <li>Your connected Deriv account is credited via the Payment Agent API.</li>
-              <li>You can immediately begin trading with FXNOD Trader or FXNOD Bot Builder.</li>
+              <li>You can immediately begin trading with Trade Pilot or Bot Forge.</li>
             </ol>
             
             <div className="mt-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20">

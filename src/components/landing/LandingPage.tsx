@@ -100,7 +100,7 @@ export function LandingPage({ guides }: { guides: LandingGuide[] }) {
         <section className="px-5 sm:px-8 lg:px-12 pt-36 sm:pt-48 pb-8">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="font-display text-[2.15rem] sm:text-5xl lg:text-7xl font-semibold tracking-tight leading-[1.08] mb-6">Trade Deriv by hand,<br className="hidden sm:block" /> or run a bot.</h1>
-            <p className="text-base sm:text-xl text-zinc-400 max-w-2xl mx-auto leading-relaxed mb-8">FXNOD is a trading terminal for your Deriv account. Place trades yourself in FXNOD Trader, build a bot without code in FXNOD Bot Builder, or start a ready-made bot in Auto Hub. Bybit and Binance are coming soon.</p>
+            <p className="text-base sm:text-xl text-zinc-400 max-w-2xl mx-auto leading-relaxed mb-8">FXNOD is a trading terminal for your Deriv account. Place trades yourself in Trade Pilot, build a bot without code in Bot Forge, or start a ready-made bot in Auto Hub. Bybit and Binance are coming soon.</p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-12">
               {status === "authenticated" ? (
                 <Link href={"/home" as Route} className="bg-accent text-[#080C16] hover:opacity-90 transition h-12 px-8 inline-flex items-center justify-center rounded-full text-sm font-semibold w-full sm:w-auto">Go to Dashboard</Link>
@@ -131,7 +131,7 @@ export function LandingPage({ guides }: { guides: LandingGuide[] }) {
             <div>
               <p className="text-xs text-zinc-500 mb-1">Tools</p>
               <p className="font-display text-2xl sm:text-3xl font-semibold">3</p>
-              <p className="text-xs text-zinc-500 mt-1">FXNOD Trader &middot; FXNOD Bot Builder &middot; Auto Hub</p>
+              <p className="text-xs text-zinc-500 mt-1">Trade Pilot &middot; Bot Forge &middot; Auto Hub</p>
             </div>
             <div>
               <p className="text-xs text-zinc-500 mb-1">Deriv</p>
@@ -141,7 +141,7 @@ export function LandingPage({ guides }: { guides: LandingGuide[] }) {
             <div>
               <p className="text-xs text-zinc-500 mb-1">Access</p>
               <p className="font-display text-2xl sm:text-3xl font-semibold">Tool packages</p>
-              <p className="text-xs text-zinc-500 mt-1">No subscription</p>
+              <p className="text-xs text-zinc-500 mt-1">Choose a tool package</p>
             </div>
             <div>
               <p className="text-xs text-zinc-500 mb-1">Wallet</p>
@@ -161,7 +161,7 @@ export function LandingPage({ guides }: { guides: LandingGuide[] }) {
                   <img src="/assets/login-slide-1.jpg" alt="" className="w-full h-full object-cover group-hover:scale-[1.03] transition duration-500" />
                 </div>
                 <div className="p-6">
-                  <h3 className="font-display text-xl font-semibold mb-2">FXNOD Trader</h3>
+                  <h3 className="font-display text-xl font-semibold mb-2">Trade Pilot</h3>
                   <p className="text-sm text-zinc-400 leading-relaxed">Manual trading with a live chart and ten trade types, from Rise/Fall to Multipliers.</p>
                 </div>
               </Link>
@@ -170,7 +170,7 @@ export function LandingPage({ guides }: { guides: LandingGuide[] }) {
                   <img src="/assets/login-slide-2.jpg" alt="" className="w-full h-full object-cover group-hover:scale-[1.03] transition duration-500" />
                 </div>
                 <div className="p-6">
-                  <h3 className="font-display text-xl font-semibold mb-2">FXNOD Bot Builder</h3>
+                  <h3 className="font-display text-xl font-semibold mb-2">Bot Forge</h3>
                   <p className="text-sm text-zinc-400 leading-relaxed">Build a bot in plain language: what to buy, when to enter, when to stop. No blocks, no code.</p>
                 </div>
               </Link>
@@ -196,7 +196,7 @@ export function LandingPage({ guides }: { guides: LandingGuide[] }) {
               <ul className="space-y-5">
                 <li>
                   <p className="font-medium">Deriv <span className="text-accent text-xs font-normal ml-2">Live</span></p>
-                  <p className="text-sm text-zinc-400 mt-1">Synthetic indices and options, traded by hand in FXNOD Trader or by a bot in FXNOD Bot Builder and Auto Hub.</p>
+                  <p className="text-sm text-zinc-400 mt-1">Synthetic indices and options, traded by hand in Trade Pilot or by a bot in Bot Forge and Auto Hub.</p>
                 </li>
                 <li>
                   <p className="font-medium">Bybit <span className="text-zinc-500 text-xs font-normal ml-2">Coming soon</span></p>
@@ -223,7 +223,7 @@ export function LandingPage({ guides }: { guides: LandingGuide[] }) {
               <article className="bg-panel border border-line rounded-3xl p-5 sm:p-8">
                 <p className="text-[11px] uppercase tracking-[0.14em] text-gold mb-3">Tool packages</p>
                 <h3 className="font-display text-2xl font-semibold mb-3">Choose your access</h3>
-                <p className="text-sm text-zinc-400 leading-relaxed">FXNOD Trader, FXNOD Bot Builder and Auto Hub use tool packages; current prices and terms are shown in Discover. Choose a package with demo access to practise with virtual funds.</p>
+                <p className="text-sm text-zinc-400 leading-relaxed">Trade Pilot, Bot Forge and Auto Hub use tool packages; current prices and terms are shown in Discover. Choose a package with demo access to practise with virtual funds.</p>
               </article>
               <article className="rounded-3xl p-5 sm:p-8 border border-gold/25" style={{ background: "linear-gradient(160deg, #1A3358 0%, #101827 58%)" }}>
                 <p className="text-[11px] uppercase tracking-[0.14em] text-accent mb-3">Bundles &amp; offers</p>
@@ -278,7 +278,7 @@ export function LandingPage({ guides }: { guides: LandingGuide[] }) {
             <div className="absolute inset-0 bg-bg/80"></div>
             <div className="relative">
               <h2 className="font-display text-3xl sm:text-5xl font-semibold mb-4">Open the terminal.</h2>
-              <p className="text-zinc-300 max-w-md mx-auto mb-8 leading-relaxed">Connect your Deriv demo account and try FXNOD Trader, FXNOD Bot Builder and Auto Hub with virtual funds.</p>
+              <p className="text-zinc-300 max-w-md mx-auto mb-8 leading-relaxed">Connect your Deriv demo account and try Trade Pilot, Bot Forge and Auto Hub with virtual funds.</p>
               {status === "authenticated" ? (
                 <Link href={"/home" as Route} className="bg-accent text-[#080C16] hover:opacity-90 transition inline-flex items-center justify-center h-12 px-8 rounded-full text-sm font-semibold">Go to Dashboard</Link>
               ) : (
@@ -298,8 +298,8 @@ export function LandingPage({ guides }: { guides: LandingGuide[] }) {
           <div>
             <p className="text-xs uppercase tracking-wider text-zinc-500 mb-3">Product</p>
             <ul className="space-y-2 text-sm text-zinc-400">
-              <li><Link href={"/guides/dtrader-manual-trading" as Route} className="hover:text-white transition">FXNOD Trader</Link></li>
-              <li><Link href={"/guides/build-a-deriv-bot-with-dbot" as Route} className="hover:text-white transition">FXNOD Bot Builder</Link></li>
+              <li><Link href={"/guides/dtrader-manual-trading" as Route} className="hover:text-white transition">Trade Pilot</Link></li>
+              <li><Link href={"/guides/build-a-deriv-bot-with-dbot" as Route} className="hover:text-white transition">Bot Forge</Link></li>
               <li><Link href={"/guides/auto-hub-ready-made-bots" as Route} className="hover:text-white transition">Auto Hub</Link></li>
             </ul>
           </div>

@@ -58,7 +58,7 @@ export const BOT_GUIDES: Guide[] = [
       { type: "h2", text: "Where a bot runs matters" },
       {
         type: "p",
-        text: "Some bots run inside your browser tab. Close the tab, lose the connection or let the laptop sleep, and the bot stops, sometimes with a trade still open and no stop loss watching it. Other bots run on a server and keep working with your device switched off. FXNOD's bots are the second kind: a bot started in FXNOD Bot Builder or Auto Hub runs on FXNOD's servers, and its limits are checked there before every trade.",
+        text: "Some bots run inside your browser tab. Close the tab, lose the connection or let the laptop sleep, and the bot stops, sometimes with a trade still open and no stop loss watching it. Other bots run on a server and keep working with your device switched off. FXNOD's bots are the second kind: a bot started in Bot Forge or Auto Hub runs on FXNOD's servers, and its limits are checked there before every trade.",
       },
       { type: "h2", text: "What automation is good at, and what it is not" },
       {
@@ -133,7 +133,7 @@ export const BOT_GUIDES: Guide[] = [
           },
           {
             title: "Build a bot or pick one",
-            text: "In FXNOD Bot Builder you answer questions: what to buy, which markets, when to enter, how to size the stake. In Auto Hub you pick a bot whose rules are already written and only set the stake and limits.",
+            text: "In Bot Forge you answer questions: what to buy, which markets, when to enter, how to size the stake. In Auto Hub you pick a bot whose rules are already written and only set the stake and limits.",
           },
           {
             title: "Set the limits before the stake",
@@ -164,7 +164,7 @@ export const BOT_GUIDES: Guide[] = [
     faq: [
       {
         q: "Can I run a Deriv bot for free?",
-        a: "FXNOD Bot Builder and Auto Hub require an active package with the appropriate demo or real trading access. A Deriv demo account trades virtual funds. Trading a real account always puts your own stake at risk.",
+        a: "Bot Forge and Auto Hub require an active package with the appropriate demo or real trading access. A Deriv demo account trades virtual funds. Trading a real account always puts your own stake at risk.",
       },
       {
         q: "Can I start with a small amount?",
@@ -228,7 +228,7 @@ export const BOT_GUIDES: Guide[] = [
       { type: "h2", text: "Build your own, or use a ready-made bot?" },
       {
         type: "p",
-        text: "Build your own when you have an idea to test and want to change one setting at a time. Use a ready-made bot when you want fixed, published rules and only the stake and limits to decide. In FXNOD those are FXNOD Bot Builder and Auto Hub. Both run on a demo account, and neither has a subscription.",
+        text: "Build your own when you have an idea to test and want to change one setting at a time. Use a ready-made bot when you want fixed, published rules and only the stake and limits to decide. In FXNOD those are Bot Forge and Auto Hub. Both run on a demo account, and neither has a subscription.",
       },
       RISK_NOTE,
     ],
@@ -277,7 +277,7 @@ export const BOT_GUIDES: Guide[] = [
         type: "list",
         items: [
           "The broker has not approved automated trading for this tool. On FXNOD, Deriv asks you to allow the automated-trading connection the first time you run a bot on a real account, separately from manual trading. Approve it on Deriv's page and start again.",
-          "The contract length is not sold on that market. Brokers offer different durations per market. A builder that reads them from the broker, as FXNOD Bot Builder does, only lets you choose a length that exists.",
+          "The contract length is not sold on that market. Brokers offer different durations per market. A builder that reads them from the broker, as Bot Forge does, only lets you choose a length that exists.",
           "The stake is not an amount the broker accepts: below the contract's minimum, or with more decimal places than the account currency allows.",
           "You are already running the maximum number of bots. Stop one first.",
         ],
@@ -514,7 +514,7 @@ export const BOT_GUIDES: Guide[] = [
       { type: "h2", text: "Cap the single trade" },
       {
         type: "p",
-        text: "Any time the stake can change, set the largest amount one trade may risk. In FXNOD Bot Builder this is the Never stake more than setting, and an escalated stake is also never allowed to be larger than the session's stop loss. A Martingale bot that would need a bigger stake than the ceiling stops with the loss instead of placing a smaller trade that could not win the streak back.",
+        text: "Any time the stake can change, set the largest amount one trade may risk. In Bot Forge this is the Never stake more than setting, and an escalated stake is also never allowed to be larger than the session's stop loss. A Martingale bot that would need a bigger stake than the ceiling stops with the loss instead of placing a smaller trade that could not win the streak back.",
       },
       { type: "h2", text: "Take profit, and stop for the day" },
       {
@@ -755,7 +755,7 @@ export const BOT_GUIDES: Guide[] = [
       { type: "h2", text: "Using both" },
       {
         type: "p",
-        text: "A practical path is to trade by hand on demo until you can describe what you do as rules, automate those rules, and keep watching the same markets by hand so you notice when conditions change. In FXNOD the two sit side by side on one Deriv account: FXNOD Trader for manual trades, FXNOD Bot Builder and Auto Hub for automated ones.",
+        text: "A practical path is to trade by hand on demo until you can describe what you do as rules, automate those rules, and keep watching the same markets by hand so you notice when conditions change. In FXNOD the two sit side by side on one Deriv account: Trade Pilot for manual trades, Bot Forge and Auto Hub for automated ones.",
       },
       RISK_NOTE,
     ],
@@ -914,7 +914,7 @@ export const BOT_GUIDES: Guide[] = [
       },
       {
         q: "How much does a trading bot cost?",
-        a: "It ranges from free to expensive, and price is no guide to quality. FXNOD Bot Builder and Auto Hub use tool packages; current prices and terms are shown in Discover.",
+        a: "It ranges from free to expensive, and price is no guide to quality. Bot Forge and Auto Hub use tool packages; current prices and terms are shown in Discover.",
       },
       {
         q: "Which is the best trading bot for Deriv?",

@@ -22,7 +22,7 @@ const ACTIVE_RUNS_PARAMS = { state: "active", limit: 100 } as const;
 
 interface Row {
   key: string;
-  product: "FXNOD Bot Builder" | "Auto Hub";
+  product: "Bot Forge" | "Auto Hub";
   name: string;
   status: string;
   isVirtual: boolean;
@@ -78,7 +78,7 @@ export function RunningNow() {
     );
     const fromDbot: Row[] = (dbot.data?.runs ?? []).map((run) => ({
       key: `dbot-${run.run_id}`,
-      product: "FXNOD Bot Builder",
+      product: "Bot Forge",
       name: names.get(run.strategy_id) ?? run.strategy_id,
       status: run.status,
       isVirtual: run.is_virtual,
@@ -109,7 +109,7 @@ export function RunningNow() {
   // One product failing must not hide the other's runs, but it must be said:
   // an empty table would otherwise read as "nothing is running".
   const failed = [
-    dbot.isError && "FXNOD Bot Builder",
+    dbot.isError && "Bot Forge",
     autohub.isError && "Auto Hub",
   ].filter(Boolean) as string[];
 
@@ -149,7 +149,7 @@ export function RunningNow() {
                 href={"/dbot" as Route}
                 className="text-ink underline underline-offset-2"
               >
-                FXNOD Bot Builder
+                Bot Forge
               </Link>{" "}
               or{" "}
               <Link

@@ -4,8 +4,8 @@
  * Maps each application strategy (bot trade type) to the exact Deriv API
  * contract_type array needed to filter active_symbols directly.
  *
- * Note: FXNOD Trader uses plural strategy IDs ("accumulators", "multipliers")
- * while FXNOD Bot Builder uses singular strategy IDs ("accumulator", "multiplier").
+ * Note: Trade Pilot uses plural strategy IDs ("accumulators", "multipliers")
+ * while Bot Forge uses singular strategy IDs ("accumulator", "multiplier").
  * Both are mapped here so the same activeSymbols service works for both.
  */
 
@@ -20,7 +20,7 @@ export interface TradeTypeConfig {
 }
 
 export const TRADE_TYPE_CONFIG: Record<string, TradeTypeConfig> = {
-  // ── FXNOD Trader strategy IDs (plural form) ───────────────────────────────────
+  // ── Trade Pilot strategy IDs (plural form) ───────────────────────────────────
   accumulators: {
     label: "Accumulators",
     contractTypes: ["ACCU"],
@@ -38,7 +38,7 @@ export const TRADE_TYPE_CONFIG: Record<string, TradeTypeConfig> = {
     contractTypes: ["VANILLALONGCALL", "VANILLALONGPUT"],
   },
 
-  // ── Shared strategy IDs (used by both FXNOD Trader and FXNOD Bot Builder) ──────────────────
+  // ── Shared strategy IDs (used by both Trade Pilot and Bot Forge) ──────────────────
   rise_fall: {
     label: "Rise/Fall",
     contractTypes: ["CALL", "PUT"],
@@ -64,7 +64,7 @@ export const TRADE_TYPE_CONFIG: Record<string, TradeTypeConfig> = {
     contractTypes: ["DIGITOVER", "DIGITUNDER"],
   },
 
-  // ── FXNOD Bot Builder strategy IDs (singular form — backend uses singular) ─────────────
+  // ── Bot Forge strategy IDs (singular form — backend uses singular) ─────────────
   accumulator: {
     label: "Accumulator",
     contractTypes: ["ACCU"],
@@ -74,7 +74,7 @@ export const TRADE_TYPE_CONFIG: Record<string, TradeTypeConfig> = {
     contractTypes: ["MULTUP", "MULTDOWN"],
   },
 
-  // ── Option bots (FXNOD Bot Builder) ────────────────────────────────────────────────────
+  // ── Option bots (Bot Forge) ────────────────────────────────────────────────────
   asians: {
     label: "Asians",
     contractTypes: ["ASIANU", "ASIAND"],

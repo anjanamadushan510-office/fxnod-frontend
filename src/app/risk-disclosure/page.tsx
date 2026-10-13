@@ -26,7 +26,7 @@ const POINTS: { title: string; text: string }[] = [
   },
   {
     title: "A bot does not reduce the risk",
-    text: "A bot follows its rules exactly and without pause. If the rules lose, it loses automatically, and it can place many trades in the time you would place one. FXNOD Bot Builder and Auto Hub are tools for executing a rule. They are not a source of profit.",
+    text: "A bot follows its rules exactly and without pause. If the rules lose, it loses automatically, and it can place many trades in the time you would place one. Bot Forge and Auto Hub are tools for executing a rule. They are not a source of profit.",
   },
   {
     title: "Martingale can empty an account quickly",

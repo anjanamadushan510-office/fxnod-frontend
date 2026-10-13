@@ -7,7 +7,7 @@ import { useListAutoHubBots } from "@/services/api/endpoints/auto-hub/auto-hub";
 const TOOLS = [
   {
     id: "dtrader",
-    name: "FXNOD Trader",
+    name: "Trade Pilot",
     href: "/options/dtrader" as const,
     icon: ChartCandlestick,
     heading: "Trade your way",
@@ -16,7 +16,7 @@ const TOOLS = [
   },
   {
     id: "dbot",
-    name: "FXNOD Bot Builder",
+    name: "Bot Forge",
     href: "/dbot" as const,
     icon: Bot,
     heading: "Build a strategy",

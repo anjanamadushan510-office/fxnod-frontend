@@ -8,7 +8,7 @@
 export const HOME_FAQ: { q: string; a: string }[] = [
   {
     q: "What is FXNOD?",
-    a: "FXNOD is a web trading terminal for Deriv accounts. It has three tools: FXNOD Trader for placing trades by hand, FXNOD Bot Builder for building your own bot without code, and Auto Hub for starting a ready-made bot. FXNOD is an independent product and is not affiliated with Deriv.",
+    a: "FXNOD is a web trading terminal for Deriv accounts. It has three tools: Trade Pilot for placing trades by hand, Bot Forge for building your own bot without code, and Auto Hub for starting a ready-made bot. FXNOD is an independent product and is not affiliated with Deriv.",
   },
   {
     q: "How do I get started?",
@@ -19,8 +19,8 @@ export const HOME_FAQ: { q: string; a: string }[] = [
     a: "Each FXNOD tool requires a package. Discover shows current prices, features and access periods, including any time-limited $0 offers. Demo trading uses virtual funds when your package includes demo access.",
   },
   {
-    q: "What is the difference between FXNOD Bot Builder and Auto Hub?",
-    a: "In FXNOD Bot Builder you design the bot: what it buys, when it enters, how it sizes each stake and when it stops. In Auto Hub the strategy is already built by FXNOD, and you only choose markets, a stake, a stop loss and a take profit.",
+    q: "What is the difference between Bot Forge and Auto Hub?",
+    a: "In Bot Forge you design the bot: what it buys, when it enters, how it sizes each stake and when it stops. In Auto Hub the strategy is already built by FXNOD, and you choose a market and one of its fixed plans.",
   },
   {
     q: "Does FXNOD work with Binance or Bybit?",

@@ -3,7 +3,7 @@
 /**
  * LOGIC-002: React hook for market-specific contract parameters.
  *
- * When the user selects a market in the FXNOD Bot Builder configuration panel, this hook
+ * When the user selects a market in the Bot Forge configuration panel, this hook
  * fires a `contracts_for` fetch to the Deriv API and returns the live
  * multiplier values, growth rates, default stake and other parameters for
  * that specific market.

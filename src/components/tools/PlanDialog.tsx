@@ -105,7 +105,7 @@ export function PlanDialog({
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-[70] bg-black/70 backdrop-blur-sm" />
         <Dialog.Content
-          className={`fixed left-1/2 top-1/2 z-[71] max-h-[90dvh] w-[calc(100%-2rem)] ${quote || success ? "max-w-2xl" : "max-w-6xl"} -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl border border-line bg-surface p-6 shadow-2xl sm:p-8`}
+          className={`fixed left-1/2 top-1/2 z-[71] max-h-[calc(100dvh-1.5rem)] w-[calc(100%-1.5rem)] ${quote || success ? "max-w-2xl overflow-y-auto" : "max-w-5xl overflow-hidden flex flex-col"} -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-line bg-surface p-4 shadow-2xl sm:p-6`}
         >
           <Dialog.Close
             disabled={busy}
@@ -143,9 +143,10 @@ export function PlanDialog({
           ) : (
             <>
               {!quote ? (
-                <>
+                <div className="mt-4 flex min-h-0 flex-1 flex-col">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-ink-3">Access period</p>
                   <div
-                    className="mt-6 flex flex-wrap justify-center gap-2"
+                    className="grid grid-cols-2 gap-2 sm:grid-cols-3"
                     aria-label="Access period"
                   >
                     {periods.map((value) => (
@@ -161,19 +162,34 @@ export function PlanDialog({
                           setError("");
                         }}
                         className={cn(
-                          "rounded-full border px-4 py-2 text-sm",
+                          "min-h-12 rounded-xl border px-3 py-2 text-left text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink",
                           period === value
-                            ? "border-ink bg-ink text-bg"
-                            : "border-line text-ink-2",
+                            ? "border-ink bg-ink text-bg shadow-sm"
+                            : "border-line bg-surface-2 text-ink-2 hover:border-ink-3 hover:text-ink",
                         )}
                       >
                         {value}
                       </button>
                     ))}
                   </div>
+                  <label className="mt-4 block shrink-0 text-xs font-medium text-ink-2">
+                    Coupon code (optional)
+                    <div className="mt-2 flex items-center rounded-xl border border-line px-3 focus-within:border-ink-3">
+                      <TicketPercent className="h-4 w-4 text-ink-3" />
+                      <input
+                        disabled={busy}
+                        value={coupon}
+                        onChange={(e) => setCoupon(e.target.value.toUpperCase())}
+                        maxLength={40}
+                        placeholder="Enter code"
+                        className="h-10 w-full bg-transparent px-3 text-sm text-ink outline-none"
+                      />
+                    </div>
+                  </label>
+                  <div className="mt-4 min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
                   <div
                     className={cn(
-                      "mt-6 grid gap-4",
+                      "grid gap-3",
                       visibleOffers.length > 1 && "md:grid-cols-2",
                       visibleOffers.length > 2 && "xl:grid-cols-3",
                     )}
@@ -182,7 +198,7 @@ export function PlanDialog({
                       <article
                         key={offer.id}
                         className={cn(
-                          "flex flex-col rounded-2xl border p-6",
+                          "flex flex-col rounded-2xl border p-4 sm:p-5",
                           offer.featured
                             ? "border-emerald-400 bg-surface-2"
                             : "border-line bg-bg",
@@ -201,7 +217,7 @@ export function PlanDialog({
                         <p className="mt-2 min-h-10 text-sm text-ink-3">
                           {offer.description}
                         </p>
-                        <div className="mt-6">
+                        <div className="mt-4">
                           <div className="min-h-5 text-sm text-ink-3">
                             {offer.compare_at &&
                               Number(offer.compare_at) >
@@ -238,7 +254,7 @@ export function PlanDialog({
                             ? "Activate $0 package"
                             : "Get plan"}
                         </button>
-                        <ul className="mt-6 space-y-3 border-t border-line pt-5 text-sm text-ink-2">
+                        <ul className="mt-5 space-y-3 border-t border-line pt-4 text-sm text-ink-2">
                           {offer.tier_ids.map((id) => {
                             const tier = catalog.tiers.find(
                               (item) => item.id === id,
@@ -270,22 +286,6 @@ export function PlanDialog({
                       </article>
                     ))}
                   </div>
-                  <label className="mt-5 block text-xs font-medium text-ink-2">
-                    Coupon code (optional)
-                    <div className="mt-2 flex items-center rounded-xl border border-line px-3">
-                      <TicketPercent className="h-4 w-4 text-ink-3" />
-                      <input
-                        disabled={busy}
-                        value={coupon}
-                        onChange={(e) =>
-                          setCoupon(e.target.value.toUpperCase())
-                        }
-                        maxLength={40}
-                        placeholder="Enter code"
-                        className="h-11 w-full bg-transparent px-3 text-sm text-ink outline-none"
-                      />
-                    </div>
-                  </label>
                   <p className="mt-4 text-xs leading-5 text-ink-3">
                     Renewals keep your remaining time. Upgrades start
                     immediately at the full offer price; unused time on another
@@ -297,7 +297,8 @@ export function PlanDialog({
                       No pricing packages are available for this tool yet.
                     </p>
                   )}
-                </>
+                  </div>
+                </div>
               ) : (
                 <div className="mt-6 space-y-4">
                   <button

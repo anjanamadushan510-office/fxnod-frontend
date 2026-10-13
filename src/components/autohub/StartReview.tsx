@@ -12,7 +12,6 @@ export function StartReview({
   name,
   accountId,
   balance,
-  balanceTime,
   isVirtual,
   currency,
   markets,
@@ -31,7 +30,6 @@ export function StartReview({
   name: string;
   accountId?: string;
   balance?: string;
-  balanceTime?: string;
   isVirtual: boolean;
   currency?: string;
   markets: string[];
@@ -81,9 +79,6 @@ export function StartReview({
             {balance && (
               <p className="mt-3 text-sm font-semibold text-ink">
                 {balance}
-                <span className="block text-[10px] font-normal text-ink-3 mt-0.5">
-                  {balanceTime}
-                </span>
               </p>
             )}
             <p className="mt-2 text-xs text-ink-3">

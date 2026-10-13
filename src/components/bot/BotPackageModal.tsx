@@ -579,7 +579,7 @@ export function BotPackageModal({
                   className="flex h-10 w-full items-center justify-center gap-2 rounded-[var(--opt-radius-sm)] bg-opt-rise px-4 text-[12.5px] font-bold text-white shadow-md transition-transform active:scale-98 disabled:opacity-50"
                 >
                   <Unlock className="h-4 w-4" />
-                  {claimMutation.isPending ? "Verifying & Unlocking..." : "Unlock & Load into FXNOD Bot Builder"}
+                  {claimMutation.isPending ? "Verifying & Unlocking..." : "Unlock & Load into Bot Forge"}
                 </button>
               </div>
             </form>

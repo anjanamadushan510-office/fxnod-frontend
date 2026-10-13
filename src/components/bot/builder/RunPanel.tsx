@@ -148,7 +148,7 @@ export function AccountSection() {
           href={"/options/dtrader" as Route}
           className="text-ink underline underline-offset-2"
         >
-          connect one in FXNOD Trader
+          connect one in Trade Pilot
         </Link>
         , then come back.
       </div>
@@ -179,14 +179,6 @@ export function AccountSection() {
         <span className="text-xs text-ink-3">
           Choose the account this bot will trade
         </span>
-        <button
-          type="button"
-          onClick={() => accountsQuery.refetch()}
-          disabled={accountsQuery.isFetching}
-          className="text-xs text-ink-2 underline underline-offset-2 disabled:opacity-40"
-        >
-          {accountsQuery.isFetching ? "Refreshing…" : "Refresh balances"}
-        </button>
       </div>
       {accountsQuery.isError && (
         <p role="alert" className="mb-2 text-xs text-amber-500">
@@ -227,7 +219,7 @@ export function AccountSection() {
                       : "Available account"}
                 </span>
               </span>
-              <AccountBalance account={account} compact />
+              <AccountBalance account={account} compact showUpdatedAt={false} />
               <span
                 className={cn(
                   "rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
@@ -250,7 +242,7 @@ export function AccountSection() {
             <span className="font-mono">{pending.deriv_account_id}</span>? Bots
             and trades will use real money.
           </p>
-          <AccountBalance account={pending} />
+          <AccountBalance account={pending} showUpdatedAt={false} />
           <div className="flex gap-2">
             <button
               type="button"

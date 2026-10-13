@@ -69,7 +69,7 @@ export const CHART_GUIDES: Guide[] = [
       { type: "h2", text: "In FXNOD" },
       {
         type: "p",
-        text: "MACD is one of the indicators a FXNOD Bot Builder bot can use to decide which side to take. An indicator needs enough candles before it has a value, so the bot waits for one.",
+        text: "MACD is one of the indicators a Bot Forge bot can use to decide which side to take. An indicator needs enough candles before it has a value, so the bot waits for one.",
       },
       RISK_NOTE,
     ],
@@ -144,7 +144,7 @@ export const CHART_GUIDES: Guide[] = [
       { type: "h2", text: "In FXNOD" },
       {
         type: "p",
-        text: "Bollinger Bands can be drawn on FXNOD Trader's chart and used as an indicator in FXNOD Bot Builder. On a synthetic index they show the volatility the index was built to have, and nothing about the next tick.",
+        text: "Bollinger Bands can be drawn on Trade Pilot's chart and used as an indicator in Bot Forge. On a synthetic index they show the volatility the index was built to have, and nothing about the next tick.",
       },
       RISK_NOTE,
     ],
@@ -228,7 +228,7 @@ export const CHART_GUIDES: Guide[] = [
       { type: "h2", text: "In FXNOD" },
       {
         type: "p",
-        text: "Stochastic is one of the indicators available to a FXNOD Bot Builder bot. Like any indicator, on a synthetic index it describes the recent range and predicts nothing.",
+        text: "Stochastic is one of the indicators available to a Bot Forge bot. Like any indicator, on a synthetic index it describes the recent range and predicts nothing.",
       },
       RISK_NOTE,
     ],
@@ -306,7 +306,7 @@ export const CHART_GUIDES: Guide[] = [
       { type: "h2", text: "In FXNOD" },
       {
         type: "p",
-        text: "FXNOD Trader's chart can draw moving averages, and FXNOD Bot Builder offers both a simple and an exponential moving average as indicators.",
+        text: "Trade Pilot's chart can draw moving averages, and Bot Forge offers both a simple and an exponential moving average as indicators.",
       },
       RISK_NOTE,
     ],
@@ -458,7 +458,7 @@ export const CHART_GUIDES: Guide[] = [
       { type: "h2", text: "In FXNOD" },
       {
         type: "p",
-        text: "ATR is one of the indicators available in FXNOD Bot Builder. On Deriv's volatility indices the volatility is fixed by design, so ATR there mostly confirms what the index's name already tells you.",
+        text: "ATR is one of the indicators available in Bot Forge. On Deriv's volatility indices the volatility is fixed by design, so ATR there mostly confirms what the index's name already tells you.",
       },
       RISK_NOTE,
     ],
@@ -542,7 +542,7 @@ export const CHART_GUIDES: Guide[] = [
       { type: "h2", text: "In FXNOD" },
       {
         type: "p",
-        text: "FXNOD Trader's chart has drawing tools for lines. On a synthetic index a trendline describes a path that chance produced, and has no bearing on where the price goes next.",
+        text: "Trade Pilot's chart has drawing tools for lines. On a synthetic index a trendline describes a path that chance produced, and has no bearing on where the price goes next.",
       },
       RISK_NOTE,
     ],
@@ -1033,7 +1033,7 @@ export const CHART_GUIDES: Guide[] = [
       { type: "h2", text: "In a bot" },
       {
         type: "p",
-        text: "In FXNOD Bot Builder, when indicators decide the side, each trade takes the side they agree on and the bot waits when they disagree. Every indicator you add therefore makes the bot trade less often. That may be what you want, and it is a matter of pacing, not of accuracy.",
+        text: "In Bot Forge, when indicators decide the side, each trade takes the side they agree on and the bot waits when they disagree. Every indicator you add therefore makes the bot trade less often. That may be what you want, and it is a matter of pacing, not of accuracy.",
       },
       RISK_NOTE,
     ],

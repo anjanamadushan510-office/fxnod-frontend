@@ -35,7 +35,7 @@ const POSITIONS_WS_ENABLED = true;
 /**
  * /options/dtrader — Deriv options trading page (manual trading).
  *
- * Reached from the platform picker at `/options`, alongside FXNOD Bot Builder. The picker
+ * Reached from the platform picker at `/options`, alongside Bot Forge. The picker
  * owns the choice; this page owns the trading session and nothing else.
  *
  * Phases A–E live:
