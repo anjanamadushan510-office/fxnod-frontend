@@ -144,4 +144,8 @@ test("held positions never display a zero-tick duration", () => {
     "5 ticks / trade",
   );
   assert.equal(contractLabel("rise_fall"), "Rise / Fall");
+  assert.equal(
+    durationLabel({ duration: 1, duration_unit: "t" }),
+    "1 tick / trade",
+  );
 });

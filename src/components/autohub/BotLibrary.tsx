@@ -47,6 +47,15 @@ export function BotLibrary({
     favourites.ids.has(bot.bot_id),
   ).length;
   const hasFilters = !!search || !!contract || !!markets;
+  function selectPage(next: number) {
+    setPage(next);
+    document.getElementById("bot-library")?.scrollIntoView({
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "auto"
+        : "smooth",
+      block: "start",
+    });
+  }
   function reset() {
     setSearch("");
     setContract("");
@@ -207,7 +216,8 @@ export function BotLibrary({
         </div>
         <div className="flex items-center justify-between gap-3 text-xs text-ink-3">
           <p aria-live="polite">
-            {filtered.length} {savedOnly ? "favourite" : "matching"} bots
+            {filtered.length} {savedOnly ? "favourite" : "matching"}{" "}
+            {filtered.length === 1 ? "bot" : "bots"}
             {hasFilters ? " found" : ""}
           </p>
           {hasFilters && (
@@ -362,7 +372,7 @@ export function BotLibrary({
             <button
               type="button"
               disabled={current === 1}
-              onClick={() => setPage(current - 1)}
+              onClick={() => selectPage(current - 1)}
               className="h-10 px-4 rounded-xl border border-line text-ink disabled:opacity-35"
             >
               Previous
@@ -373,7 +383,7 @@ export function BotLibrary({
             <button
               type="button"
               disabled={current === pages}
-              onClick={() => setPage(current + 1)}
+              onClick={() => selectPage(current + 1)}
               className="h-10 px-4 rounded-xl border border-line text-ink disabled:opacity-35"
             >
               Next

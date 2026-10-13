@@ -80,5 +80,5 @@ export function durationLabel(
   bot: Pick<AutoHubBot, "duration" | "duration_unit">,
 ) {
   if (bot.duration <= 0) return "Held position";
-  return `${bot.duration}${bot.duration_unit === "t" ? " ticks" : bot.duration_unit} / trade`;
+  return `${bot.duration}${bot.duration_unit === "t" ? (bot.duration === 1 ? " tick" : " ticks") : bot.duration_unit} / trade`;
 }
