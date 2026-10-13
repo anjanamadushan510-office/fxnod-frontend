@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import type { Route } from "next";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { MarketPicker } from "@/components/autohub/MarketPicker";
@@ -24,6 +24,10 @@ import { TextField } from "@/components/bot/builder/controls";
 import { AccountSection } from "@/components/bot/builder/RunPanel";
 import { useDerivStatus } from "@/hooks/useDerivStatus";
 import { useToolTradingAccess } from "@/hooks/useToolTradingAccess";
+import { BotJourney } from "@/components/autohub/BotJourney";
+import { StartReview } from "@/components/autohub/StartReview";
+import { repeatValues } from "@/components/autohub/journey";
+import { useAuthStore } from "@/stores/authStore";
 import { useBotFavourites } from "@/hooks/useBotFavourites";
 import { FavouriteButton } from "@/components/autohub/FavouriteButton";
 import { cn } from "@/lib/cn";
@@ -32,6 +36,9 @@ import { parseApiError } from "@/lib/apiError";
 import {
   getListAutoHubRunsQueryKey,
   useListAutoHubBots,
+  useListAutoHubRuns,
+  useGetAutoHubRun,
+  getGetAutoHubRunQueryKey,
   useStartAutoHubRun,
 } from "@/services/api/endpoints/auto-hub/auto-hub";
 import { useGetBotLimits } from "@/services/api/endpoints/bots/bots";
@@ -58,8 +65,8 @@ interface Draft {
   settings: SettingValues;
 }
 
-function draftKey(botId: string) {
-  return `fxnod.autohub.draft.${botId}`;
+function draftKey(botId: string, userId: string, sourceId?: string | null) {
+  return `fxnod.autohub.draft.${userId}.${botId}${sourceId ? `.run.${sourceId}` : ""}`;
 }
 
 function freshDraft(bot: AutoHubBot): Draft {
@@ -81,9 +88,15 @@ function freshDraft(bot: AutoHubBot): Draft {
  * comes back, and the form should not be empty on return. Anything that does
  * not look like a draft for this bot's current settings is ignored.
  */
-function storedDraft(bot: AutoHubBot): Draft | null {
+function storedDraft(
+  bot: AutoHubBot,
+  userId: string,
+  sourceId?: string | null,
+): Draft | null {
   try {
-    const raw = window.localStorage.getItem(draftKey(bot.bot_id));
+    const raw = window.localStorage.getItem(
+      draftKey(bot.bot_id, userId ?? "", sourceId),
+    );
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<Draft>;
     if (
@@ -157,17 +170,58 @@ export default function AutoHubBotPage() {
   }
   return (
     <Shell>
-      <BotSetup bot={bot} />
+      <Suspense
+        fallback={<p className="text-sm text-ink-3">Preparing setup…</p>}
+      >
+        <BotSetup key={bot.bot_id} bot={bot} />
+      </Suspense>
     </Shell>
   );
 }
 
 function BotSetup({ bot }: { bot: AutoHubBot }) {
   const favourites = useBotFavourites();
+  const userId = useAuthStore((state) => state.user?.id);
+  const searchParams = useSearchParams();
+  const sourceId = searchParams.get("from_run");
+  const resumeSetup = searchParams.get("resume_setup") === "1";
+  const validSourceId =
+    !!sourceId &&
+    /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(
+      sourceId,
+    );
+  const sourceQuery = useGetAutoHubRun(sourceId ?? "", {
+    query: {
+      queryKey: [...getGetAutoHubRunQueryKey(sourceId ?? ""), userId],
+      enabled: validSourceId && !!userId,
+      retry: false,
+      refetchOnWindowFocus: false,
+    },
+  });
+  const [reviewing, setReviewing] = useState(false);
+  const [createdRunId, setCreatedRunId] = useState<string | null>(null);
+  const submitting = useRef(false);
+  const restoredKey = useRef("");
   const router = useRouter();
   const queryClient = useQueryClient();
   const deriv = useDerivStatus();
   const access = useToolTradingAccess("autohub", deriv.isVirtual);
+  const activeParams = { state: "active", limit: 100 } as const;
+  const runningQuery = useListAutoHubRuns(activeParams, {
+    query: {
+      queryKey: [
+        ...getListAutoHubRunsQueryKey(activeParams),
+        userId,
+        deriv.accountId,
+      ],
+      enabled: !!userId && deriv.linked,
+      refetchInterval: 10_000,
+    },
+  });
+  const existingRuns = (runningQuery.data?.runs ?? []).filter(
+    (run) =>
+      run.bot_id === bot.bot_id && run.deriv_account_id === deriv.accountId,
+  );
   const limitsQuery = useGetBotLimits();
   const startRun = useStartAutoHubRun();
 
@@ -177,28 +231,55 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
   const [consent, setConsent] = useState<string | null>(null);
   const [showErrors, setShowErrors] = useState(false);
 
-  // Read the stored draft after mount: the server render has no localStorage,
-  // and reading it during render would make the two disagree.
+  // Reload from the authenticated run API, not from a browser-owned run snapshot.
   useEffect(() => {
-    const stored = storedDraft(bot);
-    if (stored) setDraft(stored);
+    if (!userId || deriv.isLoading || (validSourceId && sourceQuery.isPending))
+      return;
+    const key = `${userId}:${bot.bot_id}:${sourceId ?? "fresh"}:${sourceId ? (deriv.currency ?? "unlinked") : ""}`;
+    if (restoredKey.current === key) return;
+    const previous = sourceQuery.data
+      ? repeatValues(bot, sourceQuery.data, deriv.currency)
+      : null;
+    setDraft(
+      sourceId && !resumeSetup
+        ? (previous ?? freshDraft(bot))
+        : (storedDraft(bot, userId, sourceId) ?? freshDraft(bot)),
+    );
+    setAcknowledged(false);
+    setReviewing(false);
+    setShowErrors(false);
     setRestored(true);
-  }, [bot]);
+    restoredKey.current = key;
+  }, [
+    userId,
+    bot,
+    sourceId,
+    resumeSetup,
+    validSourceId,
+    sourceQuery.isPending,
+    sourceQuery.data,
+    deriv.isLoading,
+    deriv.currency,
+  ]);
 
   useEffect(() => {
-    if (!restored) return;
+    if (!restored || !userId) return;
     try {
-      window.localStorage.setItem(draftKey(bot.bot_id), JSON.stringify(draft));
+      window.localStorage.setItem(
+        draftKey(bot.bot_id, userId ?? "", sourceId),
+        JSON.stringify(draft),
+      );
     } catch {
       // Private mode or a full quota. The form still works for this visit.
     }
-  }, [bot.bot_id, draft, restored]);
+  }, [bot.bot_id, draft, restored, userId, sourceId]);
 
   // The tick is for one account. Switching accounts must ask again.
   const [lastAccount, setLastAccount] = useState(deriv.accountId);
   if (lastAccount !== deriv.accountId) {
     setLastAccount(deriv.accountId);
     setAcknowledged(false);
+    setReviewing(false);
   }
 
   const settings = useMemo(
@@ -237,9 +318,12 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
   }, [bot, draft, settings.errors]);
 
   const hasPlans = bot.presets.length > 0;
+  const selectedPlan = bot.presets.find((plan) => plan.id === draft.preset);
   const real = deriv.linked && !deriv.isVirtual;
   const ready = errors.length === 0;
   const canStart =
+    restored &&
+    !createdRunId &&
     deriv.linked &&
     !deriv.isLoading &&
     !deriv.needsReconnect &&
@@ -252,8 +336,21 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
     setDraft((current) => ({ ...current, ...change }));
   }
 
-  async function handleStart() {
+  function handleReview() {
     if (!canStart) return;
+    if (!ready) {
+      setShowErrors(true);
+      toast.error(errors[0]);
+      document
+        .getElementById("setup-errors")
+        ?.scrollIntoView({ block: "center" });
+      return;
+    }
+    setReviewing(true);
+  }
+
+  async function handleStart() {
+    if (!canStart || submitting.current) return;
     if (!ready) {
       setShowErrors(true);
       toast.error(errors[0]);
@@ -278,17 +375,22 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
         request.take_profit = draft.takeProfit.trim();
     }
 
+    submitting.current = true;
     try {
       const res = await startRun.mutateAsync({
         botId: bot.bot_id,
         data: request,
       });
+      setCreatedRunId(res.run.run_id);
+      setReviewing(false);
       trackAutoHubStart(res.run.is_virtual, bot.bot_id);
       await queryClient.invalidateQueries({
         queryKey: getListAutoHubRunsQueryKey(),
       });
       try {
-        window.localStorage.removeItem(draftKey(bot.bot_id));
+        window.localStorage.removeItem(
+          draftKey(bot.bot_id, userId ?? "", sourceId),
+        );
       } catch {
         // Nothing to clear.
       }
@@ -303,15 +405,115 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
     } catch (err) {
       const appKey = consentRequired(err);
       if (appKey) {
+        setReviewing(false);
         setConsent(appKey);
         return;
       }
+      setReviewing(false);
       toast.error(parseApiError(err, "The bot could not be started.").message);
+    } finally {
+      submitting.current = false;
     }
+  }
+
+  if (!restored) {
+    return (
+      <>
+        <BotJourney stage="setup" />
+        <div role="status" className="py-8 text-sm text-ink-3">
+          {sourceId
+            ? "Loading your previous run’s setup…"
+            : "Preparing your account and bot settings…"}
+        </div>
+        <div className="grid md:grid-cols-2 gap-4">
+          {[1, 2].map((key) => (
+            <div
+              key={key}
+              className="h-48 rounded-2xl bg-surface-2 animate-pulse"
+            />
+          ))}
+        </div>
+      </>
+    );
   }
 
   return (
     <>
+      <BotJourney stage="setup" />
+      {createdRunId && (
+        <div
+          role="status"
+          className="mb-6 rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 text-sm text-ink-2"
+        >
+          Your run has started. Opening the live session…{" "}
+          <Link
+            href={`/autohub/runs/${createdRunId}` as Route}
+            className="underline underline-offset-2"
+          >
+            Open live run
+          </Link>
+        </div>
+      )}
+      {sourceId && (
+        <div
+          role="status"
+          className="mb-6 rounded-xl border border-line bg-surface-2 p-4 text-sm text-ink-2"
+        >
+          {!restored ? (
+            "Loading the previous run’s setup…"
+          ) : sourceQuery.data &&
+            repeatValues(bot, sourceQuery.data, deriv.currency) ? (
+            <>
+              Previous markets and settings loaded.{" "}
+              {hasPlans
+                ? "Choose a current plan, then review your new run."
+                : "Review the limits before starting a fresh run."}
+              {sourceQuery.data.deriv_account_id !== deriv.accountId && (
+                <p className="mt-2 text-amber-500">
+                  The previous run used {sourceQuery.data.deriv_account_id} (
+                  {sourceQuery.data.is_virtual ? "Demo" : "Real"}). Your
+                  currently selected account will be used.
+                </p>
+              )}
+              {sourceQuery.data.currency !== deriv.currency && (
+                <p className="mt-2 text-amber-500">
+                  The previous run used a different currency. Review all amounts
+                  in your currently selected account’s currency.
+                </p>
+              )}
+            </>
+          ) : (
+            <>
+              The previous setup could not be reused. Current bot defaults are
+              shown; choose your markets and limits again.
+            </>
+          )}
+        </div>
+      )}
+      {existingRuns.length > 0 && !createdRunId && (
+        <div className="mb-6 rounded-xl border border-line bg-surface p-4 text-sm text-ink-2">
+          <p className="font-medium text-ink">
+            This bot already has{" "}
+            {existingRuns.length === 1 ? "a session" : "sessions"} on your
+            selected account.
+          </p>
+          <p className="mt-1 text-xs text-ink-3">
+            Open an existing session to follow or stop it. Starting below
+            creates an additional run.
+          </p>
+          <div className="flex flex-wrap gap-3 mt-3">
+            {existingRuns.map((run) => (
+              <Link
+                key={run.run_id}
+                href={`/autohub/runs/${run.run_id}` as Route}
+                className="underline underline-offset-4 text-xs"
+              >
+                View {run.status} run →
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
       <header className="mb-8">
         <div className="flex items-start justify-between gap-4">
           <h1 className="text-2xl font-semibold text-ink">{bot.name}</h1>
@@ -338,8 +540,11 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_22rem] gap-6 items-start">
         <div className="space-y-6 min-w-0">
-          <Card title="How it works">
-            <ol className="space-y-3">
+          <details className="rounded-2xl border border-line bg-surface p-5">
+            <summary className="cursor-pointer text-sm font-medium text-ink">
+              How this bot works
+            </summary>
+            <ol className="space-y-3 mt-4">
               {bot.guide.map((line, index) => (
                 <li
                   key={line}
@@ -352,7 +557,7 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
                 </li>
               ))}
             </ol>
-          </Card>
+          </details>
 
           <Card title={bot.max_markets === 1 ? "Market" : "Markets"}>
             <MarketPicker
@@ -449,7 +654,11 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
             )}
 
             {showErrors && errors.length > 0 && (
-              <ul className="space-y-1 text-xs text-red-400" role="alert">
+              <ul
+                id="setup-errors"
+                className="space-y-1 text-xs text-red-400"
+                role="alert"
+              >
                 {errors.map((error) => (
                   <li key={error}>{error}</li>
                 ))}
@@ -459,7 +668,7 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
             <button
               type="button"
               disabled={!canStart}
-              onClick={handleStart}
+              onClick={handleReview}
               className={cn(
                 "w-full h-11 rounded-lg text-sm font-medium transition disabled:opacity-45 disabled:cursor-not-allowed",
                 real
@@ -467,11 +676,11 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
                   : "bg-ink text-surface hover:opacity-80",
               )}
             >
-              {startRun.isPending
-                ? "Checking with Deriv…"
-                : real
-                  ? "Start with real money"
-                  : "Start on demo"}
+              {createdRunId
+                ? "Opening live run…"
+                : startRun.isPending
+                  ? "Starting your run…"
+                  : "Review & start run"}
             </button>
 
             <p className="text-[11px] leading-relaxed text-ink-3">
@@ -485,12 +694,47 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
         </div>
       </div>
 
+      <StartReview
+        open={reviewing}
+        onClose={() => setReviewing(false)}
+        onStart={handleStart}
+        busy={startRun.isPending}
+        allowed={canStart && ready}
+        name={bot.name}
+        accountId={deriv.accountId}
+        isVirtual={deriv.isVirtual}
+        currency={deriv.currency}
+        markets={draft.symbols}
+        preset={draft.preset}
+        planNote={
+          selectedPlan
+            ? `${compareAmounts(selectedPlan.multiplier, "0") > 0 ? `Stake increases ×${selectedPlan.multiplier} after a loss.` : "This plan uses a fixed stake."}${compareAmounts(selectedPlan.contract_take_profit, "0") > 0 ? ` Each position closes at ${selectedPlan.contract_take_profit} ${deriv.currency ?? ""} profit.` : ""}`
+            : undefined
+        }
+        stake={
+          bot.presets.find((plan) => plan.id === draft.preset)?.stake ??
+          draft.stake
+        }
+        stopLoss={
+          bot.presets.find((plan) => plan.id === draft.preset)?.stop_loss ??
+          draft.stopLoss
+        }
+        takeProfit={
+          bot.presets.find((plan) => plan.id === draft.preset)?.take_profit ??
+          draft.takeProfit
+        }
+        settings={bot.settings.map((setting) => ({
+          title: setting.title,
+          value: String(draft.settings[setting.key] ?? ""),
+        }))}
+      />
+
       {/* The consent modal is styled for the options scope; give it that scope
           here rather than restyling a shared component. */}
       <div data-app="options" data-opt-theme="dark" className="contents">
         <DerivAppConsentModal
           appKey={consent}
-          returnTo={`/autohub/bots/${bot.bot_id}`}
+          returnTo={`/autohub/bots/${bot.bot_id}?resume_setup=1${sourceId ? `&from_run=${encodeURIComponent(sourceId)}` : ""}`}
           onClose={() => setConsent(null)}
         />
       </div>
@@ -564,7 +808,8 @@ function PlanPicker({
               {multiplies
                 ? `After a loss the stake is multiplied by ${plan.multiplier}, and no stake is placed that could take the loss past ${plan.stop_loss}.`
                 : "The stake stays the same on every trade."}
-              {closesAt && ` Each position is closed at a profit of ${plan.contract_take_profit}.`}
+              {closesAt &&
+                ` Each position is closed at a profit of ${plan.contract_take_profit}.`}
             </p>
           </button>
         );

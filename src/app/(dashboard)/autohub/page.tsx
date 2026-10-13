@@ -291,7 +291,7 @@ function RunCard({
           href={`/autohub/runs/${run.run_id}` as Route}
           className="flex-1 flex justify-center items-center h-10 rounded-lg bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-sm font-medium transition-colors"
         >
-          Open
+          View live run
         </Link>
         <button
           type="button"
