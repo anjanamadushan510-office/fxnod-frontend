@@ -49,7 +49,8 @@ import {
   useStartBotRun,
   useUpdateBotPreset,
 } from "@/services/api/endpoints/bots/bots";
-import { BotStartConflictCode, type BotStartConflict } from "@/services/api/model";
+import { getDerivListAccountsQueryKey, useDerivSelectAccount } from "@/services/api/endpoints/trading/trading";
+import { BotStartConflictCode, type DerivLinkedAccount, type BotStartConflict } from "@/services/api/model";
 
 /**
  * /dbot/build — create or edit a bot, step by step.
@@ -116,6 +117,7 @@ function BotBuilder() {
   const updatePreset = useUpdateBotPreset();
   const deletePreset = useDeleteBotPreset();
   const startRun = useStartBotRun();
+  const selectRunAccount = useDerivSelectAccount();
   const saving = createPreset.isPending || updatePreset.isPending;
 
   // Loaded here rather than only on the Markets step: a saved bot opens straight
@@ -207,7 +209,7 @@ function BotBuilder() {
     }
   }
 
-  async function handleRun(riskAcknowledged: boolean) {
+  async function handleRun(account: DerivLinkedAccount, riskAcknowledged: boolean) {
     const current = draft!;
     const { request, errors } = buildDraftRunRequest(current, strategies, riskAcknowledged);
     if (!request) {
@@ -218,6 +220,8 @@ function BotBuilder() {
     if (!savedId) return;
 
     try {
+      await selectRunAccount.mutateAsync({ data: { deriv_account_id: account.deriv_account_id } });
+      void queryClient.invalidateQueries({ queryKey: getDerivListAccountsQueryKey() });
       const res = await startRun.mutateAsync({ data: request });
       if (res.run) trackDbotStart(res.run.is_virtual, res.run.strategy_id, "builder");
       const adjustments = res.limit_adjustments ?? [];
@@ -302,7 +306,7 @@ function BotBuilder() {
             <RunPanel
               ready={ready}
               saving={saving}
-              starting={startRun.isPending}
+              starting={startRun.isPending || selectRunAccount.isPending}
               saved={Boolean(saved)}
               onSave={handleSave}
               onRun={handleRun}

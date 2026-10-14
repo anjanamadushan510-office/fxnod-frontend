@@ -9,7 +9,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { cn } from "@/lib/cn";
 import { useDerivStatus, type DerivStatus } from "@/hooks/useDerivStatus";
-import { useToolTradingAccess } from "@/hooks/useToolTradingAccess";
+import { RunSavedBotDialog } from "../RunSavedBotDialog";
 import { useDerivSelectAccount } from "@/services/api/endpoints/trading/trading";
 import type { DerivLinkedAccount } from "@/services/api/model";
 
@@ -20,20 +20,11 @@ interface RunPanelProps {
   starting: boolean;
   saved: boolean;
   onSave: () => void;
-  onRun: (riskAcknowledged: boolean) => void;
+  onRun: (account: DerivLinkedAccount, riskAcknowledged: boolean) => void;
 }
 
-/**
- * Save and run.
- *
- * Which account a bot trades is decided by the server from the Deriv account
- * the user has selected — never by this page. So the panel shows that account,
- * lets the user switch it, and labels the run button by what will actually
- * happen: practice on demo, or real money.
- *
- * Real money needs a deliberate tick. The engine refuses a real-money run
- * without `risk_acknowledged`, and the box is the only thing that sets it — it
- * starts unticked and resets whenever the account changes.
+/** Each start opens a fresh account choice. History scope is never a run default.
+ * The shared dialog shows current balances and requires explicit real-money consent.
  */
 export function RunPanel({
   ready,
@@ -43,88 +34,23 @@ export function RunPanel({
   onSave,
   onRun,
 }: RunPanelProps) {
-  const deriv = useDerivStatus();
-  const access = useToolTradingAccess("dbot", deriv.isVirtual);
-  const [acknowledged, setAcknowledged] = useState(false);
-  const [lastAccount, setLastAccount] = useState(deriv.accountId);
-  if (lastAccount !== deriv.accountId) {
-    setLastAccount(deriv.accountId);
-    setAcknowledged(false);
-  }
-
+  const [choosing, setChoosing] = useState(false);
   const busy = saving || starting;
-  const real = deriv.linked && !deriv.isVirtual;
-  const canRun =
-    ready &&
-    deriv.linked &&
-    !deriv.isLoading &&
-    !deriv.needsReconnect &&
-    access.allowed &&
-    !busy &&
-    (!real || acknowledged);
-
   return (
     <div className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-5">
       <div>
-        <h3 className="text-sm font-semibold text-ink mb-1 tracking-wide">
-          NEXT
-        </h3>
-        <p className="text-xs text-ink-2 leading-relaxed">
-          Save it to your account, then practise on demo or run it with real
-          money. A running bot keeps going when you close this page.
-        </p>
+        <h3 className="text-sm font-semibold text-ink mb-2">Ready to run?</h3>
+        <p className="text-xs text-ink-2 leading-relaxed">Choose a Deriv account and review its balance each time you start a run. The history filter never selects a trading account.</p>
       </div>
-
-      <AccountSection />
-      {access.message && (
-        <p className="text-xs text-ink-2" role="status">
-          {access.message} <Link href="/tools">View packages</Link>
-        </p>
-      )}
-
-      {real && (
-        <label className="flex items-start gap-3 rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-xs leading-relaxed text-amber-900 dark:text-amber-100">
-          <input
-            type="checkbox"
-            checked={acknowledged}
-            onChange={(e) => setAcknowledged(e.target.checked)}
-            className="mt-0.5 h-4 w-4 shrink-0 accent-amber-400"
-          />
-          <span>
-            I understand this bot trades <strong>real money</strong> on its own
-            and can lose up to its loss cap, and that past results do not
-            predict future ones.
-          </span>
-        </label>
-      )}
-
-      <div className="space-y-3">
-        <button
-          type="button"
-          disabled={!canRun}
-          onClick={() => onRun(real && acknowledged)}
-          className={cn(
-            "w-full h-11 rounded-lg text-sm font-medium transition disabled:opacity-45 disabled:cursor-not-allowed",
-            real
-              ? "bg-amber-400 text-black hover:bg-amber-300"
-              : "bg-action text-action-ink hover:opacity-80",
-          )}
-        >
-          {starting
-            ? "Starting…"
-            : real
-              ? "Save and run with real money"
-              : "Save and practise on demo"}
-        </button>
-        <button
-          type="button"
-          disabled={!ready || busy}
-          onClick={onSave}
-          className="w-full h-11 rounded-lg border border-line text-sm text-ink-3 hover:text-ink transition disabled:opacity-45 disabled:cursor-not-allowed"
-        >
-          {saving ? "Saving…" : saved ? "Save changes" : "Save only"}
-        </button>
-      </div>
+      <button type="button" disabled={!ready || busy} onClick={() => setChoosing(true)}
+        className="w-full h-11 rounded-lg bg-action text-sm font-medium text-action-ink disabled:opacity-45 disabled:cursor-not-allowed">
+        {busy ? "Starting…" : "Save & choose run account"}
+      </button>
+      <button type="button" disabled={!ready || busy} onClick={onSave}
+        className="w-full h-11 rounded-lg border border-line text-sm text-ink-3 hover:text-ink disabled:opacity-45">
+        {saving ? "Saving…" : saved ? "Save changes" : "Save only"}
+      </button>
+      {choosing && <RunSavedBotDialog botName="This bot" busy={busy} onClose={() => { if (!busy) setChoosing(false); }} onConfirm={onRun} />}
     </div>
   );
 }

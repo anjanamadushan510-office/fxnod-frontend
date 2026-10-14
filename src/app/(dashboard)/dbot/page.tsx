@@ -12,7 +12,7 @@ import { BotPackageModal } from "@/components/bot/BotPackageModal";
 import { EmergencyStopButton } from "@/components/bot/EmergencyStopButton";
 import { DerivAppConsentModal } from "@/components/bot/DerivAppConsentModal";
 import { RunSavedBotDialog } from "@/components/bot/RunSavedBotDialog";
-import { DerivConnectionMenu } from "@/components/deriv/DerivConnectionMenu";
+import { DerivHistoryFilter } from "@/components/deriv/DerivHistoryFilter";
 import { conditionsSummary } from "@/components/bot/builder/conditions";
 import { defaultFormState } from "@/components/bot/formState";
 import {
@@ -144,7 +144,7 @@ export default function DBotDashboardPage() {
 
   const strategiesQuery = useListBotStrategies();
   const presetsQuery = useListBotPresets();
-  const runsQuery = useListBotRuns(ACTIVE_RUNS_PARAMS, { query: { refetchInterval: 1000 } });
+
   const stopRun = useStopBotRun();
   const forceStop = useForceStopBotRun();
   const deletePreset = useDeleteBotPreset();
@@ -156,6 +156,8 @@ export default function DBotDashboardPage() {
   const [runPreset, setRunPreset] = useState<BotPreset | null>(null);
   const [consent, setConsent] = useState<{ appKey: string; returnTo: string } | null>(null);
   const [accountFilter, setAccountFilter] = useState<AccountFilter>("all");
+  const [historyAccountId, setHistoryAccountId] = useState<string | null>(null);
+  const runsQuery = useListBotRuns({ ...ACTIVE_RUNS_PARAMS, account: accountFilter, deriv_account_id: historyAccountId ?? undefined }, { query: { refetchInterval: 1000 } });
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   const [period, setPeriod] = useState<PeriodFilter>("all");
@@ -163,7 +165,7 @@ export default function DBotDashboardPage() {
   const [customTo, setCustomTo] = useState("");
   const range = useMemo(() => periodRange(period, customFrom, customTo), [period, customFrom, customTo]);
 
-  const finishedParams = { state: "ended" as const, account: accountFilter, ...range };
+  const finishedParams = { state: "ended" as const, account: accountFilter, deriv_account_id: historyAccountId ?? undefined, ...range };
   const finishedQuery = useInfiniteQuery({
     // Nothing is asked while the two dates are the wrong way round.
     enabled: range !== null,
@@ -180,8 +182,8 @@ export default function DBotDashboardPage() {
   const strategies = useMemo(() => strategiesQuery.data?.strategies ?? [], [strategiesQuery.data]);
   const presets = useMemo(() => presetsQuery.data?.presets ?? [], [presetsQuery.data]);
   const activeRuns = useMemo(
-    () => (runsQuery.data?.runs ?? []).filter((r) => matchesAccount(r.is_virtual, accountFilter)),
-    [runsQuery.data, accountFilter],
+    () => (runsQuery.data?.runs ?? []).filter((r) => matchesAccount(r.is_virtual, accountFilter) && (!historyAccountId || r.deriv_account_id === historyAccountId)),
+    [runsQuery.data, accountFilter, historyAccountId],
   );
   // A run that ends while a later page is being fetched moves every run
   // after it down one place, so it can arrive on two pages. Each is kept once.
@@ -190,11 +192,12 @@ export default function DBotDashboardPage() {
     return (finishedQuery.data?.pages ?? [])
       .flatMap((page) => page.runs ?? [])
       .filter((run) => {
+        if (historyAccountId && run.deriv_account_id !== historyAccountId) return false;
         if (seen.has(run.run_id)) return false;
         seen.add(run.run_id);
         return true;
       });
-  }, [finishedQuery.data]);
+  }, [finishedQuery.data, historyAccountId]);
 
   // A finished run is a record: the list changes only when a live one ends.
   // That is the moment it is read again, in place of asking on a timer.
@@ -263,12 +266,8 @@ export default function DBotDashboardPage() {
       return;
     }
     try {
-      if (!account.is_selected) {
-        await selectAccount.mutateAsync({ data: { deriv_account_id: account.deriv_account_id } });
-        // Not awaited: the engine already has the selection, and waiting for
-        // the lists to be read again would only hold the bot back.
-        void queryClient.invalidateQueries({ queryKey: getDerivListAccountsQueryKey() });
-      }
+      await selectAccount.mutateAsync({ data: { deriv_account_id: account.deriv_account_id } });
+      void queryClient.invalidateQueries({ queryKey: getDerivListAccountsQueryKey() });
       const res = await startRun.mutateAsync({ data: request });
       if (res.run) trackDbotStart(res.run.is_virtual, res.run.strategy_id, "saved");
       await queryClient.invalidateQueries({ queryKey: getListBotRunsQueryKey() });
@@ -305,16 +304,16 @@ export default function DBotDashboardPage() {
           <p className="text-sm text-ink-2 mt-1">Build a bot in plain language</p>
         </div>
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:gap-3">
-          {/* A bot cannot trade without a Deriv account, and this was the one
-              screen that never said so — the first anyone heard of it was a
-              run refusing to start. */}
-          <DerivConnectionMenu />
+          <DerivHistoryFilter accountId={historyAccountId} onChange={(id) => { setHistoryAccountId(id); setAccountFilter("all"); }} />
         </div>
       </div>
 
       <BotMembershipBanner toolId="dbot" />
 
-      <AccountFilterControl value={accountFilter} onChange={setAccountFilter} />
+      <div className="space-y-2">
+        <AccountFilterControl value={accountFilter} onChange={(value) => { setAccountFilter(value); setHistoryAccountId(null); }} />
+        {historyAccountId && <p role="status" className="text-xs text-ink-3">Showing runs from {historyAccountId}. Saved bots can be run on any eligible account.</p>}
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard
