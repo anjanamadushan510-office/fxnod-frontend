@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
-import { ChoiceCard, GroupLabel } from "@/components/bot/builder/controls";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { getGroupKey, getGroupLabel } from "@/components/bot/marketGroups";
 import type { Market } from "@/components/options/market/catalog";
 import { useMarketStore } from "@/components/options/market/marketStore";
@@ -97,6 +96,11 @@ export function MarketPicker({
 
   const single = max === 1;
   const full = selected.length >= max;
+  const [selection, setSelection] = useState(single ? selected[0] ?? "" : "");
+
+  useEffect(() => {
+    if (single) setSelection(selected[0] ?? "");
+  }, [selected, single]);
 
   function toggle(id: string) {
     if (single) {
@@ -106,6 +110,12 @@ export function MarketPicker({
     } else if (!full) {
       onChange([...selected, id]);
     }
+  }
+
+  function choose(id: string) {
+    if (!id) return;
+    toggle(id);
+    setSelection(single ? id : "");
   }
 
   return (
@@ -140,29 +150,52 @@ export function MarketPicker({
         <p className="text-sm text-ink-2">No markets are open for this bot right now.</p>
       )}
 
-      {groups.map((group) => (
-        <section key={group.label} className="mb-6 last:mb-0">
-          <GroupLabel>{group.label}</GroupLabel>
-          {/* Two across on a phone too: a bot offers twenty markets, and one
-              per row put the Start button a dozen screens down. */}
-          <div className="grid grid-cols-2 gap-2 sm:gap-3">
-            {group.markets.map((market) => {
-              const active = selected.includes(market.id);
-              return (
-                <ChoiceCard
-                  key={market.id}
-                  size="sm"
-                  title={market.name}
-                  description={market.id}
-                  active={active}
-                  disabled={!single && !active && full}
-                  onSelect={() => toggle(market.id)}
-                />
-              );
-            })}
-          </div>
-        </section>
-      ))}
+      {!loading && live && groups.length > 0 && (
+        <div className="space-y-3">
+          <label htmlFor="autohub-market-select" className="text-xs font-medium text-ink-2">
+            {single ? "Select a market" : "Add markets"}
+          </label>
+          <select
+            id="autohub-market-select"
+            value={selection}
+            onChange={(event) => choose(event.target.value)}
+            disabled={!single && full}
+            className="h-11 w-full rounded-xl border border-line bg-surface-2 px-3 text-sm text-ink outline-none transition focus:border-action focus:ring-2 focus:ring-action/20 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <option value="">
+              {single ? "Choose a market…" : full ? "Maximum markets selected" : "Choose a market to add…"}
+            </option>
+            {groups.map((group) => (
+              <optgroup key={group.label} label={group.label}>
+                {group.markets.map((market) => (
+                  <option key={market.id} value={market.id} disabled={selected.includes(market.id)}>
+                    {market.name} · {market.id}{selected.includes(market.id) ? " (selected)" : ""}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+          {selected.length > 0 && (
+            <div className="flex flex-wrap gap-2" aria-label="Selected markets">
+              {selected.map((id) => {
+                const market = groups.flatMap((group) => group.markets).find((item) => item.id === id);
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => toggle(id)}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-action/30 bg-action/10 px-2.5 py-1.5 text-xs text-ink transition hover:bg-action/20"
+                    aria-label={`Remove ${market?.name ?? id}`}
+                  >
+                    {market?.name ?? id}
+                    <span aria-hidden="true" className="text-ink-3">×</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
