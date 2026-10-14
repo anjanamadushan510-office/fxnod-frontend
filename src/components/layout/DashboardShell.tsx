@@ -28,6 +28,7 @@ function Shell({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((s) => s.user);
   const pathname = usePathname() || "";
   const showPhoneNav = !phoneNavHidden(pathname);
+  const showScrollButton = showPhoneNav && !["/wallet", "/transfer"].some((route) => pathname.startsWith(route));
 
   // While the drawer is open the page behind it must not scroll: on a phone
   // the drag otherwise moves the page, and the drawer appears to be stuck.
@@ -73,12 +74,14 @@ function Shell({ children }: { children: React.ReactNode }) {
         <main
           className={cn(
             "workspace-canvas min-w-0 flex-1 bg-bg",
-            showPhoneNav && "pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0",
+            showPhoneNav && (showScrollButton
+              ? "pb-[calc(8rem+env(safe-area-inset-bottom))] lg:pb-0"
+              : "pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0"),
           )}
         >
           {children}
         </main>
-        {!phoneNavHidden(pathname) && !["/wallet", "/transfer"].some((route) => pathname.startsWith(route)) && (
+        {showScrollButton && (
           <ScrollProgressButton pathname={pathname} />
         )}
         {showPhoneNav && <MobileTabBar onMenu={() => setSidebarOpen(true)} menuOpen={sidebarOpen} />}
