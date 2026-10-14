@@ -299,11 +299,18 @@ function LoadingCard({ label }: { label: string }) {
 }
 
 function ErrorCard({ message }: { message: string }) {
+  const isMismatch = message.includes("Sign in to Deriv with the account");
   return (
     <Card>
       <div className="flex flex-col gap-3">
-        <h1 className="text-[17px] font-bold text-ink">Something went wrong</h1>
-        <p className="text-[13px] leading-relaxed text-ink-3">{message}</p>
+        <h1 className="text-[17px] font-bold text-ink">
+          {isMismatch ? "Different Deriv account detected" : "Something went wrong"}
+        </h1>
+        <p className="text-[13px] leading-relaxed text-ink-3">
+          {isMismatch
+            ? "Your browser is signed in with a different Deriv account. Please switch to the matching Deriv account in your browser, or select that account on FXNod."
+            : message}
+        </p>
         <a
           href="/options/dtrader"
           className="mt-1 inline-flex items-center gap-1.5 text-[13px] font-semibold text-gold-3 hover:text-gold transition-colors"
