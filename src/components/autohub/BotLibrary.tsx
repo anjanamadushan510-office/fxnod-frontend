@@ -306,7 +306,7 @@ export function BotLibrary({
             <article
               key={bot.bot_id}
               className={cn(
-                "rounded-xl border border-line bg-surface p-3 sm:p-4 flex gap-3 min-w-0 hover:border-line-2 transition-colors",
+                "rounded-2xl border border-line bg-surface p-3.5 sm:p-4 flex gap-3 min-w-0 shadow-sm hover:border-line-2 hover:shadow-md transition-[border-color,box-shadow]",
                 view === "grid"
                   ? "flex-col"
                   : "flex-col sm:flex-row sm:items-center",
@@ -330,10 +330,10 @@ export function BotLibrary({
                     onClick={() => favourites.toggle(bot.bot_id)}
                   />
                 </div>
-                <p className="text-xs text-ink-2 mt-2 leading-relaxed line-clamp-1 sm:line-clamp-2">
+                <p className="text-xs text-ink-2 mt-3 leading-relaxed line-clamp-2 min-h-[2.25rem]">
                   {bot.description}
                 </p>
-                <ul className="flex flex-wrap gap-1.5 mt-3 text-[11px] text-ink-2">
+                <ul className="flex flex-wrap gap-1.5 mt-3 text-[11px] text-ink-3">
                   {[
                     contractLabel(bot.contract_type),
                     durationLabel(bot),
@@ -343,23 +343,20 @@ export function BotLibrary({
                     ...(bot.has_shadow_lane ? ["Shadow lane"] : []),
                   ].map((fact) => (
                     <li
-                      className="rounded-md bg-surface-2 px-2 py-1"
+                      className="rounded-full bg-surface-2 px-2.5 py-1"
                       key={fact}
                     >
                       {fact}
                     </li>
                   ))}
                   {runningIds.has(bot.bot_id) && (
-                    <li className="rounded-md bg-emerald-500/10 text-emerald-500 px-2 py-1">
+                    <li className="rounded-full bg-emerald-500/10 text-emerald-500 px-2.5 py-1">
                       Running
                     </li>
                   )}
                 </ul>
               </div>
-              <div className={cn("shrink-0", view === "list" && "sm:w-44")}>
-                <div className="flex items-center justify-between text-xs text-ink-3 mb-2">
-                  <span>Min. stake {bot.min_stake}</span>
-                </div>
+              <div className={cn("shrink-0 pt-1", view === "list" && "sm:w-44 sm:pt-0")}>
                 <Link
                   href={`/autohub/bots/${bot.bot_id}` as Route}
                   className="min-h-11 sm:min-h-10 rounded-lg bg-action text-action-ink text-sm font-medium flex items-center justify-center gap-2 hover:opacity-85 transition-opacity"
