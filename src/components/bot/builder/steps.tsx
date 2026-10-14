@@ -47,6 +47,8 @@ import {
   type BotDraft,
   type MoneyField,
 } from "./draft";
+import { ConditionBuilder } from "./ConditionBuilder";
+import { conditionsSummary } from "./conditions";
 import { martingaleLadder, type LadderPreview } from "./ladder";
 
 /** Mirrors the engine's MaxRunSymbols; the engine refuses more either way. */
@@ -711,7 +713,7 @@ export function SetupStep({
                 title="Let indicators decide"
                 description="Each trade takes the side your indicators agree on, and waits when they do not."
                 active={form.direction === "auto"}
-                onSelect={() => set({ direction: "auto" })}
+                onSelect={() => onChange({ ...patchForm(draft, { direction: "auto" }), entryRule: "always" })}
               />
             )}
           </div>
@@ -886,13 +888,13 @@ export function EntryRuleStep({
       />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
         {ENTRY_RULES.map((rule) => {
-          const available = supported.has(rule.key);
+          const available = supported.has(rule.key) && (draft.form.direction !== "auto" || rule.key === "always");
           return (
             <ChoiceCard
               key={rule.key}
               title={rule.name}
               description={rule.description}
-              badge={available ? undefined : "Coming soon"}
+              badge={available ? undefined : draft.form.direction === "auto" ? "Uses a fixed side" : "Unavailable"}
               active={draft.entryRule === rule.key}
               disabled={!available}
               onSelect={() => onChange({ ...draft, entryRule: rule.key })}
@@ -900,6 +902,7 @@ export function EntryRuleStep({
           );
         })}
       </div>
+      <ConditionBuilder value={draft.entryConditions} onChange={(entryConditions) => onChange({ ...draft, entryConditions })} strategy={strategy} />
     </div>
   );
 }
@@ -1149,7 +1152,8 @@ export function ReviewStep({
     ["Markets", marketNames.length ? marketNames.join(", ") : "None selected"],
     ["Trade type", [method?.name, side && side !== method?.name ? side : undefined].filter(Boolean).join(" · ")],
     ...(duration ? [["Contract length", duration] as [string, string]] : []),
-    ["When to buy", rule?.name ?? "—"],
+    ["Side rule", rule?.name ?? "—"],
+    ["Entry conditions", conditionsSummary(draft.entryConditions)],
     [
       "Money",
       `${money?.name ?? "—"} · stake $${form.stake || "?"}` +

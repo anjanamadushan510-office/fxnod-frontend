@@ -27,6 +27,7 @@ import {
   type MoneyKey,
 } from "./catalog";
 import { STAKE_PLACES } from "./ladder";
+import { conditionProblems, supportsConditions, type EntryConditions } from "./conditions";
 
 /**
  * A bot as the builder edits it.
@@ -39,6 +40,7 @@ import { STAKE_PLACES } from "./ladder";
  */
 export interface BotDraft {
   name: string;
+  entryConditions?: EntryConditions;
   method: MethodKey;
   entryRule: EntryRuleKey;
   money: MoneyKey;
@@ -104,6 +106,7 @@ export function withMethod(draft: BotDraft, method: MethodKey): BotDraft {
   return {
     ...draft,
     method,
+    entryRule: method === draft.method ? draft.entryRule : "always",
     form: {
       ...draft.form,
       direction:
@@ -164,6 +167,7 @@ interface BuilderMeta {
   entry_rule: EntryRuleKey;
   money: MoneyKey;
   indicators: BotIndicator[];
+  entry_conditions?: EntryConditions;
 }
 
 const INDICATOR_KINDS = ["sma", "ema", "rsi", "bb", "stoch", "macd", "atr"] as const;
@@ -200,6 +204,7 @@ export function toPresetRequest(draft: BotDraft, strategyId: string): CreateBotP
     entry_rule: draft.entryRule,
     money: draft.money,
     indicators: draft.indicators,
+    entry_conditions: draft.entryConditions,
   };
   return {
     name: draft.name.trim(),
@@ -220,6 +225,8 @@ export function draftFromPreset(preset: BotPreset): BotDraft | undefined {
   const form = fromPresetConfig(preset.config);
   const meta = (preset.config as { builder?: Partial<BuilderMeta> }).builder;
 
+  if (conditionProblems(meta?.entry_conditions).length) return undefined;
+
   const method =
     (meta?.method && findMethod(meta.method)?.strategyId === preset.strategy_id
       ? meta.method
@@ -235,7 +242,7 @@ export function draftFromPreset(preset: BotPreset): BotDraft | undefined {
       ? "martingale"
       : "same";
 
-  return { name: preset.name, method, entryRule, money, form, indicators: readIndicators(meta?.indicators) };
+  return { name: preset.name, method, entryRule, money, form, indicators: readIndicators(meta?.indicators), entryConditions: meta?.entry_conditions };
 }
 
 // ─── Validation and the start request ───────────────────────────────────────
@@ -277,6 +284,9 @@ export function draftProblems(
   if (!supportedEntryRules(strategy).has(draft.entryRule)) {
     problems.push("This bot cannot use the chosen buy rule yet.");
   }
+  problems.push(...conditionProblems(draft.entryConditions));
+  if (draft.entryConditions && !supportsConditions(strategy)) problems.push("The trading engine does not support custom entry conditions yet.");
+  if (form.direction === "auto" && draft.entryRule !== "always") problems.push("Indicators decide the side: choose Always this side as the buy rule.");
   if (!findMoneyOption(draft.money)?.available) {
     problems.push("The chosen money strategy is not available yet.");
   }
@@ -426,6 +436,9 @@ export function buildDraftRunRequest(
       ...result.request.strategy_parameters,
       entry_rule: draft.entryRule,
     };
+  }
+  if (draft.entryConditions) {
+    result.request.strategy_parameters = { ...result.request.strategy_parameters, entry_conditions: draft.entryConditions };
   }
   result.request.risk_acknowledged = riskAcknowledged;
   return result;

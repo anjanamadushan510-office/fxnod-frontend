@@ -13,6 +13,7 @@ import { EmergencyStopButton } from "@/components/bot/EmergencyStopButton";
 import { DerivAppConsentModal } from "@/components/bot/DerivAppConsentModal";
 import { RunSavedBotDialog } from "@/components/bot/RunSavedBotDialog";
 import { DerivConnectionMenu } from "@/components/deriv/DerivConnectionMenu";
+import { conditionsSummary } from "@/components/bot/builder/conditions";
 import { defaultFormState } from "@/components/bot/formState";
 import {
   ENTRY_RULES,
@@ -345,10 +346,10 @@ export default function DBotDashboardPage() {
 
       <article className="bg-surface border border-line rounded-2xl p-6 text-center sm:p-14">
         <img src="/assets/fxnod-mark.png" alt="" className="mx-auto h-10 w-10 object-contain opacity-40 mb-5 dark:invert-0 invert" />
-        <h3 className="font-display text-lg font-semibold mb-2 text-ink">No Blockly. No theory.</h3>
+        <h3 className="font-display text-lg font-semibold mb-2 text-ink">Your strategy. Your bot.</h3>
         <p className="text-sm text-ink-3 max-w-md mx-auto leading-relaxed mb-6">
-          Pick a ready bot, read its one-line summary, then practise on demo. Or build your own in
-          plain language, or import a bot someone shared with you.
+          Turn your trading idea into a bot: choose what to buy, combine your entry conditions,
+          and set your stake and stop limits. Start from a template or build from scratch.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
@@ -459,6 +460,7 @@ export default function DBotDashboardPage() {
                             .join(" · ")
                         : strategyName(preset.strategy_id)}
                     </p>
+                    {draft?.entryConditions && <p className="mb-3 text-sm leading-relaxed text-ink-2"><span className="text-xs font-semibold text-gold">WHEN </span>{conditionsSummary(draft.entryConditions)}</p>}
                     {draft && (
                       <p className="text-sm text-ink-2 mb-6">
                         {[

@@ -20,6 +20,7 @@ import {
   type BotDraft,
   type StepKey,
 } from "@/components/bot/builder/draft";
+import { StrategyOverview } from "@/components/bot/builder/StrategyOverview";
 import { RunPanel } from "@/components/bot/builder/RunPanel";
 import {
   DurationStep,
@@ -150,7 +151,7 @@ function BotBuilder() {
   if (!draft) {
     return (
       <Shell>
-        <p className="text-sm text-zinc-500">Loading bot…</p>
+        <p className="text-sm text-ink-3">Loading bot…</p>
       </Shell>
     );
   }
@@ -247,6 +248,7 @@ function BotBuilder() {
 
   return (
     <Shell>
+      <StrategyOverview draft={draft} />
       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide mb-6" role="tablist">
         {steps.map((s, i) => {
           const active = current === s.key;

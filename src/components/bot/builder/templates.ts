@@ -6,6 +6,7 @@ import {
   supportedEntryRules,
 } from "./catalog";
 import { newDraft, type BotDraft } from "./draft";
+import { newCondition, supportsConditions } from "./conditions";
 
 /**
  * Ready-made bots. Each is a complete draft, not a label: opening one fills
@@ -26,6 +27,36 @@ const R_10 = "R_10";
 const R_25 = "R_25";
 
 export const BOT_TEMPLATES: BotTemplate[] = [
+  {
+    id: "custom-even-streak",
+    title: "Odd after an even streak",
+    badge: "Custom conditions",
+    description: "Wait for 4 even digits, then buy Odd. Wait 5 seconds after settlement. Edit every rule.",
+    build: () => {
+      const d = newDraft("even_odd");
+      return { ...d, name: "Odd after an even streak", entryConditions: { match: "all", rules: [{ ...newCondition(), operator: "even", count: 4 }], cooldown_seconds: 5 }, form: { ...d.form, symbols: [R_10], direction: "down", maxTrades: "20" } };
+    },
+  },
+  {
+    id: "custom-digit-frequency",
+    title: "Differs with a frequency filter",
+    badge: "Custom conditions",
+    description: "Buy Differs 5 only when digit 5 is below 8% of the last 100 ticks. Customise the sample and threshold.",
+    build: () => {
+      const d = newDraft("differs");
+      return { ...d, name: "Differs with a frequency filter", entryConditions: { match: "all", rules: [{ ...newCondition("digit_frequency"), operator: "lt", value: 5, window: 100, percent: 8 }], cooldown_seconds: 3 }, form: { ...d.form, symbols: [R_10], digit: 5, maxTrades: "20" } };
+    },
+  },
+  {
+    id: "custom-price-reversal",
+    title: "Rise after three falling moves",
+    badge: "Custom conditions",
+    description: "Wait for 3 falling price moves AND a final digit above 2, then buy Rise. Both conditions must match.",
+    build: () => {
+      const d = newDraft("rise_fall");
+      return { ...d, name: "Rise after three falling moves", entryConditions: { match: "all", rules: [{ ...newCondition("price_streak"), operator: "down", count: 3 }, { ...newCondition("last_digit"), operator: "gt", value: 2 }], cooldown_seconds: 5 }, form: { ...d.form, symbols: [R_10], direction: "up", maxTrades: "20" } };
+    },
+  },
   {
     id: "even-odd-first",
     title: "Even / Odd — first bot",
@@ -138,6 +169,7 @@ export function isTemplateAvailable(
   if (!method || !isMethodAvailable(method, strategies)) return false;
   const strategy = strategies.find((s) => s.strategy_id === method.strategyId);
   return (
+    (!draft.entryConditions || supportsConditions(strategy)) &&
     supportedEntryRules(strategy).has(draft.entryRule) &&
     Boolean(findMoneyOption(draft.money)?.available)
   );
