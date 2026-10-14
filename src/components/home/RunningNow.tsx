@@ -129,7 +129,7 @@ export function RunningNow() {
 
       {failed.length > 0 && (
         <p
-          className="border-b border-line px-5 py-3 text-xs text-red-400"
+          className="border-b border-line px-5 py-3 text-xs text-negative"
           role="alert"
         >
           Could not load {failed.join(" or ")} bots. Anything running there is
@@ -204,9 +204,9 @@ export function RunningNow() {
                     className={cn(
                       "min-w-[5rem] text-right text-sm tabular-nums",
                       sign > 0
-                        ? "text-green-400"
+                        ? "text-positive"
                         : sign < 0
-                          ? "text-red-400"
+                          ? "text-negative"
                           : "text-ink-2",
                     )}
                   >

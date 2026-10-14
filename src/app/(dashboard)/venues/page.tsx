@@ -128,7 +128,7 @@ function DerivVenueCard({
         {isLoading && <p className="text-sm text-ink-3">Loading your Deriv accounts…</p>}
 
         {isError && (
-          <p className="text-sm text-red-400">
+          <p className="text-sm text-negative">
             Could not load your Deriv connections. Reload the page to try again.
           </p>
         )}
@@ -219,11 +219,11 @@ function DerivLoginRow({ connection, index }: { connection: DerivConnection; ind
               {connection.owner_name?.trim() || `Deriv login ${index + 1}`}
             </span>
             {connection.needs_reconnect ? (
-              <span className="inline-flex shrink-0 items-center rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-400 ring-1 ring-inset ring-amber-500/20">
+              <span className="inline-flex shrink-0 items-center rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-warning ring-1 ring-inset ring-amber-500/20">
                 Session expired
               </span>
             ) : (
-              <span className="inline-flex shrink-0 items-center rounded-full bg-green-500/10 px-2 py-0.5 text-[10px] font-semibold text-green-400 ring-1 ring-inset ring-green-500/20">
+              <span className="inline-flex shrink-0 items-center rounded-full bg-green-500/10 px-2 py-0.5 text-[10px] font-semibold text-positive ring-1 ring-inset ring-green-500/20">
                 Active
               </span>
             )}
@@ -375,7 +375,7 @@ function DerivAppApprovals() {
             className={cn(
               "inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-[11px]",
               app.connected
-                ? "border-green-500/20 bg-green-500/10 text-green-400"
+                ? "border-green-500/20 bg-green-500/10 text-positive"
                 : "border-line bg-surface-2 text-ink-3",
             )}
           >

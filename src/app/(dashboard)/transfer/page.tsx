@@ -101,9 +101,9 @@ export default function TransferPage() {
             <div>
               <p className="font-medium text-ink">Deriv</p>
               {derivNickname ? (
-                <p className="text-xs text-green-400">Connected · {derivNickname}</p>
+                <p className="text-xs text-positive">Connected · {derivNickname}</p>
               ) : (
-                <p className="text-xs text-red-400">No Real Wallet Found</p>
+                <p className="text-xs text-negative">No Real Wallet Found</p>
               )}
             </div>
           </div>
@@ -186,7 +186,7 @@ export default function TransferPage() {
             </ol>
             
             <div className="mt-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20">
-              <p className="text-xs text-red-400">
+              <p className="text-xs text-negative">
                 <strong>Disclaimer:</strong> Transfers to Deriv are final and cannot be reversed. Ensure your Deriv account is fully verified.
               </p>
             </div>

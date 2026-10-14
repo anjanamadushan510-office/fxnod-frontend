@@ -678,7 +678,7 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
             {showErrors && errors.length > 0 && (
               <ul
                 id="setup-errors"
-                className="space-y-1 text-xs text-red-400"
+                className="space-y-1 text-xs text-negative"
                 role="alert"
               >
                 {errors.map((error) => (

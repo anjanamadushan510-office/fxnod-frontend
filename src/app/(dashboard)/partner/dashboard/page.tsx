@@ -130,7 +130,7 @@ export default function PartnerOverviewPage() {
           {earningsQuery.isLoading ? (
             <p className="px-5 py-6 text-center text-sm text-ink-3">Loading…</p>
           ) : earningsQuery.isError ? (
-            <p className="px-5 py-6 text-center text-sm text-red-400">Your earnings could not be loaded.</p>
+            <p className="px-5 py-6 text-center text-sm text-negative">Your earnings could not be loaded.</p>
           ) : !earnings?.by_source.length ? (
             <p className="px-5 py-6 text-center text-sm text-ink-3">
               Nothing earned yet. It appears here once someone on your team trades.
@@ -165,7 +165,7 @@ export default function PartnerOverviewPage() {
           {partnersQuery.isLoading ? (
             <p className="px-5 py-6 text-center text-sm text-ink-3">Loading…</p>
           ) : partnersQuery.isError ? (
-            <p className="px-5 py-6 text-center text-sm text-red-400">Your team could not be loaded.</p>
+            <p className="px-5 py-6 text-center text-sm text-negative">Your team could not be loaded.</p>
           ) : !team?.items.length ? (
             <p className="px-5 py-6 text-center text-sm text-ink-3">
               Nobody has joined through your link yet.

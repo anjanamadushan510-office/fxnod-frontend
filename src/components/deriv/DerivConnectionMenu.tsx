@@ -243,7 +243,7 @@ export function DerivConnectionMenu() {
                 </p>
               )}
               {accountsQuery.isError && (
-                <p className="px-4 py-5 text-center text-[11px] text-red-400">
+                <p className="px-4 py-5 text-center text-[11px] text-negative">
                   Could not load your accounts.
                 </p>
               )}

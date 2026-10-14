@@ -20,3 +20,12 @@ export const CHART_COLORS = {
   rise: "#1eaf7b", // --opt-rise  — up / green
   fall: "#e0533d", // --opt-fall  — down / red
 } as const;
+
+/** Light canvas needs a darker line and axis labels than the dark palette. */
+export const LIGHT_CHART_COLORS = {
+  ink: "#245ba4",
+  inkFaint: "#5b6f88",
+  line: "#dce5ef",
+  rise: "#087f61",
+  fall: "#c53c50",
+} as const;

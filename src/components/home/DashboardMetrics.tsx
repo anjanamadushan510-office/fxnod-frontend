@@ -44,7 +44,7 @@ export function DashboardMetrics({
   ).length;
   return (
     <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
-      <article className="rounded-2xl border border-line bg-surface p-4 sm:p-5">
+      <article className="wallet-summary rounded-2xl border border-line bg-surface p-4 sm:p-5">
         <p className="text-xs text-ink-3">FXNOD Wallet</p>
         <p className="mt-3 text-xl sm:text-2xl font-semibold tabular-nums text-ink break-words">
           {wallet.data

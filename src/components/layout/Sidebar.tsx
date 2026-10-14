@@ -159,6 +159,7 @@ export function Sidebar({
               <Link
                 key={item.key}
                 href={item.href as Route}
+                aria-current={isActive ? "page" : undefined}
                 onClick={onClose}
                 className={cn(
                   "nav-link relative flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-medium transition-colors",
@@ -186,6 +187,7 @@ export function Sidebar({
               <Link
                 key={item.key}
                 href={item.href as Route}
+                aria-current={isActive ? "page" : undefined}
                 onClick={onClose}
                 className={cn(
                   "nav-link relative flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-medium transition-colors",

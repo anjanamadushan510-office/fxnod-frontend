@@ -54,7 +54,7 @@ export function DashboardQuickActions() {
               className="flex flex-col rounded-2xl border border-line bg-surface p-5 hover:border-ink-3 transition-colors"
             >
               <div className="flex justify-between items-start gap-2">
-                <span className="grid place-items-center h-11 w-11 bg-surface-2 rounded-xl text-ink-2">
+                <span className="grid place-items-center tool-symbol h-11 w-11 bg-surface-2 rounded-xl text-ink-2">
                   <item.icon size={22} />
                 </span>
                 <span className="text-[10px] rounded-full bg-surface-2 px-2.5 py-1 text-ink-2">

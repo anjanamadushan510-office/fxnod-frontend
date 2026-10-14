@@ -333,7 +333,7 @@ function RiseFallDurationStep({
                 onChange={(duration) => onChange(patchForm(draft, { duration, durationUnit: selected.unit }))}
               />
               {form.duration.trim() !== "" && !inRange && (
-                <p className="mt-2 text-sm text-red-300">
+                <p className="mt-2 text-sm text-negative-soft">
                   {/^\d+$/.test(form.duration)
                     ? `Deriv sells ${formatRanges(selected.ranges)} ${selected.name.toLowerCase()} on these markets.`
                     : "Enter a whole number."}
@@ -1191,7 +1191,7 @@ export function ReviewStep({
 
         {problems.length > 0 && (
           <div role="alert" className="rounded-xl border border-red-500/40 bg-red-500/10 p-4">
-            <p className="text-sm font-medium text-red-300 mb-2">Before this bot can be saved</p>
+            <p className="text-sm font-medium text-negative-soft mb-2">Before this bot can be saved</p>
             <ul className="list-disc pl-5 space-y-1 text-sm text-red-200/90">
               {problems.map((p) => (
                 <li key={p}>{p}</li>

@@ -3,34 +3,48 @@
 @tailwind utilities;
 
 /* ============================================================================
-   FXNod design tokens. Lifted from the home UI prototype.
+   FXNOD workspace design tokens.
    Switch theme by toggling `data-theme="dark"` on <html>.
    ============================================================================ */
 :root {
-  --bg: #F9FAFB;
+  color-scheme: light;
+  --bg: #f3f6fb;
   --surface: #ffffff;
-  --surface-2: #F3F4F6;
-  --ink: #0a1430;
-  --ink-2: #3a435c;
-  --ink-3: #7b8298;
-  --line: #E5E7EB;
-  --line-2: #F3F4F6;
-  --navy: #0a1535;
-  --navy-2: #091230;
-  --navy-3: #13204a;
-  --gold: #C9A08C;
-  --gold-2: #d6b5a5;
-  --gold-3: #a47d69;
-  --gold-soft: #f4ead0;
+  --surface-2: #eaf0f8;
+  --ink: #152e52;
+  --ink-2: #435a76;
+  --ink-3: #5b6d84;
+  --line: #dce4ef;
+  --line-2: #bccbdd;
+  --navy: #102747;
+  --navy-2: #0c203c;
+  --navy-3: #224b78;
+  --gold: #c49a45;
+  --gold-2: #ecd08d;
+  --gold-3: #85601e;
+  --gold-soft: #faf2df;
+  --positive: 4 120 87;
+  --negative: 190 45 62;
+  --negative-soft: 167 36 53;
+  --warning: 146 93 14;
+  --info: 36 91 164;
+  --focus-ring: #3973b8;
   --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.6) inset,
     0 1px 2px rgba(10, 20, 48, 0.05),
-    0 8px 30px -16px rgba(10, 20, 48, 0.18);
+    0 8px 24px -18px rgba(23, 54, 94, 0.24);
   --shadow-nav: 0 1px 0 rgba(255, 255, 255, 0.04) inset,
     0 4px 24px rgba(0, 0, 0, 0.18);
   --wm-opacity: 0.28;
 }
 
 [data-theme="dark"] {
+  color-scheme: dark;
+  --positive: 52 211 153;
+  --negative: 248 113 113;
+  --negative-soft: 252 165 165;
+  --warning: 251 191 36;
+  --info: 96 165 250;
+  --focus-ring: #9abce8;
   --bg: #080C16;
   --surface: #101827;
   --surface-2: #162238;
@@ -57,7 +71,7 @@ body {
   padding: 0;
   background: var(--bg);
   color: var(--ink);
-  font-family: var(--font-manrope), ui-sans-serif, system-ui, -apple-system,
+  font-family: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
     sans-serif;
   font-feature-settings: "ss01", "cv11";
   -webkit-font-smoothing: antialiased;
@@ -186,8 +200,7 @@ a {
 }
 
 /* ============================================================================
-   Options trading scope — visually distinct from the navy/gold home theme.
-   Vela-inspired: warm stone canvas, oklch rise/fall, Inter Tight.
+   Options trading scope — shared navy surfaces with distinct trade outcomes.
 
    Activate by setting `data-app="options"` on the route's outer wrapper.
    Tokens here OVERRIDE the home defaults inside that scope only.
@@ -201,11 +214,13 @@ a {
   --opt-ink: var(--ink);
   --opt-ink-2: var(--ink-2);
   --opt-ink-3: var(--ink-3);
-  --opt-ink-4: #9CA3AF;
-  --opt-rise: oklch(0.66 0.16 152);
-  --opt-rise-soft: oklch(0.66 0.16 152 / 0.1);
-  --opt-fall: oklch(0.62 0.2 25);
-  --opt-fall-soft: oklch(0.62 0.2 25 / 0.1);
+  --opt-ink-4: #64758b;
+  --opt-rise: #087f61;
+  --opt-rise-soft: #e7f5ef;
+  --opt-fall: #c53c50;
+  --opt-fall-soft: #fcecf0;
+  --opt-buy-rise: #087f78;
+  --opt-buy-fall: #c53c50;
   --opt-radius: 10px;
   --opt-radius-sm: 7px;
 
@@ -218,6 +233,12 @@ a {
 [data-app="options"][data-opt-theme="dark"],
 [data-theme="dark"] [data-app="options"] {
   --opt-ink-4: #6b7280;
+  --opt-rise: oklch(0.66 0.16 152);
+  --opt-rise-soft: oklch(0.66 0.16 152 / 0.1);
+  --opt-fall: oklch(0.62 0.2 25);
+  --opt-fall-soft: oklch(0.62 0.2 25 / 0.1);
+  --opt-buy-rise: #00a79e;
+  --opt-buy-fall: #ff4444;
 }
 
 /* The Buy button's wrapper in every order panel. On desktop it is just the
@@ -258,5 +279,116 @@ a {
 .surface-hover { transition: border-color .15s ease; }
 .surface-hover:hover { border-color: #3a3a3a; }
 [data-theme='light'] .surface-hover:hover { border-color: #9AA8BD; }
+
+/* Light workspace: cool canvas, white surfaces, navy actions and warm gold
+   accents. Trading outcomes keep their own green/red meaning. */
+[data-theme="light"] .workspace-canvas {
+  background: linear-gradient(180deg, #edf3fb 0, var(--bg) 420px);
+}
+[data-theme="light"] .workspace-topbar {
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 2px 14px -10px rgba(21, 46, 82, 0.25);
+}
+[data-theme="light"] #sidebar {
+  box-shadow: 8px 0 32px -28px rgba(21, 46, 82, 0.35);
+}
+[data-theme="light"] #sidebar > div:first-child {
+  background: linear-gradient(110deg, #fff 45%, #faf3e4);
+}
+[data-theme="light"] #sidebar .nav-link.is-active {
+  background: #173a63;
+  color: #fff;
+  box-shadow: 0 5px 12px -7px rgba(21, 46, 82, 0.5);
+}
+[data-theme="light"] #sidebar .nav-link.is-active .nav-icon {
+  color: #ecd08d;
+}
+[data-theme="light"] #sidebar .nav-link.is-active .text-ink-3 {
+  color: #c5d4e9;
+}
+[data-theme="light"] #sidebar .nav-link.is-active > span.absolute {
+  background: #d6b66e;
+}
+[data-theme="light"] .workspace-mobile-nav [aria-current="page"] {
+  color: #173a63;
+  background: #edf3fb;
+  box-shadow: inset 0 3px #c49a45;
+}
+[data-theme="light"] .workspace-hero {
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid #d3dfef;
+  border-radius: 1.25rem;
+  background: linear-gradient(115deg, #fff 35%, #e8f0fa 80%, #faf2df);
+  box-shadow: var(--shadow-card);
+}
+[data-theme="light"] .workspace-hero > div > p:first-child {
+  color: #85601e;
+  font-weight: 600;
+}
+[data-theme="light"] .workspace-hero > a {
+  background: #173a63;
+  border-color: #173a63;
+  color: #fff;
+}
+[data-theme="light"] .workspace-card,
+[data-theme="light"] .workspace-shell :is(article, section).bg-surface,
+[data-theme="light"] .workspace-shell .bg-panel.rounded-2xl {
+  box-shadow: var(--shadow-card);
+}
+[data-theme="light"] .wallet-summary {
+  --ink: #fff;
+  --ink-2: #dce8f7;
+  --ink-3: #c2d2e7;
+  border-color: #234b77;
+  background: linear-gradient(130deg, #173a63, #102747);
+}
+[data-theme="light"] .wallet-summary > p:first-child,
+[data-theme="light"] .wallet-summary button:first-child {
+  color: #ecd08d;
+}
+[data-theme="light"] .tool-symbol {
+  background: #edf3fb;
+  color: #234f80;
+  border-color: #d6e2f2;
+}
+[data-theme="light"] .venue-badge {
+  background: #edf3fb;
+  color: #234f80;
+  box-shadow: inset 0 0 0 1px #d6e2f2;
+}
+[data-theme="light"] [role="dialog"] {
+  box-shadow: 0 28px 90px -28px rgba(16, 39, 71, 0.4);
+}
+[data-theme="light"] .plan-card-recommended {
+  border-color: #c49a45;
+  background: linear-gradient(155deg, #fffcf5, #fff 60%);
+  box-shadow: 0 0 0 1px rgba(196, 154, 69, 0.14);
+}
+[data-theme="light"] .plan-recommendation {
+  background: #f4e7c6;
+  color: #78551a;
+}
+[data-theme="light"] .settings-hero {
+  --ink-3: #c4d4e7;
+  background: linear-gradient(120deg, #173a63, #102747);
+}
+[data-theme="light"] [data-app="options"] {
+  --opt-bg: #f7f9fd;
+  --opt-bg-elev: #fff;
+  --opt-bg-sunk: #edf2f9;
+  --opt-line: #dce5f0;
+  --opt-line-strong: #a9bed9;
+}
+:is(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+[data-theme="light"] :is(.workspace-shell, [data-app="options"]) :is(input, textarea, select):focus-visible {
+  outline-offset: 1px;
+  border-color: var(--focus-ring);
+}
+[data-theme="light"] .workspace-shell tbody tr:hover {
+  background: #edf3fb;
+}
 .row-hover:hover { background: rgba(255,255,255,0.03); }
 [data-theme='light'] .row-hover:hover { background: rgba(21, 34, 56, 0.04); }

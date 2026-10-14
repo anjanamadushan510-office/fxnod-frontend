@@ -86,7 +86,7 @@ export default function SubscriptionsPage() {
         ))}
       </div>
       {error && (
-        <p role="alert" className="text-sm text-red-400">
+        <p role="alert" className="text-sm text-negative">
           {error}
         </p>
       )}
@@ -110,7 +110,7 @@ export default function SubscriptionsPage() {
                 <span
                   className={
                     tool.access.active
-                      ? "text-xs text-emerald-400"
+                      ? "text-xs text-positive"
                       : "text-xs text-ink-3"
                   }
                 >
@@ -207,7 +207,7 @@ export default function SubscriptionsPage() {
                     {order.id.slice(0, 8)}
                   </p>
                   {order.coupon_code && (
-                    <p className="mt-1 text-xs text-emerald-400">
+                    <p className="mt-1 text-xs text-positive">
                       {order.coupon_code} · saved{" "}
                       {money(order.discount, order.currency)}
                     </p>

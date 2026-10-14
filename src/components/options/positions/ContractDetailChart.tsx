@@ -14,7 +14,7 @@ import {
   type Time,
   type UTCTimestamp,
 } from "lightweight-charts";
-import { CHART_COLORS } from "../chart/chartColors";
+import { CHART_COLORS, LIGHT_CHART_COLORS } from "../chart/chartColors";
 import type { ContractDetail } from "./contractDetail";
 import { AccumulatorBarriersPlugin } from "../chart/plugins/AccumulatorBarriersPlugin";
 import { ExitSpotPlugin } from "../chart/plugins/ExitSpotPlugin";
@@ -33,12 +33,12 @@ const DARK_THEME = {
 
 const LIGHT_THEME = {
   bg: "#ffffff",
-  text: "#374151",                   // gray-700
-  grid: "#F3F4F6",                   // gray-100
-  border: "#E5E7EB",
-  ink: "#111827",                    // gray-900
-  areaTop: "rgba(17,24,39,0.08)",
-  areaBottom: "rgba(17,24,39,0)",
+  text: LIGHT_CHART_COLORS.inkFaint,
+  grid: LIGHT_CHART_COLORS.line,
+  border: LIGHT_CHART_COLORS.line,
+  ink: LIGHT_CHART_COLORS.ink,
+  areaTop: "rgba(36,91,164,0.12)",
+  areaBottom: "rgba(36,91,164,0)",
 } as const;
 
 /**

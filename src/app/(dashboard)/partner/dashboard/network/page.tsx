@@ -72,7 +72,7 @@ export default function PartnerNetworkPage() {
         {partnersQuery.isLoading ? (
           <p className="px-5 py-6 text-center text-sm text-ink-3">Loading…</p>
         ) : partnersQuery.isError ? (
-          <p className="px-5 py-6 text-center text-sm text-red-400">Your team could not be loaded.</p>
+          <p className="px-5 py-6 text-center text-sm text-negative">Your team could not be loaded.</p>
         ) : !team?.items.length ? (
           <p className="px-5 py-6 text-center text-sm text-ink-3">
             Nobody has joined through your link yet. Share it from Overview.

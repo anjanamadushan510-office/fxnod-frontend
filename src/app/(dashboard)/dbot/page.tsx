@@ -410,7 +410,7 @@ export default function DBotDashboardPage() {
                     type="button"
                     disabled={run.status === "stopping" || stopRun.isPending || forceStop.isPending}
                     onClick={() => handleStop(run)}
-                    className="h-10 px-4 rounded-lg border border-red-500/50 text-sm text-red-300 hover:bg-red-500/10 transition disabled:opacity-45"
+                    className="h-10 px-4 rounded-lg border border-red-500/50 text-sm text-negative-soft hover:bg-red-500/10 transition disabled:opacity-45"
                   >
                     {run.status === "stopping" ? "Stopping…" : "Stop"}
                   </button>
@@ -567,9 +567,9 @@ export default function DBotDashboardPage() {
                   className={cn(
                     "text-sm font-semibold tabular-nums min-w-[5rem] text-right",
                     decimalSign(run.realized_pnl) < 0
-                      ? "text-red-400"
+                      ? "text-negative"
                       : decimalSign(run.realized_pnl) > 0
-                        ? "text-emerald-400"
+                        ? "text-positive"
                         : "text-ink-2",
                   )}
                 >
@@ -704,7 +704,7 @@ function StatCard({
         <span
           className={cn(
             "text-2xl font-semibold",
-            tone < 0 ? "text-red-400" : tone > 0 ? "text-emerald-400" : "text-ink",
+            tone < 0 ? "text-negative" : tone > 0 ? "text-positive" : "text-ink",
           )}
         >
           {value}
@@ -738,7 +738,7 @@ function Figure({ label, value, tone = 0 }: { label: string; value: string; tone
       <dd
         className={cn(
           "break-words font-semibold capitalize",
-          tone < 0 ? "text-red-400" : tone > 0 ? "text-emerald-400" : "text-ink",
+          tone < 0 ? "text-negative" : tone > 0 ? "text-positive" : "text-ink",
         )}
       >
         {value}
@@ -834,7 +834,7 @@ function SavedBotMenu({
                 }}
                 className={cn(
                   "w-full px-3 py-2 text-left text-sm transition disabled:pointer-events-none disabled:opacity-40",
-                  item.danger ? "text-red-300 hover:bg-red-500/10" : "text-ink hover:bg-line/70",
+                  item.danger ? "text-negative-soft hover:bg-red-500/10" : "text-ink hover:bg-line/70",
                 )}
               >
                 {item.label}

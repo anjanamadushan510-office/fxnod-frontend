@@ -55,7 +55,7 @@ export function DashboardActivity() {
           {isLoading ? (
             <p className="text-sm text-ink-3">Loading activity...</p>
           ) : isError ? (
-            <p className="text-sm text-red-400">Failed to load activity.</p>
+            <p className="text-sm text-negative">Failed to load activity.</p>
           ) : transactions.length === 0 ? (
             <p className="text-sm text-ink-3">No recent activity.</p>
           ) : (
@@ -79,7 +79,7 @@ export function DashboardActivity() {
                     </p>
                   </div>
                   <span
-                    className={`text-sm font-medium tabular-nums shrink-0 ${isPositive ? "text-green-400" : "text-ink-2"}`}
+                    className={`text-sm font-medium tabular-nums shrink-0 ${isPositive ? "text-positive" : "text-ink-2"}`}
                   >
                     {isPositive ? "+" : "-"}
                     {accountBalanceText({

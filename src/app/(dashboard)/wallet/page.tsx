@@ -54,7 +54,7 @@ export default function WalletPage() {
           {isLoading ? (
             <div className="px-5 py-6 text-sm text-ink-3 text-center">Loading activity...</div>
           ) : isError ? (
-            <div className="px-5 py-6 text-sm text-red-400 text-center">Failed to load activity.</div>
+            <div className="px-5 py-6 text-sm text-negative text-center">Failed to load activity.</div>
           ) : transactions.length === 0 ? (
             <div className="px-5 py-6 text-sm text-ink-3 text-center">No recent activity.</div>
           ) : (
@@ -68,7 +68,7 @@ export default function WalletPage() {
                     <p className="text-sm truncate text-ink capitalize">{tx.transaction_type ? tx.transaction_type.replace(/_/g, ' ') : tx.description || "Transaction"}</p>
                     <p className="text-[11px] text-ink-3 mt-0.5 truncate">{formatDate(tx.created_at)}</p>
                   </div>
-                  <p className={`tabular-nums text-sm shrink-0 ${isPositive ? 'text-green-400' : 'text-ink-2'}`}>
+                  <p className={`tabular-nums text-sm shrink-0 ${isPositive ? 'text-positive' : 'text-ink-2'}`}>
                     {isPositive ? '+' : '-'}{fmtUSD(amount)}
                   </p>
                 </div>

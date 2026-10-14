@@ -171,7 +171,7 @@ export default function ToolsPage() {
       {error && (
         <p
           role="alert"
-          className="rounded-xl bg-red-400/10 p-3 text-sm text-red-400"
+          className="rounded-xl bg-red-400/10 p-3 text-sm text-negative"
         >
           {error}
         </p>
@@ -209,7 +209,7 @@ export default function ToolsPage() {
                 }
                 badgeExtra={
                   offers.length > 0 ? (
-                    <span className="rounded-full bg-amber-400/10 px-2 py-0.5 text-[10px] font-medium text-amber-400">
+                    <span className="rounded-full bg-amber-400/10 px-2 py-0.5 text-[10px] font-medium text-warning">
                       Plan checkout required
                     </span>
                   ) : null
@@ -297,7 +297,7 @@ export default function ToolsPage() {
                   key={offer.id}
                   className="rounded-2xl border border-line bg-surface p-5"
                 >
-                  <span className="text-xs font-semibold uppercase tracking-wider text-amber-400">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-warning">
                     Bundle offer
                   </span>
                   <h3 className="mt-2 text-lg font-semibold">{offer.name}</h3>

@@ -49,7 +49,7 @@ import {
   type Drawing,
   type DrawingTool,
 } from "@/stores/useChartDrawings";
-import { CHART_COLORS } from "./chartColors";
+import { CHART_COLORS, LIGHT_CHART_COLORS } from "./chartColors";
 import { EndPriceLinePlugin } from "./plugins/EndPriceLinePlugin";
 import { IchimokuCloudPlugin } from "./plugins/IchimokuCloudPlugin";
 import { TrendPrimitive, VerticalPrimitive, formatTimeDerivStyle, getExtrapolatedX } from "./chartPrimitives";
@@ -245,8 +245,9 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
 
       // Literal hex only — lightweight-charts cannot parse oklch() (the form
       // our --opt-* Tailwind tokens resolve to). See chartColors.ts.
-      const line = isDark ? CHART_COLORS.line : "#E5E7EB";
-      const inkFaint = CHART_COLORS.inkFaint;
+      const palette = isDark ? CHART_COLORS : LIGHT_CHART_COLORS;
+      const line = palette.line;
+      const inkFaint = palette.inkFaint;
 
       // 6 is the library's default bar spacing, which is what a new chart has.
       let fitted = fitOptions(el.clientWidth, 6);
@@ -324,9 +325,10 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
       const el = containerRef.current;
       if (!chart || !el) return;
 
-      const ink = isDark ? CHART_COLORS.ink : "#111827";
-      const rise = CHART_COLORS.rise;
-      const fall = CHART_COLORS.fall;
+      const palette = isDark ? CHART_COLORS : LIGHT_CHART_COLORS;
+      const ink = palette.ink;
+      const rise = palette.rise;
+      const fall = palette.fall;
 
       if (seriesRef.current) {
         chart.removeSeries(seriesRef.current);
@@ -400,11 +402,12 @@ export const LiveChart = forwardRef<LiveChartHandle, LiveChartProps>(
     useEffect(() => {
       const chart = chartRef.current;
       if (!chart) return;
-      const line = isDark ? CHART_COLORS.line : "#E5E7EB";
-      const ink = isDark ? CHART_COLORS.ink : "#111827";
+      const palette = isDark ? CHART_COLORS : LIGHT_CHART_COLORS;
+      const line = palette.line;
+      const ink = palette.ink;
       
       chart.applyOptions({
-        layout: { textColor: CHART_COLORS.inkFaint },
+        layout: { textColor: palette.inkFaint },
         grid: {
           vertLines: { color: line },
           horzLines: { color: line },

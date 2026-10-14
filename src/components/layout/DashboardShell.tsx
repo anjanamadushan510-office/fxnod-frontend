@@ -45,7 +45,7 @@ function Shell({ children }: { children: React.ReactNode }) {
   }, [sidebarOpen]);
 
   return (
-    <div className="flex min-h-[100dvh] bg-bg text-ink">
+    <div className="workspace-shell flex min-h-[100dvh] bg-bg text-ink">
       <Sidebar 
         isOpen={sidebarOpen} 
         onClose={() => setSidebarOpen(false)} 
@@ -58,7 +58,7 @@ function Shell({ children }: { children: React.ReactNode }) {
         <TopNav onMenu={() => setSidebarOpen(true)} />
         <main
           className={cn(
-            "min-w-0 flex-1 bg-bg",
+            "workspace-canvas min-w-0 flex-1 bg-bg",
             showPhoneNav && "pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0",
           )}
         >

@@ -79,7 +79,7 @@ export function BotLibrary({
           {bots.length} bots available
         </span>
       </div>
-      <div className="rounded-2xl border border-line bg-surface p-4 sm:p-5 space-y-4">
+      <div className="workspace-card rounded-2xl border border-line bg-surface p-4 sm:p-5 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div
             className="inline-flex rounded-xl bg-surface-2 p-1 gap-1"
@@ -301,7 +301,7 @@ export function BotLibrary({
             >
               <div className="flex-1 min-w-0">
                 <div className="flex items-start gap-3">
-                  <span className="h-11 w-11 shrink-0 rounded-xl bg-surface-2 flex items-center justify-center text-ink-2">
+                  <span className="tool-symbol h-11 w-11 shrink-0 rounded-xl bg-surface-2 flex items-center justify-center text-ink-2">
                     <Bot size={22} />
                   </span>
                   <div className="flex-1 min-w-0">

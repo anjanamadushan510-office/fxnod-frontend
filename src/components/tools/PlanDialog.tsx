@@ -131,7 +131,7 @@ export function PlanDialog({
           </Dialog.Description>
           {success ? (
             <div className="mt-8 space-y-5">
-              <ShieldCheck className="h-12 w-12 text-emerald-400" />
+              <ShieldCheck className="h-12 w-12 text-positive" />
               <Link
                 href={"/subscriptions" as Route}
                 onClick={onClose}
@@ -203,13 +203,13 @@ export function PlanDialog({
                         className={cn(
                           "flex flex-col rounded-2xl border p-4 sm:p-5",
                           offer.featured
-                            ? "border-emerald-400 bg-surface-2"
+                            ? "plan-card-recommended border-emerald-400 bg-surface-2"
                             : "border-line bg-bg",
                         )}
                       >
                         <div className="mb-3 min-h-6">
                           {offer.featured && (
-                            <span className="rounded-full bg-emerald-400/10 px-2 py-1 text-xs font-semibold text-emerald-400">
+                            <span className="plan-recommendation rounded-full bg-emerald-400/10 px-2 py-1 text-xs font-semibold text-positive">
                               Recommended
                             </span>
                           )}
@@ -240,7 +240,7 @@ export function PlanDialog({
                               : "One-time payment"}
                           </p>
                           {Number(offer.price) === 0 && (
-                            <p className="mt-2 text-xs text-emerald-400">
+                            <p className="mt-2 text-xs text-positive">
                               Temporary access · one activation per account
                             </p>
                           )}
@@ -276,7 +276,7 @@ export function PlanDialog({
                                   <ul className="space-y-2">
                                     {tier.features.map((feature) => (
                                       <li key={feature} className="flex gap-2">
-                                        <Check className="h-4 w-4 shrink-0 text-emerald-400" />
+                                        <Check className="h-4 w-4 shrink-0 text-positive" />
                                         {feature}
                                       </li>
                                     ))}
@@ -325,7 +325,7 @@ export function PlanDialog({
                         <dt>Subtotal</dt>
                         <dd>{money(quote.subtotal, quote.currency)}</dd>
                       </div>
-                      <div className="flex justify-between text-emerald-400">
+                      <div className="flex justify-between text-positive">
                         <dt>
                           Discount{" "}
                           {quote.coupon_code && `(${quote.coupon_code})`}
@@ -366,7 +366,7 @@ export function PlanDialog({
               {error && (
                 <p
                   role="alert"
-                  className="mt-4 rounded-lg bg-red-400/10 p-3 text-sm text-red-400"
+                  className="mt-4 rounded-lg bg-red-400/10 p-3 text-sm text-negative"
                 >
                   {error}
                 </p>

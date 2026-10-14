@@ -287,7 +287,7 @@ export function LoginForm() {
                 </>
               )}
               
-              <p id="auth-error" className="text-xs text-red-400 min-h-[1rem]">
+              <p id="auth-error" className="text-xs text-negative min-h-[1rem]">
                 {generalError}
               </p>
               <button

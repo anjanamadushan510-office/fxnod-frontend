@@ -55,7 +55,7 @@ export default function PartnerRulesPage() {
         {ratesQuery.isLoading ? (
           <p className="px-5 py-6 text-center text-sm text-ink-3">Loading…</p>
         ) : ratesQuery.isError ? (
-          <p className="px-5 py-6 text-center text-sm text-red-400">The rates could not be loaded.</p>
+          <p className="px-5 py-6 text-center text-sm text-negative">The rates could not be loaded.</p>
         ) : !rates.length ? (
           <p className="px-5 py-6 text-center text-sm text-ink-3">No rate is in force at the moment.</p>
         ) : (

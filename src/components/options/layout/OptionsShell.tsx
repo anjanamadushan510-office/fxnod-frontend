@@ -51,7 +51,7 @@ export function OptionsShell({
   drawerOpen = false,
   theme: themeProp,
 }: OptionsShellProps) {
-  const [theme, _setTheme] = useState<"light" | "dark">(themeProp ?? "light");
+  const theme = themeProp ?? "light";
   const [orderWidth, setOrderWidth] = useState(340);
   const [isResizing, setIsResizing] = useState(false);
   const [drawerWidth, setDrawerWidth] = useState(360);

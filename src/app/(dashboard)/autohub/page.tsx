@@ -116,9 +116,9 @@ export default function AutoHubPage() {
                   className={cn(
                     "font-semibold tabular-nums",
                     decimalSign(runningPnl) < 0
-                      ? "text-red-400"
+                      ? "text-negative"
                       : decimalSign(runningPnl) > 0
-                        ? "text-emerald-400"
+                        ? "text-positive"
                         : "text-ink",
                   )}
                 >
@@ -208,9 +208,9 @@ export default function AutoHubPage() {
                     className={cn(
                       "text-sm font-semibold tabular-nums",
                       decimalSign(run.realized_pnl) < 0
-                        ? "text-red-400"
+                        ? "text-negative"
                         : decimalSign(run.realized_pnl) > 0
-                          ? "text-emerald-400"
+                          ? "text-positive"
                           : "text-ink",
                     )}
                   >
@@ -269,9 +269,9 @@ function RunCard({
           className={cn(
             "text-lg font-semibold tabular-nums shrink-0",
             tone < 0
-              ? "text-red-400"
+              ? "text-negative"
               : tone > 0
-                ? "text-emerald-400"
+                ? "text-positive"
                 : "text-ink",
           )}
         >
@@ -289,7 +289,7 @@ function RunCard({
       <div className="mt-4 flex gap-2">
         <Link
           href={`/autohub/runs/${run.run_id}` as Route}
-          className="flex-1 flex justify-center items-center h-10 rounded-lg bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-sm font-medium transition-colors"
+          className="flex-1 flex justify-center items-center h-10 rounded-lg bg-ink text-surface hover:opacity-90 text-sm font-medium transition-colors"
         >
           View live run
         </Link>
@@ -297,7 +297,7 @@ function RunCard({
           type="button"
           disabled={stopping || run.status === "stopping"}
           onClick={onStop}
-          className="h-10 px-4 rounded-lg border border-red-500/50 text-sm text-red-300 transition hover:bg-red-500/10 disabled:opacity-45"
+          className="h-10 px-4 rounded-lg border border-red-500/50 text-sm text-negative-soft transition hover:bg-red-500/10 disabled:opacity-45"
         >
           {run.status === "stopping" ? "Stopping…" : "Stop"}
         </button>

@@ -28,7 +28,7 @@ export default function HomePage() {
   return (
     <>
       <section data-view="hub" className="space-y-7 p-4 lg:p-8">
-        <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <header className="workspace-hero flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <p className="text-xs text-ink-3 mb-1">
               {name ? `Welcome back, ${name}` : "Welcome to FXNOD"}

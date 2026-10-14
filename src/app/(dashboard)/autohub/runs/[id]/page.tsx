@@ -221,7 +221,7 @@ export default function AutoHubRunPage() {
             type="button"
             disabled={busy || run.status === "stopping"}
             onClick={() => handleStop(run)}
-            className="h-10 w-full rounded-lg border border-red-500/50 px-5 text-sm text-red-300 transition hover:bg-red-500/10 disabled:opacity-45 sm:w-auto"
+            className="h-10 w-full rounded-lg border border-red-500/50 px-5 text-sm text-negative-soft transition hover:bg-red-500/10 disabled:opacity-45 sm:w-auto"
           >
             {run.status === "stopping"
               ? "Finishing open trades…"
@@ -405,9 +405,9 @@ function resultLabel(entry: AutoHubEntry): string {
 
 function resultTone(entry: AutoHubEntry): string {
   return entry.outcome === "won"
-    ? "text-emerald-400"
+    ? "text-positive"
     : entry.outcome === "lost"
-      ? "text-red-400"
+      ? "text-negative"
       : "text-ink-3";
 }
 
@@ -448,8 +448,8 @@ function EntryItem({
             className={cn(
               "text-xs tabular-nums",
               decimalSign(entry.profit_loss) < 0
-                ? "text-red-400"
-                : "text-emerald-400",
+                ? "text-negative"
+                : "text-positive",
             )}
           >
             {formatMoney(entry.profit_loss)}
@@ -502,8 +502,8 @@ function EntryRow({
             entry.profit_loss === undefined
               ? "text-ink-3"
               : decimalSign(entry.profit_loss) < 0
-                ? "text-red-400"
-                : "text-emerald-400",
+                ? "text-negative"
+                : "text-positive",
           )}
         >
           {entry.profit_loss === undefined

@@ -33,7 +33,7 @@ export function TopNav({ onMenu }: TopNavProps) {
   const { title, subtitle } = getRouteTitle(pathname || "/home");
 
   return (
-    <header className="sticky top-0 z-20 box-content flex h-14 items-center justify-between gap-3 border-b border-line bg-surface px-4 pt-safe lg:h-16 lg:px-8">
+    <header className="workspace-topbar sticky top-0 z-20 box-content flex h-14 items-center justify-between gap-3 border-b border-line bg-surface px-4 pt-safe lg:h-16 lg:px-8">
       {/* Left Side */}
       <div className="flex min-w-0 items-center gap-3 lg:gap-4">
         <button

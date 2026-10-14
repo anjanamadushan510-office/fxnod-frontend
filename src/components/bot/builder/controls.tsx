@@ -130,7 +130,7 @@ export function TextField({
         }`}
       />
       {error ? (
-        <span role="alert" className="mt-1.5 block text-[11px] text-red-300">{error}</span>
+        <span role="alert" className="mt-1.5 block text-[11px] text-negative-soft">{error}</span>
       ) : (
         hint && <span className="mt-1.5 block text-[11px] text-ink-3">{hint}</span>
       )}
