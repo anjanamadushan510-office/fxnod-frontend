@@ -408,7 +408,7 @@ export const DERIV_MORE_GUIDES: Guide[] = [
       { type: "h2", text: "Where FXNOD fits" },
       {
         type: "p",
-        text: "FXNOD's dTrader, dBot and Auto Hub trade options and multipliers on your Deriv account, the same kind of products as Deriv Trader. FXNOD does not connect to Deriv MT5 and does not trade CFDs.",
+        text: "Trade Pilot, Bot Forge and Auto Hub trade options and multipliers on your Deriv account, the same kind of products as Deriv Trader. FXNOD does not connect to Deriv MT5 and does not trade CFDs.",
       },
       SOURCE_NOTE,
       RISK_NOTE,

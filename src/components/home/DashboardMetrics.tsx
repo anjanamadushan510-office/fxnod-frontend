@@ -1,97 +1,130 @@
 "use client";
+import Link from "next/link";
+import {
+  useGetWalletBalance,
+  getGetWalletBalanceQueryKey,
+} from "@/services/api/endpoints/wallet/wallet";
+import {
+  useGetReferralStats,
+  getGetReferralStatsQueryKey,
+} from "@/services/api/endpoints/referrals/referrals";
+import { useDerivAccounts } from "@/hooks/useDerivAccounts";
+import { useDerivStatus } from "@/hooks/useDerivStatus";
+import { useCommerce } from "@/hooks/useCommerce";
+import { useAuthStore } from "@/stores/authStore";
+import { accountBalanceText } from "@/components/deriv/balancePresentation";
+import { formatMoney } from "@/lib/decimal";
 
-import { useGetWalletBalance } from "@/services/api/endpoints/wallet/wallet";
-import { useGetReferralStats } from "@/services/api/endpoints/referrals/referrals";
-import { useDerivListAccounts } from "@/services/api/endpoints/trading/trading";
-import { fmtUSD } from "@/lib/format";
-import { formatMoney, sumDecimals } from "@/lib/decimal";
-import { useActiveTools } from "@/hooks/useActiveTools";
-
-interface DashboardMetricsProps {
+export function DashboardMetrics({
+  onTopUp,
+  onSend,
+}: {
   onTopUp?: () => void;
   onSend?: () => void;
-}
-
-export function DashboardMetrics({ onTopUp, onSend }: DashboardMetricsProps) {
-  const { data: walletData } = useGetWalletBalance();
-  const balance = Number(walletData?.balance || 0);
-
-  const { data: derivAccountsData } = useDerivListAccounts();
-  const venueCount = (derivAccountsData?.accounts?.length ?? 0) > 0 ? 1 : 0;
-
-  // Real-money balance held at Deriv, as Deriv reported it. Shown only when
-  // every real account that reports a balance is in one currency: adding
-  // across currencies would print a figure that is true of no account. The
-  // sum is done on decimal strings, never floats.
-  const realBalances = (derivAccountsData?.accounts ?? []).filter(
-    (account) => !account.is_virtual && account.balance,
-  );
-  const derivCurrency = realBalances[0]?.currency;
-  const derivBalance =
-    realBalances.length > 0 && realBalances.every((a) => a.currency === derivCurrency)
-      ? sumDecimals(realBalances.map((a) => a.balance as string))
-      : null;
-
-  // Partner data via existing endpoint
-  const { data: referralStats } = useGetReferralStats();
-  const partnerEarnings = Number(referralStats?.settled_total || 0);
-  const partnerTeamSize = referralStats?.total_team_size || 0;
-  const { activeTools, ready: toolsReady } = useActiveTools();
-
+}) {
+  const userId = useAuthStore((state) => state.user?.id);
+  const wallet = useGetWalletBalance({
+    query: {
+      queryKey: [...getGetWalletBalanceQueryKey(), userId],
+      enabled: !!userId,
+      refetchInterval: 15000,
+    },
+  });
+  const partner = useGetReferralStats({
+    query: {
+      queryKey: [...getGetReferralStatsQueryKey(), userId],
+      enabled: !!userId,
+    },
+  });
+  const accounts = useDerivAccounts();
+  const deriv = useDerivStatus();
+  const commerce = useCommerce();
+  const ready = (commerce.data?.tools ?? []).filter(
+    (tool) => tool.access.allowed && tool.access.active,
+  ).length;
   return (
     <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
-      <article className="bg-surface border border-line rounded-2xl p-4 sm:p-6 lg:p-7">
-        <p className="text-[11px] uppercase tracking-[0.14em] text-ink-3 sm:text-xs">Wallet</p>
-        <p className="mt-3 font-display text-2xl font-semibold tabular-nums text-ink sm:text-3xl">{fmtUSD(balance)}</p>
-        {derivBalance !== null && (
-          <p className="mt-1 text-xs text-ink-3">
-            On Deriv{" "}
-            <span className="tabular-nums text-ink-2">
-              {derivCurrency === "USD"
-                ? formatMoney(derivBalance)
-                : `${formatMoney(derivBalance, "")} ${derivCurrency}`}
-            </span>
-          </p>
-        )}
-        <div className="mt-3 flex items-center gap-3">
-          <button type="button" onClick={onSend} className="-m-2 p-2 text-[11px] text-ink-2 hover:text-ink transition-colors">Send</button>
-          <button type="button" onClick={onTopUp} className="-m-2 p-2 whitespace-nowrap text-[11px] text-ink-2 hover:text-ink transition-colors">Top up</button>
-        </div>
-      </article>
-
-      <article className="min-w-0 bg-surface border border-line rounded-2xl p-4 sm:p-6 lg:p-7 hover:bg-surface-2 cursor-pointer transition-colors">
-        <div className="mb-3 flex flex-wrap items-start justify-between gap-1">
-          <p className="text-[11px] uppercase tracking-[0.14em] text-ink-3 sm:text-xs">Active tools</p>
-          <span className="text-[11px] text-ink-2">On Deriv</span>
-        </div>
-        <p className="font-display text-2xl font-semibold tabular-nums text-ink sm:text-3xl">
-          {toolsReady ? activeTools.length : "—"}
+      <article className="wallet-summary rounded-2xl border border-line bg-surface p-4 sm:p-5">
+        <p className="text-xs text-ink-3">FXNOD Wallet</p>
+        <p className="mt-3 text-xl sm:text-2xl font-semibold tabular-nums text-ink break-words">
+          {wallet.data
+            ? accountBalanceText(wallet.data)
+            : wallet.isError
+              ? "Unavailable"
+              : "—"}
         </p>
-        <p className="mt-1 break-words text-xs text-ink-3">
-          {!toolsReady
-            ? " "
-            : activeTools.length > 0
-              ? activeTools.map((tool) => tool.name).join(" · ")
-              : "None activated"}
+        <p className="mt-2 text-xs text-ink-3">
+          For packages and wallet transfers
         </p>
-      </article>
-
-      <article className="min-w-0 bg-surface border border-line rounded-2xl p-4 sm:p-6 lg:p-7 hover:bg-surface-2 cursor-pointer transition-colors">
-        <div className="flex items-start justify-between gap-2 mb-4">
-          <p className="text-[11px] uppercase tracking-[0.14em] text-ink-3 sm:text-xs">Connected Accounts</p>
-          <span className="text-[11px] text-green-400">Live APIs</span>
+        <div className="mt-4 flex gap-4 text-xs">
+          <button
+            type="button"
+            onClick={onTopUp}
+            className="text-ink hover:underline"
+          >
+            Top up
+          </button>
+          <button
+            type="button"
+            onClick={onSend}
+            className="text-ink-2 hover:underline"
+          >
+            Transfer
+          </button>
         </div>
-        <p className="font-display text-2xl font-semibold tabular-nums text-ink sm:text-3xl">{venueCount}</p>
-        <p className="mt-1 text-xs text-ink-3">Deriv &middot; Bybit &middot; Binance</p>
       </article>
-
-      <article className="min-w-0 bg-surface border border-line rounded-2xl p-4 sm:p-6 lg:p-7 hover:bg-surface-2 cursor-pointer transition-colors">
-        <div className="flex items-start justify-between gap-2 mb-4">
-          <p className="text-[11px] uppercase tracking-[0.14em] text-ink-3 sm:text-xs">Partner</p>
-          <span className="text-[11px] text-ink-2">This month</span>
-        </div>
-        <p className="break-words font-display text-2xl font-semibold tabular-nums text-ink sm:text-3xl">{fmtUSD(partnerEarnings)}</p>
-        <p className="mt-1 text-xs text-ink-3">{partnerTeamSize} referred traders</p>
+      <article className="rounded-2xl border border-line bg-surface p-4 sm:p-5">
+        <p className="text-xs text-ink-3">Active tool access</p>
+        <p className="mt-3 text-2xl font-semibold text-ink">
+          {commerce.isSuccess ? ready : "—"}
+        </p>
+        <p className="mt-2 text-xs text-ink-3">
+          Activated tools with current access
+        </p>
+        <Link
+          href="/subscriptions"
+          className="inline-block mt-4 text-xs text-ink-2 hover:underline"
+        >
+          Manage access →
+        </Link>
+      </article>
+      <article className="rounded-2xl border border-line bg-surface p-4 sm:p-5">
+        <p className="text-xs text-ink-3">Connected accounts</p>
+        <p className="mt-3 text-2xl font-semibold text-ink">
+          {!deriv.isLoading && !deriv.linked
+            ? "0"
+            : accounts.isSuccess
+              ? accounts.data.accounts.length
+              : "—"}
+        </p>
+        <p className="mt-2 text-xs text-ink-3">
+          Real and demo accounts on Deriv
+        </p>
+        <Link
+          href="/venues"
+          className="inline-block mt-4 text-xs text-ink-2 hover:underline"
+        >
+          Manage accounts →
+        </Link>
+      </article>
+      <article className="rounded-2xl border border-line bg-surface p-4 sm:p-5">
+        <p className="text-xs text-ink-3">Partner earnings</p>
+        <p className="mt-3 text-xl sm:text-2xl font-semibold text-ink tabular-nums">
+          {partner.data
+            ? formatMoney(String(partner.data.settled_total))
+            : partner.isError
+              ? "Unavailable"
+              : "—"}
+        </p>
+        <p className="mt-2 text-xs text-ink-3">
+          Settled total · {partner.data?.total_team_size ?? "—"} team members
+        </p>
+        <Link
+          href="/partner/dashboard"
+          className="inline-block mt-4 text-xs text-ink-2 hover:underline"
+        >
+          Partner hub →
+        </Link>
       </article>
     </div>
   );

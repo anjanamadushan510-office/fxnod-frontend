@@ -10,18 +10,19 @@ import { cn } from "@/lib/cn";
 
 // Helper for dynamic title
 function getRouteTitle(pathname: string) {
-  if (pathname.startsWith("/home")) return { title: "Dashboard", subtitle: "dTrader · dBot on Deriv" };
-  if (pathname.startsWith("/option")) return { title: "Options", subtitle: "dTrader · dBot on Deriv" };
-  if (pathname.startsWith("/dbot")) return { title: "dBot", subtitle: "Automated trading on Deriv" };
+  if (pathname.startsWith("/home")) return { title: "Dashboard", subtitle: "Trade Pilot · Bot Forge on Deriv" };
+  if (pathname.startsWith("/option")) return { title: "Options", subtitle: "Trade Pilot · Bot Forge on Deriv" };
+  if (pathname.startsWith("/dbot")) return { title: "Bot Forge", subtitle: "Automated trading on Deriv" };
   if (pathname.startsWith("/autohub")) return { title: "Auto Hub", subtitle: "Ready-made bots on Deriv" };
-  if (pathname.startsWith("/tools")) return { title: "Discover", subtitle: "Free tools and paid subscriptions" };
+  if (pathname.startsWith("/tools")) return { title: "Discover", subtitle: "Tool packages, bundles and access periods" };
   if (pathname.startsWith("/subscriptions")) return { title: "Active Tools", subtitle: "Tools you have turned on" };
   if (pathname.startsWith("/venues")) return { title: "Connected Accounts", subtitle: "Live APIs" };
   if (pathname.startsWith("/wallet")) return { title: "Wallet", subtitle: "Top up, then pay for tools" };
   if (pathname.startsWith("/transfer")) return { title: "Transfer", subtitle: "Transfer Funds" };
   if (pathname.startsWith("/partner/dashboard")) return { title: "Partner Hub", subtitle: "Share FXNOD, earn on usage" };
   if (pathname.startsWith("/settings")) return { title: "Settings", subtitle: "Account Settings" };
-  return { title: "Dashboard", subtitle: "dTrader · dBot on Deriv" };
+  if (pathname.startsWith("/support")) return { title: "Support", subtitle: "Submit a ticket & get help" };
+  return { title: "Dashboard", subtitle: "Trade Pilot · Bot Forge on Deriv" };
 }
 
 interface TopNavProps {
@@ -33,7 +34,7 @@ export function TopNav({ onMenu }: TopNavProps) {
   const { title, subtitle } = getRouteTitle(pathname || "/home");
 
   return (
-    <header className="sticky top-0 z-20 box-content flex h-14 items-center justify-between gap-3 border-b border-line bg-surface px-4 pt-safe lg:h-16 lg:px-8">
+    <header className="workspace-topbar sticky top-0 z-20 box-content flex h-14 items-center justify-between gap-3 border-b border-line bg-surface px-4 pt-safe lg:h-16 lg:px-8">
       {/* Left Side */}
       <div className="flex min-w-0 items-center gap-3 lg:gap-4">
         <button

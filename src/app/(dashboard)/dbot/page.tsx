@@ -7,11 +7,13 @@ import { useRouter } from "next/navigation";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Activity, Cpu, DollarSign, MoreVertical } from "lucide-react";
+import { BotMembershipBanner } from "@/components/tools/BotMembershipBanner";
 import { BotPackageModal } from "@/components/bot/BotPackageModal";
 import { EmergencyStopButton } from "@/components/bot/EmergencyStopButton";
 import { DerivAppConsentModal } from "@/components/bot/DerivAppConsentModal";
 import { RunSavedBotDialog } from "@/components/bot/RunSavedBotDialog";
-import { DerivConnectionMenu } from "@/components/deriv/DerivConnectionMenu";
+import { DerivHistoryFilter } from "@/components/deriv/DerivHistoryFilter";
+import { conditionsSummary } from "@/components/bot/builder/conditions";
 import { defaultFormState } from "@/components/bot/formState";
 import {
   ENTRY_RULES,
@@ -142,7 +144,7 @@ export default function DBotDashboardPage() {
 
   const strategiesQuery = useListBotStrategies();
   const presetsQuery = useListBotPresets();
-  const runsQuery = useListBotRuns(ACTIVE_RUNS_PARAMS, { query: { refetchInterval: 1000 } });
+
   const stopRun = useStopBotRun();
   const forceStop = useForceStopBotRun();
   const deletePreset = useDeleteBotPreset();
@@ -154,6 +156,8 @@ export default function DBotDashboardPage() {
   const [runPreset, setRunPreset] = useState<BotPreset | null>(null);
   const [consent, setConsent] = useState<{ appKey: string; returnTo: string } | null>(null);
   const [accountFilter, setAccountFilter] = useState<AccountFilter>("all");
+  const [historyAccountId, setHistoryAccountId] = useState<string | null>(null);
+  const runsQuery = useListBotRuns({ ...ACTIVE_RUNS_PARAMS, account: accountFilter, deriv_account_id: historyAccountId ?? undefined }, { query: { refetchInterval: 1000 } });
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   const [period, setPeriod] = useState<PeriodFilter>("all");
@@ -161,7 +165,7 @@ export default function DBotDashboardPage() {
   const [customTo, setCustomTo] = useState("");
   const range = useMemo(() => periodRange(period, customFrom, customTo), [period, customFrom, customTo]);
 
-  const finishedParams = { state: "ended" as const, account: accountFilter, ...range };
+  const finishedParams = { state: "ended" as const, account: accountFilter, deriv_account_id: historyAccountId ?? undefined, ...range };
   const finishedQuery = useInfiniteQuery({
     // Nothing is asked while the two dates are the wrong way round.
     enabled: range !== null,
@@ -178,8 +182,8 @@ export default function DBotDashboardPage() {
   const strategies = useMemo(() => strategiesQuery.data?.strategies ?? [], [strategiesQuery.data]);
   const presets = useMemo(() => presetsQuery.data?.presets ?? [], [presetsQuery.data]);
   const activeRuns = useMemo(
-    () => (runsQuery.data?.runs ?? []).filter((r) => matchesAccount(r.is_virtual, accountFilter)),
-    [runsQuery.data, accountFilter],
+    () => (runsQuery.data?.runs ?? []).filter((r) => matchesAccount(r.is_virtual, accountFilter) && (!historyAccountId || r.deriv_account_id === historyAccountId)),
+    [runsQuery.data, accountFilter, historyAccountId],
   );
   // A run that ends while a later page is being fetched moves every run
   // after it down one place, so it can arrive on two pages. Each is kept once.
@@ -188,11 +192,12 @@ export default function DBotDashboardPage() {
     return (finishedQuery.data?.pages ?? [])
       .flatMap((page) => page.runs ?? [])
       .filter((run) => {
+        if (historyAccountId && run.deriv_account_id !== historyAccountId) return false;
         if (seen.has(run.run_id)) return false;
         seen.add(run.run_id);
         return true;
       });
-  }, [finishedQuery.data]);
+  }, [finishedQuery.data, historyAccountId]);
 
   // A finished run is a record: the list changes only when a live one ends.
   // That is the moment it is read again, in place of asking on a timer.
@@ -261,12 +266,8 @@ export default function DBotDashboardPage() {
       return;
     }
     try {
-      if (!account.is_selected) {
-        await selectAccount.mutateAsync({ data: { deriv_account_id: account.deriv_account_id } });
-        // Not awaited: the engine already has the selection, and waiting for
-        // the lists to be read again would only hold the bot back.
-        void queryClient.invalidateQueries({ queryKey: getDerivListAccountsQueryKey() });
-      }
+      await selectAccount.mutateAsync({ data: { deriv_account_id: account.deriv_account_id } });
+      void queryClient.invalidateQueries({ queryKey: getDerivListAccountsQueryKey() });
       const res = await startRun.mutateAsync({ data: request });
       if (res.run) trackDbotStart(res.run.is_virtual, res.run.strategy_id, "saved");
       await queryClient.invalidateQueries({ queryKey: getListBotRunsQueryKey() });
@@ -299,18 +300,20 @@ export default function DBotDashboardPage() {
     <section className="p-4 lg:p-8 space-y-8">
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between sm:gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-ink">dBot</h1>
+          <h1 className="text-2xl font-semibold text-ink">Bot Forge</h1>
           <p className="text-sm text-ink-2 mt-1">Build a bot in plain language</p>
         </div>
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:gap-3">
-          {/* A bot cannot trade without a Deriv account, and this was the one
-              screen that never said so — the first anyone heard of it was a
-              run refusing to start. */}
-          <DerivConnectionMenu />
+          <DerivHistoryFilter accountId={historyAccountId} onChange={(id) => { setHistoryAccountId(id); setAccountFilter("all"); }} />
         </div>
       </div>
 
-      <AccountFilterControl value={accountFilter} onChange={setAccountFilter} />
+      <BotMembershipBanner toolId="dbot" />
+
+      <div className="space-y-2">
+        <AccountFilterControl value={accountFilter} onChange={(value) => { setAccountFilter(value); setHistoryAccountId(null); }} />
+        {historyAccountId && <p role="status" className="text-xs text-ink-3">Showing runs from {historyAccountId}. Saved bots can be run on any eligible account.</p>}
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard
@@ -342,15 +345,15 @@ export default function DBotDashboardPage() {
 
       <article className="bg-surface border border-line rounded-2xl p-6 text-center sm:p-14">
         <img src="/assets/fxnod-mark.png" alt="" className="mx-auto h-10 w-10 object-contain opacity-40 mb-5 dark:invert-0 invert" />
-        <h3 className="font-display text-lg font-semibold mb-2 text-ink">No Blockly. No theory.</h3>
+        <h3 className="font-display text-lg font-semibold mb-2 text-ink">Your strategy. Your bot.</h3>
         <p className="text-sm text-ink-3 max-w-md mx-auto leading-relaxed mb-6">
-          Pick a ready bot, read its one-line summary, then practise on demo. Or build your own in
-          plain language, or import a bot someone shared with you.
+          Turn your trading idea into a bot: choose what to buy, combine your entry conditions,
+          and set your stake and stop limits. Start from a template or build from scratch.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
             href={"/dbot/build" as Route}
-            className="w-full sm:w-auto inline-flex h-10 items-center justify-center px-5 rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-80 transition"
+            className="w-full sm:w-auto inline-flex h-10 items-center justify-center px-5 rounded-lg bg-action text-action-ink text-sm font-medium hover:opacity-80 transition"
           >
             Create a bot
           </Link>
@@ -399,7 +402,7 @@ export default function DBotDashboardPage() {
                 <div className="flex gap-2">
                   <Link
                     href={`/dbot/runs/${run.run_id}` as Route}
-                    className="flex-1 inline-flex h-10 items-center justify-center rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-80 transition"
+                    className="flex-1 inline-flex h-10 items-center justify-center rounded-lg bg-action text-action-ink text-sm font-medium hover:opacity-80 transition"
                   >
                     Watch
                   </Link>
@@ -407,7 +410,7 @@ export default function DBotDashboardPage() {
                     type="button"
                     disabled={run.status === "stopping" || stopRun.isPending || forceStop.isPending}
                     onClick={() => handleStop(run)}
-                    className="h-10 px-4 rounded-lg border border-red-500/50 text-sm text-red-300 hover:bg-red-500/10 transition disabled:opacity-45"
+                    className="h-10 px-4 rounded-lg border border-red-500/50 text-sm text-negative-soft hover:bg-red-500/10 transition disabled:opacity-45"
                   >
                     {run.status === "stopping" ? "Stopping…" : "Stop"}
                   </button>
@@ -456,6 +459,7 @@ export default function DBotDashboardPage() {
                             .join(" · ")
                         : strategyName(preset.strategy_id)}
                     </p>
+                    {draft?.entryConditions && <p className="mb-3 text-sm leading-relaxed text-ink-2"><span className="text-xs font-semibold text-gold">WHEN </span>{conditionsSummary(draft.entryConditions)}</p>}
                     {draft && (
                       <p className="text-sm text-ink-2 mb-6">
                         {[
@@ -493,7 +497,7 @@ export default function DBotDashboardPage() {
                         type="button"
                         disabled={!draft || strategiesQuery.isPending}
                         onClick={() => setRunPreset(preset)}
-                        className="flex-1 h-10 rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-80 transition disabled:opacity-45"
+                        className="flex-1 h-10 rounded-lg bg-action text-action-ink text-sm font-medium hover:opacity-80 transition disabled:opacity-45"
                       >
                         Run
                       </button>
@@ -564,9 +568,9 @@ export default function DBotDashboardPage() {
                   className={cn(
                     "text-sm font-semibold tabular-nums min-w-[5rem] text-right",
                     decimalSign(run.realized_pnl) < 0
-                      ? "text-red-400"
+                      ? "text-negative"
                       : decimalSign(run.realized_pnl) > 0
-                        ? "text-emerald-400"
+                        ? "text-positive"
                         : "text-ink-2",
                   )}
                 >
@@ -701,7 +705,7 @@ function StatCard({
         <span
           className={cn(
             "text-2xl font-semibold",
-            tone < 0 ? "text-red-400" : tone > 0 ? "text-emerald-400" : "text-ink",
+            tone < 0 ? "text-negative" : tone > 0 ? "text-positive" : "text-ink",
           )}
         >
           {value}
@@ -735,7 +739,7 @@ function Figure({ label, value, tone = 0 }: { label: string; value: string; tone
       <dd
         className={cn(
           "break-words font-semibold capitalize",
-          tone < 0 ? "text-red-400" : tone > 0 ? "text-emerald-400" : "text-ink",
+          tone < 0 ? "text-negative" : tone > 0 ? "text-positive" : "text-ink",
         )}
       >
         {value}
@@ -831,7 +835,7 @@ function SavedBotMenu({
                 }}
                 className={cn(
                   "w-full px-3 py-2 text-left text-sm transition disabled:pointer-events-none disabled:opacity-40",
-                  item.danger ? "text-red-300 hover:bg-red-500/10" : "text-ink hover:bg-line/70",
+                  item.danger ? "text-negative-soft hover:bg-red-500/10" : "text-ink hover:bg-line/70",
                 )}
               >
                 {item.label}
@@ -866,7 +870,7 @@ function AccountFilterControl({
           onClick={() => onChange(option.id)}
           className={cn(
             "h-8 px-3 rounded-md text-xs font-medium transition",
-            value === option.id ? "bg-ink text-surface" : "text-ink-2 hover:text-ink",
+            value === option.id ? "bg-action text-action-ink" : "text-ink-2 hover:text-ink",
           )}
         >
           {option.label}
@@ -941,7 +945,7 @@ function PeriodFilterControl({
               onClick={() => onPeriodChange(option.id)}
               className={cn(
                 "h-8 px-2.5 rounded-md text-xs font-medium transition whitespace-nowrap",
-                period === option.id ? "bg-ink text-surface" : "text-ink-2 hover:text-ink",
+                period === option.id ? "bg-action text-action-ink" : "text-ink-2 hover:text-ink",
               )}
             >
               {option.label}

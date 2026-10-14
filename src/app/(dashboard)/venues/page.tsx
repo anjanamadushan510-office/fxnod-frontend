@@ -113,7 +113,7 @@ function DerivVenueCard({
             type="button"
             onClick={start}
             disabled={redirecting}
-            className="col-span-2 inline-flex h-10 items-center justify-center rounded-lg bg-ink px-4 text-sm font-medium text-surface transition hover:opacity-80 disabled:opacity-60 md:col-span-1"
+            className="col-span-2 inline-flex h-10 items-center justify-center rounded-lg bg-action px-4 text-sm font-medium text-action-ink transition hover:opacity-80 disabled:opacity-60 md:col-span-1"
           >
             {redirecting
               ? "Redirecting…"
@@ -128,7 +128,7 @@ function DerivVenueCard({
         {isLoading && <p className="text-sm text-ink-3">Loading your Deriv accounts…</p>}
 
         {isError && (
-          <p className="text-sm text-red-400">
+          <p className="text-sm text-negative">
             Could not load your Deriv connections. Reload the page to try again.
           </p>
         )}
@@ -219,11 +219,11 @@ function DerivLoginRow({ connection, index }: { connection: DerivConnection; ind
               {connection.owner_name?.trim() || `Deriv login ${index + 1}`}
             </span>
             {connection.needs_reconnect ? (
-              <span className="inline-flex shrink-0 items-center rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-400 ring-1 ring-inset ring-amber-500/20">
+              <span className="inline-flex shrink-0 items-center rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-warning ring-1 ring-inset ring-amber-500/20">
                 Session expired
               </span>
             ) : (
-              <span className="inline-flex shrink-0 items-center rounded-full bg-green-500/10 px-2 py-0.5 text-[10px] font-semibold text-green-400 ring-1 ring-inset ring-green-500/20">
+              <span className="inline-flex shrink-0 items-center rounded-full bg-green-500/10 px-2 py-0.5 text-[10px] font-semibold text-positive ring-1 ring-inset ring-green-500/20">
                 Active
               </span>
             )}
@@ -240,7 +240,7 @@ function DerivLoginRow({ connection, index }: { connection: DerivConnection; ind
               type="button"
               onClick={start}
               disabled={redirecting}
-              className="rounded-lg bg-ink px-3 py-1.5 text-xs font-medium text-surface transition hover:opacity-80 disabled:opacity-60"
+              className="rounded-lg bg-action px-3 py-1.5 text-xs font-medium text-action-ink transition hover:opacity-80 disabled:opacity-60"
             >
               {redirecting ? "Redirecting…" : "Reconnect"}
             </button>
@@ -347,7 +347,7 @@ function DerivLoginRow({ connection, index }: { connection: DerivConnection; ind
  * each for the account they are on.
  *
  * Read-only on purpose. Approving an app is a Deriv round-trip that only means
- * something in context, so dBot asks for it at the moment a bot that needs it
+ * something in context, so Bot Forge asks for it at the moment a bot that needs it
  * is started. This is here so the answer to "why did it ask me again?" is
  * visible rather than guessed at.
  */
@@ -365,7 +365,7 @@ function DerivAppApprovals() {
       </h3>
       <p className="mt-1.5 max-w-2xl text-[12px] leading-relaxed text-ink-3">
         Each bot trades through its own registered Deriv app, so each is approved once,
-        for the account you are trading. dBot asks when you start a bot that needs one —
+        for the account you are trading. Bot Forge asks when you start a bot that needs one —
         there is nothing to do here.
       </p>
       <ul className="mt-3 flex flex-wrap gap-2">
@@ -375,7 +375,7 @@ function DerivAppApprovals() {
             className={cn(
               "inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-[11px]",
               app.connected
-                ? "border-green-500/20 bg-green-500/10 text-green-400"
+                ? "border-green-500/20 bg-green-500/10 text-positive"
                 : "border-line bg-surface-2 text-ink-3",
             )}
           >

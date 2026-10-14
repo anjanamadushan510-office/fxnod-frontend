@@ -55,7 +55,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
 
         <div className="flex flex-col items-center gap-2 pt-2 text-center">
           <div className="grid h-11 w-11 place-items-center rounded-xl bg-opt-ink text-[15px] font-bold text-opt-bg">
-            DT
+            FT
           </div>
           <h2 className="text-[18px] font-bold text-opt-ink">
             Log in to FXNod

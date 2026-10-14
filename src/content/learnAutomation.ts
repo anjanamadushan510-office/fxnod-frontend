@@ -66,7 +66,7 @@ export const AUTOMATION_GUIDES: Guide[] = [
       { type: "h2", text: "In practice" },
       {
         type: "p",
-        text: "Deriv's own bot builder names both among its preset strategies. FXNOD's dBot offers Martingale, labelled high risk, and a gentle step setting, which raises the stake modestly after a loss and holds at your ceiling. Whatever tool you use, write out the ladder for ten losses before you start.",
+        text: "Deriv's own bot builder names both among its preset strategies. Bot Forge offers Martingale, labelled high risk, and a gentle step setting, which raises the stake modestly after a loss and holds at your ceiling. Whatever tool you use, write out the ladder for ten losses before you start.",
       },
       RISK_NOTE,
     ],
@@ -140,7 +140,7 @@ export const AUTOMATION_GUIDES: Guide[] = [
       { type: "h2", text: "In FXNOD" },
       {
         type: "p",
-        text: "A bot cannot be started in dBot or Auto Hub without a stop loss. It is checked on FXNOD's servers before every trade, so it keeps working with the page closed. The check comes before each order, so the last trade can take the session past the stop by up to that trade's stake, and FXNOD also applies a combined loss ceiling across the bots running on one Deriv account.",
+        text: "A bot cannot be started in Bot Forge or Auto Hub without a stop loss. It is checked on FXNOD's servers before every trade, so it keeps working with the page closed. The check comes before each order, so the last trade can take the session past the stop by up to that trade's stake, and FXNOD also applies a combined loss ceiling across the bots running on one Deriv account.",
       },
       RISK_NOTE,
     ],
@@ -214,7 +214,7 @@ export const AUTOMATION_GUIDES: Guide[] = [
       { type: "h2", text: "In FXNOD" },
       {
         type: "p",
-        text: "FXNOD runs in a phone browser with nothing to install. You can build a bot in dBot or start one in Auto Hub from the phone, and it then runs on FXNOD's servers with its limits. Home shows every bot running on your account, so a bot started on a laptop is visible on the phone.",
+        text: "FXNOD runs in a phone browser with nothing to install. You can build a bot in Bot Forge or start one in Auto Hub from the phone, and it then runs on FXNOD's servers with its limits. Home shows every bot running on your account, so a bot started on a laptop is visible on the phone.",
       },
       RISK_NOTE,
     ],
@@ -282,7 +282,7 @@ export const AUTOMATION_GUIDES: Guide[] = [
       { type: "h2", text: "What retail tools offer" },
       {
         type: "p",
-        text: "Retail platforms mostly provide the automation and leave the algorithm to you. A bot builder gives you execution, limits and a way to express rules. Whether the rules are any good is the part no tool supplies. FXNOD's dBot is that kind of tool, and Auto Hub supplies fixed, published rules and tells you what they do and do not promise.",
+        text: "Retail platforms mostly provide the automation and leave the algorithm to you. A bot builder gives you execution, limits and a way to express rules. Whether the rules are any good is the part no tool supplies. Bot Forge is that kind of tool, and Auto Hub supplies fixed, published rules and tells you what they do and do not promise.",
       },
       { type: "h2", text: "What institutions do differently" },
       {
@@ -453,7 +453,7 @@ export const AUTOMATION_GUIDES: Guide[] = [
       { type: "h2", text: "In FXNOD" },
       {
         type: "p",
-        text: "FXNOD does not sell signals. dBot runs rules you set, and Auto Hub runs rules that are written out in full before you start, both with a required stop loss and a demo mode.",
+        text: "FXNOD does not sell signals. Bot Forge runs rules you set, and Auto Hub runs rules that are written out in full before you start, both with a required stop loss and a demo mode.",
       },
       RISK_NOTE,
     ],
@@ -619,7 +619,7 @@ export const AUTOMATION_GUIDES: Guide[] = [
       { type: "h2", text: "FXNOD's bots" },
       {
         type: "p",
-        text: "FXNOD's bots are rule-based, and say so. dBot runs the rules you set. Auto Hub's rules are written out in full, including the statement that a fade rule decides when the bot enters and is not a promise about the next tick.",
+        text: "FXNOD's bots are rule-based, and say so. Bot Forge runs the rules you set. Auto Hub's rules are written out in full, including the statement that a fade rule decides when the bot enters and is not a promise about the next tick.",
       },
       RISK_NOTE,
     ],
@@ -866,7 +866,7 @@ export const AUTOMATION_GUIDES: Guide[] = [
       { type: "h2", text: "In FXNOD" },
       {
         type: "p",
-        text: "Selecting your Deriv demo account in FXNOD is paper trading: manual trades and bots use Deriv's virtual funds. Auto Hub's Shadow Fade also uses shadow trades, entries that are scored without being bought at all, to decide when its real trades begin.",
+        text: "Selecting your Deriv demo account in FXNOD is paper trading: manual trades and bots use Deriv's virtual funds. Check the selected account before starting a bot.",
       },
       RISK_NOTE,
     ],

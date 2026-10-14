@@ -20,6 +20,8 @@ import {
   type BotDraft,
   type StepKey,
 } from "@/components/bot/builder/draft";
+import { conditionProblems } from "@/components/bot/builder/conditions";
+import { StrategyOverview } from "@/components/bot/builder/StrategyOverview";
 import { RunPanel } from "@/components/bot/builder/RunPanel";
 import {
   DurationStep,
@@ -47,7 +49,8 @@ import {
   useStartBotRun,
   useUpdateBotPreset,
 } from "@/services/api/endpoints/bots/bots";
-import { BotStartConflictCode, type BotStartConflict } from "@/services/api/model";
+import { getDerivListAccountsQueryKey, useDerivSelectAccount } from "@/services/api/endpoints/trading/trading";
+import { BotStartConflictCode, type DerivLinkedAccount, type BotStartConflict } from "@/services/api/model";
 
 /**
  * /dbot/build — create or edit a bot, step by step.
@@ -56,7 +59,7 @@ import { BotStartConflictCode, type BotStartConflict } from "@/services/api/mode
  *   ?template=<id>   start from a ready-made bot
  *   (neither)        start blank
  *
- * A bot is saved to the user's account as a preset, the same record the dBot
+ * A bot is saved to the user's account as a preset, the same record the Bot Forge
  * workspace reads, and runs through the same start endpoint — so nothing here
  * can start a run the workspace could not.
  */
@@ -114,6 +117,7 @@ function BotBuilder() {
   const updatePreset = useUpdateBotPreset();
   const deletePreset = useDeleteBotPreset();
   const startRun = useStartBotRun();
+  const selectRunAccount = useDerivSelectAccount();
   const saving = createPreset.isPending || updatePreset.isPending;
 
   // Loaded here rather than only on the Markets step: a saved bot opens straight
@@ -150,7 +154,7 @@ function BotBuilder() {
   if (!draft) {
     return (
       <Shell>
-        <p className="text-sm text-zinc-500">Loading bot…</p>
+        <p className="text-sm text-ink-3">Loading bot…</p>
       </Shell>
     );
   }
@@ -205,7 +209,7 @@ function BotBuilder() {
     }
   }
 
-  async function handleRun(riskAcknowledged: boolean) {
+  async function handleRun(account: DerivLinkedAccount, riskAcknowledged: boolean) {
     const current = draft!;
     const { request, errors } = buildDraftRunRequest(current, strategies, riskAcknowledged);
     if (!request) {
@@ -216,6 +220,8 @@ function BotBuilder() {
     if (!savedId) return;
 
     try {
+      await selectRunAccount.mutateAsync({ data: { deriv_account_id: account.deriv_account_id } });
+      void queryClient.invalidateQueries({ queryKey: getDerivListAccountsQueryKey() });
       const res = await startRun.mutateAsync({ data: request });
       if (res.run) trackDbotStart(res.run.is_virtual, res.run.strategy_id, "builder");
       const adjustments = res.limit_adjustments ?? [];
@@ -247,6 +253,7 @@ function BotBuilder() {
 
   return (
     <Shell>
+      <StrategyOverview draft={draft} />
       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide mb-6" role="tablist">
         {steps.map((s, i) => {
           const active = current === s.key;
@@ -264,7 +271,7 @@ function BotBuilder() {
               <span
                 className={
                   active
-                    ? "bg-ink text-surface h-5 w-5 rounded-full flex items-center justify-center text-xs font-semibold"
+                    ? "bg-action text-action-ink h-5 w-5 rounded-full flex items-center justify-center text-xs font-semibold"
                     : "border border-line text-ink-3 h-5 w-5 rounded-full flex items-center justify-center text-xs"
                 }
               >
@@ -299,7 +306,7 @@ function BotBuilder() {
             <RunPanel
               ready={ready}
               saving={saving}
-              starting={startRun.isPending}
+              starting={startRun.isPending || selectRunAccount.isPending}
               saved={Boolean(saved)}
               onSave={handleSave}
               onRun={handleRun}
@@ -321,8 +328,8 @@ function BotBuilder() {
           <button
             type="button"
             onClick={() => setStep(steps[index + 1].key)}
-            disabled={(current === "method" && !methodChosen) || (current === "duration" && durationIssue !== null)}
-            className="h-11 flex-1 rounded-lg bg-ink px-6 text-sm font-medium text-surface transition hover:opacity-80 disabled:opacity-50 sm:h-10 sm:flex-none"
+            disabled={(current === "method" && !methodChosen) || (current === "duration" && durationIssue !== null) || (current === "entry" && conditionProblems(draft.entryConditions).length > 0)}
+            className="h-11 flex-1 rounded-lg bg-action px-6 text-sm font-medium text-action-ink transition hover:opacity-80 disabled:opacity-50 sm:h-10 sm:flex-none"
           >
             Continue
           </button>
@@ -369,7 +376,7 @@ function Notice({
       <p className="text-sm text-ink-3 mb-5">{body}</p>
       <Link
         href={href as Route}
-        className="inline-flex h-10 items-center px-5 rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-80"
+        className="inline-flex h-10 items-center px-5 rounded-lg bg-action text-action-ink text-sm font-medium hover:opacity-80"
       >
         {cta}
       </Link>

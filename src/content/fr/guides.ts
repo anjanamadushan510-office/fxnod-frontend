@@ -18,7 +18,7 @@
  * screens are in English, which the guides say.
  *
  * Register: "vous". Names the reader will see on screen (stop loss,
- * Rise/Fall, dBot) stay as they appear there.
+ * Rise/Fall, Bot Forge) stay as they appear there.
  */
 import type { GuideBlock, GuideCta, LocalGuide } from "../guides";
 
@@ -272,7 +272,7 @@ export const FR_GUIDES: LocalGuide[] = [
       { type: "h2", text: "Avec FXNOD" },
       {
         type: "p",
-        text: "FXNOD est un terminal distinct qui travaille sur votre propre compte Deriv. Vous vous connectez sur la page de Deriv, puis vous pouvez trader à la main dans dTrader ou lancer un robot, d'abord sur le compte démo. Il s'ouvre dans le navigateur du téléphone, sans rien installer. L'application est en anglais pour le moment.",
+        text: "FXNOD est un terminal distinct qui travaille sur votre propre compte Deriv. Vous vous connectez sur la page de Deriv, puis vous pouvez trader à la main dans Trade Pilot ou lancer un robot, d'abord sur le compte démo. Il s'ouvre dans le navigateur du téléphone, sans rien installer. L'application est en anglais pour le moment.",
       },
       SOURCE,
       AVERTISSEMENT,
@@ -596,7 +596,7 @@ export const FR_GUIDES: LocalGuide[] = [
       { type: "h2", text: "Où tourne le robot" },
       {
         type: "p",
-        text: "Certains robots tournent dans l'onglet de votre navigateur. Fermez l'onglet, perdez le réseau ou laissez l'appareil se mettre en veille, et le robot s'arrête, parfois avec une opération ouverte et sans stop loss. D'autres tournent sur un serveur et continuent quand votre appareil est éteint. Ceux de FXNOD sont du second type : un robot lancé dans dBot ou dans Auto Hub tourne sur les serveurs de FXNOD, où ses limites sont vérifiées avant chaque opération.",
+        text: "Certains robots tournent dans l'onglet de votre navigateur. Fermez l'onglet, perdez le réseau ou laissez l'appareil se mettre en veille, et le robot s'arrête, parfois avec une opération ouverte et sans stop loss. D'autres tournent sur un serveur et continuent quand votre appareil est éteint. Ceux de FXNOD sont du second type : un robot lancé dans Bot Forge ou dans Auto Hub tourne sur les serveurs de FXNOD, où ses limites sont vérifiées avant chaque opération.",
       },
       { type: "h2", text: "Ce qu'il fait bien, et ce qu'il ne fait pas" },
       {
@@ -631,7 +631,7 @@ export const FR_GUIDES: LocalGuide[] = [
       },
       {
         q: "Faut-il savoir programmer ?",
-        a: "Non. Il existe des constructeurs sans code. Dans dBot de FXNOD, on le construit en répondant à des questions.",
+        a: "Non. Il existe des constructeurs sans code. Dans Bot Forge de FXNOD, on le construit en répondant à des questions.",
       },
       {
         q: "Un robot de trading est-il légal ?",
@@ -666,10 +666,10 @@ export const FR_GUIDES: LocalGuide[] = [
           "Il peut être testé sur un compte démo gratuit.",
         ],
       },
-      { type: "h2", text: "Deriv Bot et dBot de FXNOD" },
+      { type: "h2", text: "Deriv Bot et Bot Forge de FXNOD" },
       {
         type: "table",
-        head: ["", "Deriv Bot", "dBot de FXNOD"],
+        head: ["", "Deriv Bot", "Bot Forge de FXNOD"],
         rows: [
           ["Éditeur", "Deriv", "FXNOD, un produit indépendant"],
           ["Construction", "Par blocs visuels", "En répondant à des questions"],
@@ -719,8 +719,8 @@ export const FR_GUIDES: LocalGuide[] = [
         a: "Celui que vous comprenez et que vous avez testé sur votre propre compte démo, à mise fixe et avec stop loss.",
       },
       {
-        q: "dBot de FXNOD est-il la même chose que Deriv Bot ?",
-        a: "Non. dBot est un constructeur de robots créé par FXNOD qui trade sur votre compte Deriv. Ce sont deux produits distincts.",
+        q: "Bot Forge de FXNOD est-il la même chose que Deriv Bot ?",
+        a: "Non. Bot Forge est un constructeur de robots créé par FXNOD qui trade sur votre compte Deriv. Ce sont deux produits distincts.",
       },
       {
         q: "Le robot a-t-il besoin de mon mot de passe Deriv ?",
@@ -791,7 +791,7 @@ export const FR_GUIDES: LocalGuide[] = [
           "Les stratégies rapides de Deriv Bot, que Deriv nomme et documente.",
           "Un robot que vous construisez vous-même à partir d'un modèle simple.",
           "Auto Hub de FXNOD, où les règles de chaque robot sont écrites et la mise est la même à chaque opération.",
-          "Les modèles de dBot de FXNOD, que vous pouvez modifier et lancer en démo.",
+          "Les modèles de Bot Forge de FXNOD, que vous pouvez modifier et lancer en démo.",
         ],
       },
       { type: "h2", text: "Et un robot payant ?" },
@@ -808,7 +808,7 @@ export const FR_GUIDES: LocalGuide[] = [
       },
       {
         q: "Les robots de FXNOD sont-ils gratuits ?",
-        a: "dBot et Auto Hub n'ont ni abonnement ni frais d'inscription. Trader en réel met votre mise en risque.",
+        a: "Bot Forge et Auto Hub n'ont ni abonnement ni frais d'inscription. Trader en réel met votre mise en risque.",
       },
       {
         q: "Pourquoi offrir un robot rentable ?",
@@ -884,10 +884,10 @@ export const FR_GUIDES: LocalGuide[] = [
           "Ne redémarrez jamais avec une base plus forte après la casse.",
         ],
       },
-      { type: "h2", text: "Dans dBot de FXNOD" },
+      { type: "h2", text: "Dans Bot Forge de FXNOD" },
       {
         type: "p",
-        text: "dBot signale la martingale comme à haut risque et affiche les mises d'une série perdante avant le démarrage. Vous choisissez le multiplicateur et le nombre d'échelons. Une mise augmentée ne dépasse jamais le plafond que vous fixez ni le stop loss de la session. Les robots d'Auto Hub n'utilisent pas la martingale.",
+        text: "Bot Forge signale la martingale comme à haut risque et affiche les mises d'une série perdante avant le démarrage. Vous choisissez le multiplicateur et le nombre d'échelons. Une mise augmentée ne dépasse jamais le plafond que vous fixez ni le stop loss de la session. Les robots d'Auto Hub n'utilisent pas la martingale.",
       },
       AVERTISSEMENT,
     ],
@@ -909,7 +909,7 @@ export const FR_GUIDES: LocalGuide[] = [
     en: "martingale-strategy-explained",
     cta: {
       title: "Voyez les mises avant de commencer",
-      text: "dBot affiche les mises d'une série perdante avant que le robot démarre, ne démarre pas sans stop loss et plafonne la mise la plus haute. Essayez n'importe quel réglage sur votre compte démo Deriv. L'application est en anglais pour le moment.",
+      text: "Bot Forge affiche les mises d'une série perdante avant que le robot démarre, ne démarre pas sans stop loss et plafonne la mise la plus haute. Essayez n'importe quel réglage sur votre compte démo Deriv. L'application est en anglais pour le moment.",
     },
   },
 
@@ -991,7 +991,7 @@ export const FR_GUIDES: LocalGuide[] = [
     en: "how-to-test-a-trading-bot",
     cta: {
       title: "Testez vos règles avant de les financer",
-      text: "Dans dBot, vous transformez une règle en robot en répondant à des questions, vous le lancez sur votre compte démo Deriv et vous lisez le résultat opération par opération. L'application est en anglais pour le moment.",
+      text: "Dans Bot Forge, vous transformez une règle en robot en répondant à des questions, vous le lancez sur votre compte démo Deriv et vous lisez le résultat opération par opération. L'application est en anglais pour le moment.",
     },
   },
 

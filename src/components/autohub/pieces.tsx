@@ -8,9 +8,9 @@ export function StatusBadge({ status }: { status: string }) {
       className={cn(
         "rounded px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
         status === "running"
-          ? "bg-emerald-500/15 text-emerald-400"
+          ? "bg-emerald-500/15 text-positive"
           : status === "failed"
-            ? "bg-red-500/15 text-red-400"
+            ? "bg-red-500/15 text-negative"
             : "bg-surface-2 text-ink-2",
       )}
     >
@@ -43,7 +43,7 @@ export function LaneChip({ lane }: { lane: "shadow" | "live" }) {
     <span
       className={cn(
         "inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
-        lane === "live" ? "bg-emerald-500/15 text-emerald-400" : "bg-surface-2 text-ink-2",
+        lane === "live" ? "bg-emerald-500/15 text-positive" : "bg-surface-2 text-ink-2",
       )}
     >
       <span
@@ -71,7 +71,7 @@ export function Stat({
       <p
         className={cn(
           "text-xl font-semibold mt-1 tabular-nums truncate",
-          tone < 0 ? "text-red-400" : tone > 0 ? "text-emerald-400" : "text-ink",
+          tone < 0 ? "text-negative" : tone > 0 ? "text-positive" : "text-ink",
         )}
       >
         {value}

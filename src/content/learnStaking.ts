@@ -82,10 +82,10 @@ export const STAKING_GUIDES: Guide[] = [
           "Never restart at a higher base after the ladder breaks.",
         ],
       },
-      { type: "h2", text: "In FXNOD dBot" },
+      { type: "h2", text: "In Bot Forge" },
       {
         type: "p",
-        text: "dBot labels Martingale as high risk and shows the stakes of a losing streak before you start. You choose the multiplier and how many steps it may take. An escalated stake is never allowed above your Never stake more than amount or above the session's stop loss. When the last step loses, or the next stake would exceed what one trade may be, the session ends with the loss. Auto Hub bots do not use Martingale.",
+        text: "Bot Forge labels Martingale as high risk and shows the stakes of a losing streak before you start. You choose the multiplier and how many steps it may take. An escalated stake is never allowed above your Never stake more than amount or above the session's stop loss. When the last step loses, or the next stake would exceed what one trade may be, the session ends with the loss. Auto Hub bots do not use Martingale.",
       },
       RISK_NOTE,
     ],
@@ -170,10 +170,10 @@ export const STAKING_GUIDES: Guide[] = [
         type: "p",
         text: "The worst case is known and small. A bad session is a string of base-stake losses, which a stop loss handles cleanly. That makes it far easier to live with than a recovery system, even though neither improves the odds.",
       },
-      { type: "h2", text: "In FXNOD dBot" },
+      { type: "h2", text: "In Bot Forge" },
       {
         type: "p",
-        text: "Reverse Martingale is one of the stake settings in dBot. An escalated stake holds at your ceiling instead of ending the run, and the session stop loss and profit target apply as usual.",
+        text: "Reverse Martingale is one of the stake settings in Bot Forge. An escalated stake holds at your ceiling instead of ending the run, and the session stop loss and profit target apply as usual.",
       },
       RISK_NOTE,
     ],
@@ -250,7 +250,7 @@ export const STAKING_GUIDES: Guide[] = [
       { type: "h2", text: "In practice" },
       {
         type: "p",
-        text: "Deriv's own bot builder lists D'Alembert among its preset strategies. In FXNOD's dBot the nearest setting is gentle step, which raises the stake modestly after a loss and holds at your ceiling. Whichever tool you use, work out the total of a ten-loss streak before you start.",
+        text: "Deriv's own bot builder lists D'Alembert among its preset strategies. In Bot Forge the nearest setting is gentle step, which raises the stake modestly after a loss and holds at your ceiling. Whichever tool you use, work out the total of a ten-loss streak before you start.",
       },
       RISK_NOTE,
     ],
@@ -338,7 +338,7 @@ export const STAKING_GUIDES: Guide[] = [
       { type: "h2", text: "In practice" },
       {
         type: "p",
-        text: "Deriv's own bot builder lists Oscar's Grind among its preset strategies. FXNOD's dBot does not have a setting with that name; its stake settings are same stake, gentle step, Martingale and reverse Martingale.",
+        text: "Deriv's own bot builder lists Oscar's Grind among its preset strategies. Bot Forge does not have a setting with that name; its stake settings are same stake, gentle step, Martingale and reverse Martingale.",
       },
       RISK_NOTE,
     ],
@@ -353,7 +353,7 @@ export const STAKING_GUIDES: Guide[] = [
       },
       {
         q: "Can I use Oscar's Grind in FXNOD?",
-        a: "dBot does not offer it by name. Its stake settings are same stake, gentle step, Martingale and reverse Martingale.",
+        a: "Bot Forge does not offer it by name. Its stake settings are same stake, gentle step, Martingale and reverse Martingale.",
       },
     ],
     related: ["dalembert-strategy-explained", "flat-stake-explained"],
@@ -414,7 +414,7 @@ export const STAKING_GUIDES: Guide[] = [
       { type: "h2", text: "In FXNOD" },
       {
         type: "p",
-        text: "Same stake is the recommended setting in dBot, and every Auto Hub bot uses the same stake on every trade. Combined with the required stop loss, the most a session can lose is known before it starts.",
+        text: "Same stake is the recommended setting in Bot Forge, and about half of the Auto Hub bots use the same stake on every trade. Combined with the required stop loss, the most a session can lose is known before it starts.",
       },
       RISK_NOTE,
     ],
@@ -572,10 +572,10 @@ export const STAKING_GUIDES: Guide[] = [
           { title: "Test the rule against random entry", text: "If waiting for a streak wins no more often than entering at random, the rule adds nothing." },
         ],
       },
-      { type: "h2", text: "A note on FXNOD's own fade bots" },
+      { type: "h2", text: "Using Auto Hub responsibly" },
       {
         type: "p",
-        text: "Auto Hub's Hot Fade and Shadow Fade enter after a digit clusters. FXNOD's guide to those bots says plainly that a clustered digit is not due to stop, that the rule decides only when the bot enters, and that it is not a promise about the next tick. They use a flat stake for that reason.",
+        text: "Auto Hub bots have fixed entry rules, but a pattern in earlier ticks does not promise a winning next trade. Read each bot's rule and use a stop loss before you start.",
       },
       RISK_NOTE,
     ],
@@ -663,7 +663,7 @@ export const STAKING_GUIDES: Guide[] = [
       { type: "h2", text: "In FXNOD" },
       {
         type: "p",
-        text: "Auto Hub's Matches / Differs bot can pick its digit from recent ticks, and the fade bots enter when a digit clusters. FXNOD's guide to them says a clustered digit is not due to stop and the rule is not a promise about the next tick. FXNOD cannot verify Deriv's random generator independently.",
+        text: "Auto Hub offers several digit-contract bots with fixed entry rules. A recent pattern does not predict the next tick. FXNOD cannot verify Deriv's random generator independently.",
       },
       RISK_NOTE,
     ],
@@ -748,7 +748,7 @@ export const STAKING_GUIDES: Guide[] = [
       { type: "h2", text: "In FXNOD" },
       {
         type: "p",
-        text: "In dTrader, Multipliers let you set a stop loss and a take profit, and Accumulators a take profit. In dBot and Auto Hub a session stop loss is required and a profit target is optional. Both are checked on FXNOD's servers before every trade, so they keep working with the page closed. Because the check comes before each order, the last trade can take the loss past the stop by up to its stake.",
+        text: "In Trade Pilot, Multipliers let you set a stop loss and a take profit, and Accumulators a take profit. In Bot Forge and Auto Hub a session stop loss is required and a profit target is optional. Both are checked on FXNOD's servers before every trade, so they keep working with the page closed. Because the check comes before each order, the last trade can take the loss past the stop by up to its stake.",
       },
       RISK_NOTE,
     ],
@@ -832,7 +832,7 @@ export const STAKING_GUIDES: Guide[] = [
       { type: "h2", text: "In FXNOD" },
       {
         type: "p",
-        text: "dTrader's chart updates with every tick and marks a trade's entry. On a bot's run page you can open a trade to see the ticks it was settled on, from the entry spot to the exit.",
+        text: "Trade Pilot's chart updates with every tick and marks a trade's entry. On a bot's run page you can open a trade to see the ticks it was settled on, from the entry spot to the exit.",
       },
       RISK_NOTE,
     ],

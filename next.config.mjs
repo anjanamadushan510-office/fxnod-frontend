@@ -49,9 +49,9 @@ const nextConfig = {
     return [
       { source: "/options/dbot", destination: "/dbot", permanent: false },
       { source: "/options/dbot/history", destination: "/dbot", permanent: false },
-      // The plans page is gone (dBot is free); old links land on dBot itself.
-      { source: "/options/dbot/subscription", destination: "/dbot", permanent: false },
-      { source: "/dbot/subscription", destination: "/dbot", permanent: false },
+      // Membership offers live in Discover; preserve existing plan links.
+      { source: "/options/dbot/subscription", destination: "/tools", permanent: false },
+      { source: "/dbot/subscription", destination: "/tools", permanent: false },
       // The first three guides described a wallet transfer and monthly plans
       // that are not live. Their addresses were linked from the home page, so
       // they land on the guide that replaced them, or on the list.

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Toaster } from "sonner";
-import { ThemeProvider } from "next-themes";
+import { ThemeProvider, useTheme } from "next-themes";
 
 import { Analytics } from "@/components/analytics/Analytics";
 import { captureReferralCode } from "@/lib/referral";
@@ -66,7 +66,7 @@ export function Providers({
         {children}
       <Analytics />
       {/* App-wide toast portal (trade results, Deriv linking, …). */}
-      <Toaster richColors position="top-center" closeButton />
+      <ThemedToaster />
       {/* Dev-only: the devtools entry self-excludes from production bundles,
           and this NODE_ENV guard is statically eliminated by Next at build. */}
       {process.env.NODE_ENV === "development" && (
@@ -75,4 +75,9 @@ export function Providers({
     </QueryClientProvider>
     </ThemeProvider>
   );
+}
+
+function ThemedToaster() {
+  const { resolvedTheme } = useTheme();
+  return <Toaster theme={resolvedTheme === "dark" ? "dark" : "light"} richColors position="top-center" closeButton />;
 }

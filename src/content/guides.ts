@@ -12,13 +12,24 @@
  * search snippet quotes, so it must stand on its own.
  */
 
+import {
+  AUTOHUB_BOT_COUNT,
+  FIXED_PLAN_BOTS,
+  botGuideSlug,
+  contractTicks,
+  stakeStyle,
+  type BotFamily,
+} from "./autohubCatalogue";
+
 export type GuideBlock =
   | { type: "h2"; text: string }
   | { type: "p"; text: string }
   | { type: "list"; items: string[] }
   | { type: "steps"; items: { title: string; text: string }[] }
   | { type: "table"; head: string[]; rows: string[][] }
-  | { type: "note"; title: string; text: string };
+  | { type: "note"; title: string; text: string }
+  /** Links to other pages of the site, each with a line saying what is there. */
+  | { type: "links"; items: { href: string; label: string; text: string }[] };
 
 /** The box under a guide that says what to do next in FXNOD. */
 export interface GuideCta {
@@ -56,6 +67,21 @@ export const RISK_NOTE: GuideBlock = {
   title: "Risk warning",
   text: "Options and multipliers are high-risk products. You can lose your entire stake on any trade, and a bot can lose it faster than you would by hand. Nothing on this page is financial advice. Try everything on a Deriv demo account first.",
 };
+
+/** The plan bots of one contract family, as a table of the overview guide. */
+function planBotTable(family: BotFamily): GuideBlock {
+  return {
+    type: "table",
+    head: ["Bot", "Contract", "Enters", "Stake", "Plans (stop loss)"],
+    rows: FIXED_PLAN_BOTS.filter((bot) => bot.family === family).map((bot) => [
+      bot.name,
+      family === "rise_fall" ? `${bot.bet}, ${contractTicks(bot)} ${contractTicks(bot) === 1 ? "tick" : "ticks"}` : bot.bet,
+      bot.pace,
+      stakeStyle(bot),
+      bot.plans.map((p) => p.stopLoss).join(", "),
+    ]),
+  };
+}
 
 export const GUIDES: Guide[] = [
   {
@@ -149,20 +175,20 @@ export const GUIDES: Guide[] = [
 
   {
     slug: "dtrader-manual-trading",
-    title: "How to trade manually on Deriv with FXNOD dTrader",
+    title: "How to trade manually on Deriv with Trade Pilot",
     description:
-      "dTrader is FXNOD's manual trading screen for Deriv: a live chart, a market picker and ten trade types. Here is how to place a trade and what each type means.",
-    tag: "dTrader",
+      "Trade Pilot is FXNOD's manual trading screen for Deriv: a live chart, a market picker and ten trade types. Here is how to place a trade and what each type means.",
+    tag: "Trade Pilot",
     published: "2026-10-06",
     updated: "2026-10-06",
     image: "/assets/login-slide-1.jpg",
     answer:
-      "dTrader is FXNOD's manual trading screen for Deriv. Pick a market, pick a trade type such as Rise/Fall or Multipliers, set your stake and duration, read the payout Deriv quotes, and press Buy. The trade is placed on your own Deriv account and stays on the chart until it settles.",
+      "Trade Pilot is FXNOD's manual trading screen for Deriv. Pick a market, pick a trade type such as Rise/Fall or Multipliers, set your stake and duration, read the payout Deriv quotes, and press Buy. The trade is placed on your own Deriv account and stays on the chart until it settles.",
     body: [
-      { type: "h2", text: "What dTrader is" },
+      { type: "h2", text: "What Trade Pilot is" },
       {
         type: "p",
-        text: "dTrader is one screen with three parts: a live chart, a market picker and an order panel. You decide every trade yourself. It runs on the Deriv account you connected to FXNOD, demo or real, and you open it from Options in the FXNOD menu.",
+        text: "Trade Pilot is one screen with three parts: a live chart, a market picker and an order panel. You decide every trade yourself. It runs on the Deriv account you connected to FXNOD, demo or real, and you open it from Options in the FXNOD menu.",
       },
       { type: "h2", text: "The ten trade types" },
       {
@@ -183,7 +209,7 @@ export const GUIDES: Guide[] = [
       },
       {
         type: "p",
-        text: "If a name is new to you, open the trade types guide inside dTrader. It shows a short animation for each type, which is quicker than any description.",
+        text: "If a name is new to you, open the trade types guide inside Trade Pilot. It shows a short animation for each type, which is quicker than any description.",
       },
       { type: "h2", text: "Placing a trade, step by step" },
       {
@@ -223,22 +249,22 @@ export const GUIDES: Guide[] = [
       { type: "h2", text: "What it costs" },
       {
         type: "p",
-        text: "dTrader is free to use and there is no subscription. The stake, the payout and the result of every trade are the ones on your Deriv account.",
+        text: "Trade Pilot requires an active tool package. Review current pricing and access periods in Discover. The stake, the payout and the result of every trade are the ones on your Deriv account.",
       },
       RISK_NOTE,
     ],
     faq: [
       {
-        q: "Is FXNOD dTrader the same as Deriv's own trading app?",
-        a: "No. FXNOD's dTrader is a separate interface built by FXNOD. It places trades on your Deriv account through Deriv's API, so the contracts and prices come from Deriv, but FXNOD is an independent product and is not affiliated with Deriv.",
+        q: "Is Trade Pilot the same as Deriv's own trading app?",
+        a: "No. Trade Pilot is a separate interface built by FXNOD. It places trades on your Deriv account through Deriv's API, so the contracts and prices come from Deriv, but FXNOD is an independent product and is not affiliated with Deriv.",
       },
       {
         q: "Do I need to deposit money into FXNOD to trade?",
-        a: "No. dTrader uses the balance in your Deriv account. On a demo account that is Deriv's virtual money.",
+        a: "No. Trade Pilot uses the balance in your Deriv account. On a demo account that is Deriv's virtual money.",
       },
       {
-        q: "Can I use dTrader on a phone?",
-        a: "Yes. dTrader runs in a phone browser and there is nothing to install.",
+        q: "Can I use Trade Pilot on a phone?",
+        a: "Yes. Trade Pilot runs in a phone browser and there is nothing to install.",
       },
       {
         q: "Can I close a trade before it expires?",
@@ -254,15 +280,15 @@ export const GUIDES: Guide[] = [
 
   {
     slug: "build-a-deriv-bot-with-dbot",
-    title: "How to build a Deriv trading bot without code in FXNOD dBot",
+    title: "How to build a Deriv trading bot without code in Bot Forge",
     description:
-      "Build a Deriv bot in FXNOD dBot by answering plain questions: what to buy, when to enter, how much to stake and when to stop. No blocks and no code.",
-    tag: "dBot",
+      "Build a Deriv bot in Bot Forge by answering plain questions: what to buy, when to enter, how much to stake and when to stop. No blocks and no code.",
+    tag: "Bot Forge",
     published: "2026-10-06",
     updated: "2026-10-06",
     image: "/assets/login-slide-2.jpg",
     answer:
-      "In dBot you build a bot by answering questions in plain language: what it should buy, on which markets, when it should enter, how much it stakes and when it stops. There are no blocks to wire and no code to write. Save the bot, press Run, confirm the Deriv account, and it trades from FXNOD's servers until one of your limits is reached.",
+      "In Bot Forge you build a bot by answering questions in plain language: what it should buy, on which markets, when it should enter, how much it stakes and when it stops. There are no blocks to wire and no code to write. Save the bot, press Run, confirm the Deriv account, and it trades from FXNOD's servers until one of your limits is reached.",
     body: [
       { type: "h2", text: "Start from a template, or from nothing" },
       {
@@ -296,7 +322,7 @@ export const GUIDES: Guide[] = [
           },
           {
             title: "The contract terms",
-            text: "Set how long each contract lasts and, where the trade type needs it, the target, multiplier or growth rate. dBot asks Deriv which durations those markets sell and only lets you pick a length that exists on every market you selected.",
+            text: "Set how long each contract lasts and, where the trade type needs it, the target, multiplier or growth rate. Bot Forge asks Deriv which durations those markets sell and only lets you pick a length that exists on every market you selected.",
           },
           {
             title: "Indicators (optional)",
@@ -333,19 +359,19 @@ export const GUIDES: Guide[] = [
       { type: "h2", text: "Read this before you choose Martingale" },
       {
         type: "p",
-        text: "Martingale multiplies the stake after every loss so that one win recovers the losses before it. The arithmetic is unforgiving. Starting at 1 and doubling, seven losses in a row means stakes of 1, 2, 4, 8, 16, 32 and 64, which is 127 lost to win back 1. Losing streaks of that length do happen. dBot labels Martingale as high risk. You choose how many steps it may take, and the builder shows the stakes of a losing streak before you start. When the last step loses, or the next stake would be more than one trade is allowed, the session ends with the loss; dBot does not place a smaller stake that could not win the streak back. The stop loss is checked before each trade, so the last trade of a streak can take the session past it. Same stake is the recommended setting for a reason.",
+        text: "Martingale multiplies the stake after every loss so that one win recovers the losses before it. The arithmetic is unforgiving. Starting at 1 and doubling, seven losses in a row means stakes of 1, 2, 4, 8, 16, 32 and 64, which is 127 lost to win back 1. Losing streaks of that length do happen. Bot Forge labels Martingale as high risk. You choose how many steps it may take, and the builder shows the stakes of a losing streak before you start. When the last step loses, or the next stake would be more than one trade is allowed, the session ends with the loss; Bot Forge does not place a smaller stake that could not win the streak back. The stop loss is checked before each trade, so the last trade of a streak can take the session past it. Same stake is the recommended setting for a reason.",
       },
       { type: "h2", text: "What it costs" },
       {
         type: "p",
-        text: "dBot has no subscription and no sign-up fee. You can build a bot, save it and test it on a demo account before you use real money.",
+        text: "Bot Forge requires an active tool package. Review current pricing in Discover, and test a bot on a demo account before using real money.",
       },
       RISK_NOTE,
     ],
     faq: [
       {
-        q: "Is FXNOD dBot the same as Deriv Bot?",
-        a: "No. FXNOD's dBot is a separate bot builder made by FXNOD. It does not use Blockly blocks: you answer questions in plain language instead. The bot trades on your Deriv account through Deriv's API, but FXNOD is an independent product and is not affiliated with Deriv.",
+        q: "Is Bot Forge the same as Deriv Bot?",
+        a: "No. Bot Forge is a separate bot builder made by FXNOD. It does not use Blockly blocks: you answer questions in plain language instead. The bot trades on your Deriv account through Deriv's API, but FXNOD is an independent product and is not affiliated with Deriv.",
       },
       {
         q: "Does the bot keep running when I close my browser?",
@@ -369,59 +395,70 @@ export const GUIDES: Guide[] = [
 
   {
     slug: "auto-hub-ready-made-bots",
-    title: "FXNOD Auto Hub: ready-made Deriv bots and how each one trades",
-    description:
-      "Auto Hub has three ready-made Deriv bots: Hot Fade, Shadow Fade and Matches / Differs. What each one does, what a shadow trade is, and how to start one.",
+    title: "FXNOD Auto Hub: every ready-made Deriv bot and how it trades",
+    description: `Auto Hub has ${AUTOHUB_BOT_COUNT} ready-made Deriv bots. What each one trades, when it enters, whether its stake is flat or Martingale, and how to start one.`,
     tag: "Auto Hub",
     published: "2026-10-06",
-    updated: "2026-10-06",
+    updated: "2026-10-12",
     image: "/assets/login-slide-3.jpg",
-    answer:
-      "Auto Hub is a set of bots that FXNOD has already built. You do not design anything: pick a bot, choose its markets, set a stake, a stop loss and an optional take profit, and start it. Three bots are available now: Hot Fade, Shadow Fade and Matches / Differs. All three trade one-tick digit contracts on Deriv.",
+    answer: `Auto Hub is a set of bots that FXNOD has already built. You do not design anything: pick a bot, choose its market and plan, and start it. There are ${AUTOHUB_BOT_COUNT} bots. They trade Deriv's digit contracts (Matches / Differs, Even / Odd and Over / Under) and Rise / Fall, in contracts of one to ten ticks. All ${FIXED_PLAN_BOTS.length} are started with a fixed plan that sets the stop loss, the stake and the profit target together.`,
     body: [
-      { type: "h2", text: "Auto Hub or dBot?" },
+      { type: "h2", text: "Auto Hub or Bot Forge?" },
       {
         type: "table",
-        head: ["", "dBot", "Auto Hub"],
+        head: ["", "Bot Forge", "Auto Hub"],
         rows: [
           ["Who designs the strategy", "You do", "FXNOD did"],
-          ["What you set", "Trade type, markets, entry rule, stake sizing, limits", "Markets, stake, stop loss, take profit and the few settings that bot lists"],
-          ["Stake sizing", "Same stake, gentle step, Martingale or reverse Martingale", "Always the same stake"],
-          ["Good for", "Testing an idea of your own", "Starting quickly with a strategy whose rules are fixed and written down"],
+          ["What you set", "Trade type, markets, entry rule, stake sizing, limits", "The market and a plan"],
+          ["Stake sizing", "Same stake, gentle step, Martingale or reverse Martingale", "Fixed by the bot: flat for some, Martingale for others"],
+          ["Good for", "Testing an idea of your own", "Starting quickly with a bot whose rules are fixed and written down"],
         ],
       },
-      { type: "h2", text: "The three bots" },
+      { type: "h2", text: "How an Auto Hub bot is described" },
       {
-        type: "table",
-        head: ["Bot", "What it does", "Markets"],
-        rows: [
-          ["Hot Fade", "When one last digit has clustered and just printed three times running, it bets the next tick is a different digit.", "1 to 10"],
-          ["Shadow Fade", "Takes the same entries as Hot Fade, but only scores them at first. Real trades begin when the recent results meet the rule you set.", "1 to 10"],
-          ["Matches / Differs", "Bets the last digit of the next tick matches, or differs from, a digit you pick. Trade after trade on one market.", "1"],
+        type: "p",
+        text: "Every bot is defined by four things, and its page in Auto Hub lists them under How it works.",
+      },
+      {
+        type: "list",
+        items: [
+          "The contract. One contract and one length, such as a one-tick Over 4 or a five-tick Rise / Fall. It decides what wins and how much a win pays.",
+          "The entry rule. When the bot buys: on every tick, once every few ticks, or after a pattern in the last digits or in the direction of the last ticks.",
+          "The stake plan. Flat, where every trade has the same stake, or Martingale, where the stake is multiplied after a loss and returns to the start after a win.",
+          "The limits. A stop loss and a profit target. A bot cannot be started without a stop loss.",
         ],
       },
-      { type: "h2", text: "Hot Fade" },
       {
         type: "p",
-        text: "Hot Fade watches the last digit of every tick on the markets you choose. It waits for one digit to stand clearly above the rest over the last 30 ticks and to print three times in a row. Then it buys a one-tick Differs on that digit, which is a bet that the next tick ends in anything else.",
+        text: "The entry rule sets when a bot trades and how often. It does not make any single trade more likely to win, and no bot here can guarantee a profit.",
       },
+      { type: "h2", text: "Bots started with a plan" },
       {
         type: "p",
-        text: "Only one trade is open at a time, however many markets it watches. After a result it pauses before the next entry, and for longer after a loss. It does not fade the same digit twice running on the same market.",
+        text: `${FIXED_PLAN_BOTS.length} bots trade one market and are started by choosing a plan. A plan is named by its stop loss, which is 20, 100 or 500, and sets the starting stake and the profit target with it. The amounts cannot be changed one by one. On these bots no stake is placed that could take the session's loss past the plan's stop loss.`,
       },
-      { type: "h2", text: "Shadow Fade and shadow trades" },
+      { type: "h2", text: "Matches / Differs bots" },
+      planBotTable("matches_differs"),
+      { type: "h2", text: "Even / Odd bots" },
+      planBotTable("even_odd"),
+      { type: "h2", text: "Over / Under bots" },
+      planBotTable("over_under"),
+      { type: "h2", text: "Rise / Fall bots" },
       {
         type: "p",
-        text: "Shadow Fade uses the Hot Fade entry but does not buy it straight away. It starts with shadow trades. A shadow trade is not bought on Deriv at all: the bot notes the entry and lets the next tick decide whether it would have won or lost. No money moves.",
+        text: "A Rise wins when the price ends above where the contract started, and a Fall when it ends below. A price that ends exactly where it started loses either way. These bots trade the Volatility indices only.",
       },
+      planBotTable("rise_fall"),
+      { type: "h2", text: "A guide for every bot" },
       {
-        type: "p",
-        text: "Real trades start only after 20 results, and only while those 20 win less often than the percentage you set under Go live below, which is 85 by default. When the last 20 results win more often than that again, the bot goes back to shadow trades. Your stop loss and take profit count real profit only. Shadow results never touch your balance, your statement or your totals.",
-      },
-      { type: "h2", text: "Matches / Differs" },
-      {
-        type: "p",
-        text: "You pick one market, then Matches or Differs, and a digit. Each trade lasts one tick, and the bot places the next one as soon as the last has closed. Matches wins only on your digit and pays several times the stake. Differs wins on any other digit and pays a small fraction of it. With auto digit switched on, the bot chooses the digit from recent ticks: the most frequent one for Matches, the least frequent for Differs.",
+        type: "links",
+        items: [
+          ...FIXED_PLAN_BOTS.map((bot) => ({
+            href: `/guides/${botGuideSlug(bot.id)}`,
+            label: `${bot.name} bot`,
+            text: bot.tagline,
+          })),
+        ],
       },
       { type: "h2", text: "Starting a bot" },
       {
@@ -429,58 +466,63 @@ export const GUIDES: Guide[] = [
         items: [
           { title: "Open Auto Hub and pick a bot", text: "Read its How it works panel first. It lists every rule the bot follows, in order." },
           {
-            title: "Choose the markets",
-            text: "The fade bots suggest Volatility 100 (1s), Volatility 75 (1s), Volatility 100 and Volatility 75, where a cluster forms and resolves quickly. You can watch up to ten markets. Matches / Differs runs on one.",
+            title: "Choose the market",
+            text: "Each bot trades one market. The form suggests Volatility 100, 75 and 50 indices and their one-second versions.",
           },
           {
-            title: "Set the stake and the limits",
-            text: "Stake per trade starts at 1 and cannot go below 0.35, Deriv's minimum for these contracts. A stop loss is required: a bot cannot be started without one. Take profit is optional.",
+            title: "Choose a plan",
+            text: "Choose one of the displayed plans to set the stake, stop loss and profit target together.",
           },
           {
             title: "Start it on demo first",
-            text: "Start on your Deriv demo account and watch a full session. Starting with real money is a separate, clearly labelled button.",
+            text: "Start on your Deriv demo account and watch a full session. On a real account you tick a box to confirm that the bot trades real money, and the button reads Start with real money.",
           },
         ],
       },
       { type: "h2", text: "Reading the run page" },
       {
         type: "p",
-        text: "The run page shows real trades and shadow trades separately, the realised profit or loss, the amount staked, how much of the stop loss has been used and the progress towards the take profit. A fade bot can sit for several minutes with no entries. That is normal: it is waiting for its signal.",
+        text: "The run page lists every trade with its market, digit and result, and shows the realised profit or loss, how much of the stop loss has been used and the progress towards the take profit. A bot that waits for a pattern can sit for some time with no entries. That is normal: it is waiting for its signal.",
       },
-      { type: "h2", text: "The risk, plainly" },
+      { type: "h2", text: "What every bot shares" },
       {
-        type: "p",
-        text: "On these contracts a win pays a small fraction of the stake and a loss costs all of it. A Differs trade wins roughly nine times in ten by chance alone, because nine of the ten digits win, and one loss takes back about ten wins. Deriv's volatility indices are generated randomly, so a digit that has clustered is not due to stop. The fade rule decides when the bot enters. It is not a promise about what the next tick does, and no strategy can guarantee a profit.",
-      },
-      {
-        type: "p",
-        text: "Auto Hub and dBot share the same safety ceilings on an account. A loss in one counts towards the total loss limit for both, and running bots from either count towards the limit on how many run at once.",
+        type: "list",
+        items: [
+          "It runs on FXNOD's servers. Closing the page does not stop it or switch off its limits.",
+          "It holds one trade at a time.",
+          "It trades the Deriv account it was started on, demo or real, until it stops.",
+          "Auto Hub and Bot Forge share the same safety ceilings on an account: a loss in one counts towards the total loss limit for both, and bots from either count towards the limit on how many run at once.",
+        ],
       },
       RISK_NOTE,
     ],
     faq: [
       {
-        q: "What is a shadow trade?",
-        a: "A shadow trade is an entry the bot scores without buying it. Nothing is placed on Deriv and no money moves. The next tick decides whether it would have won or lost, and the result only feeds the bot's recent win rate.",
+        q: "How many bots does Auto Hub have?",
+        a: `${AUTOHUB_BOT_COUNT}. All ${FIXED_PLAN_BOTS.length} use fixed plans.`,
       },
       {
-        q: "Is Auto Hub free?",
-        a: "Yes. There is no subscription and no sign-up fee.",
-      },
-      {
-        q: "Can I change how an Auto Hub bot trades?",
-        a: "Only through the settings that bot lists, such as the digit for Matches / Differs or the Go live below percentage for Shadow Fade. The strategy itself is fixed. To design your own, use dBot.",
-      },
-      {
-        q: "How long does a bot run?",
-        a: "Until it reaches your stop loss or take profit, or until you stop it. It runs on FXNOD's servers, so closing the page does not end it.",
+        q: "What do Auto Hub bots trade?",
+        a: "Deriv's digit contracts (Matches / Differs, Even / Odd and Over / Under) and Rise / Fall, in contracts of one to ten ticks. Each bot trades one of them.",
       },
       {
         q: "Does Auto Hub use Martingale?",
-        a: "No. Every Auto Hub bot uses the same stake on every trade.",
+        a: "Some bots do. A plan bot is either flat, with the same stake on every trade, or Martingale, with the stake multiplied after a loss. Its guide and its How it works panel say which.",
+      },
+      {
+        q: "What is a plan in Auto Hub?",
+        a: "A plan is a stop loss with the starting stake and the profit target that go with it. You choose a plan whole; its amounts cannot be changed one by one.",
+      },
+      {
+        q: "Can I change how an Auto Hub bot trades?",
+        a: "The strategy is fixed. You can select its market and one of its plans. To design your own strategy, use Bot Forge.",
+      },
+      {
+        q: "How long does a bot run?",
+        a: "Until it reaches its stop loss or its profit target, or until you stop it. It runs on FXNOD's servers, so closing the page does not end it.",
       },
     ],
-    related: ["build-a-deriv-bot-with-dbot", "connect-deriv-account"],
+    related: ["build-a-deriv-bot-with-dbot", "connect-deriv-account", "nine-lives-bot", "high-five-bot"],
   },
 ];
 
@@ -497,6 +539,8 @@ function blockWords(block: GuideBlock): string {
       return [...block.head, ...block.rows.flat()].join(" ");
     case "note":
       return `${block.title} ${block.text}`;
+    case "links":
+      return block.items.map((l) => `${l.label} ${l.text}`).join(" ");
   }
 }
 

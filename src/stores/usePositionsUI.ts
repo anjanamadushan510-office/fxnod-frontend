@@ -10,12 +10,16 @@ import { create } from "zustand";
  */
 interface PositionsUIState {
   open: boolean;
+  tab: "open" | "closed";
+  setTab: (tab: "open" | "closed") => void;
   setOpen: (open: boolean) => void;
   toggle: () => void;
 }
 
 export const usePositionsUI = create<PositionsUIState>((set) => ({
   open: false,
+  tab: "open",
+  setTab: (tab) => set({ tab }),
   setOpen: (open) => set({ open }),
   toggle: () => set((s) => ({ open: !s.open })),
 }));

@@ -8,7 +8,7 @@ import { pageMetadata } from "@/lib/site";
 export const metadata: Metadata = pageMetadata({
   title: "Partner programme",
   description:
-    "Invite people to FXNOD and earn on what they trade, and on what the people they invite trade. dBot is free, so there is nothing for them to buy first.",
+    "Invite people to FXNOD and earn on what they trade, and on what the people they invite trade. Current tool packages and access requirements are shown in Discover.",
   path: "/partner",
 });
 
@@ -55,8 +55,8 @@ export default function PartnerProgrammePage() {
         </h1>
         <p className="m-0 mt-4 max-w-[60ch] text-lg leading-relaxed text-[#0a0f1c]/65">
           Invite people to FXNOD and earn a share of what FXNOD earns from them —
-          the markup on their dBot trades today, and every paid product we add.
-          dBot itself is free, so there is nothing for them to buy first. You
+          the markup on their Bot Forge trades today, and every paid product we add.
+          Current tool packages and access requirements are shown in Discover. You
           also earn on the people they invite.
         </p>
 

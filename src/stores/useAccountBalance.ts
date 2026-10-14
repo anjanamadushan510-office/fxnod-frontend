@@ -1,31 +1,47 @@
 import { create } from "zustand";
 
-interface AccountBalanceState {
+interface BalanceEntry {
   balance: number;
   currency: string;
+  updatedAt: number;
+}
+interface AccountBalanceState {
+  balance: number | null;
+  currency: string;
   id: string;
-  balances: Record<string, { balance: number; currency: string }>;
-  setBalance: (balance: number, currency?: string, id?: string) => void;
+  ownerId: string | null;
+  balances: Record<string, BalanceEntry>;
+  setOwner: (ownerId: string | null) => void;
+  selectAccount: (id: string, currency?: string) => void;
+  setBalance: (balance: number | string, currency?: string, id?: string, updatedAt?: number) => void;
 }
 
 export const useAccountBalance = create<AccountBalanceState>((set) => ({
-  balance: 0,
+  balance: null,
   currency: "USD",
   id: "",
+  ownerId: null,
   balances: {},
-  setBalance: (balance, currency, id) =>
-    set((state) => {
-      const newCurrency = currency ?? state.currency;
-      const newId = id ?? state.id;
-      const newBalances = { ...state.balances };
-      if (newId) {
-        newBalances[newId] = { balance, currency: newCurrency };
-      }
-      return {
-        balance,
-        currency: newCurrency,
-        id: newId,
-        balances: newBalances,
-      };
-    }),
+  setOwner: (ownerId) => set((state) => state.ownerId === ownerId ? state : {
+    ownerId, id: "", balance: null, currency: "USD", balances: {},
+  }),
+  selectAccount: (id, currency) => set((state) => ({
+    id,
+    balance: state.balances[id]?.balance ?? null,
+    currency: state.balances[id]?.currency ?? currency ?? "USD",
+  })),
+  setBalance: (raw, currency, id, updatedAt = Date.now()) => set((state) => {
+    if (typeof raw !== "number" && typeof raw !== "string") return state;
+    if (typeof raw === "string" && !raw.trim()) return state;
+    const balance = Number(raw);
+    const accountId = id ?? state.id;
+    if (!accountId || !Number.isFinite(balance) || !Number.isFinite(updatedAt)) return state;
+    const previous = state.balances[accountId];
+    if (previous && previous.updatedAt > updatedAt) return state;
+    const entry = { balance, currency: currency ?? previous?.currency ?? state.currency, updatedAt };
+    return {
+      balances: { ...state.balances, [accountId]: entry },
+      ...(accountId === state.id ? { balance: entry.balance, currency: entry.currency } : {}),
+    };
+  }),
 }));

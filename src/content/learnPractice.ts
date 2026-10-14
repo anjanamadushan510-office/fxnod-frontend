@@ -380,7 +380,7 @@ export const PRACTICE_GUIDES: Guide[] = [
       { type: "h2", text: "What happens to a bot" },
       {
         type: "p",
-        text: "It depends on where the bot runs. A bot that runs in your browser stops trading when the page disconnects, and its stop loss stops with it. A bot that runs on a server is unaffected by your connection. Bots started in FXNOD's dBot and Auto Hub run on FXNOD's servers, so they continue, with their limits, while your device is offline.",
+        text: "It depends on where the bot runs. A bot that runs in your browser stops trading when the page disconnects, and its stop loss stops with it. A bot that runs on a server is unaffected by your connection. Bots started in Bot Forge and Auto Hub run on FXNOD's servers, so they continue, with their limits, while your device is offline.",
       },
       { type: "h2", text: "Before you trade real money" },
       {

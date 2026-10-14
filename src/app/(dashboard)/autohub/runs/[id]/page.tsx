@@ -1,14 +1,31 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import Link from "next/link";
 import type { Route } from "next";
 import { useParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useAuthStore } from "@/stores/authStore";
+import { BotJourney } from "@/components/autohub/BotJourney";
+import { RunFeedback } from "@/components/autohub/RunFeedback";
+import {
+  runNeedsUpdates,
+  entriesNeedUpdates,
+} from "@/components/autohub/journey";
 import { ShadowGauge } from "@/components/autohub/ShadowGauge";
-import { AccountBadge, LaneChip, Meter, Stat, StatusBadge } from "@/components/autohub/pieces";
-import { RUN_POLL_MS, isActiveRun, stopReasonLabel } from "@/components/autohub/runState";
+import {
+  AccountBadge,
+  LaneChip,
+  Meter,
+  Stat,
+  StatusBadge,
+} from "@/components/autohub/pieces";
+import {
+  RUN_POLL_MS,
+  isActiveRun,
+  stopReasonLabel,
+} from "@/components/autohub/runState";
 import { EmergencyStopButton } from "@/components/bot/EmergencyStopButton";
 import { useMarketStore } from "@/components/options/market/marketStore";
 import { cn } from "@/lib/cn";
@@ -17,6 +34,7 @@ import { parseApiError } from "@/lib/apiError";
 import {
   getGetAutoHubRunQueryKey,
   getListAutoHubRunsQueryKey,
+  getListAutoHubRunEntriesQueryKey,
   useForceStopAutoHubRun,
   useGetAutoHubRun,
   useListAutoHubRunEntries,
@@ -36,20 +54,50 @@ const ENTRIES_PARAMS = { limit: 100 } as const;
 export default function AutoHubRunPage() {
   const { id: runId } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
+  const userId = useAuthStore((state) => state.user?.id);
 
   const runQuery = useGetAutoHubRun(runId, {
     query: {
+      enabled: !!userId,
+      queryKey: [...getGetAutoHubRunQueryKey(runId), userId],
       // Only a live run changes. A finished one is a record.
-      refetchInterval: (query) => (isActiveRun(query.state.data?.status) ? RUN_POLL_MS : false),
+      refetchInterval: (query) =>
+        runNeedsUpdates(query.state.data) ? RUN_POLL_MS : false,
       retry: false,
     },
   });
   const run = runQuery.data;
   const active = isActiveRun(run?.status);
+  const updating = runNeedsUpdates(run);
 
   const entriesQuery = useListAutoHubRunEntries(runId, ENTRIES_PARAMS, {
-    query: { refetchInterval: active ? RUN_POLL_MS : false },
+    query: {
+      enabled: !!run && !!userId,
+      queryKey: [
+        ...getListAutoHubRunEntriesQueryKey(runId, ENTRIES_PARAMS),
+        userId,
+      ],
+      refetchInterval: (query) =>
+        updating || entriesNeedUpdates(query.state.data?.entries)
+          ? RUN_POLL_MS
+          : false,
+    },
   });
+  const runStatus = run?.status;
+  const tradesOpen = run?.trades_open;
+
+  // Fetch settlement entries once more when the run stops or its last trade closes.
+  useEffect(() => {
+    if (runStatus && !isActiveRun(runStatus)) {
+      void queryClient.invalidateQueries({
+        queryKey: getListAutoHubRunEntriesQueryKey(runId),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: getListAutoHubRunsQueryKey(),
+      });
+    }
+  }, [runId, runStatus, tradesOpen, queryClient]);
+
   const stop = useStopAutoHubRun();
   const forceStop = useForceStopAutoHubRun();
 
@@ -61,8 +109,13 @@ export default function AutoHubRunPage() {
 
   async function refresh(run: AutoHubRun) {
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: getGetAutoHubRunQueryKey(run.run_id) }),
+      queryClient.invalidateQueries({
+        queryKey: getGetAutoHubRunQueryKey(run.run_id),
+      }),
       queryClient.invalidateQueries({ queryKey: getListAutoHubRunsQueryKey() }),
+      queryClient.invalidateQueries({
+        queryKey: getListAutoHubRunEntriesQueryKey(run.run_id),
+      }),
     ]);
   }
 
@@ -70,6 +123,9 @@ export default function AutoHubRunPage() {
     try {
       await stop.mutateAsync({ id: run.run_id });
       await refresh(run);
+      toast.success(
+        "Stop requested. Open trades will finish before the final result.",
+      );
     } catch (err) {
       toast.error(parseApiError(err, "Could not stop the bot.").message);
     }
@@ -93,28 +149,58 @@ export default function AutoHubRunPage() {
     );
   }
 
-  if (runQuery.isError || !run) {
+  if (!run) {
     return (
       <Shell>
         <div className="bg-panel border border-line rounded-2xl p-8 max-w-lg">
-          <h2 className="font-display text-lg font-semibold mb-2">This run could not be opened</h2>
+          <h2 className="font-display text-lg font-semibold mb-2">
+            This run could not be opened
+          </h2>
           <p className="text-sm text-ink-2">
-            It may belong to another account, or the trading engine may be unavailable.
+            It may belong to another account, or the trading engine may be
+            unavailable.
           </p>
+          <button
+            type="button"
+            onClick={() => runQuery.refetch()}
+            className="mt-4 h-10 rounded-xl bg-action text-action-ink px-4 text-sm"
+          >
+            Try again
+          </button>
         </div>
       </Shell>
     );
   }
 
   const entries = entriesQuery.data?.entries ?? [];
+  const entriesUpdating = updating || entriesNeedUpdates(entries);
   const pnlNumber = Number.parseFloat(run.realized_pnl) || 0;
   const stopLossLimit = Number.parseFloat(run.stop_loss) || 0;
-  const targetLimit = run.take_profit ? Number.parseFloat(run.take_profit) || 0 : 0;
+  const targetLimit = run.take_profit
+    ? Number.parseFloat(run.take_profit) || 0
+    : 0;
   const busy = stop.isPending || forceStop.isPending;
   const reason = stopReasonLabel(run.stop_reason);
 
   return (
     <Shell>
+      <BotJourney stage={updating ? "run" : "results"} />
+      {runQuery.isError && (
+        <div
+          role="alert"
+          className="mb-5 rounded-xl border border-amber-500/30 p-4 text-sm text-ink-2"
+        >
+          Live updates are temporarily unavailable. The last received result is
+          shown; the server may still be running.{" "}
+          <button
+            type="button"
+            onClick={() => refresh(run)}
+            className="underline underline-offset-4"
+          >
+            Retry updates
+          </button>
+        </div>
+      )}
       <header className="flex flex-wrap items-start justify-between gap-4 mb-8">
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
@@ -123,7 +209,8 @@ export default function AutoHubRunPage() {
             <AccountBadge isVirtual={run.is_virtual} />
           </div>
           <p className="text-sm text-ink-3 mt-1">
-            {run.symbols.map(marketName).join(", ")} · stake {formatMoney(run.stake)} · started{" "}
+            {run.symbols.map(marketName).join(", ")} · starting stake{" "}
+            {formatMoney(run.stake)} · started{" "}
             {new Date(run.started_at ?? run.created_at).toLocaleString()}
             {reason ? ` · ${reason}` : ""}
           </p>
@@ -134,29 +221,44 @@ export default function AutoHubRunPage() {
             type="button"
             disabled={busy || run.status === "stopping"}
             onClick={() => handleStop(run)}
-            className="h-10 w-full rounded-lg border border-red-500/50 px-5 text-sm text-red-300 transition hover:bg-red-500/10 disabled:opacity-45 sm:w-auto"
+            className="h-10 w-full rounded-lg border border-red-500/50 px-5 text-sm text-negative-soft transition hover:bg-red-500/10 disabled:opacity-45 sm:w-auto"
           >
-            {run.status === "stopping" ? "Stopping…" : "Stop"}
+            {run.status === "stopping"
+              ? "Finishing open trades…"
+              : stop.isPending
+                ? "Sending stop…"
+                : "Stop run"}
           </button>
         )}
       </header>
 
-      {run.stop_reason === "deriv_reconnect_required" && (
-        <div className="mb-8 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm leading-relaxed text-amber-900 dark:text-amber-100">
-          Deriv&rsquo;s permission for this bot ran out, so it stopped. Deriv&rsquo;s permissions
-          last about an hour. Start the bot again from{" "}
-          <Link href={`/autohub/bots/${run.bot_id}` as Route} className="underline underline-offset-2">
-            its page
-          </Link>{" "}
-          and allow it on Deriv when asked.
-        </div>
-      )}
+      <RunFeedback run={run} />
+      <div className="mb-4 flex flex-wrap justify-between gap-2 text-xs text-ink-3">
+        <span>
+          {updating ? "Auto-updates every 2 seconds" : "Final session result"} ·{" "}
+          {run.currency}
+        </span>
+        <span>
+          Updated {new Date(runQuery.dataUpdatedAt).toLocaleTimeString()} ·{" "}
+          <button
+            type="button"
+            onClick={() => refresh(run)}
+            className="underline underline-offset-2"
+          >
+            Refresh
+          </button>
+        </span>
+      </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <Stat label="Realised P/L" value={formatMoney(run.realized_pnl)} tone={decimalSign(run.realized_pnl)} />
-        <Stat label="Staked" value={formatMoney(run.total_staked)} />
         <Stat
-          label="Real trades"
+          label={`Realised P/L · ${run.currency}`}
+          value={formatMoney(run.realized_pnl)}
+          tone={decimalSign(run.realized_pnl)}
+        />
+        <Stat label="Total staked" value={formatMoney(run.total_staked)} />
+        <Stat
+          label="Executed trades"
           value={`${run.trades_won}W / ${run.trades_lost}L`}
           hint={`${run.trades_open} open`}
         />
@@ -199,13 +301,38 @@ export default function AutoHubRunPage() {
       <div className="bg-surface border border-line rounded-2xl overflow-hidden">
         <div className="flex items-center justify-between border-b border-line px-4 py-3 sm:px-5">
           <h2 className="text-sm font-medium text-ink">Entries</h2>
-          <span className="text-xs text-ink-3">{active ? "Live" : "Final"}</span>
+          <span className="text-xs text-ink-3">
+            {entriesUpdating ? "Updating" : "Final"}
+          </span>
         </div>
 
+        {entriesQuery.isError && entriesQuery.data && (
+          <p role="alert" className="px-5 py-3 text-xs text-amber-500">
+            Entry updates are delayed. Your last received entries remain below.{" "}
+            <button
+              type="button"
+              onClick={() => entriesQuery.refetch()}
+              className="underline"
+            >
+              Retry
+            </button>
+          </p>
+        )}
         {entriesQuery.isPending ? (
-          <p className="px-5 py-8 text-center text-sm text-ink-3">Loading entries…</p>
-        ) : entriesQuery.isError ? (
-          <p className="px-5 py-8 text-center text-sm text-ink-3">Could not load the entries.</p>
+          <p className="px-5 py-8 text-center text-sm text-ink-3">
+            Loading entries…
+          </p>
+        ) : entriesQuery.isError && !entriesQuery.data ? (
+          <div className="px-5 py-8 text-center text-sm text-ink-3">
+            Could not load the entries.{" "}
+            <button
+              type="button"
+              onClick={() => entriesQuery.refetch()}
+              className="underline"
+            >
+              Retry entries
+            </button>
+          </div>
         ) : entries.length === 0 ? (
           <p className="px-5 py-8 text-center text-sm text-ink-3">
             {active
@@ -214,52 +341,55 @@ export default function AutoHubRunPage() {
           </p>
         ) : (
           <>
-          {/* Seven columns do not fit a phone, and scrolling sideways hid the
+            {/* Seven columns do not fit a phone, and scrolling sideways hid the
               result and the P&L. Below sm each entry is two short lines. */}
-          <ul className="sm:hidden divide-y divide-line/60">
-            {entries.map((entry) => (
-              <EntryItem
-                key={`${entry.lane}-${entry.opened_at}-${entry.deriv_contract_id ?? ""}`}
-                entry={entry}
-                marketName={marketName}
-              />
-            ))}
-          </ul>
-          <div className="hidden sm:block overflow-x-auto">
-            <table className="w-full border-collapse text-sm">
-              <thead>
-                <tr className="border-b border-line text-left text-xs uppercase tracking-wider text-ink-3">
-                  <Th>Time</Th>
-                  <Th>Market</Th>
-                  <Th>Lane</Th>
-                  <Th align="right">Digit</Th>
-                  <Th>Result</Th>
-                  <Th align="right">Stake</Th>
-                  <Th align="right">P&amp;L</Th>
-                </tr>
-              </thead>
-              <tbody>
-                {entries.map((entry) => (
-                  <EntryRow
-                    key={`${entry.lane}-${entry.opened_at}-${entry.deriv_contract_id ?? ""}`}
-                    entry={entry}
-                    marketName={marketName}
-                  />
-                ))}
-              </tbody>
-            </table>
-          </div>
+            <ul className="sm:hidden divide-y divide-line/60">
+              {entries.map((entry) => (
+                <EntryItem
+                  key={`${entry.lane}-${entry.opened_at}-${entry.deriv_contract_id ?? ""}`}
+                  entry={entry}
+                  marketName={marketName}
+                />
+              ))}
+            </ul>
+            <div className="hidden sm:block overflow-x-auto">
+              <table className="w-full border-collapse text-sm">
+                <thead>
+                  <tr className="border-b border-line text-left text-xs uppercase tracking-wider text-ink-3">
+                    <Th>Time</Th>
+                    <Th>Market</Th>
+                    <Th>Lane</Th>
+                    <Th align="right">Digit</Th>
+                    <Th>Result</Th>
+                    <Th align="right">Stake</Th>
+                    <Th align="right">P&amp;L</Th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {entries.map((entry) => (
+                    <EntryRow
+                      key={`${entry.lane}-${entry.opened_at}-${entry.deriv_contract_id ?? ""}`}
+                      entry={entry}
+                      marketName={marketName}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </>
         )}
       </div>
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3 max-w-2xl">
         <p className="text-xs leading-relaxed text-ink-3">
-          This bot runs on the server. Closing this page does not stop it, and equally cannot
-          switch off its stop loss.
+          This bot runs on the server. Closing this page does not stop it. You
+          can return through Auto Hub → Running now to follow this session.
         </p>
         {active && (
-          <EmergencyStopButton busy={forceStop.isPending} onConfirm={() => handleEmergencyStop(run)} />
+          <EmergencyStopButton
+            busy={forceStop.isPending}
+            onConfirm={() => handleEmergencyStop(run)}
+          />
         )}
       </div>
     </Shell>
@@ -275,9 +405,9 @@ function resultLabel(entry: AutoHubEntry): string {
 
 function resultTone(entry: AutoHubEntry): string {
   return entry.outcome === "won"
-    ? "text-emerald-400"
+    ? "text-positive"
     : entry.outcome === "lost"
-      ? "text-red-400"
+      ? "text-negative"
       : "text-ink-3";
 }
 
@@ -293,7 +423,9 @@ function EntryItem({
     <li className="flex items-center justify-between gap-3 px-4 py-3">
       <div className="min-w-0">
         <div className="flex items-center gap-2">
-          <span className="truncate text-sm text-ink">{marketName(entry.symbol)}</span>
+          <span className="truncate text-sm text-ink">
+            {marketName(entry.symbol)}
+          </span>
           <LaneChip lane={entry.lane} />
         </div>
         <p className="mt-0.5 text-xs tabular-nums text-ink-3">
@@ -302,7 +434,12 @@ function EntryItem({
         </p>
       </div>
       <div className="shrink-0 text-right">
-        <span className={cn("text-xs font-semibold uppercase tracking-wider", resultTone(entry))}>
+        <span
+          className={cn(
+            "text-xs font-semibold uppercase tracking-wider",
+            resultTone(entry),
+          )}
+        >
           {resultLabel(entry)}
         </span>
         {/* Money only where there was some: a shadow entry shows no figure. */}
@@ -310,7 +447,9 @@ function EntryItem({
           <p
             className={cn(
               "text-xs tabular-nums",
-              decimalSign(entry.profit_loss) < 0 ? "text-red-400" : "text-emerald-400",
+              decimalSign(entry.profit_loss) < 0
+                ? "text-negative"
+                : "text-positive",
             )}
           >
             {formatMoney(entry.profit_loss)}
@@ -333,7 +472,9 @@ function EntryRow({
       <Td className="tabular-nums text-ink-2 whitespace-nowrap">
         {new Date(entry.opened_at).toLocaleTimeString()}
       </Td>
-      <Td className="text-ink-2 whitespace-nowrap">{marketName(entry.symbol)}</Td>
+      <Td className="text-ink-2 whitespace-nowrap">
+        {marketName(entry.symbol)}
+      </Td>
       <Td>
         <LaneChip lane={entry.lane} />
       </Td>
@@ -341,7 +482,12 @@ function EntryRow({
         {entry.digit ?? "—"}
       </Td>
       <Td>
-        <span className={cn("text-xs font-semibold uppercase tracking-wider", resultTone(entry))}>
+        <span
+          className={cn(
+            "text-xs font-semibold uppercase tracking-wider",
+            resultTone(entry),
+          )}
+        >
           {resultLabel(entry)}
         </span>
       </Td>
@@ -356,11 +502,13 @@ function EntryRow({
             entry.profit_loss === undefined
               ? "text-ink-3"
               : decimalSign(entry.profit_loss) < 0
-                ? "text-red-400"
-                : "text-emerald-400",
+                ? "text-negative"
+                : "text-positive",
           )}
         >
-          {entry.profit_loss === undefined ? "—" : formatMoney(entry.profit_loss)}
+          {entry.profit_loss === undefined
+            ? "—"
+            : formatMoney(entry.profit_loss)}
         </span>
       </Td>
     </tr>
@@ -370,17 +518,33 @@ function EntryRow({
 function Shell({ children }: { children: React.ReactNode }) {
   return (
     <section className="p-4 lg:p-8">
-      <Link href={"/autohub" as Route} className="-mt-2 mb-2 block w-fit py-2 text-xs text-ink-3 hover:text-ink">
-        &larr; Auto Hub
+      <Link
+        href={"/autohub" as Route}
+        className="-mt-2 mb-2 block w-fit py-2 text-xs text-ink-3 hover:text-ink"
+      >
+        &larr; Bot library
       </Link>
       {children}
     </section>
   );
 }
 
-function Th({ children, align = "left" }: { children: React.ReactNode; align?: "left" | "right" }) {
+function Th({
+  children,
+  align = "left",
+}: {
+  children: React.ReactNode;
+  align?: "left" | "right";
+}) {
   return (
-    <th className={cn("px-4 py-2 font-medium sm:px-5", align === "right" && "text-right")}>{children}</th>
+    <th
+      className={cn(
+        "px-4 py-2 font-medium sm:px-5",
+        align === "right" && "text-right",
+      )}
+    >
+      {children}
+    </th>
   );
 }
 
@@ -394,6 +558,14 @@ function Td({
   className?: string;
 }) {
   return (
-    <td className={cn("px-4 py-2.5 sm:px-5", align === "right" && "text-right", className)}>{children}</td>
+    <td
+      className={cn(
+        "px-4 py-2.5 sm:px-5",
+        align === "right" && "text-right",
+        className,
+      )}
+    >
+      {children}
+    </td>
   );
 }

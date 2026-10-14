@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useAuthStore } from "@/stores/authStore";
+import { ThemePicker } from "@/components/settings/ThemePicker";
 import { UpdateEmailModal } from "@/components/settings/UpdateEmailModal";
 import { NewPasswordForm } from "@/components/auth/NewPasswordForm";
 import { useUpdateMe, useGetClientRecord, useCreateClientRecord, useUpdatePassword, useCloseAccount, useRequestAccountClosure } from "@/services/api/endpoints/users/users";
@@ -375,7 +376,7 @@ export default function SettingsPage() {
               </h2>
               <button
                 type="button"
-                className="mt-2 inline-flex items-center gap-2 h-7 px-2.5 rounded-full border border-white/15 bg-ink/30 text-[11px] text-zinc-400 hover:text-white"
+                className="mt-2 inline-flex items-center gap-2 h-7 px-2.5 rounded-full border border-white/15 bg-ink/30 text-[11px] text-ink-3 hover:text-white"
                 onClick={copyClientId}
                 aria-label="Copy client ID"
               >
@@ -387,96 +388,96 @@ export default function SettingsPage() {
 
           <div className="lg:columns-2 lg:gap-4">
             <div className="break-inside-avoid mb-6">
-              <p className="px-1 mb-2 text-xs font-medium text-zinc-500">About you</p>
+              <p className="px-1 mb-2 text-xs font-medium text-ink-3">About you</p>
               <div className="bg-panel border border-line rounded-2xl overflow-hidden">
                 <button type="button" className="settings-row w-full flex items-center gap-3 px-4 py-3.5 text-left" onClick={() => setActivePane("personal")}>
-                  <svg className="w-5 h-5 text-zinc-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.118a7.5 7.5 0 0115 0"/></svg>
+                  <svg className="w-5 h-5 text-ink-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.118a7.5 7.5 0 0115 0"/></svg>
                   <span className="flex-1 min-w-0">
                     <span className="block text-sm font-medium">Personal details & address</span>
-                    <span className="block text-xs text-zinc-500 mt-0.5 truncate">
+                    <span className="block text-xs text-ink-3 mt-0.5 truncate">
                       {user?.full_name ? `${user.full_name}${user.phone ? ` • ${user.phone}` : ""}` : "Name, phone, date of birth & address"}
                     </span>
                   </span>
-                  <svg className="w-4 h-4 text-zinc-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
+                  <svg className="w-4 h-4 text-ink-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
                 </button>
               </div>
             </div>
 
             <div className="break-inside-avoid mb-6">
-              <p className="px-1 mb-2 text-xs font-medium text-zinc-500">Security</p>
+              <p className="px-1 mb-2 text-xs font-medium text-ink-3">Security</p>
               <div className="bg-panel border border-line rounded-2xl overflow-hidden">
                 <button type="button" className="settings-row w-full flex items-center gap-3 px-4 py-3 text-left" onClick={() => setActivePane("password")}>
-                  <svg className="w-5 h-5 text-zinc-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
+                  <svg className="w-5 h-5 text-ink-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
                   <span className="flex-1 text-sm">Change password</span>
-                  <svg className="w-4 h-4 text-zinc-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
+                  <svg className="w-4 h-4 text-ink-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
                 </button>
                 <button type="button" className="settings-row w-full flex items-center gap-3 px-4 py-3 text-left border-t border-line" onClick={() => { setIsUpdateEmailModalOpen(true); }}>
-                  <svg className="w-5 h-5 text-zinc-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+                  <svg className="w-5 h-5 text-ink-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
                   <span className="flex-1 min-w-0">
                     <span className="block text-sm">Change email address</span>
-                    <span className="block text-xs text-zinc-500 mt-0.5 truncate">{user?.email || ""}</span>
+                    <span className="block text-xs text-ink-3 mt-0.5 truncate">{user?.email || ""}</span>
                   </span>
-                  <svg className="w-4 h-4 text-zinc-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
+                  <svg className="w-4 h-4 text-ink-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
                 </button>
                 <button type="button" className="settings-row w-full flex items-center gap-3 px-4 py-3 text-left border-t border-line" onClick={() => setActivePane("2fa")}>
-                  <svg className="w-5 h-5 text-zinc-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+                  <svg className="w-5 h-5 text-ink-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
                   <span className="flex-1 min-w-0">
                     <span className="block text-sm">Two-factor authentication</span>
-                    <span className="block text-xs text-zinc-500 mt-0.5">{user?.is_email_2fa_enabled ? "On" : "Off"}</span>
+                    <span className="block text-xs text-ink-3 mt-0.5">{user?.is_email_2fa_enabled ? "On" : "Off"}</span>
                   </span>
-                  <svg className="w-4 h-4 text-zinc-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
+                  <svg className="w-4 h-4 text-ink-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
                 </button>
                 <button type="button" className="settings-row w-full flex items-center gap-3 px-4 py-3 text-left border-t border-line" onClick={() => setActivePane("close")}>
-                  <svg className="w-5 h-5 text-zinc-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/></svg>
+                  <svg className="w-5 h-5 text-ink-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/></svg>
                   <span className="flex-1 text-sm">Close account</span>
-                  <svg className="w-4 h-4 text-zinc-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
+                  <svg className="w-4 h-4 text-ink-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
                 </button>
               </div>
             </div>
 
             <div className="break-inside-avoid mb-6">
-              <p className="px-1 mb-2 text-xs font-medium text-zinc-500">Preferences</p>
+              <p className="px-1 mb-2 text-xs font-medium text-ink-3">Preferences</p>
               <div className="bg-panel border border-line rounded-2xl overflow-hidden">
                 <button type="button" className="settings-row w-full flex items-center gap-3 px-4 py-3 text-left" onClick={() => setActivePane("theme")}>
-                  <svg className="w-5 h-5 text-zinc-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg>
+                  <svg className="w-5 h-5 text-ink-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg>
                   <span className="flex-1 min-w-0">
                     <span className="block text-sm">Theme</span>
-                    <span className="block text-xs text-zinc-500 mt-0.5 capitalize">{theme}</span>
+                    <span className="block text-xs text-ink-3 mt-0.5 capitalize">{theme}</span>
                   </span>
-                  <svg className="w-4 h-4 text-zinc-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
+                  <svg className="w-4 h-4 text-ink-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
                 </button>
                 <button type="button" className="settings-row w-full flex items-center gap-3 px-4 py-3 text-left border-t border-line" onClick={() => setActivePane("language")}>
-                  <svg className="w-5 h-5 text-zinc-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418"/></svg>
+                  <svg className="w-5 h-5 text-ink-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418"/></svg>
                   <span className="flex-1 min-w-0">
                     <span className="block text-sm">Language</span>
-                    <span className="block text-xs text-zinc-500 mt-0.5">English</span>
+                    <span className="block text-xs text-ink-3 mt-0.5">English</span>
                   </span>
-                  <svg className="w-4 h-4 text-zinc-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
+                  <svg className="w-4 h-4 text-ink-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
                 </button>
               </div>
             </div>
 
             <div className="break-inside-avoid mb-6">
-              <p className="px-1 mb-2 text-xs font-medium text-zinc-500">Support</p>
+              <p className="px-1 mb-2 text-xs font-medium text-ink-3">Support</p>
               <div className="bg-panel border border-line rounded-2xl overflow-hidden">
                 <Link href="/guides" className="settings-row flex items-center gap-3 px-4 py-3">
-                  <svg className="w-5 h-5 text-zinc-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
+                  <svg className="w-5 h-5 text-ink-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
                   <span className="flex-1 text-sm">Guides</span>
-                  <svg className="w-4 h-4 text-zinc-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M7 17L17 7M7 7h10v10"/></svg>
+                  <svg className="w-4 h-4 text-ink-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M7 17L17 7M7 7h10v10"/></svg>
                 </Link>
-                <button type="button" className="settings-row w-full flex items-center gap-3 px-4 py-3 text-left border-t border-line" onClick={() => setActivePane("ticket")}>
-                  <svg className="w-5 h-5 text-zinc-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z"/></svg>
+                <Link href="/support" className="settings-row flex items-center gap-3 px-4 py-3 border-t border-line">
+                  <svg className="w-5 h-5 text-ink-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z"/></svg>
                   <span className="flex-1 min-w-0">
                     <span className="block text-sm">Submit a ticket</span>
-                    <span className="block text-xs text-zinc-500 mt-0.5">Wallet, venues, bots, or account</span>
+                    <span className="block text-xs text-ink-3 mt-0.5">Wallet, venues, bots, or account</span>
                   </span>
-                  <svg className="w-4 h-4 text-zinc-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
-                </button>
+                  <svg className="w-4 h-4 text-ink-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
+                </Link>
               </div>
             </div>
           </div>
 
-          <button type="button" className="h-10 px-5 rounded-lg text-sm font-medium text-red-400 hover:text-red-300 border border-line" onClick={handleLogout}>Log out</button>
+          <button type="button" className="h-10 px-5 rounded-lg text-sm font-medium text-negative hover:text-red-300 border border-line" onClick={handleLogout}>Log out</button>
         </div>
       )}
 
@@ -486,7 +487,7 @@ export default function SettingsPage() {
           <article className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-6">
             <div className="space-y-1">
               <h3 className="text-base font-semibold text-white">Personal details & address</h3>
-              <p className="text-sm text-zinc-400 leading-relaxed">
+              <p className="text-sm text-ink-3 leading-relaxed">
                 These details sit on your FXNOD client record — used for wallet payouts and venue transfer.{" "}
                 <strong className="text-zinc-200">Once saved, client identity and address details cannot be modified.</strong>
               </p>
@@ -494,11 +495,11 @@ export default function SettingsPage() {
 
             {/* Section 1: Personal & Contact info */}
             <div className="space-y-4 pt-2 border-t border-line/60">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Personal & Contact Info</h4>
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-ink-3">Personal & Contact Info</h4>
               
               <div className="grid sm:grid-cols-2 gap-4">
                 <label className="block">
-                  <span className="text-xs text-zinc-500">First name</span>
+                  <span className="text-xs text-ink-3">First name</span>
                   <input
                     disabled={!!clientRecord}
                     value={firstName}
@@ -508,7 +509,7 @@ export default function SettingsPage() {
                   />
                 </label>
                 <label className="block">
-                  <span className="text-xs text-zinc-500">Last name</span>
+                  <span className="text-xs text-ink-3">Last name</span>
                   <input
                     disabled={!!clientRecord}
                     value={lastName}
@@ -521,7 +522,7 @@ export default function SettingsPage() {
 
               <div>
                 <label className="block">
-                  <span className="text-xs text-zinc-500">Phone number</span>
+                  <span className="text-xs text-ink-3">Phone number</span>
                   <div className="mt-1.5 flex gap-2">
                     <input
                       type="tel"
@@ -541,13 +542,13 @@ export default function SettingsPage() {
                       </button>
                     )}
                   </div>
-                  <span className="block mt-1 text-xs text-zinc-500">Include your country code (e.g. +94, +1, +44)</span>
+                  <span className="block mt-1 text-xs text-ink-3">Include your country code (e.g. +94, +1, +44)</span>
                 </label>
               </div>
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <label className="block">
-                  <span className="text-xs text-zinc-500">Date of birth</span>
+                  <span className="text-xs text-ink-3">Date of birth</span>
                   <input
                     type="date"
                     disabled={!!clientRecord}
@@ -557,7 +558,7 @@ export default function SettingsPage() {
                   />
                 </label>
                 <label className="block">
-                  <span className="text-xs text-zinc-500">Country of residence</span>
+                  <span className="text-xs text-ink-3">Country of residence</span>
                   <select
                     disabled={!!clientRecord}
                     value={country}
@@ -577,10 +578,10 @@ export default function SettingsPage() {
 
             {/* Section 2: Residential Address */}
             <div className="space-y-4 pt-2 border-t border-line/60">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Residential Address</h4>
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-ink-3">Residential Address</h4>
               
               <label className="block">
-                <span className="text-xs text-zinc-500">Street address</span>
+                <span className="text-xs text-ink-3">Street address</span>
                 <input
                   disabled={!!clientRecord}
                   value={streetAddress}
@@ -592,7 +593,7 @@ export default function SettingsPage() {
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <label className="block">
-                  <span className="text-xs text-zinc-500">City</span>
+                  <span className="text-xs text-ink-3">City</span>
                   <input
                     disabled={!!clientRecord}
                     value={city}
@@ -602,7 +603,7 @@ export default function SettingsPage() {
                   />
                 </label>
                 <label className="block">
-                  <span className="text-xs text-zinc-500">Postal code</span>
+                  <span className="text-xs text-ink-3">Postal code</span>
                   <input
                     disabled={!!clientRecord}
                     value={postalCode}
@@ -626,7 +627,7 @@ export default function SettingsPage() {
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-2 pt-2 text-xs text-emerald-400 font-medium">
+              <div className="flex items-center gap-2 pt-2 text-xs text-positive font-medium">
                 <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -642,7 +643,7 @@ export default function SettingsPage() {
           <button type="button" className="text-sm text-gray-900 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
           <article className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-4">
             <label className="block">
-              <span className="text-xs text-zinc-500">Current password</span>
+              <span className="text-xs text-ink-3">Current password</span>
               <input type="password" value={currentPassword} onChange={(e) => { setCurrentPassword(e.target.value); setCurrentPasswordError(""); }} className={cn("mt-1.5 w-full h-10 px-3 rounded-lg bg-bg border text-sm outline-none focus:border-zinc-500", currentPasswordError ? "border-red-500" : "border-line")} placeholder="Enter current password" />
               {currentPasswordError && <span className="block mt-1 text-xs text-red-500">{currentPasswordError}</span>}
             </label>
@@ -658,7 +659,7 @@ export default function SettingsPage() {
         <div className="space-y-4">
           <button type="button" className="text-sm text-gray-900 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-white" onClick={() => { setActivePane("hub"); setIsTwoFASetupStarted(false); setTwoFAOTP(""); }}>← Settings</button>
           <article className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-4">
-            <p className="text-sm text-zinc-400 leading-relaxed">Add an authenticator step when you log in to FXNOD. We will email you a 6-digit code.</p>
+            <p className="text-sm text-ink-3 leading-relaxed">Add an authenticator step when you log in to FXNOD. We will email you a 6-digit code.</p>
             
             {user?.is_email_2fa_enabled ? (
               <div className="space-y-4">
@@ -679,7 +680,7 @@ export default function SettingsPage() {
               <button 
                 type="button" 
                 disabled={isSettingUp2FA}
-                className="h-10 px-5 rounded-lg bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-sm font-medium disabled:opacity-50" 
+                className="h-10 px-5 rounded-lg bg-action text-action-ink hover:opacity-90 text-sm font-medium disabled:opacity-50"
                 onClick={handleStart2FASetup}
               >
                 {isSettingUp2FA ? "Starting setup..." : "Turn on 2FA"}
@@ -688,7 +689,7 @@ export default function SettingsPage() {
               <div className="space-y-4 pt-2">
                 <p className="text-sm text-zinc-300">We have sent a code to <strong className="text-white">{user?.email}</strong>.</p>
                 <label className="block max-w-[240px]">
-                  <span className="text-xs text-zinc-500">Enter setup code</span>
+                  <span className="text-xs text-ink-3">Enter setup code</span>
                   <input
                     type="text"
                     value={twoFAOTP}
@@ -701,7 +702,7 @@ export default function SettingsPage() {
                   <button 
                     type="button" 
                     disabled={isVerifying2FA}
-                    className="h-10 px-5 rounded-lg bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-sm font-medium disabled:opacity-50" 
+                    className="h-10 px-5 rounded-lg bg-action text-action-ink hover:opacity-90 text-sm font-medium disabled:opacity-50"
                     onClick={handleVerify2FASetup}
                   >
                     {isVerifying2FA ? "Verifying..." : "Verify & Enable"}
@@ -724,15 +725,15 @@ export default function SettingsPage() {
         <div className="space-y-4">
           <button type="button" className="text-sm text-gray-900 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
           <article className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-4">
-            <p className="text-sm text-zinc-400 leading-relaxed">
+            <p className="text-sm text-ink-3 leading-relaxed">
               Closing your account signs you out everywhere and removes your profile. You cannot close it while your wallet holds a balance, so withdraw it first.
             </p>
-            <p className="text-sm text-zinc-400 leading-relaxed">
+            <p className="text-sm text-ink-3 leading-relaxed">
               As a regulated financial service, we keep your identity, verification and support records for the period the law requires, then delete them.
             </p>
             {!closeCodeSent ? (
               <label className="block">
-                <span className="text-xs text-zinc-500">Type CLOSE to confirm</span>
+                <span className="text-xs text-ink-3">Type CLOSE to confirm</span>
                 <input
                   value={closeConfirm}
                   onChange={(e) => setCloseConfirm(e.target.value)}
@@ -743,7 +744,7 @@ export default function SettingsPage() {
               <>
                 <p className="text-sm text-zinc-300">We sent a confirmation code to <strong className="text-ink">{user?.email}</strong>.</p>
                 <label className="block max-w-[240px]">
-                  <span className="text-xs text-zinc-500">Confirmation code</span>
+                  <span className="text-xs text-ink-3">Confirmation code</span>
                   <input
                     value={closeCode}
                     onChange={(e) => setCloseCode(e.target.value.replace(/\D/g, "").slice(0, 10))}
@@ -754,7 +755,7 @@ export default function SettingsPage() {
                   />
                 </label>
                 <label className="block">
-                  <span className="text-xs text-zinc-500">Why are you leaving? (optional)</span>
+                  <span className="text-xs text-ink-3">Why are you leaving? (optional)</span>
                   <textarea
                     value={closeReason}
                     onChange={(e) => setCloseReason(e.target.value.slice(0, 1000))}
@@ -786,23 +787,11 @@ export default function SettingsPage() {
         <div className="space-y-4">
           <button type="button" className="text-sm text-gray-900 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
           <article className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-4">
-            <p className="text-sm text-zinc-400">Switch the terminal between dark and light.</p>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                className={`h-9 px-3 rounded-lg text-sm font-medium transition-colors ${theme === 'dark' ? 'bg-slate-900 text-white dark:bg-white dark:text-black' : 'border border-gray-200 text-gray-700 hover:bg-gray-100 hover:text-black dark:border-zinc-800 dark:text-zinc-400 dark:hover:bg-gray-800 dark:hover:text-white'}`}
-                onClick={() => setTheme("dark")}
-              >
-                Dark
-              </button>
-              <button
-                type="button"
-                className={`h-9 px-3 rounded-lg text-sm font-medium transition-colors ${theme === 'light' ? 'bg-slate-900 text-white dark:bg-white dark:text-black' : 'border border-gray-200 text-gray-700 hover:bg-gray-100 hover:text-black dark:border-zinc-800 dark:text-zinc-400 dark:hover:bg-gray-800 dark:hover:text-white'}`}
-                onClick={() => setTheme("light")}
-              >
-                Light
-              </button>
+            <div>
+              <h2 className="text-lg font-semibold text-ink">Workspace appearance</h2>
+              <p className="mt-1 text-sm text-ink-2">Choose the look that feels comfortable for you.</p>
             </div>
+            <ThemePicker theme={theme} onChange={setTheme} />
           </article>
         </div>
       )}
@@ -813,13 +802,13 @@ export default function SettingsPage() {
           <article className="bg-panel border border-line rounded-2xl overflow-hidden">
             <button type="button" className="settings-row w-full flex items-center justify-between px-4 py-3 text-left">
               <span className="text-sm">English</span>
-              <span className="text-xs text-zinc-500">Selected</span>
+              <span className="text-xs text-ink-3">Selected</span>
             </button>
             <button type="button" className="settings-row w-full flex items-center justify-between px-4 py-3 text-left border-t border-line" onClick={stubFeature}>
               <span className="text-sm">සිංහල</span>
             </button>
           </article>
-          <p className="text-xs text-zinc-500 px-1">Preference is saved on this device. The terminal copy stays English in this demo.</p>
+          <p className="text-xs text-ink-3 px-1">Preference is saved on this device. The terminal copy stays English in this demo.</p>
         </div>
       )}
 
@@ -828,9 +817,9 @@ export default function SettingsPage() {
           <button type="button" className="text-sm text-gray-900 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-white" onClick={() => setActivePane("hub")}>← Settings</button>
           <div className="grid lg:grid-cols-2 gap-4 items-start">
             <article className="bg-panel border border-line rounded-2xl p-5 sm:p-6 space-y-4">
-              <p className="text-sm text-zinc-400 leading-relaxed">Tell us what is blocked. We reply to the email on this account.</p>
+              <p className="text-sm text-ink-3 leading-relaxed">Tell us what is blocked. We reply to the email on this account.</p>
               <label className="block">
-                <span className="text-xs text-zinc-500">Topic</span>
+                <span className="text-xs text-ink-3">Topic</span>
                 <select 
                   value={ticketTopic}
                   onChange={(e) => setTicketTopic(e.target.value as TicketTopic)}
@@ -843,7 +832,7 @@ export default function SettingsPage() {
                 </select>
               </label>
               <label className="block">
-                <span className="text-xs text-zinc-500">Subject</span>
+                <span className="text-xs text-ink-3">Subject</span>
                 <input 
                   maxLength={120} 
                   placeholder="Short summary" 
@@ -853,7 +842,7 @@ export default function SettingsPage() {
                 />
               </label>
               <label className="block">
-                <span className="text-xs text-zinc-500">Message</span>
+                <span className="text-xs text-ink-3">Message</span>
                 <textarea 
                   rows={5} 
                   maxLength={1000} 
@@ -865,7 +854,7 @@ export default function SettingsPage() {
               </label>
               <button 
                 type="button" 
-                className="h-10 px-5 rounded-lg bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-sm font-medium disabled:opacity-50" 
+                className="h-10 px-5 rounded-lg bg-action text-action-ink hover:opacity-90 text-sm font-medium disabled:opacity-50"
                 onClick={handleCreateTicket}
                 disabled={isCreatingTicket}
               >
@@ -878,9 +867,9 @@ export default function SettingsPage() {
               </div>
               <div className="divide-y divide-line">
                 {isLoadingTickets ? (
-                  <p className="px-5 py-8 text-sm text-zinc-500">Loading tickets...</p>
+                  <p className="px-5 py-8 text-sm text-ink-3">Loading tickets...</p>
                 ) : !tickets || tickets.length === 0 ? (
-                  <p className="px-5 py-8 text-sm text-zinc-500">No tickets yet.</p>
+                  <p className="px-5 py-8 text-sm text-ink-3">No tickets yet.</p>
                 ) : (
                   tickets.map(ticket => (
                     <div key={ticket.id} className="p-5 space-y-2">
@@ -891,17 +880,17 @@ export default function SettingsPage() {
                           ticket.status === TicketStatus.OPEN ? "bg-blue-500/10 text-blue-500" :
                           ticket.status === TicketStatus.IN_PROGRESS ? "bg-yellow-500/10 text-yellow-500" :
                           ticket.status === TicketStatus.RESOLVED ? "bg-green-500/10 text-green-500" :
-                          "bg-zinc-500/10 text-zinc-400"
+                          "bg-zinc-500/10 text-ink-3"
                         )}>
                           {ticket.status.replace("_", " ")}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 text-xs text-zinc-500">
+                      <div className="flex items-center gap-2 text-xs text-ink-3">
                         <span className="uppercase">{ticket.topic}</span>
                         <span>•</span>
                         <span>{format(new Date(ticket.created_at), "MMM d, yyyy")}</span>
                       </div>
-                      <p className="text-sm text-zinc-400 mt-2 whitespace-pre-wrap">{ticket.message}</p>
+                      <p className="text-sm text-ink-3 mt-2 whitespace-pre-wrap">{ticket.message}</p>
                     </div>
                   ))
                 )}
@@ -926,12 +915,12 @@ export default function SettingsPage() {
             <div className="p-5 sm:p-6 space-y-4">
               <h2 className="text-lg font-semibold text-white">Disable Two-Factor Authentication</h2>
               {!disableCodeSent ? (
-                <p className="text-sm text-zinc-400 leading-relaxed">
+                <p className="text-sm text-ink-3 leading-relaxed">
                   Are you sure you want to turn off 2FA? This will reduce your account security. We will email you a code to confirm.
                 </p>
               ) : (
                 <label className="block">
-                  <span className="text-sm text-zinc-400">Enter the code we sent to {user?.email}</span>
+                  <span className="text-sm text-ink-3">Enter the code we sent to {user?.email}</span>
                   <input
                     value={disableCode}
                     onChange={(e) => setDisableCode(e.target.value.replace(/\D/g, "").slice(0, 10))}
@@ -946,7 +935,7 @@ export default function SettingsPage() {
             <div className="p-5 sm:p-6 pt-0 flex items-center justify-end gap-3 mt-2">
               <button
                 type="button"
-                className="h-10 px-5 rounded-lg text-sm text-zinc-400 hover:text-white transition-colors disabled:opacity-50"
+                className="h-10 px-5 rounded-lg text-sm text-ink-3 hover:text-white transition-colors disabled:opacity-50"
                 onClick={closeDisableModal}
                 disabled={isDisabling2FA}
               >

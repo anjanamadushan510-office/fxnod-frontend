@@ -11,7 +11,7 @@ import { env } from "@/lib/env";
 import { derivListApps } from "@/services/api/endpoints/trading/trading";
 import { derivApi } from "@/services/tradingApi";
 
-/** A dBot app the user is asked to approve once. */
+/** A Bot Forge app the user is asked to approve once. */
 export interface DerivAppTarget {
   appKey: string;
   /** Public Deriv OAuth client id, from GET /api/v1/deriv/apps. */
@@ -48,8 +48,8 @@ function pathWithoutOAuthFlags(): string {
 /**
  * Starts a Deriv OAuth round-trip.
  *
- * `start` links the dTrader account (TopBar "Connect Deriv", login modal).
- * `startAppConsent` approves one dBot app: Deriv bills markup per app and a
+ * `start` links the Trade Pilot account (TopBar "Connect Deriv", login modal).
+ * `startAppConsent` approves one Bot Forge app: Deriv bills markup per app and a
  * token only trades through the app it was granted to, so each app a user's
  * bots trade through needs its own, one-time approval.
  *

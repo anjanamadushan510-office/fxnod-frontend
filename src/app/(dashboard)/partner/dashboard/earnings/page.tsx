@@ -86,7 +86,7 @@ export default function PartnerEarningsPage() {
         {earningsQuery.isLoading ? (
           <p className="px-5 py-6 text-center text-sm text-ink-3">Loading…</p>
         ) : earningsQuery.isError ? (
-          <p className="px-5 py-6 text-center text-sm text-red-400">Your earnings could not be loaded.</p>
+          <p className="px-5 py-6 text-center text-sm text-negative">Your earnings could not be loaded.</p>
         ) : !earnings?.matrix.length ? (
           <p className="px-5 py-6 text-center text-sm text-ink-3">Nothing earned yet.</p>
         ) : (
@@ -200,7 +200,7 @@ export default function PartnerEarningsPage() {
         {historyQuery.isLoading ? (
           <p className="px-5 py-6 text-center text-sm text-ink-3">Loading…</p>
         ) : historyQuery.isError ? (
-          <p className="px-5 py-6 text-center text-sm text-red-400">The history could not be loaded.</p>
+          <p className="px-5 py-6 text-center text-sm text-negative">The history could not be loaded.</p>
         ) : !history?.items.length ? (
           <p className="px-5 py-6 text-center text-sm text-ink-3">
             {filtered ? "No commission matches these filters." : "No commission yet."}

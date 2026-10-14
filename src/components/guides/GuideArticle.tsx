@@ -135,6 +135,19 @@ function Block({ block }: { block: GuideBlock }) {
           <p className="text-[15px]">{block.text}</p>
         </aside>
       );
+    case "links":
+      return (
+        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-[15px]">
+          {block.items.map((item) => (
+            <li key={item.href}>
+              <Link href={item.href as Route} className="font-semibold text-accent hover:text-white transition">
+                {item.label}
+              </Link>
+              <span className="block text-zinc-400">{item.text}</span>
+            </li>
+          ))}
+        </ul>
+      );
   }
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { CaretDownIcon } from "@/components/ui/Icons";
@@ -12,13 +12,14 @@ import {
   useDerivSelectAccount,
 } from "@/services/api/endpoints/trading/trading";
 import type { DerivLinkedAccount } from "@/services/api/model";
+import { useAuthStore } from "@/stores/authStore";
 import { useAccountBalance } from "@/stores/useAccountBalance";
 
 export type OptionsAccountMode = "real" | "demo";
 
 interface AccountSelectorProps {
   mode: OptionsAccountMode;
-  balance: number;
+  balance: number | null;
   currency?: string;
   onOpen?: () => void;
 }
@@ -26,22 +27,53 @@ interface AccountSelectorProps {
 const DERIV_OPEN_REAL_ACCOUNT_URL = "https://app.deriv.com/";
 
 export function AccountSelector({
-  mode,
-  balance,
   currency = "USD",
   onOpen,
 }: AccountSelectorProps) {
   const queryClient = useQueryClient();
-  const { accountId, isVirtual, linked } = useDerivStatus();
+  const { accountId, isVirtual, linked, currency: selectedCurrency } = useDerivStatus();
+  const userId = useAuthStore((state) => state.user?.id);
   
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
-  const accountsQuery = useDerivListAccounts(undefined, { query: { enabled: open && linked } });
+  // Read the saved snapshot immediately, without waiting for broker refresh.
+  const cachedAccountsQuery = useDerivListAccounts(undefined, { query: {
+    enabled: linked && !!userId,
+    queryKey: [...getDerivListAccountsQueryKey(), userId],
+    staleTime: 0,
+  } });
+  const accountsQuery = useDerivListAccounts({ refresh: true }, { query: {
+    enabled: linked && !!userId,
+    queryKey: [...getDerivListAccountsQueryKey({ refresh: true }), userId],
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
+  } });
   const selectMutation = useDerivSelectAccount();
   const [pendingAccount, setPendingAccount] = useState<DerivLinkedAccount | null>(null);
   
   const balances = useAccountBalance((s) => s.balances);
+  const ownerId = useAccountBalance((s) => s.ownerId);
+  const selectedBalance = ownerId === userId && accountId ? balances[accountId]?.balance : null;
+
+  useEffect(() => {
+    const store = useAccountBalance.getState();
+    store.setOwner(userId ?? null);
+    store.selectAccount(accountId ?? "", selectedCurrency);
+  }, [userId, accountId, selectedCurrency]);
+
+  useEffect(() => {
+    if (!userId) return;
+    const store = useAccountBalance.getState();
+    store.setOwner(userId);
+    for (const account of [...(cachedAccountsQuery.data?.accounts ?? []), ...(accountsQuery.data?.accounts ?? [])]) {
+      if (account.balance !== undefined) {
+        store.setBalance(account.balance, account.currency, account.deriv_account_id,
+          account.balance_updated_at ? Date.parse(account.balance_updated_at) : 0);
+      }
+    }
+  }, [cachedAccountsQuery.data, accountsQuery.data, userId]);
 
   useEffect(() => {
     if (!open) return;
@@ -59,18 +91,20 @@ export function AccountSelector({
     };
   }, [open]);
 
-  const refreshEverything = useCallback(async () => {
-    await queryClient.invalidateQueries({ queryKey: derivStatusKey });
-    await queryClient.invalidateQueries({ queryKey: getDerivListAccountsQueryKey() });
-    await queryClient.invalidateQueries();
-  }, [queryClient]);
-
   async function executeSwitch(account: DerivLinkedAccount) {
     try {
-      await selectMutation.mutateAsync({
+      const selected = await selectMutation.mutateAsync({
         data: { deriv_account_id: account.deriv_account_id },
       });
-      await refreshEverything();
+      await queryClient.cancelQueries({ queryKey: [...derivStatusKey, userId] });
+      // Update the selected account immediately; unrelated requests must not
+      // delay the switch or leave the previous account's balance on screen.
+      useAccountBalance.getState().selectAccount(account.deriv_account_id, account.currency);
+      queryClient.setQueryData([...derivStatusKey, userId], (previous: object | undefined) => ({
+        ...previous, ...selected,
+      }));
+      void queryClient.invalidateQueries({ queryKey: derivStatusKey });
+      void queryClient.invalidateQueries({ queryKey: getDerivListAccountsQueryKey() });
       setOpen(false);
       setPendingAccount(null);
       toast.success(
@@ -84,7 +118,7 @@ export function AccountSelector({
   }
 
   async function switchTo(account: DerivLinkedAccount) {
-    if (account.is_selected) {
+    if (account.deriv_account_id === accountId) {
       setOpen(false);
       return;
     }
@@ -95,10 +129,10 @@ export function AccountSelector({
     await executeSwitch(account);
   }
 
-  const accounts = accountsQuery.data?.accounts ?? [];
+  const accounts = accountsQuery.data?.accounts ?? cachedAccountsQuery.data?.accounts ?? [];
   const busy = selectMutation.isPending;
   const hasRealAccount = accounts.some((a) => !a.is_virtual);
-  const loaded = !accountsQuery.isPending && !accountsQuery.isError;
+  const loaded = accountsQuery.isSuccess || cachedAccountsQuery.isSuccess;
 
   return (
     <>
@@ -107,7 +141,10 @@ export function AccountSelector({
           type="button"
           onClick={() => {
             if (onOpen) onOpen();
-            if (linked) setOpen((v) => !v);
+            if (linked) {
+              if (!open) void accountsQuery.refetch();
+              setOpen((v) => !v);
+            }
           }}
           aria-haspopup="menu"
           aria-expanded={open}
@@ -122,11 +159,11 @@ export function AccountSelector({
               <CaretDownIcon className="h-3 w-3" />
             </span>
             <span className="font-mono text-sm font-semibold tabular-nums text-opt-ink">
-              {balance.toLocaleString("en-US", {
+              {selectedBalance == null ? (linked ? "Updating…" : "—") : selectedBalance.toLocaleString("en-US", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })}{" "}
-              {currency}
+              {selectedCurrency ?? currency}
             </span>
           </div>
         </button>
@@ -139,7 +176,7 @@ export function AccountSelector({
               "rounded-[var(--opt-radius)] border border-opt-line bg-opt-bg-elev shadow-lg"
             )}
           >
-            {accountsQuery.isPending && (
+            {accountsQuery.isPending && cachedAccountsQuery.isPending && (
               <p className="m-0 px-3 py-4 text-center text-[11px] text-opt-ink-3">
                 Loading…
               </p>
@@ -152,13 +189,13 @@ export function AccountSelector({
             )}
 
             {accounts.map((account) => {
-              const isSelected = account.is_selected;
+              const isSelected = account.deriv_account_id === accountId;
               const accountTypeLabel = account.is_virtual ? "Demo account" : "Real account";
               
               const storedBalance = balances[account.deriv_account_id]?.balance;
-              const itemBalance = storedBalance ?? (isSelected ? balance : ((account as any).balance ?? 0));
+              const itemBalance = ownerId === userId ? storedBalance : undefined;
               
-              const formattedBalance = itemBalance.toLocaleString("en-US", {
+              const formattedBalance = itemBalance == null ? "Updating…" : itemBalance.toLocaleString("en-US", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               });
@@ -226,7 +263,7 @@ export function AccountSelector({
                 type="button"
                 onClick={() => executeSwitch(pendingAccount)}
                 disabled={busy}
-                className="rounded-lg bg-opt-fall px-4 py-2 text-[13px] font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                className="rounded-lg bg-opt-fall-fill px-4 py-2 text-[13px] font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
               >
                 {busy ? "Switching..." : "Yes, switch to real"}
               </button>

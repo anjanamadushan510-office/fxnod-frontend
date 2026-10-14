@@ -162,7 +162,7 @@ export function RegisterForm() {
             The Ultimate Trading Hub
           </h2>
           <p id="slide-copy" className="text-sm text-zinc-300 max-w-md leading-relaxed mb-6">
-            Build and run your own Deriv strategies. Free with markup, or monthly from your wallet.
+            Build and run your own Deriv strategies. Choose a tool package and access period from your FXNOD Wallet.
           </p>
           <div className="flex gap-2" id="slide-dots">
             <button
@@ -283,7 +283,7 @@ export function RegisterForm() {
                 </div>
               </label>
               
-              <p id="auth-error" className="text-xs text-red-400 min-h-[1rem]">
+              <p id="auth-error" className="text-xs text-negative min-h-[1rem]">
                 {generalError}
               </p>
               

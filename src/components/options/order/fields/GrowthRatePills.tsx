@@ -33,7 +33,7 @@ export function GrowthRatePills({
           {loading ? (
             <span className="font-normal text-opt-ink-3">(loading…)</span>
           ) : showLive || !loading ? (
-            <span className="rounded bg-emerald-500/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-emerald-400">
+            <span className="rounded bg-emerald-500/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-positive">
               LIVE
             </span>
           ) : null}

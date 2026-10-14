@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { CaretDownIcon } from "@/components/ui/Icons";
 import { useContractDetails } from "@/stores/useContractDetails";
+import { usePositionsUI } from "@/stores/usePositionsUI";
 import { useOpenPositions } from "@/stores/useOpenPositions";
 import { cn } from "@/lib/cn";
 import { ClosedPositionCard } from "./ClosedPositionCard";
@@ -21,22 +22,43 @@ import { toast } from "sonner";
 interface PositionsDrawerProps {
   open: boolean;
   onClose: () => void;
+  socketStatus?: string;
 }
 
 /**
- * Positions drawer (Deriv §8–10). Open tab = live sim positions; Closed tab =
+ * Positions drawer (Deriv §8–10). Open tab = live broker positions; Closed tab =
  * date-grouped closed contracts with an "All time" date filter. Stays mounted
  * for the slide animation — the OptionsShell column width clips it when closed.
  */
-export function PositionsDrawer({ open, onClose }: PositionsDrawerProps) {
-  const [tab, setTab] = useState<"open" | "closed">("open");
+export function PositionsDrawer({ open, onClose, socketStatus }: PositionsDrawerProps) {
+  const tab = usePositionsUI((state) => state.tab);
+  const setTab = usePositionsUI((state) => state.setTab);
 
   const positions = useOpenPositions((s) => s.positions);
-  const tick = useOpenPositions((s) => s.tick);
+  const activePositions = positions.filter((p) => !p.outcome);
+  const [filter, setFilter] = useState<FilterKey>("all");
+  const historyQuery = useTradeHistory();
+  const closedContracts = useMemo(() => {
+    const rows = new Map<string, ContractDetail>();
+    for (const position of positions) {
+      if (position.outcome && position.contractId) rows.set(position.contractId, simPositionToDetail(position));
+    }
+    for (const row of historyQuery.data ?? []) {
+      if (row.outcome === "won" || row.outcome === "lost") {
+        rows.set(row.deriv_contract_id, historyToDetail(row));
+      }
+    }
+    return [...rows.values()].sort((a, b) => b.exitTime - a.exitTime);
+  }, [positions, historyQuery.data]);
+  const filteredContracts = useMemo(() => filterContracts(closedContracts, filter), [closedContracts, filter]);
+  const latestResult = positions.filter((p) => p.outcome).sort((a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0))[0];
   const openDetail = useContractDetails((s) => s.open);
 
+  const sellingIds = useRef(new Set<string>());
   const sellMutation = useSellPosition({
     mutation: {
+      retry: false,
+      onSettled: (_data, _error, variables) => { sellingIds.current.delete(variables.data.contract_id); },
       onSuccess: () => {
         toast.success("Sell order accepted");
       },
@@ -49,17 +71,15 @@ export function PositionsDrawer({ open, onClose }: PositionsDrawerProps) {
   });
 
   const handleSell = (contractId: string) => {
+    if (sellingIds.current.has(contractId)) return;
+    sellingIds.current.add(contractId);
     sellMutation.mutate({ data: { contract_id: contractId } });
   };
 
   const openTotal = useMemo(
-    () => positions.reduce((acc, p) => acc + p.pnl, 0),
+    () => positions.filter((p) => !p.outcome).reduce((acc, p) => acc + p.pnl, 0),
     [positions],
   );
-  const closedTotal = useMemo(() => {
-    return 0; // We will handle total inside ClosedTab or leave it as 0 if we don't have it locally
-  }, []);
-
   // Escape closes
   useEffect(() => {
     if (!open) return;
@@ -72,9 +92,8 @@ export function PositionsDrawer({ open, onClose }: PositionsDrawerProps) {
     };
   }, [open, onClose]);
 
-  // TODO: Fix footer logic if needed, hiding for now or just using 0 for closed
-  const footerCount = tab === "open" ? positions.length : 0;
-  const footerPnl = tab === "open" ? openTotal : 0;
+  const footerCount = tab === "open" ? activePositions.length : filteredContracts.length;
+  const footerPnl = tab === "open" ? openTotal : filteredContracts.reduce((sum, contract) => sum + contract.pnl, 0);
   const footerPositive = footerPnl >= 0;
 
   return (
@@ -103,24 +122,29 @@ export function PositionsDrawer({ open, onClose }: PositionsDrawerProps) {
         </DrawerTab>
       </div>
 
+      {activePositions.length > 0 && socketStatus && socketStatus !== "open" && <p role="status" className="px-3 py-2 text-xs text-opt-ink-3">Reconnecting live updates… Latest values remain visible.</p>}
       <div className="flex-1 overflow-y-auto px-3 py-3">
         {tab === "open" ? (
-          positions.length === 0 ? (
+          <div className="flex flex-col gap-3">
+            {latestResult && <div aria-live="polite"><p className="mb-2 text-xs text-opt-ink-3">Latest result</p><ClosedPositionCard contract={simPositionToDetail(latestResult)} onOpenDetails={openDetail} /></div>}
+          {activePositions.length === 0 ? (
             <EmptyPositionsState label="You have no open positions." />
           ) : (
             <div className="flex flex-col gap-2">
-              {positions.map((p) => (
+              {activePositions.map((p) => (
                 <PositionCard
                   key={p.id}
                   position={p}
+                  selling={sellMutation.isPending && sellMutation.variables?.data.contract_id === p.contractId}
                   onSell={handleSell}
                   onOpenDetails={() => openDetail(simPositionToDetail(p))}
                 />
               ))}
             </div>
-          )
+          )}
+          </div>
         ) : (
-          <ClosedTab onOpenDetails={openDetail} />
+          <ClosedTab contracts={filteredContracts} filter={filter} onFilterChange={setFilter} isLoading={historyQuery.isLoading} isError={historyQuery.isError} onOpenDetails={openDetail} />
         )}
       </div>
 
@@ -156,38 +180,25 @@ const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "90d", label: "Last 90 days" },
 ];
 
-function ClosedTab({
-  onOpenDetails,
-}: {
+function filterContracts(contracts: ContractDetail[], filter: FilterKey): ContractDetail[] {
+  if (filter === "all") return contracts;
+  const now = new Date();
+  const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) / 1000;
+  return contracts.filter((contract) => {
+    if (filter === "today") return contract.exitTime >= today;
+    if (filter === "yesterday") return contract.exitTime >= today - 86400 && contract.exitTime < today;
+    return now.getTime() / 1000 - contract.exitTime <= Number(filter.slice(0, -1)) * 86400;
+  });
+}
+
+function ClosedTab({ contracts, filter, onFilterChange, isLoading, isError, onOpenDetails }: {
+  contracts: ContractDetail[];
+  filter: FilterKey;
+  onFilterChange: (filter: FilterKey) => void;
+  isLoading: boolean;
+  isError: boolean;
   onOpenDetails: (c: ContractDetail) => void;
 }) {
-  const [filter, setFilter] = useState<FilterKey>("all");
-  const nowRef = useRef<number>(0);
-  const { data: historyData, isLoading } = useTradeHistory();
-
-  const contracts = useMemo(() => {
-    if (!historyData) return [];
-    const mapped = historyData.map(historyToDetail);
-
-    if (filter === "all") return mapped;
-
-    const now = new Date();
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() / 1000;
-    const startOfYesterday = startOfToday - 86400;
-
-    return mapped.filter((c) => {
-      if (filter === "today") return c.exitTime >= startOfToday;
-      if (filter === "yesterday") return c.exitTime >= startOfYesterday && c.exitTime < startOfToday;
-      
-      const nowSec = now.getTime() / 1000;
-      if (filter === "7d") return nowSec - c.exitTime <= 7 * 86400;
-      if (filter === "30d") return nowSec - c.exitTime <= 30 * 86400;
-      if (filter === "60d") return nowSec - c.exitTime <= 60 * 86400;
-      if (filter === "90d") return nowSec - c.exitTime <= 90 * 86400;
-      return true;
-    });
-  }, [filter, historyData]);
-
   const groups = useMemo(() => {
     const m = new Map<string, ContractDetail[]>();
     for (const c of contracts) {
@@ -201,9 +212,9 @@ function ClosedTab({
 
   return (
     <div className="flex flex-col gap-3">
-      <FilterDropdown value={filter} onChange={setFilter} />
+      <FilterDropdown value={filter} onChange={onFilterChange} />
       {contracts.length === 0 ? (
-        <EmptyPositionsState label="No closed positions in this range." />
+        <EmptyPositionsState label={isLoading ? "Loading closed positions…" : isError ? "Could not load trade history. Please retry." : "No closed positions in this range."} />
       ) : (
         groups.map(([date, items]) => (
           <div key={date} className="flex flex-col gap-2">

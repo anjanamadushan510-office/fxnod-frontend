@@ -47,6 +47,8 @@ import {
   type BotDraft,
   type MoneyField,
 } from "./draft";
+import { ConditionBuilder } from "./ConditionBuilder";
+import { conditionsSummary } from "./conditions";
 import { martingaleLadder, type LadderPreview } from "./ladder";
 
 /** Mirrors the engine's MaxRunSymbols; the engine refuses more either way. */
@@ -176,7 +178,7 @@ export function MarketsStep({ draft, onChange }: StepProps) {
           <button
             type="button"
             onClick={retry}
-            className="mt-4 h-9 px-4 rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-80"
+            className="mt-4 h-9 px-4 rounded-lg bg-action text-action-ink text-sm font-medium hover:opacity-80"
           >
             Try again
           </button>
@@ -288,7 +290,7 @@ function RiseFallDurationStep({
           <button
             type="button"
             onClick={retry}
-            className="mt-4 h-9 px-4 rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-80"
+            className="mt-4 h-9 px-4 rounded-lg bg-action text-action-ink text-sm font-medium hover:opacity-80"
           >
             Try again
           </button>
@@ -333,7 +335,7 @@ function RiseFallDurationStep({
                 onChange={(duration) => onChange(patchForm(draft, { duration, durationUnit: selected.unit }))}
               />
               {form.duration.trim() !== "" && !inRange && (
-                <p className="mt-2 text-sm text-red-300">
+                <p className="mt-2 text-sm text-negative-soft">
                   {/^\d+$/.test(form.duration)
                     ? `Deriv sells ${formatRanges(selected.ranges)} ${selected.name.toLowerCase()} on these markets.`
                     : "Enter a whole number."}
@@ -711,7 +713,7 @@ export function SetupStep({
                 title="Let indicators decide"
                 description="Each trade takes the side your indicators agree on, and waits when they do not."
                 active={form.direction === "auto"}
-                onSelect={() => set({ direction: "auto" })}
+                onSelect={() => onChange({ ...patchForm(draft, { direction: "auto" }), entryRule: "always" })}
               />
             )}
           </div>
@@ -886,13 +888,13 @@ export function EntryRuleStep({
       />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
         {ENTRY_RULES.map((rule) => {
-          const available = supported.has(rule.key);
+          const available = supported.has(rule.key) && (draft.form.direction !== "auto" || rule.key === "always");
           return (
             <ChoiceCard
               key={rule.key}
               title={rule.name}
               description={rule.description}
-              badge={available ? undefined : "Coming soon"}
+              badge={available ? undefined : draft.form.direction === "auto" ? "Uses a fixed side" : "Unavailable"}
               active={draft.entryRule === rule.key}
               disabled={!available}
               onSelect={() => onChange({ ...draft, entryRule: rule.key })}
@@ -900,6 +902,7 @@ export function EntryRuleStep({
           );
         })}
       </div>
+      <ConditionBuilder value={draft.entryConditions} onChange={(entryConditions) => onChange({ ...draft, entryConditions })} strategy={strategy} />
     </div>
   );
 }
@@ -1149,7 +1152,8 @@ export function ReviewStep({
     ["Markets", marketNames.length ? marketNames.join(", ") : "None selected"],
     ["Trade type", [method?.name, side && side !== method?.name ? side : undefined].filter(Boolean).join(" · ")],
     ...(duration ? [["Contract length", duration] as [string, string]] : []),
-    ["When to buy", rule?.name ?? "—"],
+    ["Side rule", rule?.name ?? "—"],
+    ["Entry conditions", conditionsSummary(draft.entryConditions)],
     [
       "Money",
       `${money?.name ?? "—"} · stake $${form.stake || "?"}` +
@@ -1191,7 +1195,7 @@ export function ReviewStep({
 
         {problems.length > 0 && (
           <div role="alert" className="rounded-xl border border-red-500/40 bg-red-500/10 p-4">
-            <p className="text-sm font-medium text-red-300 mb-2">Before this bot can be saved</p>
+            <p className="text-sm font-medium text-negative-soft mb-2">Before this bot can be saved</p>
             <ul className="list-disc pl-5 space-y-1 text-sm text-red-200/90">
               {problems.map((p) => (
                 <li key={p}>{p}</li>

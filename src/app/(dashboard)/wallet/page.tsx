@@ -25,7 +25,7 @@ export default function WalletPage() {
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:ml-auto">
           <Link href="/transfer" className="flex items-center justify-center h-11 sm:h-9 px-4 rounded-lg border border-line text-sm text-ink-2 hover:text-ink hover:bg-surface-2 transition-colors w-full sm:w-auto">Send to Deriv</Link>
-          <button onClick={() => setIsDepositModalOpen(true)} className="h-9 px-4 rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-80 transition-opacity w-full sm:w-auto">Top up</button>
+          <button onClick={() => setIsDepositModalOpen(true)} className="h-9 px-4 rounded-lg bg-action text-action-ink text-sm font-medium hover:opacity-80 transition-opacity w-full sm:w-auto">Top up</button>
         </div>
       </div>
       
@@ -41,7 +41,7 @@ export default function WalletPage() {
           <ol className="text-sm text-ink-2 space-y-2 list-decimal pl-4">
             <li>Top up via the gateway</li>
             <li>Send a balance to Deriv</li>
-            <li>Trade with dTrader or dBot</li>
+            <li>Trade with Trade Pilot or Bot Forge</li>
           </ol>
         </article>
       </div>
@@ -54,7 +54,7 @@ export default function WalletPage() {
           {isLoading ? (
             <div className="px-5 py-6 text-sm text-ink-3 text-center">Loading activity...</div>
           ) : isError ? (
-            <div className="px-5 py-6 text-sm text-red-400 text-center">Failed to load activity.</div>
+            <div className="px-5 py-6 text-sm text-negative text-center">Failed to load activity.</div>
           ) : transactions.length === 0 ? (
             <div className="px-5 py-6 text-sm text-ink-3 text-center">No recent activity.</div>
           ) : (
@@ -68,7 +68,7 @@ export default function WalletPage() {
                     <p className="text-sm truncate text-ink capitalize">{tx.transaction_type ? tx.transaction_type.replace(/_/g, ' ') : tx.description || "Transaction"}</p>
                     <p className="text-[11px] text-ink-3 mt-0.5 truncate">{formatDate(tx.created_at)}</p>
                   </div>
-                  <p className={`tabular-nums text-sm shrink-0 ${isPositive ? 'text-green-400' : 'text-ink-2'}`}>
+                  <p className={`tabular-nums text-sm shrink-0 ${isPositive ? 'text-positive' : 'text-ink-2'}`}>
                     {isPositive ? '+' : '-'}{fmtUSD(amount)}
                   </p>
                 </div>

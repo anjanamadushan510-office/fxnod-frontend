@@ -31,6 +31,7 @@ library, not a float.
  * OpenAPI spec version: 0.1.0
  */
 import type { AutoHubSetting } from './autoHubSetting';
+import type { AutoHubPreset } from './autoHubPreset';
 
 export interface AutoHubBot {
   bot_id: string;
@@ -55,6 +56,10 @@ export interface AutoHubBot {
   default_stop_loss: string;
   default_take_profit: string;
   settings: AutoHubSetting[];
+  /** When not empty, the only markets this bot may be started on. Empty for a bot that may trade any market its contract is sold on, other than `excluded_symbols`. */
+  allowed_symbols: string[];
+  /** The money plans this bot is started with. When the list is not empty a start request names one by `id` in `preset` and sends no `stake`, `stop_loss` or `take_profit`. Empty for a bot whose three amounts are the user's own. */
+  presets: AutoHubPreset[];
   /** True for a bot that scores entries before it buys them. */
   has_shadow_lane: boolean;
   /** The percentage of each payout Deriv collects for FXNod on this bot's real-money trades. Demo trades carry none. Absent where app routing is off. */

@@ -16,6 +16,8 @@ interface MarketPickerProps {
   max: number;
   /** Markets the bot does not trade, from the catalogue. */
   excluded: string[];
+  /** When not empty, the only markets the bot trades, from the catalogue. */
+  only: string[];
   /** Where the selection starts when the user has not chosen yet. */
   suggested: string[];
 }
@@ -31,7 +33,7 @@ function groupRank(key: string): number {
  * The markets a bot will watch.
  *
  * Only markets Deriv is offering for the bot's contract are listed, minus the
- * ones the bot excludes. Nothing is listed until Deriv has answered: a static
+ * ones the bot excludes and, for a bot that names its markets, only those. Nothing is listed until Deriv has answered: a static
  * list would offer markets the bot may not be able to trade. The server checks
  * the choice again at start, against Deriv, so this is a convenience and not
  * the rule.
@@ -43,6 +45,7 @@ export function MarketPicker({
   min,
   max,
   excluded,
+  only,
   suggested,
 }: MarketPickerProps) {
   const { markets: offered, loading, source, retry } = useMarketsForStrategy(contractType);
@@ -51,8 +54,9 @@ export function MarketPicker({
 
   const allowed = useMemo(() => {
     const blocked = new Set(excluded);
-    return offered.filter((id) => !blocked.has(id));
-  }, [offered, excluded]);
+    const permitted = only.length > 0 ? new Set(only) : null;
+    return offered.filter((id) => !blocked.has(id) && (permitted === null || permitted.has(id)));
+  }, [offered, excluded, only]);
 
   // Start from the bot's suggestions, once, and only if nothing is chosen. A
   // selection restored from a draft, or made by the user, is left alone.
@@ -125,7 +129,7 @@ export function MarketPicker({
           <button
             type="button"
             onClick={retry}
-            className="mt-4 h-9 px-4 rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-80"
+            className="mt-4 h-9 px-4 rounded-lg bg-action text-action-ink text-sm font-medium hover:opacity-80"
           >
             Try again
           </button>

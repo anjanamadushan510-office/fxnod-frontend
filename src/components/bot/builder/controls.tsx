@@ -59,7 +59,7 @@ export function ChoiceCard({
         "w-full text-left rounded-xl border transition flex flex-col",
         size === "md" ? "p-5" : "p-4",
         active
-          ? "bg-ink border-ink text-surface shadow-lg"
+          ? "bg-action border-action-line text-action-ink shadow-lg"
           : "bg-surface-2 border-line text-ink hover:border-ink-3",
         disabled && "cursor-not-allowed opacity-45 hover:border-line",
       )}
@@ -70,7 +70,7 @@ export function ChoiceCard({
           <span
             className={cn(
               "text-[10px] uppercase tracking-wider shrink-0 mt-0.5",
-              active ? "text-surface/80" : "text-ink-3",
+              active ? "text-action-ink/80" : "text-ink-3",
             )}
           >
             {badge}
@@ -81,7 +81,7 @@ export function ChoiceCard({
         <span
           className={cn(
             "text-sm leading-relaxed",
-            active ? "text-surface/80" : "text-ink-2",
+            active ? "text-action-ink/80" : "text-ink-2",
           )}
         >
           {description}
@@ -130,7 +130,7 @@ export function TextField({
         }`}
       />
       {error ? (
-        <span role="alert" className="mt-1.5 block text-[11px] text-red-300">{error}</span>
+        <span role="alert" className="mt-1.5 block text-[11px] text-negative-soft">{error}</span>
       ) : (
         hint && <span className="mt-1.5 block text-[11px] text-ink-3">{hint}</span>
       )}
@@ -168,7 +168,7 @@ export function PillPicker<T extends string | number>({
               className={cn(
                 "h-10 min-w-10 px-3 rounded-lg border text-sm font-medium transition",
                 active
-                  ? "bg-ink border-ink text-surface"
+                  ? "bg-action border-action-line text-action-ink"
                   : "bg-surface-2 border-line text-ink hover:border-ink-3",
               )}
             >

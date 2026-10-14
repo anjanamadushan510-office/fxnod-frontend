@@ -83,7 +83,7 @@ export const SYNTHETIC_GUIDES: Guide[] = [
       { type: "h2", text: "In FXNOD" },
       {
         type: "p",
-        text: "FXNOD's tools trade the markets your Deriv account offers. Auto Hub's fade bots suggest volatility indices, and the market picker in dTrader and dBot lists what is available to you. Try any index on the demo account first.",
+        text: "FXNOD's tools trade the markets your Deriv account offers. Auto Hub bots suggest volatility indices, and the market picker in Trade Pilot and Bot Forge lists what is available to you. Try any index on the demo account first.",
       },
       SOURCE_NOTE,
       RISK_NOTE,
@@ -169,7 +169,7 @@ export const SYNTHETIC_GUIDES: Guide[] = [
       { type: "h2", text: "In FXNOD" },
       {
         type: "p",
-        text: "Volatility 75 and Volatility 75 (1s) are among the markets Auto Hub's fade bots suggest, and both can be chosen in dTrader and dBot where your Deriv account offers them.",
+        text: "Volatility 75 and Volatility 75 (1s) are among the markets Auto Hub bots suggest, and both can be chosen in Trade Pilot and Bot Forge where your Deriv account offers them.",
       },
       SOURCE_NOTE,
       RISK_NOTE,
@@ -598,7 +598,7 @@ export const SYNTHETIC_GUIDES: Guide[] = [
       { type: "h2", text: "On Deriv and in FXNOD" },
       {
         type: "p",
-        text: "Deriv lists options on Deriv Trader and Deriv Bot, and CFDs on Deriv MT5, Deriv cTrader and TradingView. It warns that CFDs carry a high risk of losing money rapidly due to leverage. FXNOD's dTrader, dBot and Auto Hub trade options and multipliers on your Deriv account. They do not trade CFDs.",
+        text: "Deriv lists options on Deriv Trader and Deriv Bot, and CFDs on Deriv MT5, Deriv cTrader and TradingView. It warns that CFDs carry a high risk of losing money rapidly due to leverage. Trade Pilot, Bot Forge and Auto Hub trade options and multipliers on your Deriv account. They do not trade CFDs.",
       },
       SOURCE_NOTE,
       RISK_NOTE,
@@ -690,7 +690,7 @@ export const SYNTHETIC_GUIDES: Guide[] = [
       { type: "h2", text: "In FXNOD" },
       {
         type: "p",
-        text: "dTrader's order panel shows what Deriv will pay for exactly the settings you chose, and the quote changes when you change anything. Read it before every purchase.",
+        text: "Trade Pilot's order panel shows what Deriv will pay for exactly the settings you chose, and the quote changes when you change anything. Read it before every purchase.",
       },
       RISK_NOTE,
     ],

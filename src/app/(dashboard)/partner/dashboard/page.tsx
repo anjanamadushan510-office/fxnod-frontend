@@ -97,7 +97,7 @@ export default function PartnerOverviewPage() {
               type="button"
               onClick={copy}
               disabled={!link}
-              className="h-10 flex-1 rounded-lg bg-ink px-6 text-sm font-medium text-surface transition-opacity hover:opacity-90 disabled:opacity-50 sm:flex-none"
+              className="h-10 flex-1 rounded-lg bg-action px-6 text-sm font-medium text-action-ink transition-opacity hover:opacity-90 disabled:opacity-50 sm:flex-none"
             >
               {copied ? "Copied" : "Copy"}
             </button>
@@ -130,7 +130,7 @@ export default function PartnerOverviewPage() {
           {earningsQuery.isLoading ? (
             <p className="px-5 py-6 text-center text-sm text-ink-3">Loading…</p>
           ) : earningsQuery.isError ? (
-            <p className="px-5 py-6 text-center text-sm text-red-400">Your earnings could not be loaded.</p>
+            <p className="px-5 py-6 text-center text-sm text-negative">Your earnings could not be loaded.</p>
           ) : !earnings?.by_source.length ? (
             <p className="px-5 py-6 text-center text-sm text-ink-3">
               Nothing earned yet. It appears here once someone on your team trades.
@@ -165,7 +165,7 @@ export default function PartnerOverviewPage() {
           {partnersQuery.isLoading ? (
             <p className="px-5 py-6 text-center text-sm text-ink-3">Loading…</p>
           ) : partnersQuery.isError ? (
-            <p className="px-5 py-6 text-center text-sm text-red-400">Your team could not be loaded.</p>
+            <p className="px-5 py-6 text-center text-sm text-negative">Your team could not be loaded.</p>
           ) : !team?.items.length ? (
             <p className="px-5 py-6 text-center text-sm text-ink-3">
               Nobody has joined through your link yet.
@@ -206,8 +206,8 @@ export default function PartnerOverviewPage() {
           <p className="mb-2 text-[11px] uppercase tracking-[0.14em] text-ink-3">02</p>
           <h3 className="mb-2 font-medium text-ink">They run a bot</h3>
           <p className="text-sm leading-relaxed text-ink-2">
-            You earn a share of what FXNOD earns on their dBot and Auto Hub trades on a real account. Demo
-            trades and dTrader earn nothing.
+            You earn a share of what FXNOD earns on their Bot Forge and Auto Hub trades on a real account. Demo
+            trades and Trade Pilot earn nothing.
           </p>
         </article>
         <article className="rounded-2xl border border-line bg-surface p-5">

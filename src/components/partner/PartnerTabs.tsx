@@ -10,6 +10,7 @@ const TABS = [
   { href: "/partner/dashboard/earnings", label: "Earnings" },
   { href: "/partner/dashboard/network", label: "Network" },
   { href: "/partner/dashboard/rules", label: "Rates & rules" },
+  { href: "/partner/dashboard/broker-links", label: "Broker links" },
 ] as const;
 
 /** The sections of the Partner Hub. Each is its own route, so a link to one can be shared. */

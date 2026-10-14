@@ -53,7 +53,7 @@ export default function AboutPage() {
           <div className="space-y-5 text-zinc-300 leading-relaxed text-[17px]">
             <p className="text-lg sm:text-xl text-zinc-100">
               FXNOD is a web trading terminal for Deriv accounts. You connect your own Deriv account and use it from
-              three tools: dTrader for placing trades by hand, dBot for building a bot without code, and Auto Hub for
+              three tools: Trade Pilot for placing trades by hand, Bot Forge for building a bot without code, and Auto Hub for
               starting a ready-made bot.
             </p>
 
@@ -61,13 +61,13 @@ export default function AboutPage() {
             <ul className="list-disc pl-5 space-y-2 marker:text-zinc-600">
               <li>
                 <Link href={"/guides/dtrader-manual-trading" as Route} className="text-accent hover:underline">
-                  dTrader
+                  Trade Pilot
                 </Link>
                 : manual trading with a live chart and ten trade types.
               </li>
               <li>
                 <Link href={"/guides/build-a-deriv-bot-with-dbot" as Route} className="text-accent hover:underline">
-                  dBot
+                  Bot Forge
                 </Link>
                 : a bot builder that asks plain questions instead of using blocks or code.
               </li>
@@ -88,15 +88,14 @@ export default function AboutPage() {
 
             <h2 className="font-display text-2xl font-semibold text-white pt-6">What is coming soon</h2>
             <p>
-              Tools for Bybit and Binance, monthly plans that run on your own exchange keys, and wallet top-ups with
-              transfers to Deriv are planned. None of them is available yet, and the site marks each one as coming
-              soon until it is.
+              Tools for Bybit and Binance, plans that run on your own exchange keys, and wallet transfers to Deriv
+              are planned. Discover marks these features as coming soon until they are available.
             </p>
 
             <h2 className="font-display text-2xl font-semibold text-white pt-6">What it costs</h2>
             <p>
-              The tools have no subscription and no sign-up fee. You can try all of them on a Deriv demo account
-              with virtual funds before you trade real money.
+              Each tool requires an active package. Discover shows current prices, features and access periods.
+              Choose a package with demo access to practise with virtual funds before trading real money.
             </p>
 
             <h2 className="font-display text-2xl font-semibold text-white pt-6">FXNOD and Deriv</h2>

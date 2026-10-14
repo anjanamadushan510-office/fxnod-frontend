@@ -37,6 +37,10 @@ export interface PositionFrame {
   ticks_total?: number;
   updated_at?: number; // epoch seconds
   tickStream?: any[];
+  tick_stream?: any[];
+  currency?: string;
+  payout?: string;
+  is_valid_to_sell?: boolean;
 
   // ── display / static (required in `snapshot`, optional in `update`) ────────
   market_id?: string;

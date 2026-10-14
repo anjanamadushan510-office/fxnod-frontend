@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { useAuthStore } from "@/stores/authStore";
 import {
   derivAccountStatus,
   getDerivAccountStatusQueryKey,
@@ -44,9 +45,12 @@ export const derivStatusKey = getDerivAccountStatusQueryKey();
  * in the callback invalidates this one key and both update.
  */
 export function useDerivStatus(): DerivStatus {
+  const user = useAuthStore((state) => state.user);
+  const authStatus = useAuthStore((state) => state.status);
   const query = useQuery({
-    queryKey: derivStatusKey,
+    queryKey: [...derivStatusKey, user?.id],
     queryFn: () => derivAccountStatus(),
+    enabled: authStatus === "authenticated" && !!user,
     staleTime: 60_000,
     // 401 (logged out) / unlinked both just mean "show Connect / gate trading".
     retry: false,
@@ -59,6 +63,6 @@ export function useDerivStatus(): DerivStatus {
     currency: query.data?.currency,
     connectionId: query.data?.connection_id,
     needsReconnect: query.data?.needs_reconnect ?? false,
-    isLoading: query.isLoading,
+    isLoading: query.isLoading || authStatus === "idle" || authStatus === "loading",
   };
 }

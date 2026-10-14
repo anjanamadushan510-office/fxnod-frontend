@@ -42,7 +42,7 @@ export function BuyButton({
       onClick={onClick}
       disabled={disabled || loading}
       aria-busy={loading}
-      style={{ backgroundColor: side === "fall" ? "#FF4444" : "#00A79E" }}
+      style={{ backgroundColor: side === "fall" ? "var(--opt-buy-fall)" : "var(--opt-buy-rise)" }}
       className={cn(
         "flex min-h-[48px] w-full flex-col items-center justify-center gap-0.5 rounded-[8px] border-0 px-4 py-2 text-white",
         "transition-[filter] duration-150",
@@ -56,7 +56,7 @@ export function BuyButton({
             className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/40 border-t-white"
           />
         )}
-        {label}
+        {loading ? "Placing trade…" : label}
       </span>
       {payoutLabel && (
         <span className="font-mono text-[12px] font-medium text-white/90 tabular-nums">

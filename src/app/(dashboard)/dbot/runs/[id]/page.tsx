@@ -6,6 +6,7 @@ import type { Route } from "next";
 import { useParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { conditionProblems, conditionsSummary, type EntryConditions } from "@/components/bot/builder/conditions";
 import { EmergencyStopButton } from "@/components/bot/EmergencyStopButton";
 import { TradeDetailsModal } from "@/components/bot/TradeDetailsModal";
 import { toTradeRows } from "@/components/bot/tradeRows";
@@ -83,6 +84,9 @@ export default function BotRunPage() {
     const byId = new Map(allMarkets.map((m) => [m.id, m.name]));
     return (run?.symbols ?? []).map((id) => byId.get(id) ?? id);
   }, [allMarkets, run?.symbols]);
+
+  const rawConditions = run?.strategy_parameters?.entry_conditions;
+  const entryConditions = rawConditions && conditionProblems(rawConditions).length === 0 ? rawConditions as EntryConditions : undefined;
 
   const trades = useMemo(() => toTradeRows(tradesQuery.data?.trades ?? []), [tradesQuery.data]);
 
@@ -201,7 +205,7 @@ export default function BotRunPage() {
               type="button"
               disabled={busy || run.status === "stopping"}
               onClick={() => act("stop", run)}
-              className="h-10 flex-1 rounded-lg border border-red-500/50 px-4 text-sm text-red-300 transition hover:bg-red-500/10 disabled:opacity-45 sm:flex-none"
+              className="h-10 flex-1 rounded-lg border border-red-500/50 px-4 text-sm text-negative-soft transition hover:bg-red-500/10 disabled:opacity-45 sm:flex-none"
             >
               {run.status === "stopping" ? "Stopping…" : "Stop"}
             </button>
@@ -219,6 +223,12 @@ export default function BotRunPage() {
         />
         <Stat label="Total" value={String(run.trades_total)} />
       </div>
+
+      {entryConditions && <section className="mb-6 rounded-2xl border border-line bg-surface p-5">
+        <h2 className="mb-2 text-sm font-semibold text-ink">Entry rules in this run</h2>
+        <p className="text-sm leading-relaxed text-ink-2">{conditionsSummary(entryConditions)}</p>
+        <p className="mt-2 text-xs text-ink-3">Checked separately on every market before entry. The bot waits while conditions or the required history are missing.</p>
+      </section>}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         {stopLossLimit !== null && (
@@ -288,9 +298,9 @@ export default function BotRunPage() {
                         className={cn(
                           "text-xs font-semibold uppercase tracking-wider",
                           trade.result === "won"
-                            ? "text-emerald-400"
+                            ? "text-positive"
                             : trade.result === "lost"
-                              ? "text-red-400"
+                              ? "text-negative"
                               : "text-ink-3",
                         )}
                       >
@@ -303,8 +313,8 @@ export default function BotRunPage() {
                           trade.pnl === null
                             ? "text-ink-3"
                             : trade.pnl < 0
-                              ? "text-red-400"
-                              : "text-emerald-400",
+                              ? "text-negative"
+                              : "text-positive",
                         )}
                       >
                         {trade.pnl === null ? "—" : trade.pnl.toFixed(2)}
@@ -376,7 +386,7 @@ function Stat({
       <p
         className={cn(
           "text-xl font-semibold mt-1",
-          tone < 0 ? "text-red-400" : tone > 0 ? "text-emerald-400" : "text-ink",
+          tone < 0 ? "text-negative" : tone > 0 ? "text-positive" : "text-ink",
         )}
       >
         {value}
@@ -422,9 +432,9 @@ function StatusBadge({ status }: { status: string }) {
       className={cn(
         "rounded px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
         status === "running"
-          ? "bg-emerald-500/15 text-emerald-400"
+          ? "bg-emerald-500/15 text-positive"
           : status === "failed"
-            ? "bg-red-500/15 text-red-400"
+            ? "bg-red-500/15 text-negative"
             : "bg-surface-2 text-ink-2",
       )}
     >

@@ -7,7 +7,7 @@ import type { CommissionRate } from "@/services/api/model";
 const RULES: { title: string; body: string }[] = [
   {
     title: "What earns",
-    body: "Trades that dBot and Auto Hub place on a real Deriv account. Demo accounts and manual trades in dTrader earn nothing.",
+    body: "Trades that Bot Forge and Auto Hub place on a real Deriv account. Demo accounts and manual trades in Trade Pilot earn nothing.",
   },
   {
     title: "What a rate is a share of",
@@ -55,7 +55,7 @@ export default function PartnerRulesPage() {
         {ratesQuery.isLoading ? (
           <p className="px-5 py-6 text-center text-sm text-ink-3">Loading…</p>
         ) : ratesQuery.isError ? (
-          <p className="px-5 py-6 text-center text-sm text-red-400">The rates could not be loaded.</p>
+          <p className="px-5 py-6 text-center text-sm text-negative">The rates could not be loaded.</p>
         ) : !rates.length ? (
           <p className="px-5 py-6 text-center text-sm text-ink-3">No rate is in force at the moment.</p>
         ) : (

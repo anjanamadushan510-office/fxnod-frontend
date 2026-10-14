@@ -35,11 +35,13 @@ import type { StartAutoHubRunRequestSettings } from './startAutoHubRunRequestSet
 export interface StartAutoHubRunRequest {
   /** The markets to watch, within the bot's `min_markets` and `max_markets`. */
   symbols: string[];
-  /** Decimal string. Flat for every trade of the run. */
-  stake: string;
-  /** Decimal string. The run ends when its realised loss reaches this. Mandatory. */
-  stop_loss: string;
-  /** Decimal string. The run ends when its realised profit reaches this. */
+  /** The `id` of one of the bot's `presets`. Required for a bot that lists any, and refused for one that lists none. */
+  preset?: string;
+  /** Decimal string. Flat for every trade of the run. Required for a bot without presets and refused for one with them. */
+  stake?: string;
+  /** Decimal string. The run ends when its realised loss reaches this. Required for a bot without presets and refused for one with them. */
+  stop_loss?: string;
+  /** Decimal string. The run ends when its realised profit reaches this. Refused for a bot with presets. */
   take_profit?: string;
   /** The bot's own settings by `key`, as the catalogue lists them. A key the bot does not offer is refused. */
   settings?: StartAutoHubRunRequestSettings;

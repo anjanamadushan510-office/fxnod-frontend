@@ -101,9 +101,9 @@ export default function TransferPage() {
             <div>
               <p className="font-medium text-ink">Deriv</p>
               {derivNickname ? (
-                <p className="text-xs text-green-400">Connected · {derivNickname}</p>
+                <p className="text-xs text-positive">Connected · {derivNickname}</p>
               ) : (
-                <p className="text-xs text-red-400">No Real Wallet Found</p>
+                <p className="text-xs text-negative">No Real Wallet Found</p>
               )}
             </div>
           </div>
@@ -139,7 +139,7 @@ export default function TransferPage() {
                     onClick={() => setAmount(preset)}
                     className={`flex-1 py-2 rounded-lg border text-sm font-medium transition-colors ${
                       amount === preset 
-                        ? "bg-ink text-surface border-ink" 
+                        ? "bg-action text-action-ink border-action-line"
                         : "bg-transparent text-ink-2 border-line hover:border-ink-2"
                     }`}
                   >
@@ -168,7 +168,7 @@ export default function TransferPage() {
             <button
               onClick={handleTransfer}
               disabled={transferMutation.isPending || amount <= 0}
-              className="mt-8 w-full h-12 rounded-xl bg-ink text-surface font-semibold hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="mt-8 w-full h-12 rounded-xl bg-action text-action-ink font-semibold hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {transferMutation.isPending ? "Processing..." : `Send ${fmtUSD(amount)} to Deriv`}
             </button>
@@ -182,11 +182,11 @@ export default function TransferPage() {
               <li>Enter the amount you wish to transfer.</li>
               <li>Funds are instantly deducted from your FXNOD Wallet.</li>
               <li>Your connected Deriv account is credited via the Payment Agent API.</li>
-              <li>You can immediately begin trading with dTrader or dBot.</li>
+              <li>You can immediately begin trading with Trade Pilot or Bot Forge.</li>
             </ol>
             
             <div className="mt-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20">
-              <p className="text-xs text-red-400">
+              <p className="text-xs text-negative">
                 <strong>Disclaimer:</strong> Transfers to Deriv are final and cannot be reversed. Ensure your Deriv account is fully verified.
               </p>
             </div>

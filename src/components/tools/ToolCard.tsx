@@ -38,7 +38,7 @@ export function ToolCard({
   return (
     <article
       className={cn(
-        "min-w-0 rounded-2xl border border-line bg-surface p-5 transition-colors hover:bg-surface-2",
+        "workspace-card min-w-0 rounded-2xl border border-line bg-surface p-5 transition-colors hover:bg-surface-2",
         list ? "flex flex-col gap-4 sm:flex-row sm:items-center" : "flex flex-col",
       )}
     >
@@ -58,7 +58,7 @@ export function ToolCard({
           {tool.badges.map((badge) => (
             <span
               key={badge}
-              className="inline-flex items-center rounded-full bg-black px-2 py-0.5 text-[10px] font-medium text-white ring-1 ring-white/15"
+              className="venue-badge inline-flex items-center rounded-full bg-black px-2 py-0.5 text-[10px] font-medium text-white ring-1 ring-white/15"
             >
               {badge}
             </span>
@@ -79,7 +79,7 @@ export function ToolCard({
 export function ToolMark({ id }: { id: string }) {
   const Icon = TOOL_ICONS[id] ?? Grid3x3;
   return (
-    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-line bg-bg text-ink">
+    <span className="tool-symbol grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-line bg-bg text-ink">
       <Icon className="h-4 w-4" strokeWidth={1.75} aria-hidden />
     </span>
   );
@@ -87,7 +87,7 @@ export function ToolMark({ id }: { id: string }) {
 
 export function ActiveBadge() {
   return (
-    <span className="inline-flex shrink-0 items-center gap-1.5 text-xs text-green-400">
+    <span className="inline-flex shrink-0 items-center gap-1.5 text-xs text-positive">
       <span className="relative flex h-2 w-2">
         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
         <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />

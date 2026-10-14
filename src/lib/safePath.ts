@@ -31,6 +31,7 @@ export const SIGNED_IN_PREFIXES = [
   "/referrals",
   "/partner/dashboard",
   "/subscriptions",
+  "/support",
 ] as const;
 
 export function needsSignIn(pathname: string): boolean {
