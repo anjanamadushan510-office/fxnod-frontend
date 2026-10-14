@@ -172,7 +172,7 @@ export function Sidebar({
                 aria-current={isActive ? "page" : undefined}
                 onClick={onClose}
                 className={cn(
-                  "nav-link relative flex min-h-10 w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors",
+                  "nav-link relative flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors lg:min-h-10",
                   isActive 
                     ? "is-active bg-surface-2 text-ink" 
                     : "text-ink-2 hover:bg-surface-2 hover:text-ink group"
@@ -200,7 +200,7 @@ export function Sidebar({
                 aria-current={isActive ? "page" : undefined}
                 onClick={onClose}
                 className={cn(
-                  "nav-link relative flex min-h-10 w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors",
+                  "nav-link relative flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors lg:min-h-10",
                   isActive 
                     ? "is-active bg-surface-2 text-ink" 
                     : "text-ink-2 hover:bg-surface-2 hover:text-ink group"

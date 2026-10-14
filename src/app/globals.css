@@ -329,10 +329,6 @@ a {
   background: #fff;
   box-shadow: var(--shadow-card);
 }
-[data-theme="light"] .workspace-hero > div > p:first-child {
-  color: #85601e;
-  font-weight: 600;
-}
 [data-theme="light"] .workspace-hero > a {
   background: #173a63;
   border-color: #173a63;
@@ -442,10 +438,6 @@ a {
   border-radius: 0.75rem;
   background: #142840;
   box-shadow: var(--shadow-card);
-}
-[data-theme="dark"] .workspace-hero > div > p:first-child {
-  color: #efcf90;
-  font-weight: 600;
 }
 [data-theme="dark"] .workspace-hero > a {
   color: var(--action-ink);
