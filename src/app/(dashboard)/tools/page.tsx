@@ -121,7 +121,7 @@ export default function ToolsPage() {
           />
         </label>
         <div className="flex flex-wrap gap-2">
-          <div className="flex flex-1 rounded-lg border border-line bg-surface p-0.5">
+          <div className="no-scrollbar flex min-w-0 flex-1 overflow-x-auto rounded-lg border border-line bg-surface p-0.5">
             {[
               ["all", "All tools"],
               ["zero", "$0 offers"],
@@ -133,7 +133,7 @@ export default function ToolsPage() {
                 aria-pressed={filter === key}
                 onClick={() => setFilter(key)}
                 className={cn(
-                  "min-h-9 rounded-md px-2.5 py-1.5 text-xs font-medium whitespace-nowrap",
+                  "min-h-11 shrink-0 rounded-md px-2.5 py-1.5 text-xs font-medium whitespace-nowrap sm:min-h-9",
                   filter === key ? "bg-action text-action-ink" : "text-ink-3",
                 )}
               >
@@ -149,7 +149,7 @@ export default function ToolsPage() {
                 aria-pressed={view === v}
                 onClick={() => setView(v)}
                 className={cn(
-                  "rounded-md p-2",
+                  "grid h-11 w-11 place-items-center rounded-md sm:h-9 sm:w-9",
                   view === v ? "bg-action text-action-ink" : "text-ink-3",
                 )}
               >

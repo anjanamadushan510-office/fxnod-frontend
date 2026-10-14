@@ -255,7 +255,7 @@ export default function SubscriptionsPage() {
       >
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 z-[70] bg-black/60" />
-          <Dialog.Content className="fixed left-1/2 top-1/2 z-[71] w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-line bg-surface p-6">
+          <Dialog.Content className="fixed left-1/2 top-1/2 z-[71] max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-md overflow-y-auto -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-line bg-surface p-4 sm:p-6">
             <Dialog.Title className="text-lg font-semibold">
               Deactivate {pending?.name}?
             </Dialog.Title>

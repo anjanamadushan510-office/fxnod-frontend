@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { Route } from "next";
-import { ArrowRight, Bot, Grid2X2, List, Search, Star, X } from "lucide-react";
+import { ArrowRight, Bot, Grid2X2, List, Search, SlidersHorizontal, Star, X } from "lucide-react";
 import type { AutoHubBot } from "@/services/api/model";
 import { useBotFavourites } from "@/hooks/useBotFavourites";
 import { FavouriteButton } from "./FavouriteButton";
@@ -25,6 +25,7 @@ export function BotLibrary({
   const [savedOnly, setSavedOnly] = useState(false);
   const [sort, setSort] = useState("catalogue");
   const [view, setView] = useState<"grid" | "list">("grid");
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [page, setPage] = useState(1);
   const contracts = useMemo(
     () =>
@@ -138,7 +139,7 @@ export function BotLibrary({
             </button>
           </div>
         </div>
-        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-[minmax(16rem,2fr)_1fr_1fr_1fr]">
+        <div className="space-y-2 xl:grid xl:grid-cols-[minmax(16rem,2fr)_1fr_1fr_1fr] xl:gap-2 xl:space-y-0">
           <div className="relative">
             <Search
               size={17}
@@ -168,6 +169,20 @@ export function BotLibrary({
               </button>
             )}
           </div>
+          <button
+            type="button"
+            className="flex min-h-11 w-full items-center justify-between rounded-lg border border-line bg-surface px-3 text-sm text-ink sm:hidden"
+            aria-expanded={filtersOpen}
+            aria-controls="bot-library-filters"
+            onClick={() => setFiltersOpen((value) => !value)}
+          >
+            <span className="flex items-center gap-2"><SlidersHorizontal size={16} /> Filters {hasFilters ? "· Active" : ""}</span>
+            <span aria-hidden>{filtersOpen ? "−" : "+"}</span>
+          </button>
+          <div id="bot-library-filters" className={cn(
+            "grid gap-2 sm:grid-cols-3 xl:contents",
+            !filtersOpen && "hidden sm:grid",
+          )}>
           <select
             aria-label="Trade type"
             value={contract}
@@ -210,6 +225,7 @@ export function BotLibrary({
             <option value="name">Name: A–Z</option>
             <option value="stake">Lowest minimum stake</option>
           </select>
+          </div>
         </div>
         <div className="flex items-center justify-between gap-3 text-xs text-ink-3">
           <p aria-live="polite">
@@ -290,7 +306,7 @@ export function BotLibrary({
             <article
               key={bot.bot_id}
               className={cn(
-                "rounded-xl border border-line bg-surface p-4 flex gap-3 min-w-0 hover:border-line-2 transition-colors",
+                "rounded-xl border border-line bg-surface p-3 sm:p-4 flex gap-3 min-w-0 hover:border-line-2 transition-colors",
                 view === "grid"
                   ? "flex-col"
                   : "flex-col sm:flex-row sm:items-center",
@@ -314,7 +330,7 @@ export function BotLibrary({
                     onClick={() => favourites.toggle(bot.bot_id)}
                   />
                 </div>
-                <p className="text-xs text-ink-2 mt-2 leading-relaxed line-clamp-2">
+                <p className="text-xs text-ink-2 mt-2 leading-relaxed line-clamp-1 sm:line-clamp-2">
                   {bot.description}
                 </p>
                 <ul className="flex flex-wrap gap-1.5 mt-3 text-[11px] text-ink-2">
@@ -347,7 +363,7 @@ export function BotLibrary({
                 </div>
                 <Link
                   href={`/autohub/bots/${bot.bot_id}` as Route}
-                  className="min-h-10 rounded-lg bg-action text-action-ink text-sm font-medium flex items-center justify-center gap-2 hover:opacity-85 transition-opacity"
+                  className="min-h-11 sm:min-h-10 rounded-lg bg-action text-action-ink text-sm font-medium flex items-center justify-center gap-2 hover:opacity-85 transition-opacity"
                 >
                   View & set up <ArrowRight size={16} />
                 </Link>

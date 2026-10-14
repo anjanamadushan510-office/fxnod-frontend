@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import QRCode from "qrcode";
 import { AlertTriangle, Check, Copy, Loader2, X } from "lucide-react";
@@ -33,18 +33,51 @@ const IN_FLIGHT = new Set(["pending", "confirmed"]);
 
 export function DepositModal({ onClose }: DepositModalProps) {
   const [tab, setTab] = useState<Tab>("crypto");
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const previous = document.activeElement as HTMLElement | null;
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    closeRef.current?.focus();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+      if (event.key !== "Tab" || !dialogRef.current) return;
+      const controls = [...dialogRef.current.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      )];
+      const first = controls[0];
+      const last = controls[controls.length - 1];
+      if (!first || !last) return;
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = overflow;
+      document.removeEventListener("keydown", onKey);
+      if (previous?.isConnected) previous.focus();
+    };
+  }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-sm">
-      <div className="my-auto w-full max-w-md rounded-2xl border border-line bg-surface p-6 shadow-xl relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-2 pb-safe backdrop-blur-sm sm:p-4">
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="deposit-dialog-title" className="relative max-h-[calc(100dvh-1rem)] w-full max-w-md overflow-y-auto overscroll-contain rounded-2xl border border-line bg-surface p-4 shadow-xl sm:p-6">
         <button 
+          ref={closeRef}
           onClick={onClose} 
-          className="absolute top-4 right-4 text-ink-2 hover:text-ink transition-colors"
+          className="absolute right-2 top-2 grid h-11 w-11 place-items-center rounded-lg text-ink-2 hover:bg-surface-2 hover:text-ink transition-colors"
           aria-label="Close"
         >
           <X className="h-5 w-5" />
         </button>
-        <h2 className="mb-2 text-xl font-bold text-ink">Deposit Funds</h2>
+        <h2 id="deposit-dialog-title" className="mb-2 pr-10 text-xl font-bold text-ink">Deposit Funds</h2>
         <p className="mb-6 text-sm text-ink-2">Top up your wallet balance.</p>
 
         <div className="mb-6 flex rounded-lg bg-bg p-1">
@@ -79,7 +112,7 @@ function TabButton({
   return (
     <button
       onClick={onClick}
-      className={`flex-1 rounded-md py-2 text-xs font-semibold transition-all ${
+      className={`min-h-11 flex-1 rounded-md px-1 py-2 text-xs font-semibold transition-all sm:min-h-9 ${
         active ? "bg-action text-action-ink shadow-sm" : "text-ink-3 hover:text-ink-2"
       }`}
     >
@@ -396,6 +429,7 @@ function BinancePayDeposit({ onClose }: { onClose: () => void }) {
       </label>
       <input
         type="number"
+        inputMode="decimal"
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
         className="mb-4 w-full rounded-xl border border-line bg-bg px-4 py-3 text-lg font-bold text-ink focus:border-white focus:outline-none"
@@ -455,6 +489,7 @@ function ManualDepositClaim() {
       </label>
       <input
         type="number"
+        inputMode="decimal"
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
         placeholder="0.00"

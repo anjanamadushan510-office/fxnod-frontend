@@ -43,7 +43,7 @@ export function ToolCard({
       )}
     >
       <div className={cn("min-w-0", list ? "flex-1" : "mb-3")}>
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-wrap items-start justify-between gap-2">
           <div className="flex min-w-0 items-center gap-3">
             <ToolMark id={tool.id} />
             <div className="min-w-0">

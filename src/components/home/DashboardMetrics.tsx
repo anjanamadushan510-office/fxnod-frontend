@@ -44,7 +44,7 @@ export function DashboardMetrics({
   ).length;
   return (
     <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
-      <article className="wallet-summary rounded-xl border border-line bg-surface p-3.5 sm:p-4">
+      <article className="wallet-summary col-span-2 rounded-xl border border-line bg-surface p-3.5 sm:col-span-1 sm:p-4">
         <p className="text-xs text-ink-3">FXNOD Wallet</p>
         <p className="mt-2 text-xl sm:text-2xl font-semibold tabular-nums text-ink break-words">
           {wallet.data
@@ -53,18 +53,18 @@ export function DashboardMetrics({
               ? "Unavailable"
               : "—"}
         </p>
-        <div className="mt-3 flex gap-4 text-xs">
+        <div className="mt-2 flex gap-2 text-xs sm:mt-3">
           <button
             type="button"
             onClick={onTopUp}
-            className="text-ink hover:underline"
+            className="inline-flex min-h-11 items-center rounded-lg px-2 text-ink hover:bg-surface-2 sm:min-h-8"
           >
             Top up
           </button>
           <button
             type="button"
             onClick={onSend}
-            className="text-ink-2 hover:underline"
+            className="inline-flex min-h-11 items-center rounded-lg px-2 text-ink-2 hover:bg-surface-2 sm:min-h-8"
           >
             Transfer
           </button>
@@ -98,7 +98,7 @@ export function DashboardMetrics({
           Manage accounts →
         </Link>
       </article>
-      <article className="rounded-xl border border-line bg-surface p-3.5 sm:p-4">
+      <article className="col-span-2 rounded-xl border border-line bg-surface p-3.5 sm:col-span-1 sm:p-4">
         <p className="text-xs text-ink-3">Partner earnings</p>
         <p className="mt-2 text-xl sm:text-2xl font-semibold text-ink tabular-nums">
           {partner.data

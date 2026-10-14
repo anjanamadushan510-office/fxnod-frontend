@@ -27,21 +27,21 @@ export default function HomePage() {
 
   return (
     <>
-      <section data-view="hub" className="space-y-5 p-4 lg:p-6">
-        <header className="workspace-hero flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <section data-view="hub" className="space-y-4 p-4 lg:space-y-5 lg:p-6">
+        <header className="workspace-hero flex items-center justify-between gap-3 sm:gap-4">
           <div>
-            <h2 className="text-xl font-semibold text-ink sm:text-2xl">
+            <h2 className="text-lg font-semibold text-ink sm:text-2xl">
               {name ? `${name}’s workspace` : "Your trading workspace"}
             </h2>
-            <p className="mt-1 text-sm text-ink-2">
+            <p className="mt-1 hidden text-sm text-ink-2 sm:block">
               Accounts, active runs and tools at a glance.
             </p>
           </div>
           <Link
             href="/tools"
-            className="min-h-10 px-4 rounded-lg border border-line text-sm text-ink flex items-center justify-center shrink-0 hover:bg-surface-2"
+            className="min-h-11 px-3 sm:px-4 rounded-lg border border-line text-xs sm:text-sm text-ink flex items-center justify-center shrink-0 hover:bg-surface-2"
           >
-            Explore packages
+            <span className="sm:hidden">Explore</span><span className="hidden sm:inline">Explore packages</span>
           </Link>
         </header>
         <DashboardMetrics

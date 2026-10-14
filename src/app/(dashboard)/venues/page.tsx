@@ -367,7 +367,7 @@ function ConfirmDialog({
 }) {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-sm rounded-2xl border border-line bg-surface p-6 shadow-2xl">
+      <div className="max-h-[calc(100dvh-2rem)] w-full max-w-sm overflow-y-auto rounded-2xl border border-line bg-surface p-4 shadow-2xl sm:p-6">
         <h3 className="mb-2 font-display text-base font-semibold text-ink">{title}</h3>
         <p className="mb-6 text-[13px] leading-relaxed text-ink-2">{body}</p>
         <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">

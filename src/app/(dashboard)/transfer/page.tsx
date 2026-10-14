@@ -158,6 +158,7 @@ export default function TransferPage() {
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-2">$</span>
                 <input
                   type="number"
+                  inputMode="decimal"
                   value={amount}
                   onChange={(e) => setAmount(Number(e.target.value))}
                   className="w-full h-12 pl-8 pr-4 rounded-xl bg-surface-2 border border-line text-ink font-medium focus:outline-none focus:border-ink-2 transition-colors"

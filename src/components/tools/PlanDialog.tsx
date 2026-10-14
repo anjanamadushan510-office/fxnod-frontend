@@ -105,7 +105,7 @@ export function PlanDialog({
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-[70] bg-black/70 backdrop-blur-sm" />
         <Dialog.Content
-          className={`fixed left-1/2 top-1/2 z-[71] max-h-[calc(100dvh-1.5rem)] w-[calc(100%-1.5rem)] ${quote || success ? "max-w-2xl overflow-y-auto" : "max-w-5xl overflow-hidden flex flex-col"} -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-line bg-surface p-4 shadow-2xl sm:p-6`}
+          className={`fixed left-1/2 top-1/2 z-[71] max-h-[calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-1rem)] w-[calc(100%-1.5rem)] ${quote || success ? "max-w-2xl overflow-y-auto" : "max-w-5xl overflow-hidden flex flex-col"} -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-line bg-surface p-4 shadow-2xl sm:p-6`}
         >
           <Dialog.Close
             disabled={busy}
