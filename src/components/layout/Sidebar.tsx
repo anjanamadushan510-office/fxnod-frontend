@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/cn";
-import { Blocks, Bot, ChartCandlestick, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { useGetWalletBalance } from "@/services/api/endpoints/wallet/wallet";
 import { fmtUSD } from "@/lib/format";
@@ -159,12 +159,6 @@ export function Sidebar({
       href: "/support" 
     },
   ];
-  const TOOL_LINKS: NavItem[] = [
-    { key: "trade-pilot", label: "Trade Pilot", href: "/options/dtrader", icon: () => <ChartCandlestick className="h-4 w-4" aria-hidden /> },
-    { key: "bot-forge", label: "Bot Forge", href: "/dbot", icon: () => <Bot className="h-4 w-4" aria-hidden /> },
-    { key: "auto-hub", label: "Auto Hub", href: "/autohub", icon: () => <Blocks className="h-4 w-4" aria-hidden /> },
-  ];
-
   return (
     <>
       {/* Mobile Backdrop */}
@@ -226,26 +220,6 @@ export function Sidebar({
                 {isActive && (
                   <span className="absolute left-0 top-2 bottom-2 w-[2px] bg-ink rounded-r" />
                 )}
-                {item.icon(isActive)}
-                {item.label}
-              </Link>
-            );
-          })}
-
-          <p className="px-3 pb-2 pt-5 text-[10px] font-medium uppercase tracking-[0.18em] text-ink-3">Trading tools</p>
-          {TOOL_LINKS.map((item) => {
-            const isActive = pathname.startsWith(item.href);
-            return (
-              <Link
-                key={item.key}
-                href={item.href as Route}
-                aria-current={isActive ? "page" : undefined}
-                onClick={onClose}
-                className={cn(
-                  "nav-link relative flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors lg:min-h-10",
-                  isActive ? "is-active bg-surface-2 text-ink" : "text-ink-2 hover:bg-surface-2 hover:text-ink",
-                )}
-              >
                 {item.icon(isActive)}
                 {item.label}
               </Link>
