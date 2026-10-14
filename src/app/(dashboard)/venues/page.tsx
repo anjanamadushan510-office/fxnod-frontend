@@ -16,9 +16,8 @@ import {
   useDerivDisconnect,
   useDerivListApps,
   useDerivListConnections,
-  useDerivSelectAccount,
 } from "@/services/api/endpoints/trading/trading";
-import type { DerivConnection, DerivLinkedAccount } from "@/services/api/model";
+import type { DerivConnection } from "@/services/api/model";
 
 /**
  * /venues — the brokers FXNod trades through, and the accounts you have given
@@ -26,7 +25,8 @@ import type { DerivConnection, DerivLinkedAccount } from "@/services/api/model";
  *
  * Deriv is the only live one. A user may authorise SEVERAL Deriv logins: each
  * is one grant covering that login's own demo and real accounts, and this is
- * where they are added, switched between and removed. Everything shown comes
+ * where they are added, viewed and removed. Trading account selection belongs
+ * to each trading tool. Everything shown comes
  * from the engine; nothing here is a placeholder figure.
  *
  * The honest part of this screen is expiry. Deriv sign-ins last about an hour
@@ -140,7 +140,7 @@ function DerivVenueCard({
               Sign in at Deriv and approve FXNod. One approval covers every account on
               that Deriv login — demo and real — so switching between them afterwards
               never sends you back. Trade on more than one Deriv login? Connect each,
-              and they all stay.
+              and they all stay. Choose the trading account in the tool you use.
             </p>
           </div>
         )}
@@ -162,9 +162,7 @@ function DerivVenueCard({
 function DerivLoginRow({ connection, index }: { connection: DerivConnection; index: number }) {
   const queryClient = useQueryClient();
   const { start, redirecting } = useStartDerivOAuth();
-  const selectMutation = useDerivSelectAccount();
   const disconnectMutation = useDerivDisconnect();
-  const [confirmReal, setConfirmReal] = useState<DerivLinkedAccount | null>(null);
   const [confirmDisconnect, setConfirmDisconnect] = useState(false);
 
   const refresh = useCallback(async () => {
@@ -173,29 +171,9 @@ function DerivLoginRow({ connection, index }: { connection: DerivConnection; ind
       queryClient.invalidateQueries({ queryKey: getDerivListAccountsQueryKey() }),
       queryClient.invalidateQueries({ queryKey: getDerivListConnectionsQueryKey() }),
     ]);
-    // Balance, positions and the trade gate all follow the selected account.
+    // Refresh account balances and connection status after disconnecting.
     await queryClient.invalidateQueries();
   }, [queryClient]);
-
-  async function chooseAccount(account: DerivLinkedAccount) {
-    if (account.is_selected) return;
-    if (!account.is_virtual) {
-      setConfirmReal(account);
-      return;
-    }
-    await applyUse(account);
-  }
-
-  async function applyUse(account: DerivLinkedAccount) {
-    try {
-      await selectMutation.mutateAsync({ data: { deriv_account_id: account.deriv_account_id } });
-      await refresh();
-      setConfirmReal(null);
-      toast.success(`Now trading ${account.deriv_account_id}`);
-    } catch (err) {
-      toast.error(parseApiError(err, "Could not switch account.").message);
-    }
-  }
 
   async function disconnect() {
     try {
@@ -208,7 +186,7 @@ function DerivLoginRow({ connection, index }: { connection: DerivConnection; ind
     }
   }
 
-  const busy = selectMutation.isPending || disconnectMutation.isPending;
+  const busy = disconnectMutation.isPending;
 
   return (
     <div className="rounded-xl border border-line bg-surface-2/40">
@@ -259,8 +237,8 @@ function DerivLoginRow({ connection, index }: { connection: DerivConnection; ind
       {connection.needs_reconnect && (
         <p className="border-b border-line px-4 py-2.5 text-[11px] leading-relaxed text-ink-3">
           Deriv sign-ins last about an hour and cannot be renewed in the background, so
-          this one has to be approved again before it can trade. Your accounts and your
-          choice of which to trade are kept.
+          this one has to be approved again before it can trade. Your connected accounts
+          stay listed.
         </p>
       )}
 
@@ -268,7 +246,7 @@ function DerivLoginRow({ connection, index }: { connection: DerivConnection; ind
         {connection.accounts.map((account) => (
           <li
             key={account.deriv_account_id}
-            className="flex flex-col gap-3 border-b border-line px-4 py-3 last:border-b-0 sm:flex-row sm:items-center sm:justify-between"
+            className="flex items-center gap-3 border-b border-line px-4 py-3 last:border-b-0"
           >
             <div className="flex items-center gap-3">
               <span
@@ -294,39 +272,9 @@ function DerivLoginRow({ connection, index }: { connection: DerivConnection; ind
                 )}
               </div>
             </div>
-            {account.is_selected ? (
-              <span className="self-start rounded-lg border border-line bg-surface px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-ink-3 sm:self-center">
-                In use
-              </span>
-            ) : (
-              <button
-                type="button"
-                onClick={() => chooseAccount(account)}
-                disabled={busy}
-                className="h-10 w-full rounded-lg border border-line px-3 text-xs text-ink transition hover:bg-surface disabled:opacity-50 sm:h-auto sm:w-auto sm:py-1.5"
-              >
-                Use this account
-              </button>
-            )}
           </li>
         ))}
       </ul>
-
-      {confirmReal && (
-        <ConfirmDialog
-          title="Trade this real-money account?"
-          body={
-            <>
-              <strong className="text-ink">{confirmReal.deriv_account_id}</strong> holds real
-              funds. Manual trades and any bot you start will use them.
-            </>
-          }
-          confirmLabel={busy ? "Switching…" : "Yes, use it"}
-          busy={busy}
-          onCancel={() => setConfirmReal(null)}
-          onConfirm={() => applyUse(confirmReal)}
-        />
-      )}
 
       {confirmDisconnect && (
         <ConfirmDialog

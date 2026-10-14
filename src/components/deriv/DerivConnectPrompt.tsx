@@ -1,11 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { ExternalLink, Link2, UserPlus, ArrowRight } from "lucide-react";
 import { useBrokerSignup } from "@/services/brokerAffiliates";
 import { useStartDerivOAuth } from "@/hooks/useStartDerivOAuth";
 
 /** Signup attribution comes from the authenticated backend, never URL/local storage. */
 export function DerivConnectPrompt({ compact = false }: { compact?: boolean }) {
+  const [confirmExisting, setConfirmExisting] = useState(false);
   const signup = useBrokerSignup("deriv");
   const { start, redirecting } = useStartDerivOAuth();
   const url = signup.data?.url;
@@ -18,10 +20,14 @@ export function DerivConnectPrompt({ compact = false }: { compact?: boolean }) {
     <div className={`mt-5 grid gap-4 ${compact ? "" : "md:grid-cols-2"}`}>
       <div className="rounded-xl border border-line bg-bg p-4">
         <h3 className="text-sm font-semibold text-ink">Already have a Deriv account?</h3>
-        <p className="mt-1 text-xs leading-relaxed text-ink-3">Sign in securely on Deriv and allow FXNOD to connect. You will return to this page to finish your setup.</p>
-        <button type="button" onClick={start} disabled={redirecting} className="mt-4 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg bg-action px-4 text-sm font-medium text-action-ink disabled:opacity-50">
-          <Link2 size={16} />{redirecting ? "Opening Deriv…" : "Connect my Deriv account"}<ArrowRight size={16} />
-        </button>
+        {confirmExisting ? <>
+          <p className="mt-1 text-xs leading-relaxed text-ink-3">Deriv’s login-page Sign up link may omit your partner referral. For a new account, use “Create a Deriv account” alongside.</p>
+          <button type="button" onClick={start} disabled={redirecting} className="mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-lg bg-action px-4 text-sm font-medium text-action-ink disabled:opacity-50">{redirecting ? "Opening Deriv…" : "Yes, continue to Deriv login"}</button>
+          <button type="button" onClick={() => setConfirmExisting(false)} className="mt-2 w-full text-xs text-ink-3 hover:text-ink">Back</button>
+        </> : <>
+          <p className="mt-1 text-xs leading-relaxed text-ink-3">Sign in securely on Deriv and allow FXNOD to connect. You will return to this page to finish your setup.</p>
+          <button type="button" onClick={() => setConfirmExisting(true)} disabled={redirecting} className="mt-4 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg bg-action px-4 text-sm font-medium text-action-ink disabled:opacity-50"><Link2 size={16} />Connect my Deriv account<ArrowRight size={16} /></button>
+        </>}
       </div>
       <div className="rounded-xl border border-line bg-bg p-4">
         <h3 className="flex items-center gap-2 text-sm font-semibold text-ink"><UserPlus size={16} className="text-gold" />New to Deriv?</h3>
