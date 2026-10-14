@@ -498,6 +498,12 @@ a {
   background: linear-gradient(120deg, #1c3b5d, #14283f);
   border-color: #41536b;
 }
+[data-theme="dark"] .settings-hero > div:first-child,
+[data-theme="dark"] .settings-hero button {
+  background: #142a43;
+  border-color: #48617d;
+  color: #c8d8eb;
+}
 [data-theme="dark"] [data-app="options"] {
   --opt-bg: #091321;
   --opt-bg-elev: #0f1e32;
