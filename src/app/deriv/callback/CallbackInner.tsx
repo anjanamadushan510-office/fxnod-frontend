@@ -402,9 +402,10 @@ function PickerCard({
         <button
           type="button"
           onClick={onKeepCurrent}
-          className="text-[12px] font-semibold text-ink-3 transition-colors hover:text-ink"
+          className="w-full py-2.5 px-4 rounded-xl border border-line bg-surface/50 text-[13px] font-medium text-ink-2 hover:text-ink hover:border-zinc-500 transition-all flex items-center justify-center gap-2"
         >
-          Keep trading {currentAccountId}
+          <span>Keep trading {currentAccountId}</span>
+          <span className="text-ink-3">→</span>
         </button>
       )}
 
