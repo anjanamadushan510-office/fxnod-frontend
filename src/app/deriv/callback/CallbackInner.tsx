@@ -28,6 +28,7 @@ const PKCE_VERIFIER_KEY = "pkce_code_verifier";
 type Phase =
   | { name: "loading" }
   | { name: "error"; message: string }
+  | { name: "mobile_handoff"; appUrl: string }
   | {
       name: "pick";
       accounts: DerivAccount[];
@@ -61,8 +62,27 @@ export function CallbackInner() {
     oauthStateRef.current = sessionStorage.getItem(DERIV_STATE_KEY);
     const codeVerifier = sessionStorage.getItem(PKCE_VERIFIER_KEY);
     const appKey = sessionStorage.getItem(DERIV_APP_KEY);
+    const code = searchParams.get("code");
+    const stateParam = searchParams.get("state");
+    const errorParam = searchParams.get("error");
 
     if (!oauthStateRef.current || !codeVerifier) {
+      if ((code || errorParam) && stateParam) {
+        // This OAuth authorization was initiated by the mobile app (which stores PKCE in Keystore,
+        // not in the web browser's sessionStorage). Redirect to the app via custom scheme.
+        const query = new URLSearchParams();
+        if (code) query.set("code", code);
+        if (stateParam) query.set("state", stateParam);
+        if (errorParam) query.set("error", errorParam);
+        const appUrl = `fxnod://deriv/callback?${query.toString()}`;
+        setPhase({
+          name: "mobile_handoff",
+          appUrl,
+        });
+        window.location.href = appUrl;
+        return;
+      }
+
       setPhase({
         name: "error",
         message:
@@ -70,9 +90,6 @@ export function CallbackInner() {
       });
       return;
     }
-
-    const code = searchParams.get("code");
-    const stateParam = searchParams.get("state");
     if (!code || stateParam !== oauthStateRef.current) {
       setPhase({
         name: "error",
@@ -206,6 +223,14 @@ export function CallbackInner() {
     );
   }
 
+  if (phase.name === "mobile_handoff") {
+    return (
+      <PageShell>
+        <MobileHandoffCard appUrl={phase.appUrl} />
+      </PageShell>
+    );
+  }
+
   if (phase.name === "error") {
     return (
       <PageShell>
@@ -284,6 +309,28 @@ function ErrorCard({ message }: { message: string }) {
           className="mt-1 inline-flex items-center gap-1.5 text-[13px] font-semibold text-gold-3 hover:text-gold transition-colors"
         >
           ← Back to trading
+        </a>
+      </div>
+    </Card>
+  );
+}
+
+function MobileHandoffCard({ appUrl }: { appUrl: string }) {
+  return (
+    <Card>
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center gap-2.5">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-line border-t-gold flex-shrink-0" />
+          <h1 className="text-[17px] font-bold text-ink">Returning to FXNod App</h1>
+        </div>
+        <p className="text-[13px] leading-relaxed text-ink-3">
+          Deriv authorization complete. Opening the FXNod app to finish connecting…
+        </p>
+        <a
+          href={appUrl}
+          className="mt-2 inline-flex items-center justify-center rounded-xl bg-gold py-2.5 px-4 text-[13.5px] font-bold text-bg transition-opacity hover:opacity-90 text-center"
+        >
+          Open FXNod App
         </a>
       </div>
     </Card>
