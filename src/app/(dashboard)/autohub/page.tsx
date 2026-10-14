@@ -226,8 +226,8 @@ export default function AutoHubPage() {
 
       <p className="text-xs leading-relaxed text-ink-3 max-w-2xl">
         Bot access requires an active Auto Hub package from Discover. FXNOD also
-        earns a markup that Deriv takes from each real-money payout; each bot
-        shows its rate. Demo trades carry none. No bot can guarantee a profit,
+        earns a markup that Deriv takes from real-money payouts. Demo trades
+        carry none. No bot can guarantee a profit,
         and a bot can lose up to the stop loss you give it.
       </p>
     </section>

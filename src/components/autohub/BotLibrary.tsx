@@ -359,7 +359,6 @@ export function BotLibrary({
               <div className={cn("shrink-0", view === "list" && "sm:w-44")}>
                 <div className="flex items-center justify-between text-xs text-ink-3 mb-2">
                   <span>Min. stake {bot.min_stake}</span>
-                  {bot.markup_pct && <span>{bot.markup_pct}% markup</span>}
                 </div>
                 <Link
                   href={`/autohub/bots/${bot.bot_id}` as Route}

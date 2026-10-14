@@ -711,9 +711,7 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
             </button>
 
             <p className="text-[11px] leading-relaxed text-ink-3">
-              {bot.markup_pct
-                ? `On real money, Deriv takes a ${bot.markup_pct}% markup from each payout for FXNod. Demo trades carry none.`
-                : "Demo trades carry no markup."}{" "}
+              Real-money bot payouts include FXNOD&apos;s markup. Demo trades carry none. {" "}
               The bot runs on the server and keeps its limits with this page
               closed.
             </p>
