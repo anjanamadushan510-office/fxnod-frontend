@@ -20,6 +20,7 @@ import {
   type BotDraft,
   type StepKey,
 } from "@/components/bot/builder/draft";
+import { conditionProblems } from "@/components/bot/builder/conditions";
 import { StrategyOverview } from "@/components/bot/builder/StrategyOverview";
 import { RunPanel } from "@/components/bot/builder/RunPanel";
 import {
@@ -323,7 +324,7 @@ function BotBuilder() {
           <button
             type="button"
             onClick={() => setStep(steps[index + 1].key)}
-            disabled={(current === "method" && !methodChosen) || (current === "duration" && durationIssue !== null)}
+            disabled={(current === "method" && !methodChosen) || (current === "duration" && durationIssue !== null) || (current === "entry" && conditionProblems(draft.entryConditions).length > 0)}
             className="h-11 flex-1 rounded-lg bg-action px-6 text-sm font-medium text-action-ink transition hover:opacity-80 disabled:opacity-50 sm:h-10 sm:flex-none"
           >
             Continue
