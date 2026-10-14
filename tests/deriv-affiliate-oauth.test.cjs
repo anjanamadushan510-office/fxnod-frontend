@@ -80,8 +80,8 @@ test("Connect flow asks the authenticated API for attribution before OAuth", () 
 test("Auto Hub distinguishes existing login from attributed signup before leaving FXNOD", () => {
   const prompt = fs.readFileSync("src/components/deriv/DerivConnectPrompt.tsx", "utf8");
   assert.match(prompt, /setConfirmExisting\(true\)/);
-  assert.match(prompt, /Sign up link on Deriv’s login page may omit your FXNOD partner referral/);
+  assert.match(prompt, /login-page Sign up link may omit your partner referral/);
   assert.match(prompt, /Yes, continue to Deriv login/);
-  assert.match(prompt, /No, create through my referral link/);
+  assert.match(prompt, /For a new account, use “Create a Deriv account” alongside/);
   assert.match(prompt, /href=\{url\}/);
 });
