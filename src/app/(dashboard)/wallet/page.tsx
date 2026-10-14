@@ -22,18 +22,15 @@ export default function WalletPage() {
 
   return (
     <section data-view="wallet" className="p-4 lg:p-6 space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
-        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:ml-auto">
-          <Link href="/transfer" className="flex items-center justify-center h-11 sm:h-9 px-4 rounded-lg border border-line text-sm text-ink-2 hover:text-ink hover:bg-surface-2 transition-colors w-full sm:w-auto">Send to Deriv</Link>
-          <button onClick={() => setIsDepositModalOpen(true)} className="h-9 px-4 rounded-lg bg-action text-action-ink text-sm font-medium hover:opacity-80 transition-opacity w-full sm:w-auto">Top up</button>
-        </div>
-      </div>
-      
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <article className="md:col-span-2 bg-surface border border-line rounded-xl p-4 min-w-0">
           <p className="text-xs uppercase tracking-[0.14em] text-ink-3 mb-3">Available</p>
           <p className="break-words font-display text-3xl font-semibold tabular-nums text-ink sm:text-4xl">{fmtUSD(balance)}</p>
           <p className="mt-2 text-sm text-ink-3">Keep funds here for tools, or transfer them onto Deriv.</p>
+          <div className="mt-5 grid grid-cols-2 gap-2 sm:flex">
+            <button onClick={() => setIsDepositModalOpen(true)} className="min-h-11 px-4 rounded-lg bg-action text-action-ink text-sm font-medium hover:opacity-80 transition-opacity">Top up</button>
+            <Link href="/transfer" className="flex min-h-11 items-center justify-center px-4 rounded-lg border border-line text-sm text-ink-2 hover:text-ink hover:bg-surface-2 transition-colors">Send to Deriv</Link>
+          </div>
         </article>
         
         <article className="bg-surface border border-line rounded-xl p-4">
@@ -50,7 +47,7 @@ export default function WalletPage() {
         <div className="px-5 py-4 border-b border-line">
           <h3 className="font-display text-sm font-semibold text-ink">Activity</h3>
         </div>
-        <div className="divide-y divide-[#24344F]">
+        <div className="divide-y divide-line">
           {isLoading ? (
             <div className="px-5 py-6 text-sm text-ink-3 text-center">Loading activity...</div>
           ) : isError ? (

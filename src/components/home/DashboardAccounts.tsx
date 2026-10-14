@@ -21,7 +21,7 @@ export function DashboardAccounts() {
             Trading funds held at Deriv, separate from your FXNOD Wallet.
           </p>
         </div>
-        <div className="flex gap-4 text-xs">
+        {accounts.length > 0 && <div className="flex gap-4 text-xs">
           <button
             type="button"
             disabled={!deriv.linked || query.isFetching}
@@ -33,7 +33,7 @@ export function DashboardAccounts() {
           <Link href="/venues" className="text-ink-2 hover:underline">
             All accounts →
           </Link>
-        </div>
+        </div>}
       </div>
       {query.isError && (
         <p role="alert" className="mt-4 text-xs text-amber-500">

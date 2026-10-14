@@ -17,18 +17,18 @@ export function BotMembershipBanner({
   const real = !!tool?.access.capabilities.includes("bot_real");
   const demo = !!tool?.access.capabilities.includes("bot_demo");
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-line bg-surface p-4">
-      <div className="flex items-start gap-3">
-        <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-ink-3" />
-        <div>
-          <p className="text-sm font-medium text-ink">
+    <div className="flex items-center justify-between gap-2 rounded-xl border border-line bg-surface p-3 sm:flex-wrap sm:gap-4 sm:p-4">
+      <div className="flex min-w-0 items-start gap-3">
+        <ShieldCheck className="mt-0.5 hidden h-5 w-5 shrink-0 text-ink-3 sm:block" />
+        <div className="min-w-0">
+          <p className="text-[13px] font-medium leading-5 text-ink sm:text-sm">
             {real
               ? "Real-account bot access is available"
               : demo
                 ? "Demo-account bot access is available"
                 : "Choose a plan to run this tool"}
           </p>
-          <p className="mt-1 text-xs text-ink-3">
+          <p className={`mt-1 text-xs text-ink-3 ${demo ? "" : "hidden sm:block"}`}>
             {real
               ? "View your membership and access period in Active Tools."
               : demo
@@ -39,7 +39,7 @@ export function BotMembershipBanner({
       </div>
       <Link
         href={(real ? "/subscriptions" : "/tools") as Route}
-        className="flex items-center gap-2 rounded-xl border border-line px-3 py-2 text-sm text-ink"
+        className="flex min-h-11 shrink-0 items-center gap-1 rounded-lg border border-line px-2 text-xs text-ink sm:gap-2 sm:px-3 sm:text-sm"
       >
         {real ? "Manage access" : "View plans"}
         <ArrowUpRight className="h-4 w-4" />

@@ -120,12 +120,12 @@ export default function ToolsPage() {
             className="h-10 w-full rounded-lg border border-line bg-surface pl-10 pr-4 text-sm outline-none focus-visible:ring-2 focus-visible:ring-action-line"
           />
         </label>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
           <div className="no-scrollbar flex min-w-0 flex-1 overflow-x-auto rounded-lg border border-line bg-surface p-0.5">
             {[
               ["all", "All tools"],
               ["zero", "$0 offers"],
-              ["pro", "Available plans"],
+              ["pro", "Plans"],
               ["bundles", "Bundles"],
             ].map(([key, label]) => (
               <button
@@ -141,7 +141,7 @@ export default function ToolsPage() {
               </button>
             ))}
           </div>
-          <div className="flex rounded-lg border border-line bg-surface p-0.5">
+          <div className="flex self-end rounded-lg border border-line bg-surface p-0.5">
             {(["grid", "list"] as const).map((v) => (
               <button
                 key={v}

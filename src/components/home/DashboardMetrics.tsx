@@ -98,18 +98,20 @@ export function DashboardMetrics({
           Manage accounts →
         </Link>
       </article>
-      <article className="col-span-2 rounded-xl border border-line bg-surface p-3.5 sm:col-span-1 sm:p-4">
-        <p className="text-xs text-ink-3">Partner earnings</p>
-        <p className="mt-2 text-xl sm:text-2xl font-semibold text-ink tabular-nums">
-          {partner.data
-            ? formatMoney(String(partner.data.settled_total))
-            : partner.isError
-              ? "Unavailable"
-              : "—"}
-        </p>
+      <article className="col-span-2 flex items-center justify-between gap-3 rounded-xl border border-line bg-surface p-3.5 sm:col-span-1 sm:block sm:p-4">
+        <div>
+          <p className="text-xs text-ink-3">Partner earnings</p>
+          <p className="mt-1 text-xl font-semibold text-ink tabular-nums sm:mt-2 sm:text-2xl">
+            {partner.data
+              ? formatMoney(String(partner.data.settled_total))
+              : partner.isError
+                ? "Unavailable"
+                : "—"}
+          </p>
+        </div>
         <Link
           href="/partner/dashboard"
-          className="inline-block mt-3 text-xs text-ink-2 hover:underline"
+          className="inline-flex min-h-11 shrink-0 items-center text-xs text-ink-2 hover:underline sm:mt-3 sm:min-h-0"
         >
           Partner hub →
         </Link>

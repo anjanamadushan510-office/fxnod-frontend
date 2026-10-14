@@ -91,10 +91,10 @@ export default function AutoHubPage() {
   }
 
   return (
-    <section className="p-4 lg:p-6 space-y-6">
+    <section className="space-y-4 p-4 lg:space-y-6 lg:p-6">
       <header>
-        <h1 className="text-xl font-semibold text-ink sm:text-2xl">Auto Hub</h1>
-        <p className="text-sm text-ink-2 mt-1 max-w-2xl leading-relaxed">
+        <h1 className="hidden text-xl font-semibold text-ink sm:block sm:text-2xl">Auto Hub</h1>
+        <p className="text-sm text-ink-2 sm:mt-1 max-w-2xl leading-relaxed">
           Browse ready-made bots. Review the stake and risk limits before each run.
         </p>
       </header>
