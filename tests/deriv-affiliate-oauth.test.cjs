@@ -70,11 +70,12 @@ test("OAuth URL includes the partner token while keeping PKCE and state", async 
   assert.equal(url.searchParams.get("prompt"), null);
 });
 
-test("Connect flow asks the authenticated API for attribution before OAuth", () => {
+test("Every Deriv login flow asks the authenticated API for attribution before OAuth", () => {
   const hook = fs.readFileSync("src/hooks/useStartDerivOAuth.ts", "utf8");
   assert.match(hook, /await getBrokerSignup\("deriv"\)/);
-  assert.match(hook, /if \(!app && !signup\?\.url\) throw/);
-  assert.match(hook, /signup\?\.url \?\? undefined/);
+  assert.match(hook, /if \(!signup\?\.url\) throw/);
+  assert.match(hook, /signup\.url,/);
+  assert.doesNotMatch(hook, /app \? null : await getBrokerSignup/);
 });
 
 test("Auto Hub distinguishes existing login from attributed signup before leaving FXNOD", () => {

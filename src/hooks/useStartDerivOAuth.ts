@@ -77,13 +77,13 @@ export function useStartDerivOAuth() {
       const redirectUri = origin + "/deriv/callback";
       // Resolve attribution from the user's immutable direct partner before
       // opening Deriv. Never use a URL parameter or an app-wide token here.
-      const signup = app ? null : await getBrokerSignup("deriv");
-      if (!app && !signup?.url) throw new Error("Deriv signup link unavailable");
+      const signup = await getBrokerSignup("deriv");
+      if (!signup?.url) throw new Error("Deriv signup link unavailable");
       const { authorize_url, state } = await derivApi.authorize(
         redirectUri,
         // A bot never moves money, so its apps are not asked for `payment`.
         app ? { clientId: app.clientId, scope: "trade account_manage" } : undefined,
-        signup?.url ?? undefined,
+        signup.url,
       );
       sessionStorage.setItem(DERIV_STATE_KEY, state);
       if (app) sessionStorage.setItem(DERIV_APP_KEY, app.appKey);
@@ -92,7 +92,7 @@ export function useStartDerivOAuth() {
       window.location.href = authorize_url;
     } catch {
       setRedirecting(false);
-      toast.error("Couldn’t start Deriv sign-in", { description: app ? "Please try again." : "Your referral link could not be prepared. Please try again." });
+      toast.error("Couldn’t start Deriv sign-in", { description: "Your referral link could not be prepared. Please try again." });
     }
   }
 
