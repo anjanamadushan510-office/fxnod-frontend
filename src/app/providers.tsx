@@ -61,8 +61,9 @@ export function Providers({
   }, []);
 
   return (
-    <ThemeProvider attribute="data-theme" defaultTheme="dark" disableTransitionOnChange nonce={nonce}>
+    <ThemeProvider attribute={["class", "data-theme"]} defaultTheme="dark" enableSystem disableTransitionOnChange nonce={nonce}>
       <QueryClientProvider client={queryClient}>
+        <ThemeColorSync />
         {children}
       <Analytics />
       {/* App-wide toast portal (trade results, Deriv linking, …). */}
@@ -75,6 +76,15 @@ export function Providers({
     </QueryClientProvider>
     </ThemeProvider>
   );
+}
+
+function ThemeColorSync() {
+  const { resolvedTheme } = useTheme();
+  useEffect(() => {
+    const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+    if (meta) meta.content = resolvedTheme === "light" ? "#f3f6fb" : "#080f1c";
+  }, [resolvedTheme]);
+  return null;
 }
 
 function ThemedToaster() {

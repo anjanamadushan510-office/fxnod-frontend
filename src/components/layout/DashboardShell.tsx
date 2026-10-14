@@ -6,6 +6,7 @@ import { cn } from "@/lib/cn";
 import { TopNav } from "./TopNav";
 import { Sidebar } from "./Sidebar";
 import { MobileTabBar, phoneNavHidden } from "./MobileTabBar";
+import { ScrollProgressButton } from "./ScrollProgressButton";
 import { AuthGate } from "@/components/auth/AuthGate";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -44,6 +45,19 @@ function Shell({ children }: { children: React.ReactNode }) {
     };
   }, [sidebarOpen]);
 
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    const desktop = window.matchMedia("(min-width: 1024px)");
+    const closeOnDesktop = () => {
+      if (desktop.matches) setSidebarOpen(false);
+    };
+    desktop.addEventListener("change", closeOnDesktop);
+    return () => desktop.removeEventListener("change", closeOnDesktop);
+  }, []);
+
   return (
     <div className="workspace-shell flex min-h-[100dvh] bg-bg text-ink">
       <Sidebar 
@@ -64,7 +78,10 @@ function Shell({ children }: { children: React.ReactNode }) {
         >
           {children}
         </main>
-        {showPhoneNav && <MobileTabBar />}
+        {!phoneNavHidden(pathname) && !["/wallet", "/transfer"].some((route) => pathname.startsWith(route)) && (
+          <ScrollProgressButton pathname={pathname} />
+        )}
+        {showPhoneNav && <MobileTabBar onMenu={() => setSidebarOpen(true)} menuOpen={sidebarOpen} />}
       </div>
     </div>
   );

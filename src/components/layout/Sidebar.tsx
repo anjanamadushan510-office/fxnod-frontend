@@ -1,9 +1,13 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/cn";
+import { Blocks, Bot, ChartCandlestick, LogOut } from "lucide-react";
+import { useAuthStore } from "@/stores/authStore";
 import { useGetWalletBalance } from "@/services/api/endpoints/wallet/wallet";
 import { fmtUSD } from "@/lib/format";
 
@@ -26,8 +30,39 @@ export function Sidebar({
   user,
 }: SidebarProps) {
   const pathname = usePathname() || "";
+  const router = useRouter();
+  const logout = useAuthStore((state) => state.logout);
+  const drawerRef = useRef<HTMLElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
   const { data: walletData } = useGetWalletBalance();
   const balance = Number(walletData?.balance || 0);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousFocus = document.activeElement as HTMLElement | null;
+    closeRef.current?.focus();
+    const trapFocus = (event: KeyboardEvent) => {
+      if (event.key !== "Tab" || !drawerRef.current) return;
+      const items = [...drawerRef.current.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      )];
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (!first || !last) return;
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", trapFocus);
+    return () => {
+      document.removeEventListener("keydown", trapFocus);
+      if (previousFocus?.isConnected) previousFocus.focus();
+    };
+  }, [isOpen]);
 
   const TERMINAL_LINKS: NavItem[] = [
     { 
@@ -124,23 +159,32 @@ export function Sidebar({
       href: "/support" 
     },
   ];
+  const TOOL_LINKS: NavItem[] = [
+    { key: "trade-pilot", label: "Trade Pilot", href: "/options/dtrader", icon: () => <ChartCandlestick className="h-4 w-4" aria-hidden /> },
+    { key: "bot-forge", label: "Bot Forge", href: "/dbot", icon: () => <Bot className="h-4 w-4" aria-hidden /> },
+    { key: "auto-hub", label: "Auto Hub", href: "/autohub", icon: () => <Blocks className="h-4 w-4" aria-hidden /> },
+  ];
 
   return (
     <>
       {/* Mobile Backdrop */}
       {isOpen && (
         <div 
-          className="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
           onClick={onClose}
           aria-hidden="true"
         />
       )}
 
       <aside
+        ref={drawerRef}
         id="sidebar"
+        role={isOpen ? "dialog" : undefined}
+        aria-modal={isOpen ? true : undefined}
+        aria-label={isOpen ? "Navigation menu" : undefined}
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex h-full w-[min(18rem,86vw)] flex-col border-r border-line bg-surface pt-safe pb-safe transition-transform duration-300 ease-in-out lg:w-56 lg:translate-x-0 lg:sticky lg:top-0 lg:h-[100dvh]",
-          isOpen ? "translate-x-0" : "-translate-x-full"
+          "fixed inset-y-0 left-0 z-50 flex h-[100dvh] w-[min(18rem,86vw)] flex-col border-r border-line bg-surface pt-safe pb-safe transition-transform duration-200 ease-out lg:visible lg:pointer-events-auto lg:w-56 lg:translate-x-0 lg:sticky lg:top-0",
+          isOpen ? "visible translate-x-0" : "invisible pointer-events-none -translate-x-full"
         )}
       >
         <div className="flex h-14 items-center justify-between border-b border-line px-5">
@@ -148,6 +192,7 @@ export function Sidebar({
             <img src="/assets/fxnod-logo.png" alt="FXNOD" className="h-8 w-auto invert dark:invert-0" />
           </Link>
           <button 
+            ref={closeRef}
             className="-mr-2 grid h-11 w-11 place-items-center text-ink-2 hover:text-ink lg:hidden" 
             onClick={onClose}
             aria-label="Close menu"
@@ -181,6 +226,26 @@ export function Sidebar({
                 {isActive && (
                   <span className="absolute left-0 top-2 bottom-2 w-[2px] bg-ink rounded-r" />
                 )}
+                {item.icon(isActive)}
+                {item.label}
+              </Link>
+            );
+          })}
+
+          <p className="px-3 pb-2 pt-5 text-[10px] font-medium uppercase tracking-[0.18em] text-ink-3">Trading tools</p>
+          {TOOL_LINKS.map((item) => {
+            const isActive = pathname.startsWith(item.href);
+            return (
+              <Link
+                key={item.key}
+                href={item.href as Route}
+                aria-current={isActive ? "page" : undefined}
+                onClick={onClose}
+                className={cn(
+                  "nav-link relative flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors lg:min-h-10",
+                  isActive ? "is-active bg-surface-2 text-ink" : "text-ink-2 hover:bg-surface-2 hover:text-ink",
+                )}
+              >
                 {item.icon(isActive)}
                 {item.label}
               </Link>
@@ -235,6 +300,17 @@ export function Sidebar({
               <span className="truncate text-[11px] text-ink-3">{user.email}</span>
             </div>
           </Link>
+          <button
+            type="button"
+            onClick={() => {
+              onClose?.();
+              void logout().finally(() => router.push("/"));
+            }}
+            className="mt-1 flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-left text-sm text-ink-2 hover:bg-surface-2 hover:text-ink"
+          >
+            <LogOut className="h-4 w-4" aria-hidden />
+            Log out
+          </button>
         </div>
       </aside>
     </>

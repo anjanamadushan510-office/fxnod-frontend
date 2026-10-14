@@ -87,6 +87,25 @@ body {
   transition: background 0.25s ease, color 0.25s ease;
 }
 
+.scroll-progress-button {
+  --scroll-progress: 0%;
+  background: conic-gradient(var(--gold) var(--scroll-progress), var(--line) 0);
+  box-shadow: 0 8px 24px rgba(8, 15, 28, 0.22);
+}
+.scroll-progress-button:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+@media (max-width: 1023px) {
+  .workspace-shell:has(:is(input, textarea, select):focus) .scroll-progress-button {
+    display: none;
+  }
+  .workspace-shell:has(:is(input, textarea, select):focus) .workspace-mobile-nav {
+    transform: translateY(100%);
+    pointer-events: none;
+  }
+}
+
 html {
   /* Stop iOS inflating text in landscape; the layout is already responsive. */
   -webkit-text-size-adjust: 100%;

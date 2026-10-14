@@ -4,6 +4,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
+import { Menu } from "lucide-react";
 
 /**
  * Phone navigation for the signed-in app.
@@ -13,21 +14,21 @@ import { cn } from "@/lib/cn";
 const TABS = [
   { href: "/home", label: "Dashboard", icon: HomeIcon },
   { href: "/tools", label: "Discover", icon: ToolsIcon },
-  { href: "/subscriptions", label: "Active Tools", icon: SubscriptionsIcon },
-  { href: "/venues", label: "Connected Accounts", icon: VenuesIcon },
+  { href: "/subscriptions", label: "My tools", icon: SubscriptionsIcon },
   { href: "/wallet", label: "Wallet", icon: WalletIcon },
 ] as const;
 
-export function MobileTabBar() {
+export function MobileTabBar({ onMenu, menuOpen }: { onMenu: () => void; menuOpen: boolean }) {
   const pathname = usePathname() || "";
+  const primary = TABS.some((tab) => pathname === tab.href || pathname.startsWith(`${tab.href}/`));
 
   return (
     <nav
       aria-label="Primary"
-      className="workspace-mobile-nav fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 backdrop-blur-xl lg:hidden"
+      className="workspace-mobile-nav fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 backdrop-blur-xl transition-transform duration-200 lg:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      <div className="grid h-16 grid-cols-5">
+      <div className="grid h-16 grid-cols-5 px-safe">
         {TABS.map((tab) => {
           const on = pathname === tab.href || pathname.startsWith(`${tab.href}/`);
           const Icon = tab.icon;
@@ -37,15 +38,31 @@ export function MobileTabBar() {
               href={tab.href as Route}
               aria-current={on ? "page" : undefined}
               className={cn(
-                "flex min-w-0 flex-col items-center justify-center gap-1 px-0.5 text-center text-[9px] font-medium leading-tight tracking-tight min-[400px]:text-[10px]",
+                "relative flex min-w-0 flex-col items-center justify-center gap-1 px-0.5 text-center text-[11px] font-medium leading-tight",
                 on ? "text-ink" : "text-ink-3",
               )}
             >
+              {on && <span className="absolute inset-x-3 top-0 h-0.5 rounded-b bg-gold" aria-hidden />}
               <Icon />
               <span>{tab.label}</span>
             </Link>
           );
         })}
+        <button
+          type="button"
+          aria-label="Open menu"
+          aria-controls="sidebar"
+          aria-expanded={menuOpen}
+          onClick={onMenu}
+          className={cn(
+            "relative flex min-w-0 flex-col items-center justify-center gap-1 px-0.5 text-[11px] font-medium leading-tight",
+            !primary || menuOpen ? "text-ink" : "text-ink-3",
+          )}
+        >
+          {(!primary || menuOpen) && <span className="absolute inset-x-3 top-0 h-0.5 rounded-b bg-gold" aria-hidden />}
+          <Menu className="h-5 w-5" aria-hidden />
+          <span>Menu</span>
+        </button>
       </div>
     </nav>
   );
@@ -53,7 +70,10 @@ export function MobileTabBar() {
 
 /** Bot builder owns the bottom of the screen (Back / Continue). */
 export function phoneNavHidden(pathname: string) {
-  return pathname.startsWith("/dbot/build");
+  return pathname.startsWith("/dbot/build") ||
+    pathname.startsWith("/dbot/runs/") ||
+    pathname.startsWith("/autohub/bots/") ||
+    pathname.startsWith("/autohub/runs/");
 }
 
 function HomeIcon() {
@@ -76,14 +96,6 @@ function ToolsIcon() {
   return (
     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} aria-hidden>
       <path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085" />
-    </svg>
-  );
-}
-
-function VenuesIcon() {
-  return (
-    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} aria-hidden>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.91a4 4 0 015.66 5.66l-3.54 3.54a4 4 0 01-5.66 0M10.81 15.09a4 4 0 01-5.66-5.66l3.54-3.54a4 4 0 015.66 0" />
     </svg>
   );
 }
