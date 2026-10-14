@@ -1,5 +1,6 @@
 import { api } from "./api";
 import type { ContractTypeId } from "@/components/options/layout/contractTypes";
+import { derivReferralParams } from "@/lib/derivReferral";
 import type {
   ConfirmResponse as GeneratedConfirmResponse,
   DerivExchangeResponse,
@@ -44,6 +45,7 @@ export const derivApi = {
   async authorize(
     redirectUri: string,
     app?: { clientId: string; scope: string },
+    affiliateSignupUrl?: string,
   ): Promise<{ authorize_url: string; state: string }> {
     // 1. Generate code_verifier
     const array = crypto.getRandomValues(new Uint8Array(64));
@@ -77,6 +79,11 @@ export const derivApi = {
     authUrl.searchParams.set('state', state);
     authUrl.searchParams.set('code_challenge', codeChallenge);
     authUrl.searchParams.set('code_challenge_method', 'S256');
+    // If someone chooses Sign up from Deriv's login screen, carry the
+    // server-selected direct partner (or FXNOD) attribution into this flow.
+    if (affiliateSignupUrl) {
+      derivReferralParams(affiliateSignupUrl).forEach((value, key) => authUrl.searchParams.set(key, value));
+    }
 
     return { authorize_url: authUrl.toString(), state };
   },
