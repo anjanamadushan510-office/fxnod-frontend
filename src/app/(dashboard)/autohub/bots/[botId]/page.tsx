@@ -21,6 +21,7 @@ import {
 } from "@/components/autohub/runState";
 import { DerivAppConsentModal } from "@/components/bot/DerivAppConsentModal";
 import { TextField } from "@/components/bot/builder/controls";
+import { DerivConnectPrompt } from "@/components/deriv/DerivConnectPrompt";
 import { AccountSection } from "@/components/bot/builder/RunPanel";
 import { useDerivStatus } from "@/hooks/useDerivStatus";
 import { useToolTradingAccess } from "@/hooks/useToolTradingAccess";
@@ -560,6 +561,8 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
         </p>
       </header>
 
+      {!deriv.isLoading && !deriv.linked && <div className="mb-6"><DerivConnectPrompt /></div>}
+
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_22rem] gap-6 items-start">
         <div className="space-y-6 min-w-0">
           <details className="rounded-2xl border border-line bg-surface p-5">
@@ -652,8 +655,8 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
           )}
 
           <div className="bg-panel border border-line rounded-2xl p-5 space-y-5">
-            <AccountSection />
-            {access.message && (
+            {(deriv.linked || deriv.isLoading) ? <AccountSection /> : <p className="text-sm font-medium text-ink">Connect your Deriv account above to continue.</p>}
+            {deriv.linked && access.message && (
               <p className="text-xs text-ink-2" role="status">
                 {access.message} <Link href="/tools">View packages</Link>
               </p>

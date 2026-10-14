@@ -1,10 +1,9 @@
 "use client";
 import { useDerivAccounts } from "@/hooks/useDerivAccounts";
+import { DerivConnectPrompt } from "@/components/deriv/DerivConnectPrompt";
 import { AccountBalance } from "@/components/deriv/AccountBalance";
 
 import { useState } from "react";
-import Link from "next/link";
-import type { Route } from "next";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { cn } from "@/lib/cn";
@@ -66,20 +65,7 @@ export function AccountSection() {
     return <p className="text-xs text-ink-3">Checking your Deriv account…</p>;
   }
 
-  if (!deriv.linked) {
-    return (
-      <div className="rounded-xl border border-line p-3 text-xs text-ink-2 leading-relaxed">
-        You need an active Deriv connection to run this bot.
-        <Link
-          href={"/options/dtrader" as Route}
-          className="text-ink underline underline-offset-2"
-        >
-          connect one in Trade Pilot
-        </Link>
-        , then come back.
-      </div>
-    );
-  }
+  if (!deriv.linked) return <DerivConnectPrompt compact />;
 
   const accounts = accountsQuery.data?.accounts ?? [];
 

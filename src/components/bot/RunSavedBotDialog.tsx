@@ -6,6 +6,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { Route } from "next";
 import { cn } from "@/lib/cn";
+import { DerivConnectPrompt } from "@/components/deriv/DerivConnectPrompt";
 import { AccountBalance } from "@/components/deriv/AccountBalance";
 import type { DerivLinkedAccount } from "@/services/api/model";
 import { useToolTradingAccess } from "@/hooks/useToolTradingAccess";
@@ -63,7 +64,7 @@ export function RunSavedBotDialog({
     >
       <div
         onClick={(event) => event.stopPropagation()}
-        className="w-full max-w-md rounded-2xl border border-line bg-surface p-6 shadow-2xl"
+        className="max-h-[calc(100dvh-2rem)] overflow-y-auto w-full max-w-lg rounded-2xl border border-line bg-surface p-6 shadow-2xl"
       >
         <h2 id="run-saved-bot-title" className="text-lg font-semibold text-ink">
           Run on which Deriv account?
@@ -84,18 +85,7 @@ export function RunSavedBotDialog({
               Could not load your Deriv accounts. Close this and try again.
             </p>
           )}
-          {!loading && (!deriv.linked || (accountsQuery.isSuccess && accounts.length === 0)) && (
-            <p className="text-sm text-ink-2">
-              Connect a Deriv account on{" "}
-              <Link
-                href={"/venues" as Route}
-                className="text-ink underline underline-offset-2"
-              >
-                Connected Accounts
-              </Link>{" "}
-              before running this bot.
-            </p>
-          )}
+          {!loading && (!deriv.linked || (accountsQuery.isSuccess && accounts.length === 0)) && <DerivConnectPrompt compact />}
           {accounts.map((account) => {
             const active = account.deriv_account_id === chosenId;
             return (
