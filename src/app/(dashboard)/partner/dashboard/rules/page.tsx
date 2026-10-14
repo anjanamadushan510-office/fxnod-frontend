@@ -44,7 +44,7 @@ export default function PartnerRulesPage() {
   const products = Array.from(new Set(rates.map((rate) => rate.source_type)));
 
   return (
-    <section data-view="partner-rules" className="space-y-6 p-4 lg:p-8">
+    <section data-view="partner-rules" className="space-y-5 p-4 lg:p-6">
       <article className="min-w-0 overflow-hidden rounded-2xl border border-line bg-surface">
         <header className="border-b border-line px-5 py-4">
           <h2 className="font-display text-sm font-semibold text-ink">Your rates</h2>

@@ -114,8 +114,8 @@ export function RunningNow() {
   ].filter(Boolean) as string[];
 
   return (
-    <article className="xl:col-span-2 bg-surface border border-line rounded-2xl overflow-hidden min-w-0 flex flex-col">
-      <div className="flex items-center justify-between px-5 py-4 border-b border-line gap-3">
+    <article className="xl:col-span-2 bg-surface border border-line rounded-xl overflow-hidden min-w-0 flex flex-col">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-line gap-3">
         <h2 className="font-display text-sm font-semibold text-ink">
           Running on your account
         </h2>

@@ -38,7 +38,7 @@ export function DashboardActivity() {
       <RunningNow />
 
       {/* Recent Wallet */}
-      <article className="bg-surface border border-line rounded-2xl p-5 flex flex-col">
+      <article className="bg-surface border border-line rounded-xl p-4 flex flex-col">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-display text-sm font-semibold text-ink">
             Recent wallet
@@ -51,7 +51,7 @@ export function DashboardActivity() {
           </Link>
         </div>
 
-        <div className="flex-1 flex flex-col gap-6 overflow-y-auto pt-2">
+        <div className="flex-1 flex flex-col gap-3">
           {isLoading ? (
             <p className="text-sm text-ink-3">Loading activity...</p>
           ) : isError ? (

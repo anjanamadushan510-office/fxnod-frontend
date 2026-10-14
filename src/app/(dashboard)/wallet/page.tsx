@@ -21,7 +21,7 @@ export default function WalletPage() {
   }
 
   return (
-    <section data-view="wallet" className="p-4 lg:p-8 space-y-6">
+    <section data-view="wallet" className="p-4 lg:p-6 space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:ml-auto">
           <Link href="/transfer" className="flex items-center justify-center h-11 sm:h-9 px-4 rounded-lg border border-line text-sm text-ink-2 hover:text-ink hover:bg-surface-2 transition-colors w-full sm:w-auto">Send to Deriv</Link>
@@ -29,14 +29,14 @@ export default function WalletPage() {
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <article className="md:col-span-2 bg-surface border border-line rounded-2xl p-6 min-w-0">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <article className="md:col-span-2 bg-surface border border-line rounded-xl p-4 min-w-0">
           <p className="text-xs uppercase tracking-[0.14em] text-ink-3 mb-3">Available</p>
           <p className="break-words font-display text-3xl font-semibold tabular-nums text-ink sm:text-4xl">{fmtUSD(balance)}</p>
           <p className="mt-2 text-sm text-ink-3">Keep funds here for tools, or transfer them onto Deriv.</p>
         </article>
         
-        <article className="bg-surface border border-line rounded-2xl p-6">
+        <article className="bg-surface border border-line rounded-xl p-4">
           <p className="text-xs uppercase tracking-[0.14em] text-ink-3 mb-3">How it works</p>
           <ol className="text-sm text-ink-2 space-y-2 list-decimal pl-4">
             <li>Top up via the gateway</li>

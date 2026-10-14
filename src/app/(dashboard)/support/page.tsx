@@ -54,7 +54,7 @@ export default function SupportPage() {
   if (!mounted) return null;
 
   return (
-    <section className="p-4 lg:p-8 space-y-6 max-w-[1440px] mx-auto w-full">
+    <section className="p-4 lg:p-6 space-y-5 max-w-[1440px] mx-auto w-full">
       {/* Hero Banner */}
       <article className="relative overflow-hidden rounded-2xl border border-line bg-gradient-to-br from-surface-2 to-surface p-5 sm:p-6">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">

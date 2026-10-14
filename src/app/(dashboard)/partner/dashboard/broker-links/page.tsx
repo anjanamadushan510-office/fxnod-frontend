@@ -9,7 +9,7 @@ import { parseApiError } from "@/lib/apiError";
 const COMING_SOON_BROKERS = ["Binance", "Bybit"] as const;
 export default function BrokerLinksPage() {
   const query = useBrokerLinks();
-  return <section className="space-y-6 p-4 lg:p-8">
+  return <section className="space-y-5 p-4 lg:p-6">
     <header><h1 className="font-display text-2xl font-semibold text-ink">Broker affiliate links</h1><p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-2">Add your Deriv signup link for people who joined FXNOD through your invite link. More brokers are coming soon.</p></header>
     <div className="rounded-xl border border-line bg-surface p-4 text-sm leading-relaxed text-ink-2">Your Deriv link applies to your direct referrals. If you leave it empty, FXNOD’s configured link is used. This setting does not change your FXNOD invite code or Deriv accounts already created.</div>
     {query.isPending && <p role="status" className="text-sm text-ink-3">Loading your links…</p>}

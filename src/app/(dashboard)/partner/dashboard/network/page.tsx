@@ -33,7 +33,7 @@ export default function PartnerNetworkPage() {
   }, [team, level, search]);
 
   return (
-    <section data-view="partner-network" className="space-y-6 p-4 lg:p-8">
+    <section data-view="partner-network" className="space-y-5 p-4 lg:p-6">
       <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <StatCard label="Team" value={team ? String(team.total) : "—"} note="People under your link" />
         <StatCard

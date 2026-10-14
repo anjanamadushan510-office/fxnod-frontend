@@ -12,7 +12,7 @@ export function DashboardFavourites() {
     favourites.ids.has(bot.bot_id),
   );
   return (
-    <section className="rounded-2xl border border-line bg-surface p-5">
+    <section className="rounded-xl border border-line bg-surface p-4">
       <div className="flex flex-wrap justify-between gap-2 items-center">
         <h2 className="flex items-center gap-2 text-lg font-semibold text-ink">
           <Star size={18} className="text-amber-500" />
@@ -49,7 +49,7 @@ export function DashboardFavourites() {
             <Link
               key={bot.bot_id}
               href={`/autohub/bots/${bot.bot_id}` as Route}
-              className="rounded-xl bg-surface-2 border border-line p-4 hover:border-ink-3 transition-colors"
+              className="rounded-lg bg-surface-2 border border-line p-3 hover:border-ink-3 transition-colors"
             >
               <span className="flex justify-between gap-3 text-sm font-medium text-ink">
                 {bot.name}

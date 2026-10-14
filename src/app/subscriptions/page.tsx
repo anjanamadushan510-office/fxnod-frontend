@@ -47,14 +47,11 @@ export default function SubscriptionsPage() {
   const active = data.tools.filter((t) => t.access.active);
   const owned = data.tools.filter((t) => t.access.owned);
   return (
-    <section className="mx-auto max-w-7xl space-y-8 p-4 lg:p-8">
+    <section className="mx-auto max-w-7xl space-y-5 p-4 lg:p-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[.2em] text-ink-3">
-            YOUR WORKSPACE
-          </p>
-          <h1 className="mt-2 text-3xl font-semibold">Active tools & plans</h1>
-          <p className="mt-2 text-sm text-ink-2">
+          <h1 className="text-xl font-semibold sm:text-2xl">Active tools & plans</h1>
+          <p className="mt-1 text-sm text-ink-2">
             Your access, renewal dates and purchase history in one place.
           </p>
         </div>
@@ -78,7 +75,7 @@ export default function SubscriptionsPage() {
         ].map(([label, value]) => (
           <div
             key={label}
-            className="rounded-2xl border border-line bg-surface p-4"
+            className="rounded-xl border border-line bg-surface p-3 sm:p-4"
           >
             <p className="text-xs text-ink-3">{label}</p>
             <p className="mt-2 text-2xl font-semibold">{value}</p>

@@ -38,11 +38,11 @@ export function ToolCard({
   return (
     <article
       className={cn(
-        "workspace-card min-w-0 rounded-2xl border border-line bg-surface p-5 transition-colors hover:bg-surface-2",
-        list ? "flex flex-col gap-4 sm:flex-row sm:items-center" : "flex flex-col",
+        "workspace-card min-w-0 rounded-xl border border-line bg-surface p-4 transition-colors hover:border-line-2 hover:bg-surface-2",
+        list ? "flex flex-col gap-3 sm:flex-row sm:items-center" : "flex flex-col",
       )}
     >
-      <div className={cn("min-w-0", list ? "flex-1" : "mb-4")}>
+      <div className={cn("min-w-0", list ? "flex-1" : "mb-3")}>
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <ToolMark id={tool.id} />
@@ -54,7 +54,7 @@ export function ToolCard({
           {headerExtra}
         </div>
 
-        <div className="mt-3 flex flex-wrap items-center gap-1.5">
+        <div className="mt-2 flex flex-wrap items-center gap-1.5">
           {tool.badges.map((badge) => (
             <span
               key={badge}
@@ -66,7 +66,7 @@ export function ToolCard({
           {badgeExtra}
         </div>
 
-        <p className={cn("mt-3 text-sm leading-relaxed text-ink-2", list ? "line-clamp-2" : "mb-4")}>
+        <p className="mt-2 text-xs leading-relaxed text-ink-2 line-clamp-2">
           {tool.description}
         </p>
       </div>

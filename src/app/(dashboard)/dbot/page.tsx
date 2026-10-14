@@ -297,7 +297,7 @@ export default function DBotDashboardPage() {
   }
 
   return (
-    <section className="p-4 lg:p-8 space-y-8">
+    <section className="p-4 lg:p-6 space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between sm:gap-4">
         <div>
           <h1 className="text-2xl font-semibold text-ink">Bot Forge</h1>
@@ -315,7 +315,7 @@ export default function DBotDashboardPage() {
         {historyAccountId && <p role="status" className="text-xs text-ink-3">Showing runs from {historyAccountId}. Saved bots can be run on any eligible account.</p>}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <StatCard
           icon={<Cpu className="h-5 w-5 text-ink" />}
           title="Bots"
@@ -343,10 +343,9 @@ export default function DBotDashboardPage() {
         />
       </div>
 
-      <article className="bg-surface border border-line rounded-2xl p-6 text-center sm:p-14">
-        <img src="/assets/fxnod-mark.png" alt="" className="mx-auto h-10 w-10 object-contain opacity-40 mb-5 dark:invert-0 invert" />
-        <h3 className="font-display text-lg font-semibold mb-2 text-ink">Your strategy. Your bot.</h3>
-        <p className="text-sm text-ink-3 max-w-md mx-auto leading-relaxed mb-6">
+      <article className="bg-surface border border-line rounded-xl p-5 text-center sm:p-7">
+        <h3 className="font-display text-base font-semibold mb-1 text-ink">Your strategy. Your bot.</h3>
+        <p className="text-sm text-ink-3 max-w-xl mx-auto leading-relaxed mb-4">
           Turn your trading idea into a bot: choose what to buy, combine your entry conditions,
           and set your stake and stop limits. Start from a template or build from scratch.
         </p>

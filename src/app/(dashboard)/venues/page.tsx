@@ -52,7 +52,7 @@ export default function VenuesPage() {
   const connections = connectionsQuery.data?.connections ?? [];
 
   return (
-    <section className="p-4 lg:p-8 space-y-8">
+    <section className="p-4 lg:p-6 space-y-5">
       <p className="text-sm text-ink-2">
         The brokers FXNod trades through, and the accounts you have given it access to.
       </p>
@@ -84,7 +84,7 @@ function DerivVenueCard({
 
   return (
     <article className="overflow-hidden rounded-2xl border border-line bg-surface">
-      <header className="flex flex-col gap-4 border-b border-line p-4 sm:p-6 md:flex-row md:items-start md:justify-between">
+      <header className="flex flex-col gap-3 border-b border-line p-4 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-4">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-line bg-surface-2 text-lg font-semibold text-ink">
             D

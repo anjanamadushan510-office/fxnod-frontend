@@ -363,7 +363,7 @@ export default function SettingsPage() {
   const displayId = user?.id ? `${user.id.slice(0, 4)}....${user.id.slice(-4)}` : "N/A";
 
   return (
-    <section className="p-4 lg:p-8 space-y-6 max-w-[1440px] mx-auto w-full">
+    <section className="p-4 lg:p-6 space-y-5 max-w-[1440px] mx-auto w-full">
       {activePane === "hub" && (
         <div className="space-y-6">
           <article className="settings-hero relative overflow-hidden rounded-2xl border border-line px-5 py-6 sm:px-6 sm:py-7 flex items-center gap-4">

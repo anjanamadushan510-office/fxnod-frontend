@@ -62,7 +62,7 @@ export default function PartnerEarningsPage() {
   const sources = earnings?.by_source.map((row) => row.source_type) ?? [];
 
   return (
-    <section data-view="partner-earnings" className="space-y-6 p-4 lg:p-8">
+    <section data-view="partner-earnings" className="space-y-5 p-4 lg:p-6">
       <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <StatCard label="Pending" value={money(earnings?.total.accrued, currency)} note="Earned and not yet paid" />
         <StatCard label="Paid" value={money(earnings?.total.settled, currency)} note="To your FXNOD wallet" />

@@ -27,23 +27,19 @@ export default function HomePage() {
 
   return (
     <>
-      <section data-view="hub" className="space-y-7 p-4 lg:p-8">
+      <section data-view="hub" className="space-y-5 p-4 lg:p-6">
         <header className="workspace-hero flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <p className="text-xs text-ink-3 mb-1">
-              {name ? `Welcome back, ${name}` : "Welcome to FXNOD"}
-            </p>
-            <h2 className="text-2xl font-semibold text-ink">
-              Your trading workspace
+            <h2 className="text-xl font-semibold text-ink sm:text-2xl">
+              {name ? `${name}’s workspace` : "Your trading workspace"}
             </h2>
-            <p className="mt-2 text-sm text-ink-2">
-              Manage your access, follow active runs and find your next
-              strategy.
+            <p className="mt-1 text-sm text-ink-2">
+              Accounts, active runs and tools at a glance.
             </p>
           </div>
           <Link
             href="/tools"
-            className="h-11 px-5 rounded-xl border border-line text-sm text-ink flex items-center justify-center shrink-0 hover:bg-surface-2"
+            className="min-h-10 px-4 rounded-lg border border-line text-sm text-ink flex items-center justify-center shrink-0 hover:bg-surface-2"
           >
             Explore packages
           </Link>
@@ -52,9 +48,9 @@ export default function HomePage() {
           onTopUp={() => setShowDepositModal(true)}
           onSend={() => router.push("/transfer")}
         />
-        <DashboardQuickActions />
         <DashboardAccounts />
         <DashboardActivity />
+        <DashboardQuickActions />
         <DashboardFavourites />
       </section>
 

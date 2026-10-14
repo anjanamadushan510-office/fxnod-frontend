@@ -11,7 +11,7 @@ export function DashboardAccounts() {
     (a, b) => Number(b.is_selected) - Number(a.is_selected),
   );
   return (
-    <section className="rounded-2xl border border-line bg-surface p-5">
+    <section className="rounded-xl border border-line bg-surface p-4">
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           <h2 className="text-lg font-semibold text-ink">
@@ -51,11 +51,11 @@ export function DashboardAccounts() {
           </Link>
         </div>
       ) : (
-        <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-3 mt-5">
+        <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-3 mt-3">
           {accounts.slice(0, 4).map((account) => (
             <article
               key={account.deriv_account_id}
-              className="rounded-xl border border-line bg-surface-2 p-4"
+              className="rounded-lg border border-line bg-surface-2 p-3"
             >
               <div className="flex justify-between gap-2">
                 <span className="font-mono text-xs text-ink">
@@ -63,10 +63,10 @@ export function DashboardAccounts() {
                 </span>
                 <AccountBadge isVirtual={account.is_virtual} />
               </div>
-              <div className="mt-4">
+              <div className="mt-2">
                 <AccountBalance account={account} />
               </div>
-              <p className="mt-3 text-[10px] text-ink-3">
+              <p className="mt-2 text-[10px] text-ink-3">
                 {account.needs_reconnect
                   ? "Reconnect required"
                   : account.is_selected

@@ -91,20 +91,18 @@ export default function AutoHubPage() {
   }
 
   return (
-    <section className="p-4 lg:p-8 space-y-10">
+    <section className="p-4 lg:p-6 space-y-6">
       <header>
-        <h1 className="text-2xl font-semibold text-ink">Auto Hub</h1>
+        <h1 className="text-xl font-semibold text-ink sm:text-2xl">Auto Hub</h1>
         <p className="text-sm text-ink-2 mt-1 max-w-2xl leading-relaxed">
-          Ready-made bots for your Deriv account. Pick one, set your stake and
-          limits, and start it. It runs on FXNod&rsquo;s servers, so it keeps
-          going when you close this page, and so do its limits.
+          Browse ready-made bots. Review the stake and risk limits before each run.
         </p>
       </header>
 
       <BotMembershipBanner toolId="autohub" />
 
       {activeRuns.length > 0 && (
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h2 className="text-sm font-bold text-ink tracking-wider uppercase">
               Running now
@@ -127,7 +125,7 @@ export default function AutoHubPage() {
               </span>
             )}
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-w-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 min-w-0">
             {activeRuns.map((run) => (
               <RunCard
                 key={run.run_id}
@@ -143,13 +141,13 @@ export default function AutoHubPage() {
       {botsQuery.isPending ? (
         <div
           role="status"
-          className="grid md:grid-cols-2 xl:grid-cols-3 gap-4"
+          className="grid md:grid-cols-2 xl:grid-cols-3 gap-3"
           aria-label="Loading bots"
         >
           {[1, 2, 3].map((id) => (
             <div
               key={id}
-              className="h-64 rounded-2xl bg-surface-2 animate-pulse"
+              className="h-48 rounded-xl bg-surface-2 animate-pulse"
             />
           ))}
           <span className="sr-only">Loading bot library…</span>
@@ -178,7 +176,7 @@ export default function AutoHubPage() {
       )}
 
       {finishedRuns.length > 0 && (
-        <div className="space-y-4">
+        <div className="space-y-3">
           <h2 className="text-sm font-bold text-ink tracking-wider uppercase">
             Recent runs
           </h2>
@@ -249,7 +247,7 @@ function RunCard({
 }) {
   const tone = decimalSign(run.realized_pnl);
   return (
-    <article className="bg-surface border border-line rounded-2xl p-5 min-w-0">
+    <article className="bg-surface border border-line rounded-xl p-4 min-w-0">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
@@ -279,14 +277,14 @@ function RunCard({
         </span>
       </div>
 
-      <p className="text-xs text-ink-2 mt-3">
+      <p className="text-xs text-ink-2 mt-2">
         {run.trades_won}W / {run.trades_lost}L real
         {run.shadow
           ? ` · ${run.shadow.entries_won}W / ${run.shadow.entries_lost}L shadow`
           : ""}
       </p>
 
-      <div className="mt-4 flex gap-2">
+      <div className="mt-3 flex gap-2">
         <Link
           href={`/autohub/runs/${run.run_id}` as Route}
           className="flex-1 flex justify-center items-center h-10 rounded-lg bg-action text-action-ink hover:opacity-90 text-sm font-medium transition-colors"

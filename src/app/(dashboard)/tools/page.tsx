@@ -92,16 +92,11 @@ export default function ToolsPage() {
     );
   });
   return (
-    <section className="mx-auto max-w-7xl space-y-7 p-4 lg:p-8">
+    <section className="mx-auto max-w-7xl space-y-5 p-4 lg:p-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[.2em] text-ink-3">
-            THE FXNOD TOOLKIT
-          </p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-            Find your trading edge.
-          </h1>
-          <p className="mt-2 text-sm text-ink-2">
+          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">Discover tools</h1>
+          <p className="mt-1 text-sm text-ink-2">
             Compare packages, features and access periods for every tool.
           </p>
         </div>
@@ -113,20 +108,20 @@ export default function ToolsPage() {
           <ArrowUpRight className="h-4 w-4" />
         </Link>
       </div>
-      <div className="flex flex-col gap-3 sm:flex-row">
+      <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
         <label className="relative flex-1">
           <span className="sr-only">Search tools</span>
-          <Search className="absolute left-3 top-3.5 h-4 w-4 text-ink-3" />
+          <Search className="absolute left-3 top-3 h-4 w-4 text-ink-3" />
           <input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search tools, platforms, strategies…"
-            className="h-11 w-full rounded-xl border border-line bg-surface pl-10 pr-4 text-sm outline-none focus:border-ink-3"
+            className="h-10 w-full rounded-lg border border-line bg-surface pl-10 pr-4 text-sm outline-none focus-visible:ring-2 focus-visible:ring-action-line"
           />
         </label>
-        <div className="flex gap-3">
-          <div className="flex flex-1 rounded-xl border border-line bg-surface p-1">
+        <div className="flex flex-wrap gap-2">
+          <div className="flex flex-1 rounded-lg border border-line bg-surface p-0.5">
             {[
               ["all", "All tools"],
               ["zero", "$0 offers"],
@@ -138,7 +133,7 @@ export default function ToolsPage() {
                 aria-pressed={filter === key}
                 onClick={() => setFilter(key)}
                 className={cn(
-                  "rounded-lg px-3 py-1.5 text-xs font-medium sm:text-sm",
+                  "min-h-9 rounded-md px-2.5 py-1.5 text-xs font-medium whitespace-nowrap",
                   filter === key ? "bg-action text-action-ink" : "text-ink-3",
                 )}
               >
@@ -146,7 +141,7 @@ export default function ToolsPage() {
               </button>
             ))}
           </div>
-          <div className="flex rounded-xl border border-line bg-surface p-1">
+          <div className="flex rounded-lg border border-line bg-surface p-0.5">
             {(["grid", "list"] as const).map((v) => (
               <button
                 key={v}
@@ -154,7 +149,7 @@ export default function ToolsPage() {
                 aria-pressed={view === v}
                 onClick={() => setView(v)}
                 className={cn(
-                  "rounded-lg p-2",
+                  "rounded-md p-2",
                   view === v ? "bg-action text-action-ink" : "text-ink-3",
                 )}
               >
@@ -177,7 +172,7 @@ export default function ToolsPage() {
         </p>
       )}
       {filter !== "bundles" && (
-        <div className={cn("grid gap-4", view === "grid" && "md:grid-cols-2")}>
+        <div className={cn("grid gap-3", view === "grid" && "md:grid-cols-2 2xl:grid-cols-3")}>
           {tools.map((tool) => {
             const tiers = data.tiers.filter((t) => t.tool_id === tool.id);
             const offers = data.offers.filter((o) =>

@@ -64,25 +64,22 @@ export function BotLibrary({
     setPage(1);
   }
   const fieldClass =
-    "h-11 rounded-xl border border-line bg-surface text-ink text-sm px-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink min-w-0";
+    "h-11 sm:h-10 rounded-lg border border-line bg-surface text-ink text-sm px-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-action-line min-w-0";
 
   return (
-    <div className="space-y-5" id="bot-library">
+    <div className="space-y-3" id="bot-library">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-semibold text-ink">Bot library</h2>
-          <p className="text-sm text-ink-3 mt-1">
-            Find your strategy. Save your favourites for next time.
-          </p>
+          <h2 className="text-lg font-semibold text-ink">Bot library</h2>
         </div>
         <span className="text-xs text-ink-2 rounded-full border border-line bg-surface px-3 py-1.5">
           {bots.length} bots available
         </span>
       </div>
-      <div className="workspace-card rounded-2xl border border-line bg-surface p-4 sm:p-5 space-y-4">
+      <div className="workspace-card rounded-xl border border-line bg-surface p-3 sm:p-4 space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div
-            className="inline-flex rounded-xl bg-surface-2 p-1 gap-1"
+            className="inline-flex rounded-lg bg-surface-2 p-0.5 gap-1"
             role="group"
             aria-label="Bot collection"
           >
@@ -96,7 +93,7 @@ export function BotLibrary({
                   setPage(1);
                 }}
                 className={cn(
-                  "min-h-10 px-3 sm:px-4 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors",
+                  "min-h-10 sm:min-h-9 px-3 rounded-md text-sm font-medium flex items-center gap-2 transition-colors",
                   savedOnly === saved
                     ? "bg-action text-action-ink"
                     : "text-ink-2 hover:text-ink",
@@ -141,11 +138,11 @@ export function BotLibrary({
             </button>
           </div>
         </div>
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(16rem,2fr)_1fr_1fr_1fr]">
+        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-[minmax(16rem,2fr)_1fr_1fr_1fr]">
           <div className="relative">
             <Search
               size={17}
-              className="absolute left-3.5 top-3.5 text-ink-3"
+              className="absolute left-3.5 top-3.5 sm:top-3 text-ink-3"
             />
             <input
               aria-label="Search bots"
@@ -283,9 +280,9 @@ export function BotLibrary({
       ) : (
         <div
           className={cn(
-            "grid gap-4 min-w-0",
+            "grid gap-3 min-w-0",
             view === "grid"
-              ? "grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
+              ? "grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
               : "grid-cols-1",
           )}
         >
@@ -293,7 +290,7 @@ export function BotLibrary({
             <article
               key={bot.bot_id}
               className={cn(
-                "rounded-2xl border border-line bg-surface p-5 flex gap-5 min-w-0 hover:border-ink-3 transition-colors",
+                "rounded-xl border border-line bg-surface p-4 flex gap-3 min-w-0 hover:border-line-2 transition-colors",
                 view === "grid"
                   ? "flex-col"
                   : "flex-col sm:flex-row sm:items-center",
@@ -301,14 +298,14 @@ export function BotLibrary({
             >
               <div className="flex-1 min-w-0">
                 <div className="flex items-start gap-3">
-                  <span className="tool-symbol h-11 w-11 shrink-0 rounded-xl bg-surface-2 flex items-center justify-center text-ink-2">
-                    <Bot size={22} />
+                  <span className="tool-symbol h-9 w-9 shrink-0 rounded-lg bg-surface-2 flex items-center justify-center text-ink-2">
+                    <Bot size={19} />
                   </span>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-base font-semibold text-ink">
                       {bot.name}
                     </h3>
-                    <p className="text-xs text-ink-3 mt-1">{bot.tagline}</p>
+                    <p className="text-xs text-ink-3 mt-1 line-clamp-1">{bot.tagline}</p>
                   </div>
                   <FavouriteButton
                     name={bot.name}
@@ -317,10 +314,10 @@ export function BotLibrary({
                     onClick={() => favourites.toggle(bot.bot_id)}
                   />
                 </div>
-                <p className="text-sm text-ink-2 mt-4 leading-relaxed line-clamp-3">
+                <p className="text-xs text-ink-2 mt-2 leading-relaxed line-clamp-2">
                   {bot.description}
                 </p>
-                <ul className="flex flex-wrap gap-2 mt-4 text-[11px] text-ink-2">
+                <ul className="flex flex-wrap gap-1.5 mt-3 text-[11px] text-ink-2">
                   {[
                     contractLabel(bot.contract_type),
                     durationLabel(bot),
@@ -344,13 +341,13 @@ export function BotLibrary({
                 </ul>
               </div>
               <div className={cn("shrink-0", view === "list" && "sm:w-44")}>
-                <div className="flex items-center justify-between text-xs text-ink-3 mb-3">
+                <div className="flex items-center justify-between text-xs text-ink-3 mb-2">
                   <span>Min. stake {bot.min_stake}</span>
                   {bot.markup_pct && <span>{bot.markup_pct}% markup</span>}
                 </div>
                 <Link
                   href={`/autohub/bots/${bot.bot_id}` as Route}
-                  className="h-11 rounded-xl bg-action text-action-ink text-sm font-medium flex items-center justify-center gap-2 hover:opacity-85 transition-opacity"
+                  className="min-h-10 rounded-lg bg-action text-action-ink text-sm font-medium flex items-center justify-center gap-2 hover:opacity-85 transition-opacity"
                 >
                   View & set up <ArrowRight size={16} />
                 </Link>

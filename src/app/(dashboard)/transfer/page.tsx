@@ -72,8 +72,8 @@ export default function TransferPage() {
   };
 
   return (
-    <section data-view="transfer" className="p-4 lg:p-8 space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-6">
+    <section data-view="transfer" className="p-4 lg:p-6 space-y-4">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div>
           <h1 className="font-display text-2xl font-bold text-ink">Transfer</h1>
           <p className="text-sm text-ink-3 mt-1">Wallet · Deriv</p>

@@ -537,7 +537,7 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
           </div>
         </div>
       )}
-      <header className="mb-8">
+      <header className="mb-5">
         <div className="flex items-start justify-between gap-4">
           <h1 className="text-2xl font-semibold text-ink">{bot.name}</h1>
           <FavouriteButton
@@ -778,7 +778,7 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <section className="p-4 lg:p-8">
+    <section className="p-4 lg:p-6">
       <Link
         href={"/autohub" as Route}
         className="-mt-2 mb-2 block w-fit py-2 text-xs text-ink-3 hover:text-ink"

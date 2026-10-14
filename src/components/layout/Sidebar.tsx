@@ -139,11 +139,11 @@ export function Sidebar({
       <aside
         id="sidebar"
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex h-full w-[min(18rem,86vw)] flex-col border-r border-line bg-surface pt-safe pb-safe transition-transform duration-300 ease-in-out lg:w-64 lg:translate-x-0 lg:sticky lg:top-0 lg:h-[100dvh]",
+          "fixed inset-y-0 left-0 z-40 flex h-full w-[min(18rem,86vw)] flex-col border-r border-line bg-surface pt-safe pb-safe transition-transform duration-300 ease-in-out lg:w-56 lg:translate-x-0 lg:sticky lg:top-0 lg:h-[100dvh]",
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        <div className="flex h-16 items-center justify-between border-b border-line px-5">
+        <div className="flex h-14 items-center justify-between border-b border-line px-5">
           <Link href="/" className="flex items-center text-ink">
             <img src="/assets/fxnod-logo.png" alt="FXNOD" className="h-8 w-auto invert dark:invert-0" />
           </Link>
@@ -158,7 +158,7 @@ export function Sidebar({
           </button>
         </div>
 
-        <nav className="flex-1 space-y-2 overflow-y-auto overscroll-contain p-3">
+        <nav className="flex-1 space-y-1 overflow-y-auto overscroll-contain p-3">
           <p className="px-3 pb-2 pt-3 text-[10px] font-medium uppercase tracking-[0.18em] text-ink-3">
             Terminal
           </p>
@@ -172,7 +172,7 @@ export function Sidebar({
                 aria-current={isActive ? "page" : undefined}
                 onClick={onClose}
                 className={cn(
-                  "nav-link relative flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-medium transition-colors",
+                  "nav-link relative flex min-h-10 w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors",
                   isActive 
                     ? "is-active bg-surface-2 text-ink" 
                     : "text-ink-2 hover:bg-surface-2 hover:text-ink group"
@@ -200,7 +200,7 @@ export function Sidebar({
                 aria-current={isActive ? "page" : undefined}
                 onClick={onClose}
                 className={cn(
-                  "nav-link relative flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-medium transition-colors",
+                  "nav-link relative flex min-h-10 w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors",
                   isActive 
                     ? "is-active bg-surface-2 text-ink" 
                     : "text-ink-2 hover:bg-surface-2 hover:text-ink group"

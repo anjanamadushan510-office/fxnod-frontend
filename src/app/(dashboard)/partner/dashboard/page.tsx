@@ -59,7 +59,7 @@ export default function PartnerOverviewPage() {
   }
 
   return (
-    <section data-view="partners" className="space-y-6 p-4 lg:p-8">
+    <section data-view="partners" className="space-y-5 p-4 lg:p-6">
       <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <StatCard
           label="Pending"
