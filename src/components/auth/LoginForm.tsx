@@ -128,7 +128,7 @@ export function LoginForm() {
   const generalError = fieldErrors.detail || fieldErrors.email || fieldErrors.password || fieldErrors.otp || fieldErrors.code || "";
 
   return (
-    <div className="h-[100dvh] overflow-hidden grid lg:grid-cols-2 bg-[#080C16] text-white font-sans antialiased">
+    <div className="grid min-h-[100dvh] bg-[#080C16] font-sans text-white antialiased lg:h-[100dvh] lg:grid-cols-2 lg:overflow-hidden">
       <aside className="relative hidden lg:block overflow-hidden m-3 rounded-2xl">
         <div className="absolute inset-0">
           <img
@@ -187,22 +187,30 @@ export function LoginForm() {
       </aside>
 
       <section
-        className="flex flex-col items-center px-4 sm:px-5 py-4 overflow-y-auto"
+        className="relative flex min-w-0 flex-col items-center bg-[radial-gradient(ellipse_at_80%_0%,rgba(42,83,139,0.24),transparent_54%)] px-4 py-4 sm:px-5 lg:overflow-y-auto lg:bg-none"
         style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))", paddingTop: "max(1.5rem, env(safe-area-inset-top))" }}
       >
-        <div className="w-full max-w-[420px] my-auto py-4">
-          <Link href="/" className="lg:hidden inline-flex mb-6 sm:mb-8" aria-label="FXNOD home">
-            <img src="/assets/fxnod-logo.png" alt="FXNOD" className="h-6 sm:h-7 w-auto" />
+        <div className="relative w-full max-w-[420px] py-3 lg:my-auto lg:py-4">
+          <Link href="/" className="mb-8 inline-flex lg:hidden" aria-label="FXNOD home">
+            <img src="/assets/fxnod-logo.png" alt="FXNOD" className="h-8 w-auto" />
           </Link>
 
-          <div className="bg-[#101827] border border-[#24344F] rounded-2xl p-4 sm:p-6">
+          <div className="mb-6 lg:hidden">
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#d1ad67]">Your trading workspace</p>
+            <p className="font-display text-[30px] font-semibold leading-tight tracking-tight text-white">Welcome back.</p>
+            <p className="mt-2 text-sm leading-relaxed text-slate-400">Sign in to pick up where you left off.</p>
+          </div>
+
+          <div className="relative rounded-[1.5rem] border border-[#2d4261] bg-[#101b2e]/95 p-5 shadow-[0_24px_60px_-30px_rgba(0,0,0,0.85)] sm:p-6 lg:rounded-2xl lg:border-[#24344F] lg:bg-[#101827] lg:shadow-none">
+            <div aria-hidden="true" className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-[#d1ad67]/70 to-transparent lg:hidden" />
             {isForgotPassword ? (
               <ForgotPasswordFlow onBackToLogin={() => setIsForgotPassword(false)} />
             ) : (
               <>
-                <h1 id="auth-title" className="font-display text-[28px] font-semibold tracking-tight mb-6">
+                <h1 id="auth-title" className="mb-1 font-display text-[26px] font-semibold tracking-tight lg:mb-6 lg:text-[28px]">
                   {pendingToken ? "Check your email" : "Log in"}
                 </h1>
+                {!pendingToken && <p className="mb-6 text-sm text-slate-400 lg:hidden">Enter your details to continue.</p>}
 
             <form id="auth-form" className="space-y-3" noValidate onSubmit={onSubmit}>
               {!pendingToken ? (
@@ -212,12 +220,15 @@ export function LoginForm() {
                     <input
                       id="auth-email"
                       type="email"
+                      inputMode="email"
+                      autoCapitalize="none"
+                      spellCheck={false}
                       autoComplete="username"
                       required
                       placeholder="Enter your email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="mt-2 w-full h-10 px-3.5 rounded-xl bg-[#0B1220] border border-[#24344F] focus:border-[#C9A08C] focus:outline-none transition-colors"
+                      className="mt-2 h-12 w-full rounded-xl border border-[#334866] bg-[#0B1220] px-3.5 text-base outline-none transition-colors focus:border-[#d1ad67] focus:ring-2 focus:ring-[#d1ad67]/20 lg:h-10 lg:border-[#24344F] lg:focus:ring-0"
                     />
                   </label>
                   <label className="block">
@@ -232,13 +243,14 @@ export function LoginForm() {
                         placeholder="Enter your password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full h-10 pl-3.5 pr-10 rounded-xl bg-[#0B1220] border border-[#24344F] focus:border-[#C9A08C] focus:outline-none transition-colors"
+                        className="h-12 w-full rounded-xl border border-[#334866] bg-[#0B1220] pl-3.5 pr-12 text-base outline-none transition-colors focus:border-[#d1ad67] focus:ring-2 focus:ring-[#d1ad67]/20 lg:h-10 lg:border-[#24344F] lg:focus:ring-0"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
-                        tabIndex={-1}
+                        className="absolute right-0 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center text-zinc-400 hover:text-white"
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                        aria-pressed={showPassword}
                       >
                         {showPassword ? (
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
@@ -251,7 +263,7 @@ export function LoginForm() {
                   <button
                     type="button"
                     id="forgot-btn"
-                    className="text-sm text-zinc-400 hover:text-white"
+                    className="inline-flex min-h-11 items-center text-sm text-zinc-300 hover:text-white lg:min-h-0"
                     onClick={() => setIsForgotPassword(true)}
                   >
                     Forgot your password?
@@ -270,7 +282,7 @@ export function LoginForm() {
                       placeholder="123456"
                       value={otpCode}
                       onChange={(e) => setOtpCode(e.target.value)}
-                      className="mt-2 w-full h-10 px-3.5 rounded-xl text-center tracking-[0.5em] font-mono bg-[#0B1220] border border-[#24344F] focus:border-[#C9A08C] focus:outline-none transition-colors"
+                      className="mt-2 h-12 w-full rounded-xl border border-[#334866] bg-[#0B1220] px-3.5 text-center font-mono text-base tracking-[0.5em] outline-none transition-colors focus:border-[#d1ad67] focus:ring-2 focus:ring-[#d1ad67]/20 lg:h-10 lg:border-[#24344F] lg:focus:ring-0"
                     />
                   </label>
                   <button
@@ -294,7 +306,7 @@ export function LoginForm() {
                 type="submit"
                 id="auth-submit"
                 disabled={loginMut.isPending || verify2FAMut.isPending}
-                className="w-full h-10 rounded-xl bg-white text-black text-sm font-medium hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="h-12 w-full rounded-xl bg-[#d8b877] text-[#101827] text-sm font-semibold transition-colors hover:bg-[#eed09a] disabled:cursor-not-allowed disabled:opacity-50 lg:h-10 lg:bg-white lg:font-medium lg:text-black lg:hover:bg-zinc-200"
               >
                 {loginMut.isPending || verify2FAMut.isPending ? "Please wait..." : (pendingToken ? "Verify Code" : "Log in")}
               </button>
@@ -312,7 +324,7 @@ export function LoginForm() {
 
               <button
                 type="button"
-                className="w-full h-10 rounded-xl text-sm font-medium flex items-center justify-center gap-2.5 bg-[#152238] border border-[#24344F] hover:bg-[#1A3358] transition-colors"
+                className="flex h-12 w-full items-center justify-center gap-2.5 rounded-xl border border-[#334866] bg-[#152238] text-sm font-medium transition-colors hover:bg-[#1A3358] lg:h-10 lg:border-[#24344F]"
                 onClick={() => toast.info("Google login coming soon.")}
               >
                 <svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
@@ -325,7 +337,7 @@ export function LoginForm() {
               </button>
               <button
                 type="button"
-                className="w-full h-10 rounded-xl text-sm font-medium flex items-center justify-center gap-2.5 bg-[#152238] border border-[#24344F] hover:bg-[#1A3358] transition-colors"
+                className="flex h-12 w-full items-center justify-center gap-2.5 rounded-xl border border-[#334866] bg-[#152238] text-sm font-medium transition-colors hover:bg-[#1A3358] lg:h-10 lg:border-[#24344F]"
                 onClick={() => toast.info("Apple login coming soon.")}
               >
                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -338,7 +350,7 @@ export function LoginForm() {
             )}
           </div>
 
-          <p id="auth-switch" className="text-sm text-zinc-500 text-center mt-6">
+          <p id="auth-switch" className="mt-6 text-center text-sm text-slate-400 lg:text-zinc-500">
             Don't have an FXNOD account?{" "}
             <Link href="/auth/register" className="text-white hover:underline">
               Sign up
