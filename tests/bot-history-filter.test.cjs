@@ -25,3 +25,9 @@ test("builder and saved bots demand a fresh account choice for every start", () 
   assert.match(builder, /await selectRunAccount\.mutateAsync\(\{ data: \{ deriv_account_id: account\.deriv_account_id \}/);
   assert.ok(builder.indexOf("await selectRunAccount.mutateAsync") < builder.indexOf("const res = await startRun.mutateAsync"));
 });
+
+test("unlinked accounts do not leave the run chooser waiting on a disabled query", () => {
+  const dialog = fs.readFileSync("src/components/bot/RunSavedBotDialog.tsx", "utf8");
+  assert.match(dialog, /deriv\.isLoading \|\| \(deriv\.linked && accountsQuery\.isPending\)/);
+  assert.match(dialog, /!deriv\.linked \|\| \(accountsQuery\.isSuccess/);
+});

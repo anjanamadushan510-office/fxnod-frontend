@@ -1,5 +1,6 @@
 "use client";
 
+import { useDerivStatus } from "@/hooks/useDerivStatus";
 import { useDerivAccounts } from "@/hooks/useDerivAccounts";
 import { useState } from "react";
 import Link from "next/link";
@@ -31,9 +32,10 @@ export function RunSavedBotDialog({
   // Deriv each time the dialog opens and never kept between openings. The
   // page used to pass in the list it had loaded with the page, whose balances
   // were as old as the last visit to Connected Accounts.
+  const deriv = useDerivStatus();
   const accountsQuery = useDerivAccounts();
-  const accounts = accountsQuery.data?.accounts ?? [];
-  const loading = accountsQuery.isPending;
+  const accounts = deriv.linked ? accountsQuery.data?.accounts ?? [] : [];
+  const loading = deriv.isLoading || (deriv.linked && accountsQuery.isPending);
 
   const [chosenId, setChosenId] = useState<string | null>(null);
   const [acknowledged, setAcknowledged] = useState(false);
@@ -42,6 +44,9 @@ export function RunSavedBotDialog({
   const real = Boolean(chosen && !chosen.is_virtual);
   const access = useToolTradingAccess("dbot", chosen?.is_virtual ?? true);
   const canConfirm =
+    deriv.linked &&
+    !loading &&
+    !accountsQuery.isError &&
     Boolean(chosen) &&
     !chosen?.needs_reconnect &&
     access.allowed &&
@@ -79,7 +84,7 @@ export function RunSavedBotDialog({
               Could not load your Deriv accounts. Close this and try again.
             </p>
           )}
-          {accountsQuery.isSuccess && accounts.length === 0 && (
+          {!loading && (!deriv.linked || (accountsQuery.isSuccess && accounts.length === 0)) && (
             <p className="text-sm text-ink-2">
               Connect a Deriv account on{" "}
               <Link
@@ -121,7 +126,7 @@ export function RunSavedBotDialog({
                       : "Deriv account"}
                   </span>
                 </span>
-                <AccountBalance account={account} compact />
+                <AccountBalance account={account} compact showUpdatedAt={false} />
                 <span
                   className={cn(
                     "rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider shrink-0",
