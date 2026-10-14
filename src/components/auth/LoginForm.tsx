@@ -191,7 +191,7 @@ export function LoginForm() {
         style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))", paddingTop: "max(1.5rem, env(safe-area-inset-top))" }}
       >
         <div className="relative w-full max-w-[420px] py-3 lg:my-auto lg:py-4">
-          <Link href="/" className="mb-8 inline-flex lg:hidden" aria-label="FXNOD home">
+          <Link href="/" className="mb-6 inline-flex lg:hidden" aria-label="FXNOD home">
             <img src="/assets/fxnod-logo.png" alt="FXNOD" className="h-8 w-auto" />
           </Link>
 
@@ -207,10 +207,9 @@ export function LoginForm() {
               <ForgotPasswordFlow onBackToLogin={() => setIsForgotPassword(false)} />
             ) : (
               <>
-                <h1 id="auth-title" className="mb-1 font-display text-[26px] font-semibold tracking-tight lg:mb-6 lg:text-[28px]">
+                <h1 id="auth-title" className="mb-6 font-display text-[26px] font-semibold tracking-tight lg:text-[28px]">
                   {pendingToken ? "Check your email" : "Log in"}
                 </h1>
-                {!pendingToken && <p className="mb-6 text-sm text-slate-400 lg:hidden">Enter your details to continue.</p>}
 
             <form id="auth-form" className="space-y-3" noValidate onSubmit={onSubmit}>
               {!pendingToken ? (
@@ -350,7 +349,7 @@ export function LoginForm() {
             )}
           </div>
 
-          <p id="auth-switch" className="mt-6 text-center text-sm text-slate-400 lg:text-zinc-500">
+          <p id="auth-switch" className="mt-5 text-center text-sm text-slate-400 lg:mt-6 lg:text-zinc-500">
             Don't have an FXNOD account?{" "}
             <Link href="/auth/register" className="text-white hover:underline">
               Sign up
