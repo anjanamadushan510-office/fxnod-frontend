@@ -44,8 +44,8 @@ export function VerifyOtpForm() {
       onSuccess: async (data) => {
         setAccessToken(data.access_token);
         await bootstrap(); // GET /users/me → store user + status: authenticated
-        toast.success("Account verified — welcome to FXNod!");
-        router.push("/" as Route);
+        toast.success("Account verified — welcome to FXNOD!");
+        router.push("/home" as Route);
       },
       onError: (err) => {
         const parsed = parseApiError(err, "Invalid or expired code.");

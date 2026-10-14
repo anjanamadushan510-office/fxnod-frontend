@@ -8,6 +8,20 @@ export interface ParsedApiError {
 }
 
 /**
+ * The `code` of a structured refusal (`{ detail: { code, message } }`), for a
+ * caller that routes on it rather than only showing the message.
+ */
+export function apiErrorCode(error: unknown): string | null {
+  if (!axios.isAxiosError(error)) return null;
+  const detail = (error.response?.data as { detail?: unknown } | undefined)?.detail;
+  if (detail && typeof detail === "object" && !Array.isArray(detail)) {
+    const code = (detail as { code?: unknown }).code;
+    if (typeof code === "string") return code;
+  }
+  return null;
+}
+
+/**
  * Normalize a backend error from the shared Axios instance into a toast message
  * plus per-field errors. Handles the three FastAPI shapes:
  *   - `{ detail: "Email is already registered" }`            (string)

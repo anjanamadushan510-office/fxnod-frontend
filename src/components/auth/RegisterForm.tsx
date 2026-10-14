@@ -6,21 +6,19 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 
-import { useRegister, useLogin } from "@/services/api/endpoints/auth/auth";
-import { setAccessToken } from "@/services/authToken";
-import { useAuthStore } from "@/stores/authStore";
+import { useRegister } from "@/services/api/endpoints/auth/auth";
 import { trackSignUp } from "@/lib/analytics";
 import { parseApiError } from "@/lib/apiError";
 import { clearReferralCode, readReferralCode } from "@/lib/referral";
 
 /**
  * Registration screen wired to the Orval `useRegister` mutation (POST
- * /api/v1/auth/register). On the 201 response, we immediately log the user in
- * using the provided credentials via `useLogin` and redirect them to the dashboard.
+ * /api/v1/auth/register). On the 201 response the user is sent to enter the
+ * code that was just emailed: the API refuses a password login until it is
+ * entered, and verifying it signs them in.
  */
 export function RegisterForm() {
   const router = useRouter();
-  const bootstrap = useAuthStore((s) => s.bootstrap);
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -60,26 +58,6 @@ export function RegisterForm() {
     return () => clearInterval(timer);
   }, []);
 
-  const loginMut = useLogin({
-    mutation: {
-      onSuccess: async (data) => {
-        if ("access_token" in data) {
-          setAccessToken(data.access_token);
-          await bootstrap();
-          toast.success("Account created successfully!");
-          router.push("/home" as Route);
-        } else {
-          toast.success("Account created. Please log in.");
-          router.push("/auth/login" as Route);
-        }
-      },
-      onError: () => {
-        toast.success("Account created. Please log in.");
-        router.push("/auth/login" as Route);
-      },
-    },
-  });
-
   const registerMut = useRegister({
     mutation: {
       onSuccess: () => {
@@ -87,7 +65,8 @@ export function RegisterForm() {
         // browser session to the same affiliate.
         clearReferralCode();
         trackSignUp();
-        loginMut.mutate({ data: { email, password } });
+        toast.success("Account created. Check your email for the code.");
+        router.push(`/auth/verify-otp?email=${encodeURIComponent(email)}` as Route);
       },
       onError: (err) => {
         const parsed = parseApiError(err, "Registration failed. Please try again.");
@@ -290,10 +269,10 @@ export function RegisterForm() {
               <button
                 type="submit"
                 id="auth-submit"
-                disabled={registerMut.isPending || loginMut.isPending}
+                disabled={registerMut.isPending}
                 className="w-full h-10 rounded-xl bg-white text-black text-sm font-medium hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {registerMut.isPending || loginMut.isPending ? "Creating account..." : "Create account"}
+                {registerMut.isPending ? "Creating account..." : "Create account"}
               </button>
             </form>
 

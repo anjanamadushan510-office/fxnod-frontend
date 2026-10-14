@@ -6,10 +6,10 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 
-import { useLogin, useVerifyTwoFALogin } from "@/services/api/endpoints/auth/auth";
+import { useLogin, useResendOtp, useVerifyTwoFALogin } from "@/services/api/endpoints/auth/auth";
 import { setAccessToken } from "@/services/authToken";
 import { useAuthStore } from "@/stores/authStore";
-import { parseApiError } from "@/lib/apiError";
+import { apiErrorCode, parseApiError } from "@/lib/apiError";
 import { safeInternalPath } from "@/lib/safePath";
 import { ForgotPasswordFlow } from "./ForgotPasswordFlow";
 
@@ -62,6 +62,10 @@ export function LoginForm() {
     return () => clearInterval(timer);
   }, []);
 
+  // Errors are ignored on purpose: a 429 means a code was sent moments ago,
+  // and the verify page offers its own resend.
+  const resendMut = useResendOtp();
+
   const loginMut = useLogin({
     mutation: {
       onSuccess: async (data, variables, context) => {
@@ -81,6 +85,14 @@ export function LoginForm() {
         }
       },
       onError: (err) => {
+        // Registered but never entered the emailed code: send a fresh one and
+        // take them to enter it. The first code may long have expired.
+        if (apiErrorCode(err) === "email_not_verified") {
+          resendMut.mutate({ data: { email } });
+          toast.info("Enter the code we emailed you to finish creating your account.");
+          router.push(`/auth/verify-otp?email=${encodeURIComponent(email)}` as Route);
+          return;
+        }
         const parsed = parseApiError(err, "Login failed. Please try again.");
         setFieldErrors(parsed.fieldErrors);
         toast.error(parsed.message);
