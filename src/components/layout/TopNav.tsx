@@ -21,6 +21,7 @@ function getRouteTitle(pathname: string) {
   if (pathname.startsWith("/transfer")) return { title: "Transfer", subtitle: "Transfer Funds" };
   if (pathname.startsWith("/partner/dashboard")) return { title: "Partner Hub", subtitle: "Share FXNOD, earn on usage" };
   if (pathname.startsWith("/settings")) return { title: "Settings", subtitle: "Account Settings" };
+  if (pathname.startsWith("/support")) return { title: "Support", subtitle: "Submit a ticket & get help" };
   return { title: "Dashboard", subtitle: "Trade Pilot · Bot Forge on Deriv" };
 }
 
