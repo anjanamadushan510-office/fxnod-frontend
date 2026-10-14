@@ -135,7 +135,7 @@ export function PlanDialog({
               <Link
                 href={"/subscriptions" as Route}
                 onClick={onClose}
-                className="flex h-11 items-center justify-center rounded-xl bg-ink font-medium text-bg"
+                className="flex h-11 items-center justify-center rounded-xl bg-action font-medium text-action-ink"
               >
                 Go to Active Tools
               </Link>
@@ -167,7 +167,7 @@ export function PlanDialog({
                         className={cn(
                           "min-h-12 rounded-xl border px-3 py-2 text-left text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink",
                           period === value
-                            ? "border-ink bg-ink text-bg shadow-sm"
+                            ? "border-action-line bg-action text-action-ink shadow-sm"
                             : "border-line bg-surface-2 text-ink-2 hover:border-ink-3 hover:text-ink",
                         )}
                       >
@@ -248,7 +248,7 @@ export function PlanDialog({
                         <button
                           disabled={busy}
                           onClick={() => void review(offer)}
-                          className="mt-5 flex h-11 items-center justify-center gap-2 rounded-xl bg-ink text-sm font-semibold text-bg disabled:opacity-50"
+                          className="mt-5 flex h-11 items-center justify-center gap-2 rounded-xl bg-action text-sm font-semibold text-action-ink disabled:opacity-50"
                         >
                           {busy && selected?.id === offer.id && (
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -346,7 +346,7 @@ export function PlanDialog({
                   <button
                     disabled={busy || expired}
                     onClick={pay}
-                    className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-ink font-semibold text-bg disabled:opacity-50"
+                    className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-action font-semibold text-action-ink disabled:opacity-50"
                   >
                     {busy && <Loader2 className="h-4 w-4 animate-spin" />}
                     {busy

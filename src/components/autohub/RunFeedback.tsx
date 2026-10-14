@@ -87,7 +87,7 @@ export function RunFeedback({ run }: { run: AutoHubRun }) {
         {canRepeatRun(run) && (
           <Link
             href={repeatRunHref(run) as Route}
-            className="h-11 shrink-0 rounded-xl bg-ink text-surface px-5 text-sm font-semibold flex items-center justify-center gap-2"
+            className="h-11 shrink-0 rounded-xl bg-action text-action-ink px-5 text-sm font-semibold flex items-center justify-center gap-2"
           >
             Review & run again <ArrowRight size={16} />
           </Link>

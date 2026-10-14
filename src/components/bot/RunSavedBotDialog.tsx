@@ -104,7 +104,7 @@ export function RunSavedBotDialog({
                   setAcknowledged(false);
                 }}
                 className={cn(
-                  "w-full flex items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left transition",
+                  "account-choice w-full flex items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left transition",
                   active
                     ? "border-ink text-ink"
                     : "border-line text-ink-2 hover:border-ink-3",
@@ -166,7 +166,7 @@ export function RunSavedBotDialog({
               "h-10 px-5 rounded-lg text-sm font-medium transition disabled:opacity-45 disabled:cursor-not-allowed",
               real
                 ? "bg-amber-400 text-black hover:bg-amber-300"
-                : "bg-ink text-surface hover:opacity-80",
+                : "bg-action text-action-ink hover:opacity-80",
             )}
           >
             {busy

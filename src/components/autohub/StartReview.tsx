@@ -156,7 +156,7 @@ export function StartReview({
               type="button"
               disabled={busy || !allowed}
               onClick={onStart}
-              className="flex-1 h-11 rounded-xl bg-ink text-surface text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-40"
+              className="flex-1 h-11 rounded-xl bg-action text-action-ink text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-40"
             >
               {busy && <Loader2 size={16} className="animate-spin" />}
               {busy

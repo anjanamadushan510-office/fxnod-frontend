@@ -113,7 +113,7 @@ function DerivVenueCard({
             type="button"
             onClick={start}
             disabled={redirecting}
-            className="col-span-2 inline-flex h-10 items-center justify-center rounded-lg bg-ink px-4 text-sm font-medium text-surface transition hover:opacity-80 disabled:opacity-60 md:col-span-1"
+            className="col-span-2 inline-flex h-10 items-center justify-center rounded-lg bg-action px-4 text-sm font-medium text-action-ink transition hover:opacity-80 disabled:opacity-60 md:col-span-1"
           >
             {redirecting
               ? "Redirecting…"
@@ -240,7 +240,7 @@ function DerivLoginRow({ connection, index }: { connection: DerivConnection; ind
               type="button"
               onClick={start}
               disabled={redirecting}
-              className="rounded-lg bg-ink px-3 py-1.5 text-xs font-medium text-surface transition hover:opacity-80 disabled:opacity-60"
+              className="rounded-lg bg-action px-3 py-1.5 text-xs font-medium text-action-ink transition hover:opacity-80 disabled:opacity-60"
             >
               {redirecting ? "Redirecting…" : "Reconnect"}
             </button>

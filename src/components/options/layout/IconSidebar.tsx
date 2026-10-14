@@ -330,7 +330,7 @@ function Badge({ value }: { value: number | string }) {
     <span
       className={cn(
         "absolute -right-1.5 -top-1.5 grid h-[14px] min-w-[14px] place-items-center rounded-full px-1",
-        "bg-opt-fall text-white text-[9px] font-semibold leading-none",
+        "bg-opt-fall-fill text-white text-[9px] font-semibold leading-none",
       )}
     >
       {value}

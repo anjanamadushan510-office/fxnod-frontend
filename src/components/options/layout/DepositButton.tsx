@@ -8,9 +8,7 @@ interface DepositButtonProps {
 }
 
 /**
- * Coral/red rounded pill at the top right (Vela's deposit colour, not the
- * home page's gold). Uses --opt-fall by default so it tracks the dark/light
- * theme without extra rules.
+ * Funding action, separate from the green/red trading outcome colors.
  */
 export function DepositButton({ onClick, className }: DepositButtonProps) {
   return (
@@ -20,7 +18,7 @@ export function DepositButton({ onClick, className }: DepositButtonProps) {
       rel="noopener noreferrer"
       className={cn(
         "flex-shrink-0 inline-flex items-center justify-center rounded-full border-0 px-[18px] py-2 text-[13px] font-semibold text-white",
-        "bg-opt-fall hover:brightness-95 transition-[filter] duration-150",
+        "trading-deposit bg-opt-fall-fill hover:brightness-95 transition-[filter] duration-150",
         className,
       )}
     >

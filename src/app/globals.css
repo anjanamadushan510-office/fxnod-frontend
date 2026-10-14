@@ -28,6 +28,10 @@
   --negative-soft: 167 36 53;
   --warning: 146 93 14;
   --info: 36 91 164;
+  --action: #152e52;
+  --action-ink: #ffffff;
+  --action-line: #152e52;
+  --action-hover: #224b78;
   --focus-ring: #3973b8;
   --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.6) inset,
     0 1px 2px rgba(10, 20, 48, 0.05),
@@ -39,30 +43,34 @@
 
 [data-theme="dark"] {
   color-scheme: dark;
-  --positive: 52 211 153;
-  --negative: 248 113 113;
-  --negative-soft: 252 165 165;
-  --warning: 251 191 36;
-  --info: 96 165 250;
-  --focus-ring: #9abce8;
-  --bg: #080C16;
-  --surface: #101827;
-  --surface-2: #162238;
-  --ink: #FFFFFF;
-  --ink-2: #D1D5DB;
-  --ink-3: #9CA3AF;
-  --line: #24344F;
-  --line-2: #2d4161;
-  --navy: #080C16;
-  --navy-2: #101827;
-  --navy-3: #24344F;
-  --gold: #C9A08C;
-  --gold-2: #d6b5a5;
-  --gold-3: #a47d69;
-  --gold-soft: #382c24;
-  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.03) inset,
-    0 1px 2px rgba(0, 0, 0, 0.4),
-    0 12px 40px -16px rgba(0, 0, 0, 0.6);
+  --positive: 99 214 175;
+  --negative: 255 137 152;
+  --negative-soft: 255 174 184;
+  --warning: 231 189 112;
+  --info: 141 184 238;
+  --focus-ring: #8db8ee;
+  --action: #284f7a;
+  --action-ink: #f7fbff;
+  --action-line: #52769e;
+  --action-hover: #35618f;
+  --bg: #080f1c;
+  --surface: #101d30;
+  --surface-2: #182940;
+  --ink: #edf3fc;
+  --ink-2: #bfcede;
+  --ink-3: #91a6bf;
+  --line: #253a54;
+  --line-2: #3d5878;
+  --navy: #0c1b2e;
+  --navy-2: #10253f;
+  --navy-3: #21466a;
+  --gold: #d1ad67;
+  --gold-2: #efcf90;
+  --gold-3: #c29d57;
+  --gold-soft: #302b20;
+  --shadow-card: 0 1px 0 rgba(198, 219, 247, 0.035) inset,
+    0 8px 28px -12px rgba(0, 0, 0, 0.38);
+  --shadow-nav: 0 8px 28px -12px rgba(0, 0, 0, 0.5);
 }
 
 html,
@@ -232,13 +240,13 @@ a {
 
 [data-app="options"][data-opt-theme="dark"],
 [data-theme="dark"] [data-app="options"] {
-  --opt-ink-4: #6b7280;
-  --opt-rise: oklch(0.66 0.16 152);
-  --opt-rise-soft: oklch(0.66 0.16 152 / 0.1);
-  --opt-fall: oklch(0.62 0.2 25);
-  --opt-fall-soft: oklch(0.62 0.2 25 / 0.1);
-  --opt-buy-rise: #00a79e;
-  --opt-buy-fall: #ff4444;
+  --opt-ink-4: #91a6bf;
+  --opt-rise: #63d6af;
+  --opt-rise-soft: #163b35;
+  --opt-fall: #ff8998;
+  --opt-fall-soft: #3c2635;
+  --opt-buy-rise: #13796f;
+  --opt-buy-fall: #ba4555;
 }
 
 /* The Buy button's wrapper in every order panel. On desktop it is just the
@@ -389,6 +397,136 @@ a {
 }
 [data-theme="light"] .workspace-shell tbody tr:hover {
   background: #edf3fb;
+}
+
+/* Dark workspace: layered navy rather than flat black, with restrained gold
+   for navigation and recommendations. Primary actions remain distinct from
+   positive/negative trading outcomes. */
+[data-theme="dark"] .workspace-canvas {
+  background: linear-gradient(180deg, #102039 0, var(--bg) 460px);
+}
+[data-theme="dark"] .workspace-topbar {
+  background: rgba(12, 24, 41, 0.97);
+  box-shadow: var(--shadow-nav);
+}
+[data-theme="dark"] #sidebar {
+  background: #0b1626;
+  border-color: #22344c;
+}
+[data-theme="dark"] #sidebar > div:first-child {
+  background: linear-gradient(115deg, #102039 35%, #202b33);
+  border-color: #3b4144;
+}
+[data-theme="dark"] #sidebar .nav-link.is-active {
+  background: linear-gradient(110deg, #203d60, #192d48);
+  color: #f1f5fc;
+  box-shadow: inset 0 0 0 1px #385373, 0 6px 16px -10px #000;
+}
+[data-theme="dark"] #sidebar .nav-link.is-active .nav-icon {
+  color: #efcf90;
+}
+[data-theme="dark"] #sidebar .nav-link.is-active > span.absolute {
+  background: #d1ad67;
+}
+[data-theme="dark"] #sidebar .nav-link.is-active .text-ink-3 {
+  color: #c9d7e8;
+}
+[data-theme="dark"] .workspace-mobile-nav [aria-current="page"] {
+  background: #182c46;
+  color: #efcf90;
+  box-shadow: inset 0 3px #d1ad67;
+}
+[data-theme="dark"] .workspace-hero {
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid #344963;
+  border-radius: 1.25rem;
+  background: linear-gradient(115deg, #152b47 20%, #1a3554 65%, #303634);
+  box-shadow: var(--shadow-card);
+}
+[data-theme="dark"] .workspace-hero > div > p:first-child {
+  color: #efcf90;
+  font-weight: 600;
+}
+[data-theme="dark"] .workspace-hero > a {
+  color: #14243a;
+  background: linear-gradient(180deg, #efcf90, #d1ad67);
+  border-color: #d1ad67;
+  font-weight: 600;
+}
+[data-theme="dark"] .workspace-card,
+[data-theme="dark"] .workspace-shell :is(article, section).bg-surface,
+[data-theme="dark"] .workspace-shell .bg-panel.rounded-2xl {
+  box-shadow: var(--shadow-card);
+}
+[data-theme="dark"] .wallet-summary {
+  background: linear-gradient(130deg, #203e60, #132a44);
+  border-color: #68705d;
+}
+[data-theme="dark"] .wallet-summary > p:first-child,
+[data-theme="dark"] .wallet-summary button:first-child {
+  color: #efcf90;
+}
+[data-theme="dark"] .tool-symbol {
+  background: #1c3350;
+  color: #e4c68d;
+  border-color: #37516f;
+}
+[data-theme="dark"] .venue-badge {
+  background: #1a2e47;
+  color: #bed2ee;
+  box-shadow: inset 0 0 0 1px #354a65;
+}
+[data-theme="dark"] .bg-action {
+  background-image: linear-gradient(180deg, #2d5682, #23456d);
+}
+[data-theme="dark"] .bg-action:not(:disabled):hover {
+  background-image: linear-gradient(180deg, #38638f, #2b507b);
+}
+[data-theme="dark"] [role="dialog"] {
+  box-shadow: 0 30px 100px -20px rgba(0, 0, 0, 0.75), inset 0 1px rgba(213, 229, 251, 0.04);
+}
+[data-theme="dark"] .plan-card-recommended {
+  border-color: #9a8050;
+  background: linear-gradient(150deg, #293036, #142338 65%);
+  box-shadow: 0 0 0 1px rgba(209, 173, 103, 0.1);
+}
+[data-theme="dark"] .plan-recommendation {
+  background: #3e3525;
+  color: #efcf90;
+}
+[data-theme="dark"] .settings-hero {
+  background: linear-gradient(120deg, #1c3b5d, #14283f);
+  border-color: #41536b;
+}
+[data-theme="dark"] [data-app="options"] {
+  --opt-bg: #091321;
+  --opt-bg-elev: #0f1e32;
+  --opt-bg-sunk: #182b43;
+  --opt-line: #22364e;
+  --opt-line-strong: #486789;
+}
+[data-theme="dark"] .workspace-shell tbody tr:hover {
+  background: #182b43;
+}
+[data-theme="dark"] .trading-deposit {
+  background: linear-gradient(180deg, #efcf90, #d1ad67);
+  color: #14243a;
+}
+[data-theme="dark"] .bot-journey [aria-current="step"],
+[data-theme="dark"] .plan-choice[aria-checked="true"],
+[data-theme="dark"] .account-choice[aria-pressed="true"] {
+  border-color: #9a8050;
+  background: #1b3049;
+}
+[data-theme="dark"] .bot-journey [aria-current="step"] {
+  color: #efcf90;
+}
+[data-theme="dark"] .bot-journey [aria-current="step"] > span {
+  background: #3e3525;
+}
+[data-theme="dark"] :is(.workspace-shell, [data-app="options"]) :is(input, textarea, select):focus-visible {
+  outline-offset: 1px;
+  border-color: #8db8ee;
 }
 .row-hover:hover { background: rgba(255,255,255,0.03); }
 [data-theme='light'] .row-hover:hover { background: rgba(21, 34, 56, 0.04); }

@@ -139,7 +139,7 @@ export default function ToolsPage() {
                 onClick={() => setFilter(key)}
                 className={cn(
                   "rounded-lg px-3 py-1.5 text-xs font-medium sm:text-sm",
-                  filter === key ? "bg-ink text-bg" : "text-ink-3",
+                  filter === key ? "bg-action text-action-ink" : "text-ink-3",
                 )}
               >
                 {label}
@@ -155,7 +155,7 @@ export default function ToolsPage() {
                 onClick={() => setView(v)}
                 className={cn(
                   "rounded-lg p-2",
-                  view === v ? "bg-ink text-bg" : "text-ink-3",
+                  view === v ? "bg-action text-action-ink" : "text-ink-3",
                 )}
               >
                 {v === "grid" ? (
@@ -227,7 +227,7 @@ export default function ToolsPage() {
                       {tool.access.active && tool.href ? (
                         <Link
                           href={tool.href as Route}
-                          className="flex h-10 flex-1 items-center justify-center rounded-xl bg-ink px-4 text-sm font-medium text-bg"
+                          className="flex h-10 flex-1 items-center justify-center rounded-xl bg-action px-4 text-sm font-medium text-action-ink"
                         >
                           Open tool
                         </Link>
@@ -237,7 +237,7 @@ export default function ToolsPage() {
                             soon || !tool.access.allowed || activation.isPending
                           }
                           onClick={() => activate(tool.id)}
-                          className="flex h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-ink px-4 text-sm font-medium text-bg disabled:opacity-40"
+                          className="flex h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-action px-4 text-sm font-medium text-action-ink disabled:opacity-40"
                         >
                           {activation.isPending &&
                             activation.variables?.id === tool.id && (
@@ -253,7 +253,7 @@ export default function ToolsPage() {
                         <button
                           disabled={soon || !offers.length}
                           onClick={() => setSelected({ toolId: tool.id })}
-                          className="flex h-10 flex-1 items-center justify-center rounded-xl bg-ink px-4 text-sm font-medium text-bg disabled:opacity-40"
+                          className="flex h-10 flex-1 items-center justify-center rounded-xl bg-action px-4 text-sm font-medium text-action-ink disabled:opacity-40"
                         >
                           {soon
                             ? "Coming soon"
@@ -332,7 +332,7 @@ export default function ToolsPage() {
                     </div>
                     <button
                       onClick={() => setSelected({ bundleId: offer.id })}
-                      className="rounded-xl bg-ink px-4 py-2.5 text-sm font-semibold text-bg"
+                      className="rounded-xl bg-action px-4 py-2.5 text-sm font-semibold text-action-ink"
                     >
                       View bundle
                     </button>

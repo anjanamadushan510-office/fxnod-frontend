@@ -165,7 +165,7 @@ export default function AutoHubPage() {
           <button
             type="button"
             onClick={() => botsQuery.refetch()}
-            className="mt-4 h-10 px-4 rounded-lg bg-ink text-surface text-sm font-medium"
+            className="mt-4 h-10 px-4 rounded-lg bg-action text-action-ink text-sm font-medium"
           >
             Try again
           </button>
@@ -289,7 +289,7 @@ function RunCard({
       <div className="mt-4 flex gap-2">
         <Link
           href={`/autohub/runs/${run.run_id}` as Route}
-          className="flex-1 flex justify-center items-center h-10 rounded-lg bg-ink text-surface hover:opacity-90 text-sm font-medium transition-colors"
+          className="flex-1 flex justify-center items-center h-10 rounded-lg bg-action text-action-ink hover:opacity-90 text-sm font-medium transition-colors"
         >
           View live run
         </Link>

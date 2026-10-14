@@ -19,17 +19,17 @@ export function ThemePicker({ theme, onChange }: {
             className={cn("overflow-hidden rounded-2xl border p-3 text-left transition-colors",
               selected ? "border-gold bg-gold-soft" : "border-line bg-surface hover:border-ink-3")}>
             <div aria-hidden className="flex h-28 overflow-hidden rounded-lg border"
-              style={{ background: light ? "#edf3fb" : "#080c16", borderColor: light ? "#dce4ef" : "#24344f" }}>
-              <div className="w-1/4 space-y-2 p-3" style={{ background: light ? "#fff" : "#101827" }}>
+              style={{ background: light ? "#edf3fb" : "#080f1c", borderColor: light ? "#dce4ef" : "#253a54" }}>
+              <div className="w-1/4 space-y-2 p-3" style={{ background: light ? "#fff" : "#101d30" }}>
                 <div className="mb-4 h-1.5 w-4 rounded bg-[#c49a45]" />
                 {[0, 1, 2].map((row) => <div key={row} className="h-2 rounded"
-                  style={{ background: row === 0 ? "#234b78" : light ? "#e3eaf4" : "#24344f" }} />)}
+                  style={{ background: row === 0 ? "#234b78" : light ? "#e3eaf4" : "#253a54" }} />)}
               </div>
               <div className="flex-1 p-3">
-                <div className="mb-3 h-2 w-1/2 rounded" style={{ background: light ? "#234b78" : "#d1d5db" }} />
+                <div className="mb-3 h-2 w-1/2 rounded" style={{ background: light ? "#234b78" : "#bfcede" }} />
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="h-14 rounded-md border-t-2 border-[#c49a45]" style={{ background: light ? "#173a63" : "#162238" }} />
-                  <div className="h-14 rounded-md" style={{ background: light ? "#fff" : "#101827" }} />
+                  <div className="h-14 rounded-md border-t-2 border-[#c49a45]" style={{ background: light ? "#173a63" : "#203e60" }} />
+                  <div className="h-14 rounded-md" style={{ background: light ? "#fff" : "#101d30" }} />
                 </div>
               </div>
             </div>

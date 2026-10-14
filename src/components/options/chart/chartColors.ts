@@ -14,11 +14,11 @@
  * reason). Do NOT read these from CSS variables.
  */
 export const CHART_COLORS = {
-  ink: "#6EE7D8", // Accent cyan — area line / primary stroke
-  inkFaint: "#9CA3AF", // Light gray — axis text
-  line: "#24344F", // Dark line — grid lines / scale borders
-  rise: "#1eaf7b", // --opt-rise  — up / green
-  fall: "#e0533d", // --opt-fall  — down / red
+  ink: "#8db8ee", // Blue — area line / primary stroke
+  inkFaint: "#9eb1ca", // Muted blue-gray — axis text
+  line: "#20324a", // Quiet grid lines / scale borders
+  rise: "#3bb68c", // Filled up candles
+  fall: "#e57383", // Filled down candles
 } as const;
 
 /** Light canvas needs a darker line and axis labels than the dark palette. */

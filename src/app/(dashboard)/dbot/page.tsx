@@ -353,7 +353,7 @@ export default function DBotDashboardPage() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
             href={"/dbot/build" as Route}
-            className="w-full sm:w-auto inline-flex h-10 items-center justify-center px-5 rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-80 transition"
+            className="w-full sm:w-auto inline-flex h-10 items-center justify-center px-5 rounded-lg bg-action text-action-ink text-sm font-medium hover:opacity-80 transition"
           >
             Create a bot
           </Link>
@@ -402,7 +402,7 @@ export default function DBotDashboardPage() {
                 <div className="flex gap-2">
                   <Link
                     href={`/dbot/runs/${run.run_id}` as Route}
-                    className="flex-1 inline-flex h-10 items-center justify-center rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-80 transition"
+                    className="flex-1 inline-flex h-10 items-center justify-center rounded-lg bg-action text-action-ink text-sm font-medium hover:opacity-80 transition"
                   >
                     Watch
                   </Link>
@@ -496,7 +496,7 @@ export default function DBotDashboardPage() {
                         type="button"
                         disabled={!draft || strategiesQuery.isPending}
                         onClick={() => setRunPreset(preset)}
-                        className="flex-1 h-10 rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-80 transition disabled:opacity-45"
+                        className="flex-1 h-10 rounded-lg bg-action text-action-ink text-sm font-medium hover:opacity-80 transition disabled:opacity-45"
                       >
                         Run
                       </button>
@@ -869,7 +869,7 @@ function AccountFilterControl({
           onClick={() => onChange(option.id)}
           className={cn(
             "h-8 px-3 rounded-md text-xs font-medium transition",
-            value === option.id ? "bg-ink text-surface" : "text-ink-2 hover:text-ink",
+            value === option.id ? "bg-action text-action-ink" : "text-ink-2 hover:text-ink",
           )}
         >
           {option.label}
@@ -944,7 +944,7 @@ function PeriodFilterControl({
               onClick={() => onPeriodChange(option.id)}
               className={cn(
                 "h-8 px-2.5 rounded-md text-xs font-medium transition whitespace-nowrap",
-                period === option.id ? "bg-ink text-surface" : "text-ink-2 hover:text-ink",
+                period === option.id ? "bg-action text-action-ink" : "text-ink-2 hover:text-ink",
               )}
             >
               {option.label}

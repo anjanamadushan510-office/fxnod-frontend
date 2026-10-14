@@ -39,7 +39,7 @@ export function TakeProfitField({
             className={cn(
               "relative h-[20px] w-[36px] rounded-full border-0 p-0",
               "transition-colors duration-150",
-              enabled ? "bg-opt-rise" : "bg-opt-line-strong",
+              enabled ? "bg-opt-rise-fill" : "bg-opt-line-strong",
             )}
           >
             <span

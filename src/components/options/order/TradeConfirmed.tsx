@@ -18,7 +18,7 @@ export function TradeConfirmed({ trade, side, onNewTrade }: TradeConfirmedProps)
         <span
           className={cn(
             "flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-white text-[13px] font-bold",
-            side === "fall" ? "bg-opt-fall" : "bg-opt-rise",
+            side === "fall" ? "bg-opt-fall-fill" : "bg-opt-rise-fill",
           )}
         >
           ✓

@@ -139,7 +139,7 @@ export default function TransferPage() {
                     onClick={() => setAmount(preset)}
                     className={`flex-1 py-2 rounded-lg border text-sm font-medium transition-colors ${
                       amount === preset 
-                        ? "bg-ink text-surface border-ink" 
+                        ? "bg-action text-action-ink border-action-line"
                         : "bg-transparent text-ink-2 border-line hover:border-ink-2"
                     }`}
                   >
@@ -168,7 +168,7 @@ export default function TransferPage() {
             <button
               onClick={handleTransfer}
               disabled={transferMutation.isPending || amount <= 0}
-              className="mt-8 w-full h-12 rounded-xl bg-ink text-surface font-semibold hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="mt-8 w-full h-12 rounded-xl bg-action text-action-ink font-semibold hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {transferMutation.isPending ? "Processing..." : `Send ${fmtUSD(amount)} to Deriv`}
             </button>

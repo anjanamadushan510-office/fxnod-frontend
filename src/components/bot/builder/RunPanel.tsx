@@ -107,7 +107,7 @@ export function RunPanel({
             "w-full h-11 rounded-lg text-sm font-medium transition disabled:opacity-45 disabled:cursor-not-allowed",
             real
               ? "bg-amber-400 text-black hover:bg-amber-300"
-              : "bg-ink text-surface hover:opacity-80",
+              : "bg-action text-action-ink hover:opacity-80",
           )}
         >
           {starting
@@ -201,7 +201,7 @@ export function AccountSection() {
                 else setPending(account);
               }}
               className={cn(
-                "w-full flex items-center justify-between gap-2 rounded-lg border px-3 py-2 text-left text-xs transition",
+                "account-choice w-full flex items-center justify-between gap-2 rounded-lg border px-3 py-2 text-left text-xs transition",
                 account.is_selected
                   ? "border-ink text-ink"
                   : "border-line text-ink-2 hover:border-ink-3",

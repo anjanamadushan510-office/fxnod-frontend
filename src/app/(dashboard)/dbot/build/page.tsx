@@ -264,7 +264,7 @@ function BotBuilder() {
               <span
                 className={
                   active
-                    ? "bg-ink text-surface h-5 w-5 rounded-full flex items-center justify-center text-xs font-semibold"
+                    ? "bg-action text-action-ink h-5 w-5 rounded-full flex items-center justify-center text-xs font-semibold"
                     : "border border-line text-ink-3 h-5 w-5 rounded-full flex items-center justify-center text-xs"
                 }
               >
@@ -322,7 +322,7 @@ function BotBuilder() {
             type="button"
             onClick={() => setStep(steps[index + 1].key)}
             disabled={(current === "method" && !methodChosen) || (current === "duration" && durationIssue !== null)}
-            className="h-11 flex-1 rounded-lg bg-ink px-6 text-sm font-medium text-surface transition hover:opacity-80 disabled:opacity-50 sm:h-10 sm:flex-none"
+            className="h-11 flex-1 rounded-lg bg-action px-6 text-sm font-medium text-action-ink transition hover:opacity-80 disabled:opacity-50 sm:h-10 sm:flex-none"
           >
             Continue
           </button>
@@ -369,7 +369,7 @@ function Notice({
       <p className="text-sm text-ink-3 mb-5">{body}</p>
       <Link
         href={href as Route}
-        className="inline-flex h-10 items-center px-5 rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-80"
+        className="inline-flex h-10 items-center px-5 rounded-lg bg-action text-action-ink text-sm font-medium hover:opacity-80"
       >
         {cta}
       </Link>

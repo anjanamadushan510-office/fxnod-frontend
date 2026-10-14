@@ -263,7 +263,7 @@ export function AccountSelector({
                 type="button"
                 onClick={() => executeSwitch(pendingAccount)}
                 disabled={busy}
-                className="rounded-lg bg-opt-fall px-4 py-2 text-[13px] font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                className="rounded-lg bg-opt-fall-fill px-4 py-2 text-[13px] font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
               >
                 {busy ? "Switching..." : "Yes, switch to real"}
               </button>

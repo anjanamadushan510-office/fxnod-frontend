@@ -163,7 +163,7 @@ export default function AutoHubRunPage() {
           <button
             type="button"
             onClick={() => runQuery.refetch()}
-            className="mt-4 h-10 rounded-xl bg-ink text-surface px-4 text-sm"
+            className="mt-4 h-10 rounded-xl bg-action text-action-ink px-4 text-sm"
           >
             Try again
           </button>

@@ -680,7 +680,7 @@ export default function SettingsPage() {
               <button 
                 type="button" 
                 disabled={isSettingUp2FA}
-                className="h-10 px-5 rounded-lg bg-ink text-surface hover:opacity-90 text-sm font-medium disabled:opacity-50"
+                className="h-10 px-5 rounded-lg bg-action text-action-ink hover:opacity-90 text-sm font-medium disabled:opacity-50"
                 onClick={handleStart2FASetup}
               >
                 {isSettingUp2FA ? "Starting setup..." : "Turn on 2FA"}
@@ -702,7 +702,7 @@ export default function SettingsPage() {
                   <button 
                     type="button" 
                     disabled={isVerifying2FA}
-                    className="h-10 px-5 rounded-lg bg-ink text-surface hover:opacity-90 text-sm font-medium disabled:opacity-50"
+                    className="h-10 px-5 rounded-lg bg-action text-action-ink hover:opacity-90 text-sm font-medium disabled:opacity-50"
                     onClick={handleVerify2FASetup}
                   >
                     {isVerifying2FA ? "Verifying..." : "Verify & Enable"}
@@ -854,7 +854,7 @@ export default function SettingsPage() {
               </label>
               <button 
                 type="button" 
-                className="h-10 px-5 rounded-lg bg-ink text-surface hover:opacity-90 text-sm font-medium disabled:opacity-50"
+                className="h-10 px-5 rounded-lg bg-action text-action-ink hover:opacity-90 text-sm font-medium disabled:opacity-50"
                 onClick={handleCreateTicket}
                 disabled={isCreatingTicket}
               >

@@ -129,7 +129,7 @@ export function MarketPicker({
           <button
             type="button"
             onClick={retry}
-            className="mt-4 h-9 px-4 rounded-lg bg-ink text-surface text-sm font-medium hover:opacity-80"
+            className="mt-4 h-9 px-4 rounded-lg bg-action text-action-ink text-sm font-medium hover:opacity-80"
           >
             Try again
           </button>

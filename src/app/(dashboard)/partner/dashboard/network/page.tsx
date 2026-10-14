@@ -124,7 +124,7 @@ function LevelChip({ label, on, onClick }: { label: string; on: boolean; onClick
       onClick={onClick}
       className={cn(
         "h-10 rounded-lg border px-4 text-sm transition-colors",
-        on ? "border-ink bg-ink text-surface" : "border-line text-ink-2 hover:text-ink",
+        on ? "border-action-line bg-action text-action-ink" : "border-line text-ink-2 hover:text-ink",
       )}
     >
       {label}

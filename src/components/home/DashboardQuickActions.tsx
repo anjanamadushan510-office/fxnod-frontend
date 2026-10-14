@@ -81,7 +81,7 @@ export function DashboardQuickActions() {
               )}
               <Link
                 href={item.href}
-                className="mt-5 h-11 rounded-xl bg-ink text-surface flex items-center justify-center gap-2 text-sm font-medium"
+                className="mt-5 h-11 rounded-xl bg-action text-action-ink flex items-center justify-center gap-2 text-sm font-medium"
               >
                 Open{" "}
                 {item.id === "autohub"

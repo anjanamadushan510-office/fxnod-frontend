@@ -695,7 +695,7 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
                 "w-full h-11 rounded-lg text-sm font-medium transition disabled:opacity-45 disabled:cursor-not-allowed",
                 real
                   ? "bg-amber-400 text-black hover:bg-amber-300"
-                  : "bg-ink text-surface hover:opacity-80",
+                  : "bg-action text-action-ink hover:opacity-80",
               )}
             >
               {refreshingReview
@@ -818,7 +818,7 @@ function PlanPicker({
             aria-checked={active}
             onClick={() => onChange(plan.id)}
             className={cn(
-              "w-full rounded-xl border p-4 text-left transition",
+              "plan-choice w-full rounded-xl border p-4 text-left transition",
               active
                 ? "border-ink bg-surface-2"
                 : "border-line hover:border-ink-3",

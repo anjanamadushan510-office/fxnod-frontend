@@ -98,7 +98,7 @@ export function BotLibrary({
                 className={cn(
                   "min-h-10 px-3 sm:px-4 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors",
                   savedOnly === saved
-                    ? "bg-ink text-surface"
+                    ? "bg-action text-action-ink"
                     : "text-ink-2 hover:text-ink",
                 )}
               >
@@ -275,7 +275,7 @@ export function BotLibrary({
           <button
             type="button"
             onClick={reset}
-            className="mt-5 px-5 h-10 rounded-xl bg-ink text-surface text-sm font-medium"
+            className="mt-5 px-5 h-10 rounded-xl bg-action text-action-ink text-sm font-medium"
           >
             Browse all bots
           </button>
@@ -350,7 +350,7 @@ export function BotLibrary({
                 </div>
                 <Link
                   href={`/autohub/bots/${bot.bot_id}` as Route}
-                  className="h-11 rounded-xl bg-ink text-surface text-sm font-medium flex items-center justify-center gap-2 hover:opacity-85 transition-opacity"
+                  className="h-11 rounded-xl bg-action text-action-ink text-sm font-medium flex items-center justify-center gap-2 hover:opacity-85 transition-opacity"
                 >
                   View & set up <ArrowRight size={16} />
                 </Link>

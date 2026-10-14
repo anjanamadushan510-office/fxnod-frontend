@@ -161,7 +161,7 @@ export function DerivConnectionMenu() {
         type="button"
         onClick={start}
         disabled={redirecting}
-        className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-ink px-4 text-sm font-medium text-surface transition hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+        className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-action px-4 text-sm font-medium text-action-ink transition hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
       >
         {redirecting && (
           <span
@@ -229,7 +229,7 @@ export function DerivConnectionMenu() {
                   type="button"
                   onClick={start}
                   disabled={redirecting}
-                  className="mt-2 inline-flex h-8 items-center rounded-lg bg-ink px-3 text-xs font-medium text-surface transition hover:opacity-80 disabled:opacity-60"
+                  className="mt-2 inline-flex h-8 items-center rounded-lg bg-action px-3 text-xs font-medium text-action-ink transition hover:opacity-80 disabled:opacity-60"
                 >
                   {redirecting ? "Redirecting…" : "Reconnect Deriv"}
                 </button>
@@ -453,7 +453,7 @@ function ConfirmDialog({
             disabled={busy}
             className={cn(
               "rounded-lg px-4 py-2 text-[13px] font-semibold text-white transition hover:opacity-90 disabled:opacity-50",
-              tone === "danger" ? "bg-red-500" : "bg-ink",
+              tone === "danger" ? "bg-red-500" : "bg-action",
             )}
           >
             {confirmLabel}

@@ -6,7 +6,7 @@ export function BotJourney({ stage }: { stage: "setup" | "run" | "results" }) {
   return (
     <ol
       aria-label="Bot journey"
-      className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6"
+      className="bot-journey grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6"
     >
       {["Choose bot", "Set up & review", "Live run", "Results & repeat"].map(
         (label, index) => (

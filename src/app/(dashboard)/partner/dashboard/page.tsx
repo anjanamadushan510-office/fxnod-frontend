@@ -97,7 +97,7 @@ export default function PartnerOverviewPage() {
               type="button"
               onClick={copy}
               disabled={!link}
-              className="h-10 flex-1 rounded-lg bg-ink px-6 text-sm font-medium text-surface transition-opacity hover:opacity-90 disabled:opacity-50 sm:flex-none"
+              className="h-10 flex-1 rounded-lg bg-action px-6 text-sm font-medium text-action-ink transition-opacity hover:opacity-90 disabled:opacity-50 sm:flex-none"
             >
               {copied ? "Copied" : "Copy"}
             </button>

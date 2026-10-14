@@ -131,7 +131,7 @@ export default function SubscriptionsPage() {
                 {tool.href && tool.access.allowed && (
                   <Link
                     href={tool.href as Route}
-                    className="flex h-10 flex-1 items-center justify-center rounded-xl bg-ink px-4 text-sm font-medium text-bg"
+                    className="flex h-10 flex-1 items-center justify-center rounded-xl bg-action px-4 text-sm font-medium text-action-ink"
                   >
                     Open tool
                   </Link>
