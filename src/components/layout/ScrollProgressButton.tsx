@@ -61,7 +61,7 @@ export function ScrollProgressButton({ pathname }: { pathname: string }) {
       aria-hidden={!visible}
       tabIndex={visible ? 0 : -1}
       onClick={scrollToTop}
-      className={`scroll-progress-button fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] right-[calc(1rem+env(safe-area-inset-right))] z-[35] grid h-12 w-12 place-items-center rounded-full p-[3px] shadow-lg transition-opacity duration-200 lg:bottom-5 ${visible ? "opacity-100" : "pointer-events-none opacity-0"}`}
+      className={`scroll-progress-button fixed bottom-[calc(1.25rem+env(safe-area-inset-bottom))] right-[calc(1rem+env(safe-area-inset-right))] z-[35] grid h-12 w-12 place-items-center rounded-full p-[3px] shadow-lg transition-opacity duration-200 lg:bottom-5 ${visible ? "opacity-100" : "pointer-events-none opacity-0"}`}
     >
       <span className="grid h-full w-full place-items-center rounded-full bg-surface text-ink">
         <ArrowUp className="h-5 w-5" aria-hidden />

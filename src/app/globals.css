@@ -100,10 +100,6 @@ body {
   .workspace-shell:has(:is(input, textarea, select):focus) .scroll-progress-button {
     display: none;
   }
-  .workspace-shell:has(:is(input, textarea, select):focus) .workspace-mobile-nav {
-    transform: translateY(100%);
-    pointer-events: none;
-  }
 }
 
 html {
@@ -336,11 +332,6 @@ a {
 [data-theme="light"] #sidebar .nav-link.is-active > span.absolute {
   background: #d6b66e;
 }
-[data-theme="light"] .workspace-mobile-nav [aria-current="page"] {
-  color: #173a63;
-  background: #edf3fb;
-  box-shadow: inset 0 3px #c49a45;
-}
 [data-theme="light"] .workspace-hero {
   padding: 1rem 1.25rem;
   border: 1px solid #d3dfef;
@@ -445,11 +436,6 @@ a {
 }
 [data-theme="dark"] #sidebar .nav-link.is-active .text-ink-3 {
   color: #c9d7e8;
-}
-[data-theme="dark"] .workspace-mobile-nav [aria-current="page"] {
-  background: #182c46;
-  color: #efcf90;
-  box-shadow: inset 0 3px #d1ad67;
 }
 [data-theme="dark"] .workspace-hero {
   padding: 1rem 1.25rem;

@@ -5,13 +5,12 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
 import { TopNav } from "./TopNav";
 import { Sidebar } from "./Sidebar";
-import { MobileTabBar, phoneNavHidden } from "./MobileTabBar";
 import { ScrollProgressButton } from "./ScrollProgressButton";
 import { AuthGate } from "@/components/auth/AuthGate";
 import { useAuthStore } from "@/stores/authStore";
 
 /**
- * The signed-in frame: sidebar, top bar, phone tab bar. It is drawn only for
+ * The signed-in frame: sidebar and top bar. It is drawn only for
  * a signed-in user; see AuthGate. It used to draw for anyone, with a made-up
  * name and address in the sidebar and a sign-out button beside them.
  */
@@ -27,8 +26,8 @@ function Shell({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const user = useAuthStore((s) => s.user);
   const pathname = usePathname() || "";
-  const showPhoneNav = !phoneNavHidden(pathname);
-  const showScrollButton = showPhoneNav && !["/wallet", "/transfer"].some((route) => pathname.startsWith(route));
+  const showScrollButton = !["/dbot/build", "/dbot/runs/", "/autohub/bots/", "/autohub/runs/", "/wallet", "/transfer"]
+    .some((route) => pathname.startsWith(route));
 
   // While the drawer is open the page behind it must not scroll: on a phone
   // the drag otherwise moves the page, and the drawer appears to be stuck.
@@ -74,9 +73,9 @@ function Shell({ children }: { children: React.ReactNode }) {
         <main
           className={cn(
             "workspace-canvas min-w-0 flex-1 bg-bg",
-            showPhoneNav && (showScrollButton
-              ? "pb-[calc(8rem+env(safe-area-inset-bottom))] lg:pb-0"
-              : "pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0"),
+            showScrollButton
+              ? "pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-0"
+              : "pb-[env(safe-area-inset-bottom)] lg:pb-0",
           )}
         >
           {children}
@@ -84,7 +83,6 @@ function Shell({ children }: { children: React.ReactNode }) {
         {showScrollButton && (
           <ScrollProgressButton pathname={pathname} />
         )}
-        {showPhoneNav && <MobileTabBar onMenu={() => setSidebarOpen(true)} menuOpen={sidebarOpen} />}
       </div>
     </div>
   );
