@@ -6,6 +6,9 @@ export type Broker = "deriv" | "binance" | "bybit";
 export interface BrokerLink { broker: Broker; url: string | null; platform_fallback_available: boolean }
 export interface BrokerSignup { broker: Broker; url: string | null; source: "partner" | "fxnod" | "unavailable" }
 const base = "/api/v1/referrals";
+export function getBrokerSignup(broker: Broker) {
+  return customInstance<BrokerSignup>({ url: `${base}/broker-signup/${broker}`, method: "GET" });
+}
 export function useBrokerLinks() {
   const userId = useAuthStore((s) => s.user?.id);
   return useQuery({ queryKey: ["broker-affiliate-links", userId], enabled: !!userId,
@@ -21,7 +24,7 @@ export function useSaveBrokerLink() {
 export function useBrokerSignup(broker: Broker) {
   const userId = useAuthStore((s) => s.user?.id);
   return useQuery({ queryKey: ["broker-signup", userId, broker], enabled: !!userId,
-    queryFn: () => customInstance<BrokerSignup>({ url: `${base}/broker-signup/${broker}`, method: "GET" }),
+    queryFn: () => getBrokerSignup(broker),
     staleTime: 0, retry: 2,
   });
 }
