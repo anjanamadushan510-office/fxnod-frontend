@@ -18,7 +18,12 @@ import {
   botGuideSlug,
   contractTicks,
   escalates,
+  isBarrierBot,
+  isDigitBot,
+  isHeldBot,
+  marketSet,
   stakeStyle,
+  type MarketSet,
   type BotPlan,
   type BotFamily,
   type FixedPlanBot,
@@ -26,6 +31,8 @@ import {
 import { RISK_NOTE, type Guide, type GuideBlock } from "./guides";
 
 const DATE = "2026-10-12";
+/** When the guides of the barrier and held bots were first published. */
+const DATE_LATER = "2026-10-15";
 const TAG = "Auto Hub bot";
 const IMAGE = "/assets/login-slide-3.jpg";
 const OVERVIEW = "auto-hub-ready-made-bots";
@@ -35,6 +42,10 @@ const FAMILY: Record<BotFamily, { name: string; guide: string }> = {
   matches_differs: { name: "Matches / Differs", guide: "matches-differs-explained" },
   even_odd: { name: "Even / Odd", guide: "even-odd-explained" },
   over_under: { name: "Over / Under", guide: "over-under-explained" },
+  higher_lower: { name: "Higher / Lower", guide: "higher-lower-explained" },
+  touch_no_touch: { name: "Touch / No Touch", guide: "touch-no-touch-explained" },
+  accumulators: { name: "Accumulators", guide: "accumulators-explained" },
+  multipliers: { name: "Multipliers", guide: "multipliers-explained" },
 };
 
 const COUNT = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
@@ -50,15 +61,36 @@ function tickWord(bot: FixedPlanBot): string {
   return `${COUNT[contractTicks(bot)]}-tick`;
 }
 
-function isDigitBot(bot: FixedPlanBot): boolean {
-  return bot.family !== "rise_fall";
+/** "five-tick Higher / Lower", "1% Accumulator", "x40 Multiplier". */
+function contractName(bot: FixedPlanBot): string {
+  if (bot.family === "accumulators") return `${bot.growthRate}% Accumulator`;
+  if (bot.family === "multipliers") return `x${bot.leverage} Multiplier`;
+  return `${tickWord(bot)} ${bot.bet}`;
 }
 
-const VOLATILITY_MARKETS =
-  "Volatility 10, 25, 50, 75 and 100, and the one-second indices from Volatility 10 (1s) to Volatility 100 (1s)";
+/** Where a scaled barrier sits, after "a barrier". */
+function barrierText(bot: FixedPlanBot): string {
+  if (bot.barrierScale === 0.5) return "at half of Deriv's default barrier distance for the market";
+  if (bot.barrierScale === 1.5) return "at one and a half times Deriv's default barrier distance for the market";
+  return "at Deriv's default barrier distance for the market";
+}
 
-const SUGGESTED_MARKETS =
-  "Volatility 100 (1s), Volatility 100, Volatility 75 (1s), Volatility 75, Volatility 50 (1s) and Volatility 50";
+const MARKET_STEP: Record<MarketSet, (name: string) => string> = {
+  digit: (name) =>
+    `${name} trades one market. The form suggests Volatility 100 (1s), Volatility 100, Volatility 75 (1s), Volatility 75, Volatility 50 (1s) and Volatility 50. Jump 100 is not offered for this bot.`,
+  volatility: (name) =>
+    `${name} trades one market, and only a Volatility index: Volatility 10, 25, 50, 75 and 100, and the one-second indices from Volatility 10 (1s) to Volatility 100 (1s). No other market is offered for this bot.`,
+  two_second: (name) =>
+    `${name} trades one market, and only one of Volatility 10, 25, 50, 75 and 100. The form suggests Volatility 100, 75 and 50. The one-second indices price the same barrier differently, so they are not offered for this bot.`,
+  volatility_100: (name) => `${name} trades Volatility 100 only. No other market is offered for this bot.`,
+};
+
+const MARKET_CELL: Record<MarketSet, string> = {
+  digit: "One, chosen when you start it",
+  volatility: "One Volatility index, chosen when you start it",
+  two_second: "One of Volatility 10, 25, 50, 75 and 100",
+  volatility_100: "Volatility 100 only",
+};
 
 /** "1" -> "1.00", "0.35" -> "0.35". */
 export function money(value: string): string {
@@ -118,6 +150,23 @@ function payoutText(bot: FixedPlanBot): string {
 }
 
 function contractText(bot: FixedPlanBot): string {
+  const result = "Deriv sets the payout, and each trade's result is listed on the run page.";
+  if (bot.family === "accumulators") {
+    return `${bot.name} trades one contract only: an Accumulator from Deriv's Accumulators family, at a growth rate of ${bot.growthRate}%. While each tick stays within a range Deriv sets around the tick before it, the position's value grows by ${bot.growthRate}% a tick. If one tick lands outside the range, the position is knocked out and the whole stake is lost. ${bot.name} closes the position at a take profit of ${bot.closeAt} of the stake, and that take profit is also the session's profit target. An Accumulator has no fixed length: it stays open until it is closed or knocked out. ${result}`;
+  }
+  if (bot.family === "multipliers") {
+    return `${bot.name} trades one contract only: a Multiplier from Deriv's Multipliers family, at x${bot.leverage}. The position is opened Up or Down, and its profit or loss is the price's move in percent, times ${bot.leverage}, applied to the stake, less a commission Deriv takes at entry. It cannot lose more than its stake: when the loss reaches the stake, Deriv stops the position out. ${bot.name} closes it at a take profit of ${bot.closeAt} of the stake, which is also the session's profit target. A Multiplier has no fixed length: it stays open until it is closed or stopped out. ${result}`;
+  }
+  if (bot.family === "higher_lower") {
+    return `${bot.name} trades one contract only: Higher / Lower, from Deriv's Higher / Lower family, with a length of five ticks and a barrier ${barrierText(bot)}. A Higher wins when the price at the end of the contract is above a barrier set above the entry price, and a Lower when it is below one set below it. Ending beyond the entry price is not enough: the price has to pass the barrier. Because of that a trade wins less often than it loses, and a win pays more than the stake. A losing trade costs the whole stake. ${result}`;
+  }
+  if (bot.family === "touch_no_touch") {
+    const how =
+      bot.bet === "Touch"
+        ? "A Touch wins if the price reaches the barrier at any of the five ticks, and closes as soon as it does. The nearer the barrier, the more often a Touch wins and the less a win pays."
+        : "A No Touch wins if the price stays below the barrier for all five ticks, and loses as soon as the barrier is touched. The farther the barrier, the more often a No Touch wins and the less a win pays.";
+    return `${bot.name} trades one contract only: ${bot.bet}, from Deriv's Touch / No Touch family, with a length of five ticks and a barrier above the entry price, ${barrierText(bot)}. ${how} A losing trade costs the whole stake. ${result}`;
+  }
   if (!isDigitBot(bot)) {
     const sides = bot.bet === "Rise" ? "Rise" : "Rise or Fall";
     return `${bot.name} trades one contract only: ${sides}, from Deriv's Rise / Fall family, with a length of ${tickLength(bot)}. A Rise wins when the price at the end of the contract is above the price it started at, and a Fall wins when it is below. A price that ends exactly where it started loses either way. A win pays a little less than the stake, and a losing trade costs the whole stake. Deriv sets the payout, and each trade's result is listed on the run page.`;
@@ -138,7 +187,9 @@ function stakeBlocks(bot: FixedPlanBot): GuideBlock[] {
       },
       {
         type: "p",
-        text: "A trade is placed only while its stake fits in what is left of the stop loss. When it no longer fits, the session ends instead of placing it.",
+        text: isHeldBot(bot)
+          ? `A position is opened only while its stake fits in what is left of the stop loss. On ${bot.name} the stop loss is two stakes, so a session opens at most two positions that lose: after the second, nothing is left to stake and the session ends.`
+          : "A trade is placed only while its stake fits in what is left of the stop loss. When it no longer fits, the session ends instead of placing it.",
       },
     ];
   }
@@ -175,6 +226,20 @@ function stakeBlocks(bot: FixedPlanBot): GuideBlock[] {
 
 function planBlocks(bot: FixedPlanBot): GuideBlock[] {
   const ladder = stakeStyle(bot) === "Martingale";
+  if (isHeldBot(bot)) {
+    return [
+      { type: "h2", text: `The plans of ${bot.name}` },
+      {
+        type: "p",
+        text: `${bot.name} is not given a stake, a stop loss and a profit target one by one. You choose a plan, and the plan sets all of them together. Plans are named by their stop loss, which is two stakes. The profit target is the take profit of a single position, ${bot.closeAt} of the stake, so the first position that reaches it ends the session. The amounts are in the currency of the Deriv account the bot trades.`,
+      },
+      {
+        type: "table",
+        head: ["Plan", "Stake per position", "Take profit, which ends the session"],
+        rows: bot.plans.map((p) => [`Stop loss ${p.stopLoss}`, p.stake, money(p.takeProfit)]),
+      },
+    ];
+  }
   return [
     { type: "h2", text: `The plans of ${bot.name}` },
     {
@@ -195,10 +260,36 @@ function planBlocks(bot: FixedPlanBot): GuideBlock[] {
   ];
 }
 
+/** The third row of the at-a-glance table: what sets the odds of this contract. */
+function glanceRow(bot: FixedPlanBot): string[] {
+  if (isDigitBot(bot)) return ["Winning digits", `${bot.winning} of 10`];
+  if (isBarrierBot(bot)) return ["Barrier", barrierText(bot).replace(/^at /, "At ")];
+  if (bot.family === "accumulators") return ["If a tick leaves the range", "The position is knocked out and the stake is lost"];
+  if (bot.family === "multipliers") return ["Most a position can lose", "Its stake"];
+  return ["A price that ends level", "Loses, whichever side was taken"];
+}
+
+function tradesAnswer(bot: FixedPlanBot): string {
+  if (isDigitBot(bot))
+    return `${bot.name} buys Deriv's ${bot.bet} contract with a length of one tick. A trade wins when ${bot.wins}, which is ${bot.winning} of the ten possible last digits.`;
+  if (isBarrierBot(bot))
+    return `${bot.name} buys Deriv's ${bot.bet} contract with a length of five ticks and a barrier ${barrierText(bot)}. A trade wins when ${bot.wins}.`;
+  if (bot.family === "accumulators")
+    return `${bot.name} opens Deriv's Accumulator at a growth rate of ${bot.growthRate}% and closes it at a take profit of ${bot.closeAt} of the stake. One tick outside Deriv's range knocks the position out and loses the stake.`;
+  if (bot.family === "multipliers")
+    return `${bot.name} opens Deriv's Multiplier at x${bot.leverage}, Up or Down, and closes it at a take profit of ${bot.closeAt} of the stake. A position cannot lose more than its stake.`;
+  return `${bot.name} buys Deriv's ${bot.bet} contract with a length of ${tickLength(bot)}. A trade wins when ${bot.wins}. A price that ends exactly where it started loses.`;
+}
+
 function fixedPlanGuide(bot: FixedPlanBot): Guide {
   const ladder = stakeStyle(bot) === "Martingale";
   const stops = bot.plans.map((p) => p.stopLoss);
   const planCount = bot.plans.length === 2 ? "two" : "three";
+  const held = isHeldBot(bot);
+  const added = isBarrierBot(bot) || held;
+  // The Rise / Fall plans were redesigned in the engine after these guides were first written.
+  const updated = added || bot.family === "rise_fall" ? DATE_LATER : DATE;
+  const unit = held ? "position" : "trade";
   const stakeSentence = ladder
     ? `After a losing trade its stake is ${multiplierText(bot.plans)}, and after a win it returns to the starting stake.`
     : "Its stake is the same on every trade.";
@@ -211,26 +302,29 @@ function fixedPlanGuide(bot: FixedPlanBot): Guide {
     title: `${bot.name}: how FXNOD's Deriv ${bot.bet} bot works`,
     description: `${bot.name} is a ready-made Deriv ${bot.bet} bot in FXNOD's Auto Hub. Its contract, its entry rule, how its stake moves and the plans it starts with.`,
     tag: TAG,
-    published: DATE,
-    updated: DATE,
+    published: added ? DATE_LATER : DATE,
+    updated,
     image: IMAGE,
-    answer: `${bot.name} is a ready-made bot in FXNOD's Auto Hub that buys Deriv's ${tickWord(bot)} ${bot.bet} contract, which wins when ${bot.wins}. ${bot.rule} ${stakeSentence} You start it on one market with one of ${planCount} fixed plans, with a stop loss of ${orList(stops)}, and the session ends at the plan's profit target or its stop loss.`,
+    answer: `${bot.name} is a ready-made bot in FXNOD's Auto Hub that ${held ? "opens" : "buys"} Deriv's ${contractName(bot)} contract, which wins when ${bot.wins}. ${bot.rule} ${stakeSentence} You start it on one market with one of ${planCount} fixed plans, with a stop loss of ${orList(stops)}, and the session ends at the plan's profit target or its stop loss.`,
     body: [
       { type: "h2", text: `${bot.name} at a glance` },
       {
         type: "table",
         head: ["", bot.name],
         rows: [
-          ["Contract", `${bot.bet}, ${tickLength(bot)} (Deriv ${FAMILY[bot.family].name})`],
-          ["A trade wins when", bot.wins],
-          isDigitBot(bot)
-            ? ["Winning digits", `${bot.winning} of 10`]
-            : ["A price that ends level", "Loses, whichever side was taken"],
+          [
+            "Contract",
+            held
+              ? `${contractName(bot)}, held until closed (Deriv ${FAMILY[bot.family].name})`
+              : `${bot.bet}, ${tickLength(bot)} (Deriv ${FAMILY[bot.family].name})`,
+          ],
+          [`A ${unit} wins when`, bot.wins],
+          glanceRow(bot),
           ["Entry", bot.pace],
-          ["Stake", ladder ? `Martingale: ${multiplierText(bot.plans)} after a loss` : "Flat: the same on every trade"],
+          ["Stake", ladder ? `Martingale: ${multiplierText(bot.plans)} after a loss` : `Flat: the same on every ${unit}`],
           ["Plans", `Stop loss ${orList(stops)}`],
-          ["Markets", "One, chosen when you start it"],
-          ["Open trades", "One at a time"],
+          ["Markets", MARKET_CELL[marketSet(bot)]],
+          [`Open ${unit}s`, "One at a time"],
         ],
       },
       { type: "h2", text: `What ${bot.name} trades` },
@@ -267,9 +361,7 @@ function fixedPlanGuide(bot: FixedPlanBot): Guide {
           },
           {
             title: "Choose the market",
-            text: isDigitBot(bot)
-              ? `${bot.name} trades one market. The form suggests ${SUGGESTED_MARKETS}. Jump 100 is not offered for this bot.`
-              : `${bot.name} trades one market, and only a Volatility index: ${VOLATILITY_MARKETS}. No other market is offered for this bot.`,
+            text: MARKET_STEP[marketSet(bot)](bot.name),
           },
           {
             title: "Choose a plan",
@@ -286,19 +378,17 @@ function fixedPlanGuide(bot: FixedPlanBot): Guide {
     faq: [
       {
         q: `What does the ${bot.name} bot trade?`,
-        a: isDigitBot(bot)
-          ? `${bot.name} buys Deriv's ${bot.bet} contract with a length of one tick. A trade wins when ${bot.wins}, which is ${bot.winning} of the ten possible last digits.`
-          : `${bot.name} buys Deriv's ${bot.bet} contract with a length of ${tickLength(bot)}. A trade wins when ${bot.wins}. A price that ends exactly where it started loses.`,
+        a: tradesAnswer(bot),
       },
       {
-        q: `When does ${bot.name} place a trade?`,
+        q: `When does ${bot.name} ${held ? "open a position" : "place a trade"}?`,
         a: bot.rule,
       },
       {
         q: `Does ${bot.name} use Martingale?`,
         a: ladder
           ? `Yes. After a losing trade the stake is ${multiplierText(bot.plans)}, and after a win it returns to the starting stake. A step that would not fit in what is left of the stop loss is not placed, and the session ends.`
-          : `No. ${bot.name} places every trade at the same stake.`,
+          : `No. ${bot.name} places every ${unit} at the same stake.`,
       },
       {
         q: `Can I change the stake or stop loss of ${bot.name}?`,
@@ -317,27 +407,5 @@ function fixedPlanGuide(bot: FixedPlanBot): Guide {
     ],
   };
 }
-
-const OWN_AMOUNT_STEPS = (name: string, markets: string): GuideBlock => ({
-  type: "steps",
-  items: [
-    {
-      title: `Open Auto Hub and choose ${name}`,
-      text: "The bot's page opens with a How it works panel that lists its rules in order.",
-    },
-    { title: "Choose the markets", text: markets },
-    {
-      title: "Set the stake and the limits",
-      text: "Stake per trade starts at 1 and cannot go below 0.35, the smallest stake Deriv takes on these contracts. A stop loss is required: the bot cannot be started without one. Take profit can be left empty.",
-    },
-    {
-      title: "Check the account, then start",
-      text: "The panel shows which Deriv account the bot will trade. On a demo account the button reads Start on demo. On a real account you tick a box to confirm that the bot trades real money, and the button reads Start with real money.",
-    },
-  ],
-});
-
-const FADE_MARKETS =
-  "Choose from 1 to 10 markets. The form suggests Volatility 100 (1s), Volatility 75 (1s), Volatility 100 and Volatility 75. Jump 100 is not offered for this bot.";
 
 export const AUTOHUB_BOT_GUIDES: Guide[] = FIXED_PLAN_BOTS.map(fixedPlanGuide);

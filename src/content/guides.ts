@@ -17,8 +17,11 @@ import {
   FIXED_PLAN_BOTS,
   botGuideSlug,
   contractTicks,
+  isBarrierBot,
+  isDigitBot,
   stakeStyle,
   type BotFamily,
+  type FixedPlanBot,
 } from "./autohubCatalogue";
 
 export type GuideBlock =
@@ -68,6 +71,17 @@ export const RISK_NOTE: GuideBlock = {
   text: "Options and multipliers are high-risk products. You can lose your entire stake on any trade, and a bot can lose it faster than you would by hand. Nothing on this page is financial advice. Try everything on a Deriv demo account first.",
 };
 
+/** "Over 4", "Rise / Fall, 5 ticks", "1% Accumulator". */
+function planBotContract(bot: FixedPlanBot): string {
+  if (bot.family === "accumulators") return `${bot.growthRate}% Accumulator, closed at ${bot.closeAt}`;
+  if (bot.family === "multipliers") return `x${bot.leverage} Multiplier, closed at ${bot.closeAt}`;
+  if (isDigitBot(bot)) return bot.bet;
+  const ticks = `${contractTicks(bot)} ${contractTicks(bot) === 1 ? "tick" : "ticks"}`;
+  if (!isBarrierBot(bot)) return `${bot.bet}, ${ticks}`;
+  const barrier = bot.barrierScale === 1 ? "default barrier" : bot.barrierScale === 0.5 ? "near barrier" : "far barrier";
+  return `${bot.bet}, ${ticks}, ${barrier}`;
+}
+
 /** The plan bots of one contract family, as a table of the overview guide. */
 function planBotTable(family: BotFamily): GuideBlock {
   return {
@@ -75,7 +89,7 @@ function planBotTable(family: BotFamily): GuideBlock {
     head: ["Bot", "Contract", "Enters", "Stake", "Plans (stop loss)"],
     rows: FIXED_PLAN_BOTS.filter((bot) => bot.family === family).map((bot) => [
       bot.name,
-      family === "rise_fall" ? `${bot.bet}, ${contractTicks(bot)} ${contractTicks(bot) === 1 ? "tick" : "ticks"}` : bot.bet,
+      planBotContract(bot),
       bot.pace,
       stakeStyle(bot),
       bot.plans.map((p) => p.stopLoss).join(", "),
@@ -399,9 +413,9 @@ export const GUIDES: Guide[] = [
     description: `Auto Hub has ${AUTOHUB_BOT_COUNT} ready-made Deriv bots. What each one trades, when it enters, whether its stake is flat or Martingale, and how to start one.`,
     tag: "Auto Hub",
     published: "2026-10-06",
-    updated: "2026-10-12",
+    updated: "2026-10-15",
     image: "/assets/login-slide-3.jpg",
-    answer: `Auto Hub is a set of bots that FXNOD has already built. You do not design anything: pick a bot, choose its market and plan, and start it. There are ${AUTOHUB_BOT_COUNT} bots. They trade Deriv's digit contracts (Matches / Differs, Even / Odd and Over / Under) and Rise / Fall, in contracts of one to ten ticks. All ${FIXED_PLAN_BOTS.length} are started with a fixed plan that sets the stop loss, the stake and the profit target together.`,
+    answer: `Auto Hub is a set of bots that FXNOD has already built. You do not design anything: pick a bot, choose its market and plan, and start it. There are ${AUTOHUB_BOT_COUNT} bots. They trade Deriv's digit contracts (Matches / Differs, Even / Odd and Over / Under), Rise / Fall, Higher / Lower, Touch / No Touch, Accumulators and Multipliers. All ${FIXED_PLAN_BOTS.length} are started with a fixed plan that sets the stop loss, the stake and the profit target together.`,
     body: [
       { type: "h2", text: "Auto Hub or Bot Forge?" },
       {
@@ -422,7 +436,7 @@ export const GUIDES: Guide[] = [
       {
         type: "list",
         items: [
-          "The contract. One contract and one length, such as a one-tick Over 4 or a five-tick Rise / Fall. It decides what wins and how much a win pays.",
+          "The contract. One contract and one length, such as a one-tick Over 4 or a five-tick Rise / Fall, or a position held until it is closed, such as an Accumulator. It decides what wins and how much a win pays.",
           "The entry rule. When the bot buys: on every tick, once every few ticks, or after a pattern in the last digits or in the direction of the last ticks.",
           "The stake plan. Flat, where every trade has the same stake, or Martingale, where the stake is multiplied after a loss and returns to the start after a win.",
           "The limits. A stop loss and a profit target. A bot cannot be started without a stop loss.",
@@ -435,7 +449,7 @@ export const GUIDES: Guide[] = [
       { type: "h2", text: "Bots started with a plan" },
       {
         type: "p",
-        text: `${FIXED_PLAN_BOTS.length} bots trade one market and are started by choosing a plan. A plan is named by its stop loss, which is 20, 100 or 500, and sets the starting stake and the profit target with it. The amounts cannot be changed one by one. On these bots no stake is placed that could take the session's loss past the plan's stop loss.`,
+        text: `${FIXED_PLAN_BOTS.length} bots trade one market and are started by choosing a plan. A plan is named by its stop loss, which is 20, 100 or 500 (20 or 100 on the Accumulator and Multiplier bots), and sets the starting stake and the profit target with it. The amounts cannot be changed one by one. On these bots no stake is placed that could take the session's loss past the plan's stop loss.`,
       },
       { type: "h2", text: "Matches / Differs bots" },
       planBotTable("matches_differs"),
@@ -449,6 +463,30 @@ export const GUIDES: Guide[] = [
         text: "A Rise wins when the price ends above where the contract started, and a Fall when it ends below. A price that ends exactly where it started loses either way. These bots trade the Volatility indices only.",
       },
       planBotTable("rise_fall"),
+      { type: "h2", text: "Higher / Lower bots" },
+      {
+        type: "p",
+        text: "A Higher wins when the price ends above a barrier set above the entry price, and a Lower when it ends below one set below it. Every contract lasts five ticks. The barrier is near, at Deriv's default distance or far; the farther it is, the less often a trade wins and the more a win pays. These bots trade Volatility 10, 25, 50, 75 and 100.",
+      },
+      planBotTable("higher_lower"),
+      { type: "h2", text: "Touch / No Touch bots" },
+      {
+        type: "p",
+        text: "A Touch wins if the price reaches a barrier above the entry price at any of five ticks; a No Touch wins if it never does. These bots trade Volatility 10, 25, 50, 75 and 100.",
+      },
+      planBotTable("touch_no_touch"),
+      { type: "h2", text: "Accumulator bots" },
+      {
+        type: "p",
+        text: "An Accumulator grows by its rate at each tick while every tick stays within a range Deriv sets, and is knocked out, losing the stake, when one tick leaves it. Each bot closes its position at a take profit, which is also the session's target, and uses a flat stake with a stop loss of two stakes. They trade Volatility 100 only.",
+      },
+      planBotTable("accumulators"),
+      { type: "h2", text: "Multiplier bots" },
+      {
+        type: "p",
+        text: "A Multiplier position gains or loses the price's move times its multiplier, less a commission at entry, and cannot lose more than its stake. Each bot closes its position at a take profit, which is also the session's target, and uses a flat stake with a stop loss of two stakes. They trade Volatility 100 only.",
+      },
+      planBotTable("multipliers"),
       { type: "h2", text: "A guide for every bot" },
       {
         type: "links",
@@ -467,7 +505,7 @@ export const GUIDES: Guide[] = [
           { title: "Open Auto Hub and pick a bot", text: "Read its How it works panel first. It lists every rule the bot follows, in order." },
           {
             title: "Choose the market",
-            text: "Each bot trades one market. The form suggests Volatility 100, 75 and 50 indices and their one-second versions.",
+            text: "Each bot trades one market. Which markets it offers depends on its contract, and its guide lists them. Most bots suggest Volatility 100, 75 and 50.",
           },
           {
             title: "Choose a plan",
@@ -503,7 +541,7 @@ export const GUIDES: Guide[] = [
       },
       {
         q: "What do Auto Hub bots trade?",
-        a: "Deriv's digit contracts (Matches / Differs, Even / Odd and Over / Under) and Rise / Fall, in contracts of one to ten ticks. Each bot trades one of them.",
+        a: "Deriv's digit contracts (Matches / Differs, Even / Odd and Over / Under), Rise / Fall, Higher / Lower, Touch / No Touch, Accumulators and Multipliers. Each bot trades one of them.",
       },
       {
         q: "Does Auto Hub use Martingale?",

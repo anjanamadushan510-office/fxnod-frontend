@@ -17,8 +17,13 @@ import {
   botGuideSlug,
   contractTicks,
   escalates,
+  isBarrierBot,
+  isDigitBot,
+  isHeldBot,
+  marketSet,
   stakeStyle,
   type BotPlan,
+  type MarketSet,
   type BotFamily,
   type FixedPlanBot,
 } from "../autohubCatalogue";
@@ -27,6 +32,8 @@ import type { GuideBlock, GuideCta, LocalGuide } from "../guides";
 import { RISK } from "./guides";
 
 const DATE = "2026-10-12";
+/** When the guides of the barrier and held bots were first published. */
+const DATE_LATER = "2026-10-15";
 const TAG = "Auto Hub bots";
 const IMAGE = "/assets/login-slide-3.jpg";
 const OVERVIEW = "auto-hub-bots-sinhala";
@@ -47,6 +54,10 @@ const FAMILY: Record<BotFamily, string> = {
   matches_differs: "Matches / Differs",
   even_odd: "Even / Odd",
   over_under: "Over / Under",
+  higher_lower: "Higher / Lower",
+  touch_no_touch: "Touch / No Touch",
+  accumulators: "Accumulators",
+  multipliers: "Multipliers",
 };
 
 const LAST_DIGIT =
@@ -54,10 +65,6 @@ const LAST_DIGIT =
 
 const NOT_A_PROMISE =
   "Entry rule එකෙන් තීරණය වෙන්නේ bot එක trade කරන්නේ කවදද සහ කොච්චර ඉක්මනින්ද කියන එක විතරයි. ඒකෙන් කිසිම trade එකක් දිනන්න තියෙන ඉඩ වැඩි වෙන්නේ නැහැ.";
-
-function isDigitBot(bot: FixedPlanBot): boolean {
-  return bot.family !== "rise_fall";
-}
 
 /** "tick එකක", "ticks 5ක": how long the contract lasts, before a noun. */
 function tickSpan(bot: FixedPlanBot): string {
@@ -71,11 +78,38 @@ function tickCell(bot: FixedPlanBot): string {
   return n === 1 ? "tick එකයි" : `ticks ${n}යි`;
 }
 
-const VOLATILITY_MARKETS =
-  "Volatility 10, 25, 50, 75 සහ 100, සහ Volatility 10 (1s) සිට Volatility 100 (1s) දක්වා තත්පරයේ indices";
+/** "1% Accumulator", "x40 Multiplier", "ticks 5ක Higher / Lower". */
+function contractName(bot: FixedPlanBot): string {
+  if (bot.family === "accumulators") return `${bot.growthRate}% Accumulator`;
+  if (bot.family === "multipliers") return `x${bot.leverage} Multiplier`;
+  return `${tickSpan(bot)} ${bot.bet}`;
+}
 
-const SUGGESTED_MARKETS =
-  "Volatility 100 (1s), Volatility 100, Volatility 75 (1s), Volatility 75, Volatility 50 (1s) සහ Volatility 50";
+/** Where a scaled barrier sits, before "තියෙන barrier එකක්". */
+function barrierAt(bot: FixedPlanBot): string {
+  if (bot.barrierScale === 0.5) return "market එකට Deriv දෙන default barrier දුරෙන් භාගයක";
+  if (bot.barrierScale === 1.5) return "market එකට Deriv දෙන default barrier දුර මෙන් එකහමාරක";
+  return "market එකට Deriv දෙන default barrier දුරේ";
+}
+
+const MARKET_STEP: Record<MarketSet, (name: string) => string> = {
+  digit: (name) =>
+    `${name} trade කරන්නේ එක market එකක. Form එක යෝජනා කරන්නේ Volatility 100 (1s), Volatility 100, Volatility 75 (1s), Volatility 75, Volatility 50 (1s) සහ Volatility 50. මේ bot එකට Jump 100 දෙන්නේ නැහැ.`,
+  volatility: (name) =>
+    `${name} trade කරන්නේ එක market එකක, ඒකත් Volatility index එකක විතරයි: Volatility 10, 25, 50, 75 සහ 100, සහ Volatility 10 (1s) සිට Volatility 100 (1s) දක්වා තත්පරයේ indices. මේ bot එකට වෙන කිසිම market එකක් දෙන්නේ නැහැ.`,
+  two_second: (name) =>
+    `${name} trade කරන්නේ එක market එකක, ඒකත් Volatility 10, 25, 50, 75 සහ 100 න් එකක විතරයි. Form එක යෝජනා කරන්නේ Volatility 100, 75 සහ 50. තත්පරයේ indices වල එකම barrier එකට මිල දාන්නේ වෙනස් විදිහට, ඒ නිසා මේ bot එකට ඒවා දෙන්නේ නැහැ.`,
+  volatility_100: (name) => `${name} trade කරන්නේ Volatility 100 වල විතරයි. මේ bot එකට වෙන කිසිම market එකක් දෙන්නේ නැහැ.`,
+};
+
+const MARKET_CELL: Record<MarketSet, string> = {
+  digit: "එකයි, start කරද්දී තෝරනවා",
+  volatility: "Volatility index එකක්, start කරද්දී තෝරනවා",
+  two_second: "Volatility 10, 25, 50, 75 සහ 100 න් එකක්",
+  volatility_100: "Volatility 100 විතරයි",
+};
+
+const RESULT = "Payout එක තීරණය කරන්නේ Deriv, සහ හැම trade එකකම result එක run page එකේ පේනවා.";
 
 /** The words of one fixed-plan bot. The numbers are the catalogue's. */
 interface BotWords {
@@ -427,7 +461,7 @@ const WORDS: Record<string, BotWords> = {
       "අලුත්ම tick එක 100.14 සිට 100.19 ට ගියා, ඒ නිසා bot එක tick එකක Fall එකක් buy කරනවා. ඊළඟ tick එක contract එක පටන් ගත්ත මිලට වඩා පහළින් තිබුණොත් trade එක දිනනවා.",
   },
   slow_slope: {
-    tagline: "Rise, ඊට පස්සේ Fall, වෙනස් නොවෙන stake එකකින්.",
+    tagline: "Rise, ඊට පස්සේ Fall, මාරුවෙන් මාරුවට.",
     wins: "contract එක ඉවර වෙද්දී මිල පටන් ගත්ත තැනට වඩා උඩින් තිබුණොත් (Rise), නැත්නම් පහළින් තිබුණොත් (Fall)",
     pace: "Rise සහ Fall මාරුවෙන් මාරුවට; හැම එකකට පස්සේ ticks 5ක් නවතිනවා",
     rule: "Slow Slope ticks පහක Rise එකක් සහ ticks පහක Fall එකක් මාරුවෙන් මාරුවට buy කරනවා, සහ හැම contract එකක්ම close වුණාට පස්සේ ticks පහක් නවතිනවා.",
@@ -439,7 +473,7 @@ const WORDS: Record<string, BotWords> = {
       "Bot එක ticks පහක Rise එකක් buy කරනවා. ඒක close වෙනවා, trade එකක් නැතුව තව ticks පහක් යනවා, ඊට පස්සේ bot එක ticks පහක Fall එකක් buy කරනවා.",
   },
   patient_rise: {
-    tagline: "Ticks දහයකට Rise, වෙනස් නොවෙන stake එකකින්.",
+    tagline: "Rise, වරකට ticks දහයක්.",
     wins: "contract එක ඉවර වෙද්දී මිල පටන් ගත්ත තැනට වඩා උඩින් තිබුණොත්",
     pace: "අන්තිම contract එක close වුණ ගමන්",
     rule: "Patient Rise අන්තිම contract එක close වුණ ගමන් ticks දහයක Rise එකක් buy කරනවා. Fall එකක් කවදාවත් buy කරන්නේ නැහැ.",
@@ -452,8 +486,276 @@ const WORDS: Record<string, BotWords> = {
   },
 };
 
+const HIGHER_LOWER_WINS =
+  "ගත්ත පැත්තේ barrier එක පහු කරලා මිල ඉවර වුණොත්: Higher එකකට entry price එකට උඩින් තියපු barrier එකට වඩා උඩින්, Lower එකකට පහළින් තියපු barrier එකට වඩා පහළින්";
+const TOUCH_WINS = "ticks පහෙන් ඕනෑම එකකදී මිල barrier එකට ආවොත්";
+const NO_TOUCH_WINS = "ticks පහම මිල barrier එකට වඩා පහළින් තිබුණොත්";
+const RUN_THREE =
+  "හැම tick එකක්ම ඊට කලින් එකත් එක්ක සසඳනවා. ඒක ඇතුල් වෙන්නේ අලුත්ම ticks තුනම එකම පැත්තට ගිහින් නම් විතරයි. හෙලවුණේ නැති tick එකකින් පේළිය කැඩෙනවා.";
+const RUN_TWO =
+  "හැම tick එකක්ම ඊට කලින් එකත් එක්ක සසඳනවා, සහ අලුත්ම ticks දෙකම එකම පැත්තට ගිහින් නම් ඇතුල් වෙනවා. හෙලවුණේ නැති tick එකකින් පේළිය කැඩෙනවා.";
+
+const BARRIER_WORDS: Record<string, BotWords> = {
+  step_up: {
+    tagline: "එක දිගට ticks තුනක් ගිය පැත්තටම, ළඟ barrier එකක් පහු කරලා.",
+    wins: HIGHER_LOWER_WINS,
+    pace: "එක පැත්තකට එක දිගට ticks තුනක් ගියාට පස්සේ, ඒ පැත්තටම",
+    rule: "Step Up බලන් ඉන්නේ ticks තුනක් එක දිගට එකම පැත්තට යනකන්. ඊට පස්සේ ticks පහකට, ඒ පැත්තේ තියෙන ළඟ barrier එකක් පහු කරලා මිල ඉවර වෙයි කියලා bet කරනවා.",
+    detail: [
+      `Step Up ${RUN_THREE}`,
+      "Ticks තුනක් උඩට ගියාම entry price එකට උඩින් barrier එකක් තියෙන ticks පහක Higher එකක් buy කරනවා; තුනක් පහළට ගියාම පහළින් barrier එකක් තියෙන ticks පහක Lower එකක්. Barrier එක ළඟයි: market එකට Deriv දෙන default barrier දුරෙන් භාගයක්.",
+    ],
+    example:
+      "මිල ticks වෙන්නේ 650.12, 650.18, 650.25, 650.31 විදිහට: එක දිගට තුන්පාරක් උඩට. Bot එක entry price එකට උඩින් ළඟ barrier එකක් තියෙන ticks පහක Higher එකක් buy කරනවා. ඒක දිනන්නේ පස්වෙනි tick එක entry price එකට විතරක් නෙවෙයි, ඒ barrier එකටත් වඩා උඩින් ඉවර වුණොත් විතරයි.",
+  },
+  breakout: {
+    tagline: "එක දිගට ticks හතරක් ගිය පැත්තටම, barrier එක පහු කරලා.",
+    wins: HIGHER_LOWER_WINS,
+    pace: "එක පැත්තකට එක දිගට ticks හතරක් ගියාට පස්සේ, ඒ පැත්තටම",
+    rule: "Breakout බලන් ඉන්නේ ticks හතරක් එක දිගට එකම පැත්තට යනකන්. ඊට පස්සේ ticks පහකට, ඒ පැත්තේ barrier එක පහු කරලා මිල ඉවර වෙයි කියලා bet කරනවා.",
+    detail: [
+      "Breakout හැම tick එකක්ම ඊට කලින් එකත් එක්ක සසඳනවා. ඒක ඇතුල් වෙන්නේ අලුත්ම ticks හතරම එකම පැත්තට ගිහින් නම් විතරයි, ඒ නිසා trades අතර Step Up එකට වඩා වැඩි වෙලාවක් බලන් ඉන්නවා. හෙලවුණේ නැති tick එකකින් පේළිය කැඩෙනවා.",
+      "Ticks හතරක් උඩට ගියාම ticks පහක Higher එකක් buy කරනවා; හතරක් පහළට ගියාම ticks පහක Lower එකක්. Barrier එක තියෙන්නේ market එකට Deriv දෙන default barrier දුරේ.",
+    ],
+    example:
+      "මිල ticks වෙන්නේ 650.40, 650.33, 650.27, 650.20, 650.11 විදිහට: එක දිගට හතරපාරක් පහළට. Bot එක entry price එකට පහළින් barrier එක තියෙන ticks පහක Lower එකක් buy කරනවා. පස්වෙනි tick එක barrier එකට වඩා පහළින් ඉවර වුණොත් ඒක දිනනවා.",
+  },
+  long_reach: {
+    tagline: "එක දිගට ticks දෙකක් ගිය පැත්තටම, දුර barrier එකක් පහු කරලා.",
+    wins: HIGHER_LOWER_WINS,
+    pace: "එක පැත්තකට එක දිගට ticks දෙකක් ගියාට පස්සේ, ඒ පැත්තටම",
+    rule: "Long Reach බලන් ඉන්නේ ticks දෙකක් එක දිගට එකම පැත්තට යනකන්. ඊට පස්සේ ticks පහකට, ඒ පැත්තේ තියෙන දුර barrier එකක් පහු කරලා මිල ඉවර වෙයි කියලා bet කරනවා.",
+    detail: [
+      `Long Reach ${RUN_TWO}`,
+      "Ticks දෙකක් උඩට ගියාම ticks පහක Higher එකක් buy කරනවා; දෙකක් පහළට ගියාම ticks පහක Lower එකක්. Barrier එක දුරයි: Deriv දෙන default barrier දුර මෙන් එකහමාරක්. දුර barrier එකකට මිල එන්නේ ළඟ එකකට වඩා අඩුවෙන්, සහ දිනුමක් ගෙවන්නේ වැඩියෙන්.",
+    ],
+    example:
+      "මිල ticks වෙන්නේ 650.10, 650.16, 650.21 විදිහට: එක දිගට දෙපාරක් උඩට. Bot එක entry price එකට උඩින් දුර barrier එකක් තියෙන ticks පහක Higher එකක් buy කරනවා. ඒක දිනන්නේ පස්වෙනි tick එක ඒ barrier එකට වඩා උඩින් ඉවර වුණොත් විතරයි.",
+  },
+  canopy: {
+    tagline: "දුර barrier එකක් පහු කරලා මිල ආපහු හැරෙයි කියලා bet කරනවා.",
+    wins: HIGHER_LOWER_WINS,
+    pace: "එක පැත්තකට එක දිගට ticks තුනක් ගියාට පස්සේ, අනිත් පැත්තට",
+    rule: "Canopy බලන් ඉන්නේ ticks තුනක් එක දිගට එකම පැත්තට යනකන්. ඊට පස්සේ ticks පහකට, අනිත් පැත්තේ තියෙන දුර barrier එකක් පහු කරලා මිල ඉවර වෙයි කියලා bet කරනවා.",
+    detail: [
+      `Canopy ${RUN_THREE}`,
+      "Ticks තුනක් උඩට ගියාම entry price එකට පහළින් barrier එකක් තියෙන ticks පහක Lower එකක් buy කරනවා; තුනක් පහළට ගියාම උඩින් barrier එකක් තියෙන ticks පහක Higher එකක්. Barrier එක දුරයි: Deriv දෙන default barrier දුර මෙන් එකහමාරක්.",
+    ],
+    example:
+      "මිල ticks වෙන්නේ 650.12, 650.18, 650.25, 650.31 විදිහට: එක දිගට තුන්පාරක් උඩට. Bot එක entry price එකට පහළින් දුර barrier එකක් තියෙන ticks පහක Lower එකක් buy කරනවා. පස්වෙනි tick එක ඒ barrier එකට වඩා පහළින් ඉවර වුණොත් ඒක දිනනවා.",
+  },
+  ceiling: {
+    tagline: "Higher, ඊට පස්සේ Lower, දුර barrier එකක් පහු කරලා.",
+    wins: HIGHER_LOWER_WINS,
+    pace: "Higher සහ Lower මාරුවෙන් මාරුවට",
+    rule: "Ceiling අන්තිම contract එක close වුණ ගමන්, දුර barrier එකක් තියෙන ticks පහක Higher එකක් සහ ticks පහක Lower එකක් මාරුවෙන් මාරුවට buy කරනවා.",
+    detail: [
+      "Ceiling පැත්ත තෝරන්න ticks කියවන්නේ නැහැ. Session එකක පළමු trade එක Higher එකක්, දෙවෙනි එක Lower එකක්, තුන්වෙනි එක Higher එකක්, ඔය විදිහට, මිල මොනවා කළත්.",
+      "Barrier එක දුරයි: Deriv දෙන default barrier දුර මෙන් එකහමාරක්, Higher එකකට entry price එකට උඩින්, Lower එකකට පහළින්. Contracts අතර නැවතීමක් නැහැ.",
+    ],
+    example:
+      "Bot එක entry price එකට උඩින් දුර barrier එකක් තියෙන ticks පහක Higher එකක් buy කරනවා. ඒක close වුණාම, අලුත් entry price එකට පහළින් දුර barrier එකක් තියෙන ticks පහක Lower එකක් buy කරනවා.",
+  },
+  low_ceiling: {
+    tagline: "Ticks දෙකකට විරුද්ධව, ළඟ barrier එකක් පහු කරලා.",
+    wins: HIGHER_LOWER_WINS,
+    pace: "එක පැත්තකට එක දිගට ticks දෙකක් ගියාට පස්සේ, අනිත් පැත්තට",
+    rule: "Low Ceiling බලන් ඉන්නේ ticks දෙකක් එක දිගට එකම පැත්තට යනකන්. ඊට පස්සේ ticks පහකට, අනිත් පැත්තේ තියෙන ළඟ barrier එකක් පහු කරලා මිල ඉවර වෙයි කියලා bet කරනවා.",
+    detail: [
+      `Low Ceiling ${RUN_TWO}`,
+      "Ticks දෙකක් උඩට ගියාම ticks පහක Lower එකක් buy කරනවා; දෙකක් පහළට ගියාම ticks පහක Higher එකක්. Barrier එක ළඟයි: market එකට Deriv දෙන default barrier දුරෙන් භාගයක්.",
+    ],
+    example:
+      "මිල ticks වෙන්නේ 650.31, 650.25, 650.18 විදිහට: එක දිගට දෙපාරක් පහළට. Bot එක entry price එකට උඩින් ළඟ barrier එකක් තියෙන ticks පහක Higher එකක් buy කරනවා. පස්වෙනි tick එක ඒ barrier එකට වඩා උඩින් ඉවර වුණොත් ඒක දිනනවා.",
+  },
+  flat_roof: {
+    tagline: "Higher, ඊට පස්සේ Lower, අතරට නැවතීමක් එක්ක.",
+    wins: HIGHER_LOWER_WINS,
+    pace: "Higher සහ Lower මාරුවෙන් මාරුවට; හැම එකකට පස්සේ ticks 5ක් නවතිනවා",
+    rule: "Flat Roof ticks පහක Higher එකක් සහ ticks පහක Lower එකක් මාරුවෙන් මාරුවට buy කරනවා, සහ හැම contract එකක්ම close වුණාට පස්සේ ticks පහක් නවතිනවා.",
+    detail: [
+      "Flat Roof පැත්ත තෝරන්න ticks කියවන්නේ නැහැ. Session එකක පළමු trade එක Higher එකක්, දෙවෙනි එක Lower එකක්, ඔය විදිහට, මිල මොනවා කළත්.",
+      "Barrier එක තියෙන්නේ market එකට Deriv දෙන default barrier දුරේ. හැම contract එකක්ම close වුණාට පස්සේ bot එක ඊළඟ එක buy කරන්න කලින් ticks පහක් යන්න අරිනවා.",
+    ],
+    example:
+      "Bot එක ticks පහක Higher එකක් buy කරනවා. ඒක close වෙනවා, trade එකක් නැතුව තව ticks පහක් යනවා, ඊට පස්සේ bot එක ticks පහක Lower එකක් buy කරනවා.",
+  },
+  fingertip: {
+    tagline: "Touch, barrier එකේ.",
+    wins: TOUCH_WINS,
+    pace: "අන්තිම contract එක close වුණ ගමන්",
+    rule: "Fingertip අන්තිම contract එක close වුණ ගමන්, entry price එකට උඩින් barrier එකක් තියෙන ticks පහක Touch එකක් buy කරනවා.",
+    detail: [
+      "Fingertip ට entry කොන්දේසියක් නැහැ, සහ ගන්නේ එක පැත්තක් විතරයි. Ticks පහක Touch එකක් buy කරලා, ඒක close වෙනකන් ඉඳලා, ඊළඟ එක buy කරනවා.",
+      "Barrier එක තියෙන්නේ entry price එකට උඩින්, ඒ market එකේ Touch එකකට Deriv දෙන default barrier දුරේ. Barrier එකට මිල ආපු ගමන් contract එක close වෙන නිසා, දිනන trade එකක් පස්වෙනි tick එකට කලින් ඉවර වෙන්න පුළුවන්.",
+    ],
+    example:
+      "Bot එක 650.20 දී, ඒ මිලට උඩින් barrier එකක් තියෙන Touch එකක් buy කරනවා. තුන්වෙනි tick එකේදී මිල barrier එකට එනවා: trade එක දිනලා close වෙනවා, සහ bot එක ඊළඟ Touch එක buy කරනවා.",
+  },
+  far_touch: {
+    tagline: "Touch, දුර barrier එකක.",
+    wins: TOUCH_WINS,
+    pace: "හැම contract එකකටම පස්සේ ticks 3ක් නවතිනවා",
+    rule: "Far Touch entry price එකට උඩින් දුර barrier එකක් තියෙන ticks පහක Touch එකක් buy කරනවා, සහ හැම contract එකක්ම close වුණාට පස්සේ ticks තුනක් නවතිනවා.",
+    detail: [
+      "Far Touch ගන්නේ එක පැත්තක් විතරයි. ඒක buy කරන ticks පහක Touch එකේ barrier එක දුරයි: ඒ market එකේ Touch එකකට Deriv දෙන default barrier දුර මෙන් එකහමාරක්.",
+      "දුර barrier එකකට මිල එන්නේ ළඟ එකකට වඩා අඩුවෙන්, සහ දිනුමක් ගෙවන්නේ වැඩියෙන්. හැම contract එකක්ම close වුණාට පස්සේ bot එක ඊළඟ එක buy කරන්න කලින් ticks තුනක් යන්න අරිනවා.",
+    ],
+    example:
+      "Bot එක දුර barrier එකක් තියෙන Touch එකක් buy කරනවා. මිල උඩට ගියත් ticks පහම barrier එකට වඩා පහළින් තියෙනවා: trade එක පරදිනවා. Ticks තුනක් යනවා, ඊට පස්සේ bot එක ඊළඟ Touch එක buy කරනවා.",
+  },
+  brush: {
+    tagline: "Touch, ළඟ barrier එකක.",
+    wins: TOUCH_WINS,
+    pace: "අන්තිම contract එක close වුණ ගමන්",
+    rule: "Brush අන්තිම contract එක close වුණ ගමන්, entry price එකට උඩින් ළඟ barrier එකක් තියෙන ticks පහක Touch එකක් buy කරනවා.",
+    detail: [
+      "Brush ගන්නේ එක පැත්තක් විතරයි, සහ ඒකට entry කොන්දේසියක් නැහැ. ඒකේ barrier එක ළඟයි: ඒ market එකේ Touch එකකට Deriv දෙන default barrier දුරෙන් භාගයක්.",
+      "ළඟ barrier එකකට මිල එන්නේ දුර එකකට වඩා වැඩියෙන්, සහ දිනුමක් ගෙවන්නේ stake එකට වඩා අඩුවෙන්. Barrier එකට මිල ආපු ගමන් contract එක close වෙනවා.",
+    ],
+    example:
+      "Bot එක entry price එකට උඩින් ළඟ barrier එකක් තියෙන Touch එකක් buy කරනවා. ඊළඟ tick එකම ඒකට එනවා: trade එක එවෙලෙම දිනනවා, සහ bot එක ඊළඟ Touch එක buy කරනවා.",
+  },
+  hands_off: {
+    tagline: "No Touch, දුර barrier එකක.",
+    wins: NO_TOUCH_WINS,
+    pace: "අන්තිම contract එක close වුණ ගමන්",
+    rule: "Hands Off අන්තිම contract එක close වුණ ගමන්, entry price එකට උඩින් දුර barrier එකක් තියෙන ticks පහක No Touch එකක් buy කරනවා.",
+    detail: [
+      "Hands Off ගන්නේ එක පැත්තක් විතරයි, සහ ඒකට entry කොන්දේසියක් නැහැ. ඒක bet කරන්නේ ඊළඟ ticks පහෙන් කිසිම එකකදී මිල, entry price එකට උඩින් Deriv දෙන default barrier දුර මෙන් එකහමාරක් ඈතින් තියෙන barrier එකට එන්නේ නැහැ කියලා.",
+      "Ticks පහක් ඇතුළත දුර barrier එකකට මිල එන්නේ කලාතුරකින්, ඒ නිසා ඒකේ No Touch එකක් ගොඩක් වෙලාවට දිනනවා, සහ දිනුමක් ගෙවන්නේ stake එකෙන් පොඩි කොටසක්. Barrier එකට මිල ආපු ගමන් contract එක පරදිනවා.",
+    ],
+    example:
+      "Bot එක දුර barrier එකක් තියෙන No Touch එකක් buy කරනවා. මිල උඩටයි පහළටයි යනවා, ඒත් ticks පහේදීම barrier එකට එන්නේ නැහැ: trade එක දිනනවා, සහ bot එක ඊළඟ එක buy කරනවා.",
+  },
+  clear_air: {
+    tagline: "No Touch, barrier එකේ.",
+    wins: NO_TOUCH_WINS,
+    pace: "හැම contract එකකටම පස්සේ ticks 5ක් නවතිනවා",
+    rule: "Clear Air entry price එකට උඩින් barrier එකක් තියෙන ticks පහක No Touch එකක් buy කරනවා, සහ හැම contract එකක්ම close වුණාට පස්සේ ticks පහක් නවතිනවා.",
+    detail: [
+      "Clear Air ගන්නේ එක පැත්තක් විතරයි. ඒක bet කරන්නේ ඊළඟ ticks පහෙන් කිසිම එකකදී මිල, entry price එකට උඩින් Deriv දෙන default barrier දුරේ තියෙන barrier එකට එන්නේ නැහැ කියලා.",
+      "Barrier එක Hands Off එකේ එකට වඩා ළඟයි, ඒ නිසා මිල ඒකට එන්නේ වැඩියෙන්, සහ දිනුමක් ගෙවන්නේත් වැඩියෙන්. හැම contract එකක්ම close වුණාට පස්සේ bot එක ඊළඟ එක buy කරන්න කලින් ticks පහක් යන්න අරිනවා.",
+    ],
+    example:
+      "Bot එක No Touch එකක් buy කරනවා. හතරවෙනි tick එකේදී මිල barrier එකට එනවා: trade එක පරදිලා close වෙනවා. Ticks පහක් යනවා, ඊට පස්සේ bot එක ඊළඟ No Touch එක buy කරනවා.",
+  },
+};
+
+/** Completes "Position එකක් දිනන්නේ ..." for an Accumulator closed at `at`. */
+function accumulatorWins(at: string): string {
+  return `කිසිම tick එකක් range එකෙන් එළියට යන්න කලින් position එක stake එකෙන් ${at} ක take profit එකට වැඩුණොත්`;
+}
+
+/** The same for a Multiplier. */
+function multiplierWins(at: string): string {
+  return `stop out වෙන්න කලින් position එක stake එකෙන් ${at} ක take profit එකට ආවොත්`;
+}
+
+const ACCUMULATOR_LOST =
+  "ඊට කලින් tick එකක් range එකෙන් එළියට ගියොත් position එක knock out වෙලා stake එක නැති වෙනවා.";
+
+const HELD_WORDS: Record<string, BotWords> = {
+  snowball: {
+    tagline: "Tick එකකට 1%, 3% දී close කරනවා.",
+    wins: accumulatorWins("3%"),
+    pace: "අන්තිම position එක close වුණ ගමන්",
+    rule: "Snowball අන්තිම position එක close වුණ ගමන් 1% growth rate එකක Accumulator එකක් open කරලා, stake එකෙන් 3% ක ලාභයකදී ඒක close කරනවා.",
+    detail: [
+      "Snowball ට entry කොන්දේසියක් නැහැ. ඒක 1% Accumulator එකක් open කරලා, ticks කලින් tick එක වටේ Deriv තියන range එක ඇතුළේ තියෙනකන් ඒක තියාගන්නවා.",
+      `Position එකේ take profit එක stake එකෙන් 3%යි. ඒකට ආවාම position එක close වෙලා session එක target එකෙන් ඉවර වෙනවා. ${ACCUMULATOR_LOST} ඊට පස්සේ bot එක ඊළඟ එක open කරනවා.`,
+    ],
+    example:
+      "20 plan එකේ bot එක stake 10 ක Accumulator එකක් open කරනවා. Position එකේ වටිනාකම stake එකට වඩා 0.30 කින් වැඩි වෙනකන් ticks range එක ඇතුළේ තියෙනවා: ඒ ලාභයෙන් ඒක close වෙලා session එක ඉවර වෙනවා.",
+  },
+  quick_stack: {
+    tagline: "Tick එකකට 2%, 4% දී close කරනවා.",
+    wins: accumulatorWins("4%"),
+    pace: "අන්තිම position එක close වුණ ගමන්",
+    rule: "Quick Stack අන්තිම position එක close වුණ ගමන් 2% growth rate එකක Accumulator එකක් open කරලා, stake එකෙන් 4% ක ලාභයකදී ඒක close කරනවා.",
+    detail: [
+      "Quick Stack ට entry කොන්දේසියක් නැහැ. ඒක open කරන්නේ 2% Accumulator එකක්, ඒක 1% එකකට වඩා ඉක්මනින් වැඩෙනවා; ඒත් වැඩි rate එකකට Deriv තියන්නේ පටු range එකක් නිසා tick එකක් ඒකෙන් එළියට යන්න ලේසියි.",
+      `Position එකේ take profit එක stake එකෙන් 4%යි. ඒකට ආවාම position එක close වෙලා session එක target එකෙන් ඉවර වෙනවා. ${ACCUMULATOR_LOST}`,
+    ],
+    example:
+      "20 plan එකේ bot එක stake 10 ක Accumulator එකක් open කරනවා. Position එක stake එකට වඩා 0.40 කින් වැඩි වෙන්න කලින් tick එකක් range එකෙන් එළියට වැටෙනවා: ඒක knock out වෙලා 10ක් නැති වෙනවා. Stop loss එකේ ඉතුරු 10 න් bot එක තව එක position එකක් open කරනවා.",
+  },
+  fast_stack: {
+    tagline: "Tick එකකට 3%, 3% දී close කරනවා.",
+    wins: accumulatorWins("3%"),
+    pace: "හැම position එකකටම පස්සේ ticks 10ක් නවතිනවා",
+    rule: "Fast Stack position එකක් close වුණාට පස්සේ ticks දහයක් නවතිලා, 3% growth rate එකක Accumulator එකක් open කරලා, stake එකෙන් 3% ක ලාභයකදී ඒක close කරනවා.",
+    detail: [
+      "Fast Stack open කරන්නේ 3% Accumulator එකක්. Stake එකෙන් 3% ක take profit එකට ඒක එන්නේ Snowball එකට වඩා අඩු වැඩෙන ticks ගණනකින්, ඒත් පටු range එකක් ඇතුළේ.",
+      "Position එකක් close වුණාට පස්සේ bot එක ඊළඟ එක open කරන්න කලින් ticks දහයක් යන්න අරිනවා. Position එකක් take profit එකට ආවාම session එක target එකෙන් ඉවර වෙනවා.",
+    ],
+    example:
+      "100 plan එකේ bot එක stake 50 ක Accumulator එකක් open කරනවා. ඒක stake එකට වඩා 1.50 කින් වැඩි වෙනකන් වැඩිලා, ඒ ලාභයෙන් close වෙනවා: session එක ඉවර වෙනවා.",
+  },
+  avalanche: {
+    tagline: "Tick එකකට 5%, 3.5% දී close කරනවා.",
+    wins: accumulatorWins("3.5%"),
+    pace: "අන්තිම position එක close වුණ ගමන්",
+    rule: "Avalanche අන්තිම position එක close වුණ ගමන් 5% growth rate එකක Accumulator එකක් open කරලා, stake එකෙන් 3.5% ක ලාභයකදී ඒක close කරනවා.",
+    detail: [
+      "Avalanche පාවිච්චි කරන්නේ Accumulator bots අතරින් වැඩිම growth rate එක, 5%. ඒ නිසා stake එකෙන් 3.5% ක take profit එකට ඒක එන්නේ ticks කිහිපයකින්. මේ rate එකට Deriv තියන්නේ පටුම range එක, ඒ නිසා tick එකක් ඒකෙන් එළියට යන්න ලේසිම මේකේ.",
+      `Position එකක් take profit එකට ආවාම ඒක close වෙලා session එක target එකෙන් ඉවර වෙනවා. ${ACCUMULATOR_LOST}`,
+    ],
+    example:
+      "20 plan එකේ bot එක stake 10 ක Accumulator එකක් open කරනවා. වැඩෙන ticks දෙකකට විතර පස්සේ ඒකේ වටිනාකම stake එකට වඩා 0.35 කින් වැඩියි: ඒ ලාභයෙන් ඒක close වෙලා session එක ඉවර වෙනවා.",
+  },
+  slow_lever: {
+    tagline: "x40, අන්තිම ticks තුන ගිය පැත්තට, 10% දී close කරනවා.",
+    wins: multiplierWins("10%"),
+    pace: "එක පැත්තකට එක දිගට ticks තුනක් ගියාට පස්සේ, ඒ පැත්තටම",
+    rule: "Slow Lever බලන් ඉන්නේ ticks තුනක් එක දිගට එකම පැත්තට යනකන්. ඊට පස්සේ ඒ පැත්තට x40 Multiplier එකක් open කරලා, stake එකෙන් දහයෙන් පංගුවක ලාභයකදී ඒක close කරනවා.",
+    detail: [
+      "Slow Lever හැම tick එකක්ම ඊට කලින් එකත් එක්ක සසඳනවා. අලුත්ම ticks තුනම එකම පැත්තට ගියාම ඒ පැත්තට x40 Multiplier එකක් open කරනවා: ticks තුනක් උඩට ගියාම Up, තුනක් පහළට ගියාම Down. හෙලවුණේ නැති tick එකකින් පේළිය කැඩෙනවා.",
+      "Position එකේ take profit එක stake එකෙන් දහයෙන් පංගුවයි. ඒකට ආවාම position එක close වෙලා session එක target එකෙන් ඉවර වෙනවා. මිල අනිත් පැත්තට ගිහින් සම්පූර්ණ stake එකම යන තරමට පාඩුව ආවොත් Deriv position එක stop out කරනවා.",
+    ],
+    example:
+      "20 plan එකේ, ticks තුනක් උඩට ගියාට පස්සේ bot එක stake 10 ක x40 Multiplier Up එකක් open කරනවා. Position එක 1.00 ක ලාභයකට එනකන් මිල දිගටම උඩට යනවා: ඒක close වෙලා session එක ඉවර වෙනවා.",
+  },
+  long_lever: {
+    tagline: "x40, අන්තිම ticks තුනට විරුද්ධව, 12% දී close කරනවා.",
+    wins: multiplierWins("12%"),
+    pace: "එක පැත්තකට එක දිගට ticks තුනක් ගියාට පස්සේ, අනිත් පැත්තට",
+    rule: "Long Lever බලන් ඉන්නේ ticks තුනක් එක දිගට එකම පැත්තට යනකන්. ඊට පස්සේ අනිත් පැත්තට x40 Multiplier එකක් open කරලා, stake එකෙන් 12% ක ලාභයකදී ඒක close කරනවා.",
+    detail: [
+      "Long Lever හැම tick එකක්ම ඊට කලින් එකත් එක්ක සසඳනවා. අලුත්ම ticks තුනම එකම පැත්තට ගියාම ඒ ගමනට විරුද්ධව x40 Multiplier එකක් open කරනවා: ticks තුනක් උඩට ගියාම Down, තුනක් පහළට ගියාම Up.",
+      "Position එකේ take profit එක stake එකෙන් 12%යි. ඒකට ආවාම position එක close වෙලා session එක target එකෙන් ඉවර වෙනවා. Position එකකට stake එකට වඩා පාඩු වෙන්න බැහැ; ඊට කලින් Deriv ඒක stop out කරනවා.",
+    ],
+    example:
+      "100 plan එකේ, ticks තුනක් පහළට ගියාට පස්සේ bot එක stake 50 ක x40 Multiplier Up එකක් open කරනවා. Position එක 6.00 ක ලාභයකට එනකන් මිල උඩට හැරෙනවා: ඒක close වෙලා session එක ඉවර වෙනවා.",
+  },
+  even_lever: {
+    tagline: "x100, Up ඊට පස්සේ Down, 10% දී close කරනවා.",
+    wins: multiplierWins("10%"),
+    pace: "Up සහ Down මාරුවෙන් මාරුවට",
+    rule: "Even Lever x100 Multiplier Up එකක් සහ x100 Multiplier Down එකක් මාරුවෙන් මාරුවට open කරලා, හැම එකක්ම stake එකෙන් දහයෙන් පංගුවක ලාභයකදී close කරනවා.",
+    detail: [
+      "Even Lever පැත්ත තෝරන්න ticks කියවන්නේ නැහැ. Session එකක පළමු position එක Up, දෙවෙනි එක Down, ඔය විදිහට.",
+      "x100 දී position එකක් මිල ගමන මෙන් සිය ගුණයකින් හෙලවෙනවා, ඒ නිසා x40 එකකට වඩා ඉක්මනින් take profit එකට එනවා, නැත්නම් stake එක නැති කරගන්නවා. Entry එකේදී Deriv ගන්න commission එකත් multiplier එකත් එක්ක වැඩි වෙනවා.",
+    ],
+    example:
+      "20 plan එකේ bot එක stake 10 ක x100 Multiplier Up එකක් open කරනවා. මිල පහළට ගිහින් position එක stop out වෙනවා: 10ක් නැති වෙනවා. Stop loss එකේ ඉතුරු 10 න් bot එක Multiplier Down එකක් open කරනවා.",
+  },
+  full_swing: {
+    tagline: "x100, අන්තිම ticks දෙක ගිය පැත්තට, 8% දී close කරනවා.",
+    wins: multiplierWins("8%"),
+    pace: "එක පැත්තකට එක දිගට ticks දෙකක් ගියාට පස්සේ, ඒ පැත්තටම",
+    rule: "Full Swing බලන් ඉන්නේ ticks දෙකක් එක දිගට එකම පැත්තට යනකන්. ඊට පස්සේ ඒ පැත්තට x100 Multiplier එකක් open කරලා, stake එකෙන් 8% ක ලාභයකදී ඒක close කරනවා.",
+    detail: [
+      "Full Swing හැම tick එකක්ම ඊට කලින් එකත් එක්ක සසඳනවා. අලුත්ම ticks දෙකම එකම පැත්තට ගියාම ඒ පැත්තට x100 Multiplier එකක් open කරනවා. හෙලවුණේ නැති tick එකකින් පේළිය කැඩෙනවා.",
+      "Position එකේ take profit එක stake එකෙන් 8%යි. ඒකට ආවාම position එක close වෙලා session එක target එකෙන් ඉවර වෙනවා. Position එකකට stake එකට වඩා පාඩු වෙන්න බැහැ.",
+    ],
+    example:
+      "100 plan එකේ, ticks දෙකක් උඩට ගියාට පස්සේ bot එක stake 50 ක x100 Multiplier Up එකක් open කරනවා. Position එක 4.00 ක ලාභයකට එනවා: ඒක close වෙලා session එක ඉවර වෙනවා.",
+  },
+};
+
 function words(bot: FixedPlanBot): BotWords {
-  const found = WORDS[bot.id];
+  const found = WORDS[bot.id] ?? BARRIER_WORDS[bot.id] ?? HELD_WORDS[bot.id];
   if (!found) throw new Error(`no Sinhala text for Auto Hub bot ${bot.id}`);
   return found;
 }
@@ -484,17 +786,63 @@ function payoutText(bot: FixedPlanBot): string {
   return "Digits දහයෙන් එකක් විතරක් දිනන නිසා දිනුමක් stake එක වගේ කිහිප ගුණයක් ගෙවනවා.";
 }
 
+function contractText(bot: FixedPlanBot, w: BotWords): string {
+  if (bot.family === "accumulators") {
+    return `${bot.name} trade කරන්නේ එක contract එකයි: Deriv ගේ Accumulators වර්ගයේ Accumulator එකක්, ${bot.growthRate}% growth rate එකකින්. හැම tick එකක්ම ඊට කලින් tick එක වටේ Deriv තියන range එක ඇතුළේ තියෙනකන් position එකේ වටිනාකම tick එකකට ${bot.growthRate}% කින් වැඩෙනවා. එක tick එකක් හරි range එකෙන් එළියට වැටුණොත් position එක knock out වෙලා සම්පූර්ණ stake එකම නැති වෙනවා. ${bot.name} position එක close කරන්නේ stake එකෙන් ${bot.closeAt} ක take profit එකකදී, සහ ඒ take profit එකම session එකේ profit target එකත් වෙනවා. Accumulator එකකට නියම දිගක් නැහැ: close කරනකන් හෝ knock out වෙනකන් ඒක open තියෙනවා. ${RESULT}`;
+  }
+  if (bot.family === "multipliers") {
+    return `${bot.name} trade කරන්නේ එක contract එකයි: Deriv ගේ Multipliers වර්ගයේ Multiplier එකක්, x${bot.leverage} න්. Position එක open කරන්නේ Up හෝ Down, සහ ඒකේ ලාභය හෝ පාඩුව කියන්නේ මිලේ ප්‍රතිශත ගමන ${bot.leverage} න් ගුණ කරලා stake එකට යොදපු ගාන, entry එකේදී Deriv ගන්න commission එක අඩු කරලා. ඒකට stake එකට වඩා පාඩු වෙන්න බැහැ: පාඩුව stake එකට ආවාම Deriv position එක stop out කරනවා. ${bot.name} ඒක close කරන්නේ stake එකෙන් ${bot.closeAt} ක take profit එකකදී, ඒකම session එකේ profit target එකත් වෙනවා. Multiplier එකකට නියම දිගක් නැහැ: close කරනකන් හෝ stop out වෙනකන් ඒක open තියෙනවා. ${RESULT}`;
+  }
+  if (bot.family === "higher_lower") {
+    return `${bot.name} trade කරන්නේ එක contract එකයි: Deriv ගේ Higher / Lower වර්ගයේ Higher / Lower, ticks පහක දිගකින්, ${barrierAt(bot)} තියෙන barrier එකක් එක්ක. Higher එකක් දිනන්නේ contract එක ඉවර වෙද්දී මිල entry price එකට උඩින් තියපු barrier එකට වඩා උඩින් තිබුණොත්, Lower එකක් දිනන්නේ පහළින් තියපු එකට වඩා පහළින් තිබුණොත්. Entry price එක පහු කරනවා විතරක් මදි: මිල barrier එක පහු කරන්න ඕන. ඒ නිසා trade එකක් දිනනවට වඩා පරදිනවා, සහ දිනුමක් ගෙවන්නේ stake එකට වඩා වැඩියෙන්. පැරදුණ trade එකක සම්පූර්ණ stake එකම යනවා. ${RESULT}`;
+  }
+  if (bot.family === "touch_no_touch") {
+    const how =
+      bot.bet === "Touch"
+        ? "Touch එකක් දිනන්නේ ticks පහෙන් ඕනෑම එකකදී මිල barrier එකට ආවොත්, සහ ආපු ගමන් ඒක close වෙනවා. Barrier එක ළඟ වෙන තරමට Touch එකක් දිනන්නේ වැඩියෙන්, සහ දිනුමක් ගෙවන්නේ අඩුවෙන්."
+        : "No Touch එකක් දිනන්නේ ticks පහම මිල barrier එකට වඩා පහළින් තිබුණොත්, සහ barrier එකට ආපු ගමන් ඒක පරදිනවා. Barrier එක දුර වෙන තරමට No Touch එකක් දිනන්නේ වැඩියෙන්, සහ දිනුමක් ගෙවන්නේ අඩුවෙන්.";
+    return `${bot.name} trade කරන්නේ එක contract එකයි: Deriv ගේ Touch / No Touch වර්ගයේ ${bot.bet}, ticks පහක දිගකින්, entry price එකට උඩින් ${barrierAt(bot)} තියෙන barrier එකක් එක්ක. ${how} පැරදුණ trade එකක සම්පූර්ණ stake එකම යනවා. ${RESULT}`;
+  }
+  if (isDigitBot(bot)) {
+    return `${bot.name} trade කරන්නේ එක contract එකයි: Deriv ගේ ${FAMILY[bot.family]} වර්ගයේ ${bot.bet}, tick එකක දිගකින්. ${LAST_DIGIT} Trade එකක් දිනන්නේ ${w.wins}. ${payoutText(bot)} පැරදුණ trade එකක සම්පූර්ණ stake එකම යනවා. ${RESULT}`;
+  }
+  return `${bot.name} trade කරන්නේ එක contract එකයි: Deriv ගේ Rise / Fall වර්ගයේ ${bot.bet}, ${tickSpan(bot)} දිගකින්. Contract එක ඉවර වෙද්දී මිල පටන් ගත්ත මිලට වඩා උඩින් තිබුණොත් Rise එකක් දිනනවා, පහළින් තිබුණොත් Fall එකක් දිනනවා. මිල හරියටම පටන් ගත්ත තැනින්ම ඉවර වුණොත් දෙපැත්තම පරදිනවා. දිනුමක් ගෙවන්නේ stake එකට වඩා ටිකක් අඩුවෙන්, සහ පැරදුණ trade එකක සම්පූර්ණ stake එකම යනවා. ${RESULT}`;
+}
+
+/** The third row of the at-a-glance table. */
+function glanceRow(bot: FixedPlanBot): string[] {
+  if (isDigitBot(bot)) return ["දිනන digits", `10න් ${bot.winning}`];
+  if (isBarrierBot(bot)) return ["Barrier", `${barrierAt(bot)} තියෙනවා`];
+  if (bot.family === "accumulators") return ["Tick එකක් range එකෙන් එළියට ගියොත්", "Position එක knock out වෙලා stake එක නැති වෙනවා"];
+  if (bot.family === "multipliers") return ["Position එකකට උපරිම පාඩුව", "ඒකේ stake එක"];
+  return ["මිල පටන් ගත්ත තැනින්ම ඉවර වුණොත්", "ගත්තේ කොයි පැත්ත වුණත් පරදිනවා"];
+}
+
+function tradesAnswer(bot: FixedPlanBot, w: BotWords): string {
+  if (isDigitBot(bot))
+    return `${bot.name} buy කරන්නේ Deriv ගේ ${bot.bet} contract එක, tick එකක දිගකින්. Trade එකක් දිනන්නේ ${w.wins}. ඒ කියන්නේ අන්තිම digits දහයෙන් ${bot.winning}කට.`;
+  if (isBarrierBot(bot))
+    return `${bot.name} buy කරන්නේ Deriv ගේ ${bot.bet} contract එක, ticks පහක දිගකින්, ${barrierAt(bot)} තියෙන barrier එකක් එක්ක. Trade එකක් දිනන්නේ ${w.wins}.`;
+  if (bot.family === "accumulators")
+    return `${bot.name} open කරන්නේ Deriv ගේ ${bot.growthRate}% growth rate එකක Accumulator එකක්, සහ stake එකෙන් ${bot.closeAt} ක take profit එකකදී ඒක close කරනවා. Deriv ගේ range එකෙන් එළියට යන එක tick එකකින් position එක knock out වෙලා stake එක නැති වෙනවා.`;
+  if (bot.family === "multipliers")
+    return `${bot.name} open කරන්නේ Deriv ගේ x${bot.leverage} Multiplier එකක්, Up හෝ Down, සහ stake එකෙන් ${bot.closeAt} ක take profit එකකදී ඒක close කරනවා. Position එකකට stake එකට වඩා පාඩු වෙන්න බැහැ.`;
+  return `${bot.name} buy කරන්නේ Deriv ගේ ${bot.bet} contract එක, ${tickSpan(bot)} දිගකින්. Trade එකක් දිනන්නේ ${w.wins}. මිල හරියටම පටන් ගත්ත තැනින්ම ඉවර වුණොත් පරදිනවා.`;
+}
+
 function stakeBlocks(bot: FixedPlanBot): GuideBlock[] {
   if (stakeStyle(bot) === "Flat") {
     return [
       { type: "h2", text: `${bot.name} stake එක තීරණය කරන හැටි` },
       {
         type: "p",
-        text: `${bot.name} පාවිච්චි කරන්නේ flat stake එකක්. Session එකක හැම trade එකක්ම plan එකේ stake එකෙන්ම දානවා, දිනුවත් පැරදුණත්. ඒක Martingale පාවිච්චි කරන්නේ නැහැ.`,
+        text: `${bot.name} පාවිච්චි කරන්නේ flat stake එකක්. Session එකක හැම ${isHeldBot(bot) ? "position" : "trade"} එකක්ම plan එකේ stake එකෙන්ම දානවා, දිනුවත් පැරදුණත්. ඒක Martingale පාවිච්චි කරන්නේ නැහැ.`,
       },
       {
         type: "p",
-        text: "Trade එකක් දාන්නේ ඒකේ stake එක stop loss එකේ ඉතුරු ගානට අහුවෙනවා නම් විතරයි. අහුවෙන්නේ නැති වුණාම ඒක දාන්නේ නැතුව session එක ඉවර වෙනවා.",
+        text: isHeldBot(bot)
+          ? `Position එකක් open කරන්නේ ඒකේ stake එක stop loss එකේ ඉතුරු ගානට අහුවෙනවා නම් විතරයි. ${bot.name} එකේ stop loss එක stakes දෙකක්, ඒ නිසා session එකක පරදින positions උපරිම දෙකයි: දෙවෙනි එකෙන් පස්සේ stake කරන්න මුකුත් ඉතුරු නැති නිසා session එක ඉවර වෙනවා.`
+          : "Trade එකක් දාන්නේ ඒකේ stake එක stop loss එකේ ඉතුරු ගානට අහුවෙනවා නම් විතරයි. අහුවෙන්නේ නැති වුණාම ඒක දාන්නේ නැතුව session එක ඉවර වෙනවා.",
       },
     ];
   }
@@ -529,6 +877,20 @@ function stakeBlocks(bot: FixedPlanBot): GuideBlock[] {
 
 function planBlocks(bot: FixedPlanBot): GuideBlock[] {
   const ladder = stakeStyle(bot) === "Martingale";
+  if (isHeldBot(bot)) {
+    return [
+      { type: "h2", text: `${bot.name} plans` },
+      {
+        type: "p",
+        text: `${bot.name} එකට stake එක, stop loss එක සහ profit target එක වෙන වෙනම දෙන්නේ නැහැ. ඔබ plan එකක් තෝරනවා, සහ plan එකෙන් ඒ තුනම එකට set වෙනවා. Plans නම් කරලා තියෙන්නේ ඒවායේ stop loss එකෙන්, ඒක stakes දෙකක්. Profit target එක කියන්නේ එක position එකක take profit එක, stake එකෙන් ${bot.closeAt}, ඒ නිසා ඒකට එන පළමු position එකෙන් session එක ඉවර වෙනවා. ගණන් තියෙන්නේ bot එක trade කරන Deriv account එකේ currency එකෙන්.`,
+      },
+      {
+        type: "table",
+        head: ["Plan", "Position එකකට stake එක", "Take profit, session එක ඉවර වෙන්නේ මෙතනින්"],
+        rows: bot.plans.map((p) => [`Stop loss ${p.stopLoss}`, p.stake, money(p.takeProfit)]),
+      },
+    ];
+  }
   return [
     { type: "h2", text: `${bot.name} plans` },
     {
@@ -554,6 +916,11 @@ function fixedPlanGuide(bot: FixedPlanBot): LocalGuide {
   const ladder = stakeStyle(bot) === "Martingale";
   const stops = bot.plans.map((p) => p.stopLoss);
   const planCount = bot.plans.length === 2 ? "දෙකෙන්" : "තුනෙන්";
+  const held = isHeldBot(bot);
+  const added = isBarrierBot(bot) || held;
+  // The Rise / Fall plans were redesigned in the engine after these guides were first written.
+  const updated = added || bot.family === "rise_fall" ? DATE_LATER : DATE;
+  const unit = held ? "Position" : "Trade";
   const stakeSentence = ladder
     ? `Trade එකක් පැරදුණාම stake එක ${multiplierText(bot.plans)} ගුණ වෙනවා, දිනුවාම ආයෙත් මුල් stake එකට එනවා.`
     : "ඒකේ stake එක හැම trade එකකම එකමයි.";
@@ -566,35 +933,36 @@ function fixedPlanGuide(bot: FixedPlanBot): LocalGuide {
     title: `${bot.name} Bot Sinhala: FXNOD Deriv ${bot.bet} bot එක වැඩ කරන හැටි`,
     description: `${bot.name} bot සිංහලෙන්: FXNOD Auto Hub එකේ Deriv ${bot.bet} bot එක buy කරන contract එක, ඇතුල් වෙන rule එක, stake එක සහ plans.`,
     tag: TAG,
-    published: DATE,
-    updated: DATE,
+    published: added ? DATE_LATER : DATE,
+    updated,
     image: IMAGE,
-    answer: `${bot.name} කියන්නේ FXNOD Auto Hub එකේ තියෙන ready-made bot එකක්. ඒක Deriv වල ${tickSpan(bot)} ${bot.bet} contract එක buy කරනවා, ඒ contract එක දිනන්නේ ${w.wins}. ${w.rule} ${stakeSentence} ඔබ ඒක start කරන්නේ එක market එකක, stop loss ${orList(stops)} තියෙන fixed plans ${planCount} එකක් තෝරලා. Session එක ඉවර වෙන්නේ plan එකේ profit target එකෙන් හෝ stop loss එකෙන්.`,
+    answer: `${bot.name} කියන්නේ FXNOD Auto Hub එකේ තියෙන ready-made bot එකක්. ඒක Deriv වල ${contractName(bot)} contract එක ${held ? "open" : "buy"} කරනවා, ඒ contract එක දිනන්නේ ${w.wins}. ${w.rule} ${stakeSentence} ඔබ ඒක start කරන්නේ එක market එකක, stop loss ${orList(stops)} තියෙන fixed plans ${planCount} එකක් තෝරලා. Session එක ඉවර වෙන්නේ plan එකේ profit target එකෙන් හෝ stop loss එකෙන්.`,
     body: [
       { type: "h2", text: `${bot.name} කෙටියෙන්` },
       {
         type: "table",
         head: ["", bot.name],
         rows: [
-          ["Contract", `${bot.bet}, ${tickCell(bot)} (Deriv ${FAMILY[bot.family]})`],
-          ["Trade එකක් දිනන්නේ", w.wins],
-          isDigitBot(bot)
-            ? ["දිනන digits", `10න් ${bot.winning}`]
-            : ["මිල පටන් ගත්ත තැනින්ම ඉවර වුණොත්", "ගත්තේ කොයි පැත්ත වුණත් පරදිනවා"],
+          [
+            "Contract",
+            held
+              ? `${contractName(bot)}, close කරනකන් open (Deriv ${FAMILY[bot.family]})`
+              : `${bot.bet}, ${tickCell(bot)} (Deriv ${FAMILY[bot.family]})`,
+          ],
+          [`${unit} එකක් දිනන්නේ`, w.wins],
+          glanceRow(bot),
           ["Entry", w.pace],
-          ["Stake", ladder ? `Martingale: පැරදුණාම ${multiplierText(bot.plans)} ගුණ වෙනවා` : "Flat: හැම trade එකකම එකමයි"],
+          [
+            "Stake",
+            ladder ? `Martingale: පැරදුණාම ${multiplierText(bot.plans)} ගුණ වෙනවා` : `Flat: හැම ${unit.toLowerCase()} එකකම එකමයි`,
+          ],
           ["Plans", `Stop loss ${orList(stops)}`],
-          ["Markets", "එකයි, start කරද්දී තෝරනවා"],
-          ["Open trades", "එක වෙලාවකට එකයි"],
+          ["Markets", MARKET_CELL[marketSet(bot)]],
+          [`Open ${unit.toLowerCase()}s`, "එක වෙලාවකට එකයි"],
         ],
       },
       { type: "h2", text: `${bot.name} trade කරන්නේ මොකක්ද` },
-      {
-        type: "p",
-        text: isDigitBot(bot)
-          ? `${bot.name} trade කරන්නේ එක contract එකයි: Deriv ගේ ${FAMILY[bot.family]} වර්ගයේ ${bot.bet}, tick එකක දිගකින්. ${LAST_DIGIT} Trade එකක් දිනන්නේ ${w.wins}. ${payoutText(bot)} පැරදුණ trade එකක සම්පූර්ණ stake එකම යනවා. Payout එක තීරණය කරන්නේ Deriv, සහ හැම trade එකකම result එක run page එකේ පේනවා.`
-          : `${bot.name} trade කරන්නේ එක contract එකයි: Deriv ගේ Rise / Fall වර්ගයේ ${bot.bet}, ${tickSpan(bot)} දිගකින්. Contract එක ඉවර වෙද්දී මිල පටන් ගත්ත මිලට වඩා උඩින් තිබුණොත් Rise එකක් දිනනවා, පහළින් තිබුණොත් Fall එකක් දිනනවා. මිල හරියටම පටන් ගත්ත තැනින්ම ඉවර වුණොත් දෙපැත්තම පරදිනවා. දිනුමක් ගෙවන්නේ stake එකට වඩා ටිකක් අඩුවෙන්, සහ පැරදුණ trade එකක සම්පූර්ණ stake එකම යනවා. Payout එක තීරණය කරන්නේ Deriv, සහ හැම trade එකකම result එක run page එකේ පේනවා.`,
-      },
+      { type: "p", text: contractText(bot, w) },
       { type: "h2", text: `${bot.name} trade එකකට ඇතුල් වෙන්නේ කවදද` },
       ...w.detail.map((text): GuideBlock => ({ type: "p", text })),
       { type: "note", title: "උදාහරණය", text: w.example },
@@ -627,9 +995,7 @@ function fixedPlanGuide(bot: FixedPlanBot): LocalGuide {
           },
           {
             title: "Market එක තෝරන්න",
-            text: isDigitBot(bot)
-              ? `${bot.name} trade කරන්නේ එක market එකක. Form එක යෝජනා කරන්නේ ${SUGGESTED_MARKETS}. මේ bot එකට Jump 100 දෙන්නේ නැහැ.`
-              : `${bot.name} trade කරන්නේ එක market එකක, ඒකත් Volatility index එකක විතරයි: ${VOLATILITY_MARKETS}. මේ bot එකට වෙන කිසිම market එකක් දෙන්නේ නැහැ.`,
+            text: MARKET_STEP[marketSet(bot)](bot.name),
           },
           {
             title: "Plan එකක් තෝරන්න",
@@ -646,16 +1012,14 @@ function fixedPlanGuide(bot: FixedPlanBot): LocalGuide {
     faq: [
       {
         q: `${bot.name} bot එක trade කරන්නේ මොකක්ද?`,
-        a: isDigitBot(bot)
-          ? `${bot.name} buy කරන්නේ Deriv ගේ ${bot.bet} contract එක, tick එකක දිගකින්. Trade එකක් දිනන්නේ ${w.wins}. ඒ කියන්නේ අන්තිම digits දහයෙන් ${bot.winning}කට.`
-          : `${bot.name} buy කරන්නේ Deriv ගේ ${bot.bet} contract එක, ${tickSpan(bot)} දිගකින්. Trade එකක් දිනන්නේ ${w.wins}. මිල හරියටම පටන් ගත්ත තැනින්ම ඉවර වුණොත් පරදිනවා.`,
+        a: tradesAnswer(bot, w),
       },
-      { q: `${bot.name} trade එකක් දාන්නේ කවදද?`, a: w.rule },
+      { q: held ? `${bot.name} position එකක් open කරන්නේ කවදද?` : `${bot.name} trade එකක් දාන්නේ කවදද?`, a: w.rule },
       {
         q: `${bot.name} Martingale පාවිච්චි කරනවද?`,
         a: ladder
           ? `ඔව්. Trade එකක් පැරදුණාම stake එක ${multiplierText(bot.plans)} ගුණ වෙනවා, දිනුවාම ආයෙත් මුල් stake එකට එනවා. Stop loss එකේ ඉතුරු ගානට අහුවෙන්නේ නැති පියවරක් දාන්නේ නැහැ, සහ session එක ඉවර වෙනවා.`
-          : `නැහැ. ${bot.name} හැම trade එකක්ම එකම stake එකෙන් දානවා.`,
+          : `නැහැ. ${bot.name} හැම ${unit.toLowerCase()} එකක්ම එකම stake එකෙන් දානවා.`,
       },
       {
         q: `${bot.name} එකේ stake එක හෝ stop loss එක වෙනස් කරන්න පුළුවන්ද?`,
@@ -672,29 +1036,14 @@ function fixedPlanGuide(bot: FixedPlanBot): LocalGuide {
   };
 }
 
-const START_FLAT = (name: string, markets: string): GuideBlock => ({
-  type: "steps",
-  items: [
-    {
-      title: `Auto Hub එක open කරලා ${name} තෝරන්න`,
-      text: "Bot එකේ page එකේ මුලින්ම තියෙන්නේ How it works panel එක. ඒකේ bot එකේ rules පිළිවෙළට තියෙනවා.",
-    },
-    { title: "Markets තෝරන්න", text: markets },
-    {
-      title: "Stake එක සහ limits set කරන්න",
-      text: "Stake per trade පටන් ගන්නේ 1 න්, සහ 0.35 ට වඩා අඩු කරන්න බැහැ. ඒ තමයි මේ contracts වලට Deriv ගන්න පොඩිම stake එක. Stop loss එකක් අනිවාර්යයි: ඒක නැතුව bot එක start කරන්න බැහැ. Take profit හිස්ව තියන්න පුළුවන්.",
-    },
-    {
-      title: "Account එක බලලා start කරන්න",
-      text: "Bot එක trade කරන Deriv account එක panel එකේ පේනවා. Demo account එකක button එකේ තියෙන්නේ Start on demo කියලා. Real account එකක bot එක real money trade කරන බව තහවුරු කරන box එක tick කරන්න ඕන, එතකොට button එකේ තියෙන්නේ Start with real money කියලා.",
-    },
-  ],
-});
-
-const FADE_MARKETS =
-  "Markets 1 සිට 10 දක්වා තෝරන්න පුළුවන්. Form එක යෝජනා කරන්නේ Volatility 100 (1s), Volatility 75 (1s), Volatility 100 සහ Volatility 75. මේ bot එකට Jump 100 දෙන්නේ නැහැ.";
-
-const DIFFERS_PARA = `${LAST_DIGIT} Differs trade එකක් එක digit එකක් නම් කරනවා, සහ ඊළඟ tick එක අනිත් digits නවයෙන් ඕනෑම එකකින් ඉවර වුණොත් දිනනවා. Digits දහයෙන් නවයක් දිනන නිසා දිනුමක් ගෙවන්නේ stake එකෙන් පොඩි කොටසක්, සහ පැරදුණ trade එකක සම්පූර්ණ stake එකම යනවා.`;
+function planBotContract(bot: FixedPlanBot): string {
+  if (bot.family === "accumulators") return `${bot.growthRate}% Accumulator, ${bot.closeAt} දී close`;
+  if (bot.family === "multipliers") return `x${bot.leverage} Multiplier, ${bot.closeAt} දී close`;
+  if (isDigitBot(bot)) return bot.bet;
+  if (!isBarrierBot(bot)) return `${bot.bet}, ${tickCell(bot)}`;
+  const barrier = bot.barrierScale === 1 ? "default barrier" : bot.barrierScale === 0.5 ? "ළඟ barrier" : "දුර barrier";
+  return `${bot.bet}, ${tickCell(bot)}, ${barrier}`;
+}
 
 function planBotTable(family: BotFamily): GuideBlock {
   return {
@@ -702,7 +1051,7 @@ function planBotTable(family: BotFamily): GuideBlock {
     head: ["Bot", "Contract", "ඇතුල් වෙන්නේ", "Stake", "Plans (stop loss)"],
     rows: FIXED_PLAN_BOTS.filter((bot) => bot.family === family).map((bot) => [
       bot.name,
-      family === "rise_fall" ? `${bot.bet}, ${tickCell(bot)}` : bot.bet,
+      planBotContract(bot),
       words(bot).pace,
       stakeStyle(bot),
       bot.plans.map((p) => p.stopLoss).join(", "),
@@ -718,9 +1067,9 @@ const OVERVIEW_GUIDE: LocalGuide = {
   description: `FXNOD Auto Hub bots සිංහලෙන්: ready-made Deriv bots ${AUTOHUB_BOT_COUNT}. එක එකක් trade කරන contract එක, ඇතුල් වෙන rule එක, stake එක flat ද Martingale ද.`,
   tag: TAG,
   published: DATE,
-  updated: DATE,
+  updated: DATE_LATER,
   image: IMAGE,
-  answer: `Auto Hub කියන්නේ FXNOD කලින්ම හදලා තියෙන bots එකතුවක්. ඔබ මුකුත් design කරන්න ඕන නැහැ: bot එකක් තෝරලා, market එක තෝරලා, ගණන් තෝරලා start කරනවා. Bots ${AUTOHUB_BOT_COUNT}ක් තියෙනවා. ඒවා trade කරන්නේ Deriv ගේ digit contracts (Matches / Differs, Even / Odd සහ Over / Under) සහ Rise / Fall, tick එකක සිට ticks දහයක් දක්වා දිග contracts වලින්. ${FIXED_PLAN_BOTS.length}ම start කරන්නේ stop loss එක, stake එක සහ profit target එක එකට set කරන fixed plan එකකින්.`,
+  answer: `Auto Hub කියන්නේ FXNOD කලින්ම හදලා තියෙන bots එකතුවක්. ඔබ මුකුත් design කරන්න ඕන නැහැ: bot එකක් තෝරලා, market එක තෝරලා, ගණන් තෝරලා start කරනවා. Bots ${AUTOHUB_BOT_COUNT}ක් තියෙනවා. ඒවා trade කරන්නේ Deriv ගේ digit contracts (Matches / Differs, Even / Odd සහ Over / Under), Rise / Fall, Higher / Lower, Touch / No Touch, Accumulators සහ Multipliers. ${FIXED_PLAN_BOTS.length}ම start කරන්නේ stop loss එක, stake එක සහ profit target එක එකට set කරන fixed plan එකකින්.`,
   body: [
     { type: "h2", text: "Auto Hub ද Bot Forge ද?" },
     {
@@ -741,7 +1090,7 @@ const OVERVIEW_GUIDE: LocalGuide = {
     {
       type: "list",
       items: [
-        "Contract එක. එක contract එකක් සහ එක දිගක්, උදාහරණයක් විදිහට tick එකක Over 4 එකක් හෝ ticks පහක Rise / Fall එකක්. දිනන්නේ මොකටද, දිනුමක් කීයක් ගෙවනවද කියලා ඒකෙන් තීරණය වෙනවා.",
+        "Contract එක. එක contract එකක් සහ එක දිගක්, උදාහරණයක් විදිහට tick එකක Over 4 එකක් හෝ ticks පහක Rise / Fall එකක්, නැත්නම් Accumulator එකක් වගේ close කරනකන් open තියෙන position එකක්. දිනන්නේ මොකටද, දිනුමක් කීයක් ගෙවනවද කියලා ඒකෙන් තීරණය වෙනවා.",
         "Entry rule එක. Bot එක buy කරන්නේ කවදද: හැම tick එකකම, ticks කිහිපයකට සැරයක්, නැත්නම් අන්තිම digits වල හෝ අන්තිම ticks ගිය පැත්තේ pattern එකකට පස්සේ.",
         "Stake plan එක. Flat නම් හැම trade එකකම එකම stake එක. Martingale නම් පැරදුණාම stake එක ගුණ වෙලා, දිනුවාම ආයෙත් මුලට එනවා.",
         "Limits. Stop loss එකක් සහ profit target එකක්. Stop loss එකක් නැතුව bot එකක් start කරන්න බැහැ.",
@@ -754,7 +1103,7 @@ const OVERVIEW_GUIDE: LocalGuide = {
     { type: "h2", text: "Plan එකකින් start කරන bots" },
     {
       type: "p",
-      text: `Bots ${FIXED_PLAN_BOTS.length}ක් trade කරන්නේ එක market එකක, සහ start කරන්නේ plan එකක් තෝරලා. Plan එකක් නම් කරලා තියෙන්නේ ඒකේ stop loss එකෙන් (20, 100 හෝ 500), සහ ඒකත් එක්කම මුල් stake එකයි profit target එකයි set වෙනවා. ගණන් වෙන වෙනම වෙනස් කරන්න බැහැ. මේ bots වල session එකේ පාඩුව plan එකේ stop loss එක පහු කරන්න පුළුවන් කිසිම stake එකක් දාන්නේ නැහැ. ඒවායින් ${LADDER_BOTS}ක් Martingale, ඉතුරු ${FIXED_PLAN_BOTS.length - LADDER_BOTS} flat.`,
+      text: `Bots ${FIXED_PLAN_BOTS.length}ක් trade කරන්නේ එක market එකක, සහ start කරන්නේ plan එකක් තෝරලා. Plan එකක් නම් කරලා තියෙන්නේ ඒකේ stop loss එකෙන් (20, 100 හෝ 500; Accumulator සහ Multiplier bots වල 20 හෝ 100), සහ ඒකත් එක්කම මුල් stake එකයි profit target එකයි set වෙනවා. ගණන් වෙන වෙනම වෙනස් කරන්න බැහැ. මේ bots වල session එකේ පාඩුව plan එකේ stop loss එක පහු කරන්න පුළුවන් කිසිම stake එකක් දාන්නේ නැහැ. ඒවායින් ${LADDER_BOTS}ක් Martingale, ඉතුරු ${FIXED_PLAN_BOTS.length - LADDER_BOTS} flat.`,
     },
     { type: "h2", text: "Matches / Differs bots" },
     planBotTable("matches_differs"),
@@ -768,6 +1117,30 @@ const OVERVIEW_GUIDE: LocalGuide = {
       text: "Contract එක ඉවර වෙද්දී මිල පටන් ගත්ත තැනට වඩා උඩින් තිබුණොත් Rise එකක් දිනනවා, පහළින් තිබුණොත් Fall එකක් දිනනවා. හරියටම පටන් ගත්ත තැනින්ම ඉවර වුණොත් දෙපැත්තම පරදිනවා. මේ bots trade කරන්නේ Volatility indices වල විතරයි.",
     },
     planBotTable("rise_fall"),
+    { type: "h2", text: "Higher / Lower bots" },
+    {
+      type: "p",
+      text: "Higher එකක් දිනන්නේ මිල entry price එකට උඩින් තියපු barrier එකකට වඩා උඩින් ඉවර වුණොත්, Lower එකක් දිනන්නේ පහළින් තියපු එකකට වඩා පහළින් ඉවර වුණොත්. හැම contract එකක්ම ticks පහයි. Barrier එක ළඟ, Deriv default දුරේ, නැත්නම් දුරයි; දුර වෙන තරමට trade එකක් දිනන්නේ අඩුවෙන්, සහ දිනුමක් ගෙවන්නේ වැඩියෙන්. මේ bots trade කරන්නේ Volatility 10, 25, 50, 75 සහ 100 වල.",
+    },
+    planBotTable("higher_lower"),
+    { type: "h2", text: "Touch / No Touch bots" },
+    {
+      type: "p",
+      text: "Touch එකක් දිනන්නේ ticks පහෙන් ඕනෑම එකකදී මිල entry price එකට උඩින් තියෙන barrier එකකට ආවොත්; No Touch එකක් දිනන්නේ කවදාවත් නාවොත්. මේ bots trade කරන්නේ Volatility 10, 25, 50, 75 සහ 100 වල.",
+    },
+    planBotTable("touch_no_touch"),
+    { type: "h2", text: "Accumulator bots" },
+    {
+      type: "p",
+      text: "Accumulator එකක් හැම tick එකක්ම Deriv තියන range එකක් ඇතුළේ තියෙනකන් ඒකේ rate එකෙන් වැඩෙනවා, සහ එක tick එකක් ඒකෙන් එළියට ගියාම knock out වෙලා stake එක නැති වෙනවා. හැම bot එකක්ම තමන්ගේ position එක take profit එකකදී close කරනවා, ඒකම session එකේ target එක. Stake එක flat, සහ stop loss එක stakes දෙකක්. මේ bots trade කරන්නේ Volatility 100 වල විතරයි.",
+    },
+    planBotTable("accumulators"),
+    { type: "h2", text: "Multiplier bots" },
+    {
+      type: "p",
+      text: "Multiplier position එකක් මිල ගමන ඒකේ multiplier එකෙන් ගුණ කරපු ගානක් ලාභ හෝ පාඩු කරනවා, entry එකේ commission එකක් අඩු කරලා, සහ ඒකට stake එකට වඩා පාඩු වෙන්න බැහැ. හැම bot එකක්ම තමන්ගේ position එක take profit එකකදී close කරනවා, ඒකම session එකේ target එක. Stake එක flat, සහ stop loss එක stakes දෙකක්. මේ bots trade කරන්නේ Volatility 100 වල විතරයි.",
+    },
+    planBotTable("multipliers"),
     { type: "h2", text: "හැම bot එකකටම guide එකක්" },
     {
       type: "links",
@@ -789,7 +1162,7 @@ const OVERVIEW_GUIDE: LocalGuide = {
         },
         {
           title: "Market එක තෝරන්න",
-          text: "හැම bot එකක්ම එක market එකක trade කරනවා. Form එක යෝජනා කරන්නේ Volatility 100, 75 සහ 50 indices සහ ඒවායේ තත්පරයේ versions.",
+          text: "හැම bot එකක්ම එක market එකක trade කරනවා. දෙන markets තීරණය වෙන්නේ ඒකේ contract එකෙන්, සහ ඒකේ guide එකේ ඒවා තියෙනවා. ගොඩක් bots යෝජනා කරන්නේ Volatility 100, 75 සහ 50.",
         },
         {
           title: "Plan එකක් තෝරන්න",
@@ -826,7 +1199,7 @@ const OVERVIEW_GUIDE: LocalGuide = {
     },
     {
       q: "Auto Hub bots trade කරන්නේ මොනවද?",
-      a: "Deriv ගේ digit contracts (Matches / Differs, Even / Odd සහ Over / Under) සහ Rise / Fall, tick එකක සිට ticks දහයක් දක්වා දිග contracts වලින්. හැම bot එකක්ම ඒවායින් එකක් trade කරනවා.",
+      a: "Deriv ගේ digit contracts (Matches / Differs, Even / Odd සහ Over / Under), Rise / Fall, Higher / Lower, Touch / No Touch, Accumulators සහ Multipliers. හැම bot එකක්ම ඒවායින් එකක් trade කරනවා.",
     },
     {
       q: "Auto Hub Martingale පාවිච්චි කරනවද?",

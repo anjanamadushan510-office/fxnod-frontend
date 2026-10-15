@@ -1,21 +1,34 @@
 /**
  * The Auto Hub bots, as the public guides describe them.
  *
- * This mirrors the engine's catalogue (internal/autohub/bots.go,
- * bots_digits.go and bots_rise_fall.go in trading-engine-deriv), which is the copy that counts: the
- * engine decides every entry and sizes every stake. A bot's contract, entry
- * rule or plans change here in the same commit as they change there, because
- * a guide that describes a bot wrongly is a false public statement about a
- * trading product.
+ * This mirrors the engine's catalogue (internal/autohub/bots_digits.go,
+ * bots_rise_fall.go, bots_barrier.go and bots_held.go in trading-engine-deriv),
+ * which is the copy that counts: the engine decides every entry and sizes
+ * every stake. A bot's contract, entry rule or plans change here in the same
+ * commit as they change there, because a guide that describes a bot wrongly
+ * is a false public statement about a trading product.
  *
  * It imports nothing from the guides, so both the Auto Hub overview guide and
  * the per-bot guides can read it.
  */
 
 export type DigitFamily = "matches_differs" | "even_odd" | "over_under";
+/** Five-tick contracts with a barrier (bots_barrier.go). */
+export type BarrierFamily = "higher_lower" | "touch_no_touch";
+/** Contracts held open until a take profit or a loss closes them (bots_held.go). */
+export type HeldFamily = "accumulators" | "multipliers";
 /** The contract families a plan bot trades, in the order the guides list them. */
-export type BotFamily = DigitFamily | "rise_fall";
-export const BOT_FAMILIES: BotFamily[] = ["matches_differs", "even_odd", "over_under", "rise_fall"];
+export type BotFamily = DigitFamily | "rise_fall" | BarrierFamily | HeldFamily;
+export const BOT_FAMILIES: BotFamily[] = [
+  "matches_differs",
+  "even_odd",
+  "over_under",
+  "rise_fall",
+  "higher_lower",
+  "touch_no_touch",
+  "accumulators",
+  "multipliers",
+];
 
 /** One money plan of a bot. A multiplier of "0" is a flat stake. */
 export interface BotPlan {
@@ -33,8 +46,16 @@ export interface FixedPlanBot {
   family: BotFamily;
   /** The contract as it is named on the order: "Over 4", "Differs", "Rise / Fall". */
   bet: string;
-  /** How many ticks each contract lasts. One when left out. */
+  /** How many ticks each contract lasts. One when left out; none for a held contract. */
   ticks?: number;
+  /** A barrier contract's barrier, as a multiple of Deriv's default distance. */
+  barrierScale?: number;
+  /** An Accumulator's growth rate, in percent. */
+  growthRate?: number;
+  /** A Multiplier's multiplier. */
+  leverage?: number;
+  /** A held contract's take profit as a share of its stake: "3%". */
+  closeAt?: string;
   /** Completes "A trade wins when ...". */
   wins: string;
   /** How many of the ten last digits win. Digit contracts only. */
@@ -61,7 +82,16 @@ const SIX_LADDER = [plan("20", "0.35", "1", "3.11"), plan("100", "1", "5", "2.76
 const FLAT_SMALL = [plan("20", "2", "1", "0"), plan("100", "10", "5", "0"), plan("500", "25", "10", "0")];
 const FLAT_WIDE = [plan("20", "5", "1", "0"), plan("100", "25", "5", "0"), plan("500", "25", "10", "0")];
 const FLAT_STEADY = [plan("20", "1", "0.4", "0"), plan("100", "5", "2", "0"), plan("500", "25", "10", "0")];
+const RISE_FALL_LADDER = [plan("20", "0.35", "1", "2.22"), plan("100", "1", "5", "2.22"), plan("500", "5", "25", "2.22")];
 const PEAK_LADDER = [plan("20", "0.35", "1", "1.32"), plan("100", "0.35", "5", "1.32"), plan("500", "0.35", "25", "1.32")];
+const NEAR_BARRIER_LADDER = [plan("20", "0.35", "1", "1.95"), plan("100", "5", "5", "1.95"), plan("500", "2", "25", "1.95")];
+const DEFAULT_BARRIER_LADDER = [plan("20", "0.35", "1", "1.77"), plan("100", "2", "5", "1.77"), plan("500", "2", "25", "1.77")];
+const FAR_BARRIER_LADDER = [plan("20", "0.35", "1", "1.63"), plan("100", "2", "5", "1.63"), plan("500", "10", "25", "1.63")];
+
+const HIGHER_LOWER_WINS =
+  "the price ends beyond the barrier on the side the bot took: above a barrier set above the entry price for a Higher, below one set below it for a Lower";
+const TOUCH_WINS = "the price reaches the barrier at any of the five ticks";
+const NO_TOUCH_WINS = "the price stays below the barrier for all five ticks";
 
 /** In the order the Auto Hub page shows them. */
 export const FIXED_PLAN_BOTS: FixedPlanBot[] = [
@@ -513,7 +543,7 @@ export const FIXED_PLAN_BOTS: FixedPlanBot[] = [
     ],
     example:
       "The price ticks 100.10, 100.14, 100.19, 100.25: three moves up in a row. The bot buys a Fall lasting five ticks, which wins if the price is below where the contract started when the fifth tick arrives.",
-    plans: HALF_LADDER,
+    plans: RISE_FALL_LADDER,
   },
   {
     id: "long_climb",
@@ -531,7 +561,7 @@ export const FIXED_PLAN_BOTS: FixedPlanBot[] = [
     ],
     example:
       "The price ticks 100.25, 100.19, 100.14, 100.10: three moves down in a row. The bot buys a Fall lasting ten ticks, which wins if the price is below where the contract started when the tenth tick arrives.",
-    plans: HALF_LADDER,
+    plans: RISE_FALL_LADDER,
   },
   {
     id: "short_climb",
@@ -549,7 +579,7 @@ export const FIXED_PLAN_BOTS: FixedPlanBot[] = [
     ],
     example:
       "The price ticks 100.10, 100.14, 100.19: two moves up in a row. The bot buys a Rise lasting five ticks, which wins if the price is above where the contract started when the fifth tick arrives.",
-    plans: HALF_LADDER,
+    plans: RISE_FALL_LADDER,
   },
   {
     id: "quick_dip",
@@ -567,12 +597,12 @@ export const FIXED_PLAN_BOTS: FixedPlanBot[] = [
     ],
     example:
       "The newest tick moved from 100.14 to 100.19, so the bot buys a one-tick Fall. The trade wins if the next tick is below the price the contract started at.",
-    plans: HALF_LADDER,
+    plans: RISE_FALL_LADDER,
   },
   {
     id: "slow_slope",
     name: "Slow Slope",
-    tagline: "Rise, then Fall, at a steady stake.",
+    tagline: "Rise, then Fall, by turns.",
     family: "rise_fall",
     bet: "Rise / Fall",
     ticks: 5,
@@ -585,12 +615,12 @@ export const FIXED_PLAN_BOTS: FixedPlanBot[] = [
     ],
     example:
       "The bot buys a Rise lasting five ticks. It closes, five more ticks pass with no trade, and the bot buys a Fall lasting five ticks.",
-    plans: FLAT_STEADY,
+    plans: RISE_FALL_LADDER,
   },
   {
     id: "patient_rise",
     name: "Patient Rise",
-    tagline: "Rise for ten ticks, at a steady stake.",
+    tagline: "Rise, for ten ticks at a time.",
     family: "rise_fall",
     bet: "Rise",
     ticks: 10,
@@ -603,7 +633,387 @@ export const FIXED_PLAN_BOTS: FixedPlanBot[] = [
     ],
     example:
       "The bot buys a Rise at 100.10. Ten ticks later the price is 100.31, above where the contract started, so the trade wins. The bot buys the next ten-tick Rise.",
-    plans: FLAT_STEADY,
+    plans: RISE_FALL_LADDER,
+  },
+  {
+    id: "step_up",
+    name: "Step Up",
+    tagline: "Follows three ticks past a near barrier.",
+    family: "higher_lower",
+    bet: "Higher / Lower",
+    ticks: 5,
+    barrierScale: 0.5,
+    wins: HIGHER_LOWER_WINS,
+    pace: "After three ticks running one way, on the same side",
+    rule: "Step Up waits until three ticks in a row have moved in the same direction, then bets for five ticks that the price ends beyond a near barrier on that side.",
+    detail: [
+      "Step Up compares each tick with the one before it. It enters only when the three newest ticks have all moved the same way. A tick that did not move breaks the run.",
+      "After three ticks up it buys a five-tick Higher with its barrier above the entry price; after three ticks down, a five-tick Lower with its barrier below. The barrier is near: half of Deriv's default barrier distance for the market.",
+    ],
+    example:
+      "The price ticks 650.12, 650.18, 650.25, 650.31: three moves up in a row. The bot buys a Higher lasting five ticks with a near barrier above the entry price. It wins only if the fifth tick ends above that barrier, not just above the entry price.",
+    plans: NEAR_BARRIER_LADDER,
+  },
+  {
+    id: "breakout",
+    name: "Breakout",
+    tagline: "Follows four ticks past the barrier.",
+    family: "higher_lower",
+    bet: "Higher / Lower",
+    ticks: 5,
+    barrierScale: 1,
+    wins: HIGHER_LOWER_WINS,
+    pace: "After four ticks running one way, on the same side",
+    rule: "Breakout waits until four ticks in a row have moved in the same direction, then bets for five ticks that the price ends beyond the barrier on that side.",
+    detail: [
+      "Breakout compares each tick with the one before it. It enters only when the four newest ticks have all moved the same way, so it waits longer between trades than Step Up. A tick that did not move breaks the run.",
+      "After four ticks up it buys a five-tick Higher; after four ticks down, a five-tick Lower. The barrier is at Deriv's default barrier distance for the market.",
+    ],
+    example:
+      "The price ticks 650.40, 650.33, 650.27, 650.20, 650.11: four moves down in a row. The bot buys a Lower lasting five ticks with its barrier below the entry price. It wins if the fifth tick ends below the barrier.",
+    plans: DEFAULT_BARRIER_LADDER,
+  },
+  {
+    id: "long_reach",
+    name: "Long Reach",
+    tagline: "Follows two ticks past a far barrier.",
+    family: "higher_lower",
+    bet: "Higher / Lower",
+    ticks: 5,
+    barrierScale: 1.5,
+    wins: HIGHER_LOWER_WINS,
+    pace: "After two ticks running one way, on the same side",
+    rule: "Long Reach waits until two ticks in a row have moved in the same direction, then bets for five ticks that the price ends beyond a far barrier on that side.",
+    detail: [
+      "Long Reach compares each tick with the one before it and enters when the two newest ticks have both moved the same way. A tick that did not move breaks the run.",
+      "After two ticks up it buys a five-tick Higher; after two ticks down, a five-tick Lower. The barrier is far: one and a half times Deriv's default barrier distance. A far barrier is reached less often than a near one, and a win pays more.",
+    ],
+    example:
+      "The price ticks 650.10, 650.16, 650.21: two moves up in a row. The bot buys a Higher lasting five ticks with a far barrier above the entry price. It wins only if the fifth tick ends above that barrier.",
+    plans: FAR_BARRIER_LADDER,
+  },
+  {
+    id: "canopy",
+    name: "Canopy",
+    tagline: "Bets on a reversal past a far barrier.",
+    family: "higher_lower",
+    bet: "Higher / Lower",
+    ticks: 5,
+    barrierScale: 1.5,
+    wins: HIGHER_LOWER_WINS,
+    pace: "After three ticks running one way, on the other side",
+    rule: "Canopy waits until three ticks in a row have moved in the same direction, then bets for five ticks that the price ends beyond a far barrier on the other side.",
+    detail: [
+      "Canopy compares each tick with the one before it. It enters only when the three newest ticks have all moved the same way. A tick that did not move breaks the run.",
+      "After three ticks up it buys a five-tick Lower with its barrier below the entry price; after three ticks down, a five-tick Higher with its barrier above. The barrier is far: one and a half times Deriv's default barrier distance.",
+    ],
+    example:
+      "The price ticks 650.12, 650.18, 650.25, 650.31: three moves up in a row. The bot buys a Lower lasting five ticks with a far barrier below the entry price. It wins if the fifth tick ends below that barrier.",
+    plans: FAR_BARRIER_LADDER,
+  },
+  {
+    id: "ceiling",
+    name: "Ceiling",
+    tagline: "Higher, then Lower, past a far barrier.",
+    family: "higher_lower",
+    bet: "Higher / Lower",
+    ticks: 5,
+    barrierScale: 1.5,
+    wins: HIGHER_LOWER_WINS,
+    pace: "Higher and Lower by turns",
+    rule: "Ceiling buys a five-tick Higher and a five-tick Lower by turns, each with a far barrier, as soon as its last contract has closed.",
+    detail: [
+      "Ceiling does not read the ticks to choose its side. Its first trade of a session is a Higher, its second a Lower, its third a Higher, and so on, whatever the price has done.",
+      "The barrier is far: one and a half times Deriv's default barrier distance, above the entry price for a Higher and below it for a Lower. There is no pause between contracts.",
+    ],
+    example:
+      "The bot buys a Higher lasting five ticks with a far barrier above the entry price. When it closes, the bot buys a Lower lasting five ticks with a far barrier below the new entry price.",
+    plans: FAR_BARRIER_LADDER,
+  },
+  {
+    id: "low_ceiling",
+    name: "Low Ceiling",
+    tagline: "Against two ticks, past a near barrier.",
+    family: "higher_lower",
+    bet: "Higher / Lower",
+    ticks: 5,
+    barrierScale: 0.5,
+    wins: HIGHER_LOWER_WINS,
+    pace: "After two ticks running one way, on the other side",
+    rule: "Low Ceiling waits until two ticks in a row have moved in the same direction, then bets for five ticks that the price ends beyond a near barrier on the other side.",
+    detail: [
+      "Low Ceiling compares each tick with the one before it and enters when the two newest ticks have both moved the same way. A tick that did not move breaks the run.",
+      "After two ticks up it buys a five-tick Lower; after two ticks down, a five-tick Higher. The barrier is near: half of Deriv's default barrier distance for the market.",
+    ],
+    example:
+      "The price ticks 650.31, 650.25, 650.18: two moves down in a row. The bot buys a Higher lasting five ticks with a near barrier above the entry price. It wins if the fifth tick ends above that barrier.",
+    plans: NEAR_BARRIER_LADDER,
+  },
+  {
+    id: "flat_roof",
+    name: "Flat Roof",
+    tagline: "Higher, then Lower, with a pause between.",
+    family: "higher_lower",
+    bet: "Higher / Lower",
+    ticks: 5,
+    barrierScale: 1,
+    wins: HIGHER_LOWER_WINS,
+    pace: "Higher and Lower by turns, with 5 ticks out after each",
+    rule: "Flat Roof buys a five-tick Higher and a five-tick Lower by turns, and sits out five ticks after each contract closes.",
+    detail: [
+      "Flat Roof does not read the ticks to choose its side. Its first trade of a session is a Higher, its second a Lower, and so on, whatever the price has done.",
+      "The barrier is at Deriv's default barrier distance for the market. After each contract closes the bot lets five ticks pass before it buys the next one.",
+    ],
+    example:
+      "The bot buys a Higher lasting five ticks. It closes, five more ticks pass with no trade, and the bot buys a Lower lasting five ticks.",
+    plans: DEFAULT_BARRIER_LADDER,
+  },
+  {
+    id: "fingertip",
+    name: "Fingertip",
+    tagline: "Touch, at the barrier.",
+    family: "touch_no_touch",
+    bet: "Touch",
+    ticks: 5,
+    barrierScale: 1,
+    wins: TOUCH_WINS,
+    pace: "As soon as the last contract closes",
+    rule: "Fingertip buys a five-tick Touch with its barrier above the entry price as soon as its last contract has closed.",
+    detail: [
+      "Fingertip has no entry condition and takes one side only. It buys a five-tick Touch, waits for it to close, and buys the next one.",
+      "The barrier is above the entry price, at Deriv's default barrier distance for a Touch on that market. The contract closes as soon as the barrier is touched, so a winning trade can end before its fifth tick.",
+    ],
+    example:
+      "The bot buys a Touch at 650.20 with its barrier above that price. On the third tick the price reaches the barrier: the trade wins and closes, and the bot buys the next Touch.",
+    plans: [plan("20", "0.35", "1", "1.87"), plan("100", "2", "5", "1.87"), plan("500", "10", "25", "1.87")],
+  },
+  {
+    id: "far_touch",
+    name: "Far Touch",
+    tagline: "Touch, at a far barrier.",
+    family: "touch_no_touch",
+    bet: "Touch",
+    ticks: 5,
+    barrierScale: 1.5,
+    wins: TOUCH_WINS,
+    pace: "Every contract, with 3 ticks out after each",
+    rule: "Far Touch buys a five-tick Touch with a far barrier above the entry price, and sits out three ticks after each contract closes.",
+    detail: [
+      "Far Touch takes one side only. It buys a five-tick Touch whose barrier is far: one and a half times Deriv's default barrier distance for a Touch on that market.",
+      "A far barrier is touched less often than a near one, and a win pays more. After each contract closes the bot lets three ticks pass before it buys the next one.",
+    ],
+    example:
+      "The bot buys a Touch with a far barrier. The price rises but stays below the barrier for all five ticks: the trade loses. Three ticks pass, and the bot buys the next Touch.",
+    plans: [plan("20", "0.35", "0.4", "1.48"), plan("100", "0.35", "5", "1.48"), plan("500", "2", "25", "1.48")],
+  },
+  {
+    id: "brush",
+    name: "Brush",
+    tagline: "Touch, at a near barrier.",
+    family: "touch_no_touch",
+    bet: "Touch",
+    ticks: 5,
+    barrierScale: 0.5,
+    wins: TOUCH_WINS,
+    pace: "As soon as the last contract closes",
+    rule: "Brush buys a five-tick Touch with a near barrier above the entry price as soon as its last contract has closed.",
+    detail: [
+      "Brush takes one side only and has no entry condition. Its barrier is near: half of Deriv's default barrier distance for a Touch on that market.",
+      "A near barrier is touched more often than a far one, and a win pays less than the stake. The contract closes as soon as the barrier is touched.",
+    ],
+    example:
+      "The bot buys a Touch with a near barrier above the entry price. The next tick reaches it: the trade wins at once, and the bot buys the next Touch.",
+    plans: [plan("20", "0.35", "1", "3.19"), plan("100", "1", "5", "2.83"), plan("500", "5", "25", "2.83")],
+  },
+  {
+    id: "hands_off",
+    name: "Hands Off",
+    tagline: "No Touch, at a far barrier.",
+    family: "touch_no_touch",
+    bet: "No Touch",
+    ticks: 5,
+    barrierScale: 1.5,
+    wins: NO_TOUCH_WINS,
+    pace: "As soon as the last contract closes",
+    rule: "Hands Off buys a five-tick No Touch with a far barrier above the entry price as soon as its last contract has closed.",
+    detail: [
+      "Hands Off takes one side only and has no entry condition. It bets that the price will not reach a far barrier, one and a half times Deriv's default barrier distance above the entry price, at any of the next five ticks.",
+      "A far barrier is rarely reached in five ticks, so a No Touch on it wins often and a win pays a small fraction of the stake. The contract loses as soon as the barrier is touched.",
+    ],
+    example:
+      "The bot buys a No Touch with a far barrier. The price moves up and down but never reaches the barrier in five ticks: the trade wins, and the bot buys the next one.",
+    plans: [plan("20", "2", "0.4", "5.59"), plan("100", "2", "5", "6.3"), plan("500", "10", "25", "6.3")],
+  },
+  {
+    id: "clear_air",
+    name: "Clear Air",
+    tagline: "No Touch, at the barrier.",
+    family: "touch_no_touch",
+    bet: "No Touch",
+    ticks: 5,
+    barrierScale: 1,
+    wins: NO_TOUCH_WINS,
+    pace: "Every contract, with 5 ticks out after each",
+    rule: "Clear Air buys a five-tick No Touch with its barrier above the entry price, and sits out five ticks after each contract closes.",
+    detail: [
+      "Clear Air takes one side only. It bets that the price will not reach a barrier at Deriv's default barrier distance above the entry price at any of the next five ticks.",
+      "The barrier is nearer than Hands Off's, so it is reached more often and a win pays more. After each contract closes the bot lets five ticks pass before it buys the next one.",
+    ],
+    example:
+      "The bot buys a No Touch. On the fourth tick the price reaches the barrier: the trade loses and closes. Five ticks pass, and the bot buys the next No Touch.",
+    plans: [plan("20", "1", "1", "3.52"), plan("100", "2", "5", "3.12"), plan("500", "10", "25", "3.12")],
+  },
+  {
+    id: "snowball",
+    name: "Snowball",
+    tagline: "1% a tick, closed at 3%.",
+    family: "accumulators",
+    bet: "Accumulator",
+    growthRate: 1,
+    closeAt: "3%",
+    wins: "the position grows to its take profit of 3% of the stake before any tick leaves the range",
+    pace: "As soon as the last position closes",
+    rule: "Snowball opens an Accumulator at a growth rate of 1% as soon as its last position has closed, and closes it at a profit of 3% of the stake.",
+    detail: [
+      "Snowball has no entry condition. It opens an Accumulator at 1% and holds it while the ticks stay inside the range Deriv sets around the previous tick.",
+      "The position has a take profit of 3% of the stake. When it reaches that, it is closed and the session ends at its target. If a tick leaves the range first, the position is knocked out and the stake is lost; the bot then opens the next one.",
+    ],
+    example:
+      "On the 20 plan the bot opens an Accumulator with a stake of 10. The ticks stay inside the range until the position is worth 0.30 more than its stake: it is closed at that profit and the session ends.",
+    plans: [plan("20", "10", "0.3", "0"), plan("100", "50", "1.5", "0")],
+  },
+  {
+    id: "quick_stack",
+    name: "Quick Stack",
+    tagline: "2% a tick, closed at 4%.",
+    family: "accumulators",
+    bet: "Accumulator",
+    growthRate: 2,
+    closeAt: "4%",
+    wins: "the position grows to its take profit of 4% of the stake before any tick leaves the range",
+    pace: "As soon as the last position closes",
+    rule: "Quick Stack opens an Accumulator at a growth rate of 2% as soon as its last position has closed, and closes it at a profit of 4% of the stake.",
+    detail: [
+      "Quick Stack has no entry condition. It opens an Accumulator at 2%, which grows faster than one at 1%; Deriv sets a narrower range for a higher rate, so a tick leaves it more easily.",
+      "The position has a take profit of 4% of the stake. When it reaches that, it is closed and the session ends at its target. A tick outside the range first knocks it out and loses the stake.",
+    ],
+    example:
+      "On the 20 plan the bot opens an Accumulator with a stake of 10. A tick lands outside the range before the position is worth 0.40 more than its stake: it is knocked out and 10 is lost. The bot opens one more position with the 10 left of the stop loss.",
+    plans: [plan("20", "10", "0.4", "0"), plan("100", "50", "2", "0")],
+  },
+  {
+    id: "fast_stack",
+    name: "Fast Stack",
+    tagline: "3% a tick, closed at 3%.",
+    family: "accumulators",
+    bet: "Accumulator",
+    growthRate: 3,
+    closeAt: "3%",
+    wins: "the position grows to its take profit of 3% of the stake before any tick leaves the range",
+    pace: "With 10 ticks out after each position",
+    rule: "Fast Stack sits out ten ticks after a position closes, then opens an Accumulator at a growth rate of 3% and closes it at a profit of 3% of the stake.",
+    detail: [
+      "Fast Stack opens an Accumulator at 3%. Its take profit of 3% of the stake is reached after fewer ticks of growth than Snowball's, inside a narrower range.",
+      "After a position closes, the bot lets ten ticks pass before it opens the next one. When a position reaches its take profit, the session ends at its target.",
+    ],
+    example:
+      "On the 100 plan the bot opens an Accumulator with a stake of 50. It grows until it is worth 1.50 more than the stake, and is closed at that profit: the session ends.",
+    plans: [plan("20", "10", "0.3", "0"), plan("100", "50", "1.5", "0")],
+  },
+  {
+    id: "avalanche",
+    name: "Avalanche",
+    tagline: "5% a tick, closed at 3.5%.",
+    family: "accumulators",
+    bet: "Accumulator",
+    growthRate: 5,
+    closeAt: "3.5%",
+    wins: "the position grows to its take profit of 3.5% of the stake before any tick leaves the range",
+    pace: "As soon as the last position closes",
+    rule: "Avalanche opens an Accumulator at a growth rate of 5% as soon as its last position has closed, and closes it at a profit of 3.5% of the stake.",
+    detail: [
+      "Avalanche uses the highest growth rate of the Accumulator bots, 5%, so its take profit of 3.5% of the stake is reached after very few ticks. Deriv sets the narrowest range for this rate, so a tick leaves it most easily.",
+      "When a position reaches its take profit, it is closed and the session ends at its target. A tick outside the range first knocks it out and loses the stake.",
+    ],
+    example:
+      "On the 20 plan the bot opens an Accumulator with a stake of 10. After a couple of ticks of growth it is worth 0.35 more than its stake: it is closed at that profit and the session ends.",
+    plans: [plan("20", "10", "0.35", "0"), plan("100", "50", "1.75", "0")],
+  },
+  {
+    id: "slow_lever",
+    name: "Slow Lever",
+    tagline: "x40 with the last three ticks, closed at 10%.",
+    family: "multipliers",
+    bet: "Multiplier",
+    leverage: 40,
+    closeAt: "10%",
+    wins: "the position reaches its take profit of a tenth of the stake before it is stopped out",
+    pace: "After three ticks running one way, on the same side",
+    rule: "Slow Lever waits until three ticks in a row have moved in the same direction, then opens a x40 Multiplier that way and closes it at a profit of a tenth of the stake.",
+    detail: [
+      "Slow Lever compares each tick with the one before it. When the three newest ticks have all moved the same way it opens a Multiplier at x40 in that direction: Up after three ticks up, Down after three ticks down. A tick that did not move breaks the run.",
+      "The position has a take profit of a tenth of the stake. When it reaches that, it is closed and the session ends at its target. If the price moves the other way far enough to take the whole stake, Deriv stops the position out.",
+    ],
+    example:
+      "On the 20 plan, after three ticks up, the bot opens a Multiplier Up at x40 with a stake of 10. The price keeps rising until the position is 1.00 in profit: it is closed and the session ends.",
+    plans: [plan("20", "10", "1", "0"), plan("100", "50", "5", "0")],
+  },
+  {
+    id: "long_lever",
+    name: "Long Lever",
+    tagline: "x40 against the last three ticks, closed at 12%.",
+    family: "multipliers",
+    bet: "Multiplier",
+    leverage: 40,
+    closeAt: "12%",
+    wins: "the position reaches its take profit of 12% of the stake before it is stopped out",
+    pace: "After three ticks running one way, on the other side",
+    rule: "Long Lever waits until three ticks in a row have moved in the same direction, then opens a x40 Multiplier the other way and closes it at a profit of 12% of the stake.",
+    detail: [
+      "Long Lever compares each tick with the one before it. When the three newest ticks have all moved the same way it opens a Multiplier at x40 against that move: Down after three ticks up, Up after three ticks down.",
+      "The position has a take profit of 12% of the stake. When it reaches that, it is closed and the session ends at its target. A position cannot lose more than its stake; Deriv stops it out first.",
+    ],
+    example:
+      "On the 100 plan, after three ticks down, the bot opens a Multiplier Up at x40 with a stake of 50. The price turns up until the position is 6.00 in profit: it is closed and the session ends.",
+    plans: [plan("20", "10", "1.2", "0"), plan("100", "50", "6", "0")],
+  },
+  {
+    id: "even_lever",
+    name: "Even Lever",
+    tagline: "x100, up then down, closed at 10%.",
+    family: "multipliers",
+    bet: "Multiplier",
+    leverage: 100,
+    closeAt: "10%",
+    wins: "the position reaches its take profit of a tenth of the stake before it is stopped out",
+    pace: "Up and Down by turns",
+    rule: "Even Lever opens a x100 Multiplier Up and a x100 Multiplier Down by turns, and closes each at a profit of a tenth of the stake.",
+    detail: [
+      "Even Lever does not read the ticks to choose its direction. Its first position of a session is Up, its second Down, and so on.",
+      "At x100 a position moves a hundred times the price's move, so it reaches its take profit, or loses its stake, faster than one at x40. The commission Deriv takes at entry also grows with the multiplier.",
+    ],
+    example:
+      "On the 20 plan the bot opens a Multiplier Up at x100 with a stake of 10. The price falls and the position is stopped out: 10 is lost. The bot opens a Multiplier Down with the 10 left of the stop loss.",
+    plans: [plan("20", "10", "1", "0"), plan("100", "50", "5", "0")],
+  },
+  {
+    id: "full_swing",
+    name: "Full Swing",
+    tagline: "x100 with the last two ticks, closed at 8%.",
+    family: "multipliers",
+    bet: "Multiplier",
+    leverage: 100,
+    closeAt: "8%",
+    wins: "the position reaches its take profit of 8% of the stake before it is stopped out",
+    pace: "After two ticks running one way, on the same side",
+    rule: "Full Swing waits until two ticks in a row have moved in the same direction, then opens a x100 Multiplier that way and closes it at a profit of 8% of the stake.",
+    detail: [
+      "Full Swing compares each tick with the one before it. When the two newest ticks have both moved the same way it opens a Multiplier at x100 in that direction. A tick that did not move breaks the run.",
+      "The position has a take profit of 8% of the stake. When it reaches that, it is closed and the session ends at its target. A position cannot lose more than its stake.",
+    ],
+    example:
+      "On the 100 plan, after two ticks up, the bot opens a Multiplier Up at x100 with a stake of 50. The position reaches 4.00 in profit: it is closed and the session ends.",
+    plans: [plan("20", "10", "0.8", "0"), plan("100", "50", "4", "0")],
   },
 ];
 
@@ -626,4 +1036,27 @@ export function stakeStyle(bot: FixedPlanBot): "Flat" | "Martingale" {
 /** How many ticks a bot's contract lasts. */
 export function contractTicks(bot: FixedPlanBot): number {
   return bot.ticks ?? 1;
+}
+
+export function isDigitBot(bot: FixedPlanBot): boolean {
+  return bot.family === "matches_differs" || bot.family === "even_odd" || bot.family === "over_under";
+}
+
+export function isBarrierBot(bot: FixedPlanBot): boolean {
+  return bot.family === "higher_lower" || bot.family === "touch_no_touch";
+}
+
+/** Accumulators and Multipliers: no length, held until closed. */
+export function isHeldBot(bot: FixedPlanBot): boolean {
+  return bot.family === "accumulators" || bot.family === "multipliers";
+}
+
+/** The markets a bot may be started on, as the engine's AllowedSymbols says. */
+export type MarketSet = "digit" | "volatility" | "two_second" | "volatility_100";
+
+export function marketSet(bot: FixedPlanBot): MarketSet {
+  if (isDigitBot(bot)) return "digit";
+  if (isBarrierBot(bot)) return "two_second";
+  if (isHeldBot(bot)) return "volatility_100";
+  return "volatility";
 }
