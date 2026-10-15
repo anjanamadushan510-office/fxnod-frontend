@@ -7,7 +7,6 @@ import { AlertTriangle, Check, Copy, Loader2, X } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
 import {
-  useCreateBinancePayOrder,
   useCreateManualDeposit,
   useGetOrCreateDepositAddress,
   useListChainDeposits,
@@ -18,7 +17,7 @@ interface DepositModalProps {
   onClose: () => void;
 }
 
-type Tab = "crypto" | "binance" | "manual";
+type Tab = "crypto" | "manual";
 
 /** Poll while a deposit is confirming — the user is watching this screen. */
 const IN_FLIGHT_POLL_MS = 15_000;
@@ -84,16 +83,12 @@ export function DepositModal({ onClose }: DepositModalProps) {
           <TabButton active={tab === "crypto"} onClick={() => setTab("crypto")}>
             Crypto
           </TabButton>
-          <TabButton active={tab === "binance"} onClick={() => setTab("binance")}>
-            Binance Pay
-          </TabButton>
           <TabButton active={tab === "manual"} onClick={() => setTab("manual")}>
             Need help?
           </TabButton>
         </div>
 
         {tab === "crypto" && <CryptoDeposit />}
-        {tab === "binance" && <BinancePayDeposit onClose={onClose} />}
         {tab === "manual" && <ManualDepositClaim />}
       </div>
     </div>
@@ -154,8 +149,21 @@ function CryptoDeposit() {
     );
   }
 
+  if (address.network === "stub") {
+    return (
+      <div className="rounded-lg border border-line bg-bg p-4 text-sm leading-relaxed text-ink-2">
+        Automatic deposits are not switched on here yet. Use “Need help?” if
+        you have already sent funds.
+      </div>
+    );
+  }
+
+  const testnet = address.network !== "mainnet";
+
   return (
     <div className="animate-fade-in">
+      {testnet && <TestnetNotice network={address.network} />}
+
       {/* Sending on the wrong network is the single most common way a user
           loses a deposit, and it is unrecoverable. So this warning comes
           BEFORE the address, not as fine print under it. */}
@@ -170,7 +178,10 @@ function CryptoDeposit() {
       <AddressBlock address={address.address} />
 
       <dl className="mb-4 space-y-1.5 rounded-lg bg-bg p-3 text-xs">
-        <Row label="Network" value={CHAIN_LABEL} />
+        <Row
+          label="Network"
+          value={testnet ? `${CHAIN_LABEL}, ${networkName(address.network)}` : CHAIN_LABEL}
+        />
         <Row label="Minimum deposit" value={`${address.min_deposit} USDT`} />
         <Row
           label="Credited after"
@@ -184,6 +195,29 @@ function CryptoDeposit() {
       </p>
 
       <DepositActivity />
+    </div>
+  );
+}
+
+/** Testnet names the deposit API can return, as a person would say them. */
+function networkName(network: string): string {
+  return network === "nile" ? "Nile testnet" : `${network} testnet`;
+}
+
+/**
+ * Shown above the address on a testnet. The address format is the same as on
+ * mainnet, so without this a tester could send real USDT here, and a testnet
+ * monitor never sees, or credits, a mainnet transfer.
+ */
+function TestnetNotice({ network }: { network: string }) {
+  return (
+    <div className="mb-4 flex gap-2 rounded-lg border border-sky-500/30 bg-sky-500/10 p-3 text-sm text-sky-300">
+      <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" />
+      <p className="leading-relaxed">
+        <strong>Test environment: {networkName(network)}.</strong> Send only
+        test USDT from the {networkName(network)} faucet. Real USDT sent to this
+        address is never credited.
+      </p>
     </div>
   );
 }
@@ -376,78 +410,6 @@ function describe(deposit: ChainDepositResponse): {
   }
 }
 
-function isHttpsUrl(value: string): boolean {
-  try {
-    return new URL(value).protocol === "https:";
-  } catch {
-    return false;
-  }
-}
-
-function BinancePayDeposit({ onClose }: { onClose: () => void }) {
-  const [amount, setAmount] = useState("100");
-  const [unavailable, setUnavailable] = useState(false);
-
-  const { mutate, isPending, error } = useCreateBinancePayOrder({
-    mutation: {
-      onSuccess: (order) => {
-        // Null until the Binance order API is wired up. Rather than open a
-        // blank tab, say so — the order is recorded either way.
-        // https only, and no opener: a checkout page is another site, and a
-        // tab opened without noopener can navigate the tab that opened it.
-        if (order.checkout_url && isHttpsUrl(order.checkout_url)) {
-          window.open(order.checkout_url, "_blank", "noopener,noreferrer");
-          onClose();
-        } else {
-          setUnavailable(true);
-        }
-      },
-      onError: (err) => {
-        // 503 is the backend saying the integration is switched off. That is
-        // a state to explain, not an error to show as a failure.
-        if (statusOf(err) === 503) setUnavailable(true);
-      },
-    },
-  });
-
-  if (unavailable) {
-    return (
-      <div className="animate-fade-in rounded-lg border border-line bg-bg p-4">
-        <p className="text-sm leading-relaxed text-ink-2">
-          Binance Pay deposits are not switched on yet. Use the{" "}
-          <strong className="text-ink">Crypto</strong> tab to deposit USDT
-          directly — it credits automatically once the network confirms.
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="animate-fade-in">
-      <label className="mb-1 block text-sm font-semibold text-ink-2">
-        Amount (USDT)
-      </label>
-      <input
-        type="number"
-        inputMode="decimal"
-        value={amount}
-        onChange={(e) => setAmount(e.target.value)}
-        className="mb-4 w-full rounded-xl border border-line bg-bg px-4 py-3 text-lg font-bold text-ink focus:border-white focus:outline-none"
-        min="10"
-        step="10"
-      />
-      {error && <p className="mb-4 text-sm text-red-500">{messageFor(error)}</p>}
-      <Button
-        className="w-full bg-action text-action-ink hover:opacity-80 transition-opacity"
-        onClick={() => mutate({ data: { amount, currency: "USDT" } })}
-        disabled={isPending || !amount || Number(amount) <= 0}
-      >
-        {isPending ? "Processing…" : "Pay with Binance"}
-      </Button>
-    </div>
-  );
-}
-
 /**
  * Fallback for a deposit the monitor did not pick up.
  *
@@ -523,10 +485,6 @@ function ManualDepositClaim() {
       </Button>
     </div>
   );
-}
-
-function statusOf(err: unknown): number | undefined {
-  return (err as { response?: { status?: number } })?.response?.status;
 }
 
 /** Turn an Axios failure into something worth showing a user. */

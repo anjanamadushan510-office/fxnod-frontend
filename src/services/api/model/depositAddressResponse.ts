@@ -44,4 +44,6 @@ export interface DepositAddressResponse {
   min_deposit: DecimalString;
   /** Block confirmations before the deposit is credited. */
   required_confirmations: number;
+  /** The chain network the address is on. "mainnet" for real funds, a testnet name such as "nile" on staging, or "stub" when the address is a placeholder that is on no chain at all. */
+  network: string;
 }
