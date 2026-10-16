@@ -6,15 +6,13 @@
 # exists there since the split, so it has never triggered once. Nothing has
 # ever checked that a commit to this repo type-checks or builds.
 #
-# Vercel builds on push, but a Vercel failure is found after the fact and only
-# by whoever looks. This runs on the pull request.
+# Run typecheck and build before deploying to Vercel, including pull requests.
 name: ci
 
 on:
+  workflow_dispatch:
   push:
-    # All three deploy branches. Vercel builds each of them, and a branch
-    # left out here is deployed with nothing having checked that it
-    # type-checks or builds: testing was, from the day it was created.
+    # Cover all three deploy branches before their Vercel releases.
     branches: [main, staging, testing]
     tags: ["v*"]
   pull_request:
