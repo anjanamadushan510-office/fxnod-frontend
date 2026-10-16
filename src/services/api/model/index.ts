@@ -298,3 +298,4 @@ export * from './withdrawalRejection';
 export * from './withdrawalRequestIn';
 export * from './withdrawalRequestOut';
 export * from './withdrawalStatus';
+export * from './maintenanceStatus';
