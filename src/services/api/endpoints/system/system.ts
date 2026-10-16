@@ -46,7 +46,8 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  Health200
+  Health200,
+  MaintenanceStatus
 } from '../../model';
 
 import { customInstance } from '../../mutator/custom-instance';
@@ -54,6 +55,48 @@ import type { ErrorType } from '../../mutator/custom-instance';
 
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
+
+
+/**
+ * @summary Public maintenance notice status
+ */
+export const getMaintenanceStatus = (
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+  return customInstance<MaintenanceStatus>(
+    {url: `/api/v1/platform/maintenance`, method: 'GET', signal},
+    options);
+}
+
+export const getGetMaintenanceStatusQueryKey = () => {
+  return [`/api/v1/platform/maintenance`] as const;
+}
+
+export const getGetMaintenanceStatusQueryOptions = <TData = Awaited<ReturnType<typeof getMaintenanceStatus>>, TError = ErrorType<unknown>>(
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getMaintenanceStatus>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+  const {query: queryOptions, request: requestOptions} = options ?? {};
+  const queryKey = queryOptions?.queryKey ?? getGetMaintenanceStatusQueryKey();
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getMaintenanceStatus>>> = ({ signal }) => getMaintenanceStatus(requestOptions, signal);
+  return {queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMaintenanceStatus>>, TError, TData> & {queryKey: DataTag<QueryKey, TData, TError>};
+}
+
+export type GetMaintenanceStatusQueryResult = NonNullable<Awaited<ReturnType<typeof getMaintenanceStatus>>>
+export type GetMaintenanceStatusQueryError = ErrorType<unknown>
+
+/**
+ * @summary Public maintenance notice status
+ */
+export function useGetMaintenanceStatus<TData = Awaited<ReturnType<typeof getMaintenanceStatus>>, TError = ErrorType<unknown>>(
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getMaintenanceStatus>>, TError, TData>>, request?: SecondParameter<typeof customInstance>},
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>} {
+  const queryOptions = getGetMaintenanceStatusQueryOptions(options);
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+  query.queryKey = queryOptions.queryKey;
+  return query;
+}
 
 
 

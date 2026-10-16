@@ -9,6 +9,7 @@ import { ThemeProvider, useTheme } from "next-themes";
 import { Analytics } from "@/components/analytics/Analytics";
 import { captureReferralCode } from "@/lib/referral";
 import { useAuthStore } from "@/stores/authStore";
+import { MaintenanceBanner } from "@/components/layout/MaintenanceBanner";
 
 /**
  * App-wide client providers.
@@ -64,6 +65,7 @@ export function Providers({
     <ThemeProvider attribute={["class", "data-theme"]} defaultTheme="dark" enableSystem disableTransitionOnChange nonce={nonce}>
       <QueryClientProvider client={queryClient}>
         <ThemeColorSync />
+        <MaintenanceBanner />
         {children}
       <Analytics />
       {/* App-wide toast portal (trade results, Deriv linking, …). */}
