@@ -15,7 +15,8 @@ export const metadata: Metadata = {
 
 /**
  * What the site tells a machine about itself. Only facts the page also shows
- * a person: no ratings, no review counts, no price other than the real one.
+ * a person: no ratings, no review counts, and no price. Each tool is sold as
+ * a package priced in Discover, so no single Offer here would be true.
  */
 const STRUCTURED_DATA: Record<string, unknown>[] = [
   {
@@ -45,7 +46,6 @@ const STRUCTURED_DATA: Record<string, unknown>[] = [
     description: SITE_DESCRIPTION,
     applicationCategory: "FinanceApplication",
     operatingSystem: "Web",
-    offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
     featureList: [
       "Trade Pilot: manual trading on a Deriv account with a live chart and ten trade types",
       "Bot Forge: a bot builder for Deriv that needs no code",
