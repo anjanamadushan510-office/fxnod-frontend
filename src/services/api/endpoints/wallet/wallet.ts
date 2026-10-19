@@ -56,6 +56,7 @@ import type {
   ChainDepositResponse,
   DepositAddressRequest,
   DepositAddressResponse,
+  DepositNetworksResponse,
   Error,
   GetWalletTransactionsParams,
   ListChainDepositsParams,
@@ -327,6 +328,99 @@ export const useGetOrCreateDepositAddress = <TError = ErrorType<UnauthorizedResp
       return useMutation(mutationOptions, queryClient);
     }
     /**
+ * The chains this deployment issues deposit addresses on and watches, with what each requires. The deposit screen draws its choice of network from this, so a chain nobody watches is never offered.
+ * @summary Networks a deposit can be made on
+ */
+export const listDepositNetworks = (
+    
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<DepositNetworksResponse>(
+      {url: `/api/v1/wallet/deposit/networks`, method: 'GET', signal
+    },
+      options);
+    }
+  
+
+
+
+export const getListDepositNetworksQueryKey = () => {
+    return [
+    `/api/v1/wallet/deposit/networks`
+    ] as const;
+    }
+
+    
+export const getListDepositNetworksQueryOptions = <TData = Awaited<ReturnType<typeof listDepositNetworks>>, TError = ErrorType<UnauthorizedResponse>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDepositNetworks>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListDepositNetworksQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDepositNetworks>>> = ({ signal }) => listDepositNetworks(requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listDepositNetworks>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListDepositNetworksQueryResult = NonNullable<Awaited<ReturnType<typeof listDepositNetworks>>>
+export type ListDepositNetworksQueryError = ErrorType<UnauthorizedResponse>
+
+
+export function useListDepositNetworks<TData = Awaited<ReturnType<typeof listDepositNetworks>>, TError = ErrorType<UnauthorizedResponse>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDepositNetworks>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listDepositNetworks>>,
+          TError,
+          Awaited<ReturnType<typeof listDepositNetworks>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListDepositNetworks<TData = Awaited<ReturnType<typeof listDepositNetworks>>, TError = ErrorType<UnauthorizedResponse>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDepositNetworks>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listDepositNetworks>>,
+          TError,
+          Awaited<ReturnType<typeof listDepositNetworks>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListDepositNetworks<TData = Awaited<ReturnType<typeof listDepositNetworks>>, TError = ErrorType<UnauthorizedResponse>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDepositNetworks>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Networks a deposit can be made on
+ */
+
+export function useListDepositNetworks<TData = Awaited<ReturnType<typeof listDepositNetworks>>, TError = ErrorType<UnauthorizedResponse>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDepositNetworks>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListDepositNetworksQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
  * Deposits detected on chain, including ones still confirming. Scoped to the authenticated user. Every status other than `credited` carries a `status_reason` explaining why no balance was added.
  * @summary List the caller's on-chain deposits
  */
