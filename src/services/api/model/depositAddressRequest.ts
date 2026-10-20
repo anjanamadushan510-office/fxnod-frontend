@@ -32,7 +32,10 @@ library, not a float.
  */
 
 export interface DepositAddressRequest {
-  /** @maxLength 32 */
+  /**
+   * trc20 or bep20; one of the chains GET /api/v1/wallet/deposit/networks lists. Any other value is a 400.
+   * @maxLength 32
+   */
   chain?: string;
   /** @maxLength 8 */
   currency?: string;

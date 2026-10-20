@@ -10,8 +10,9 @@ import {
   useCreateManualDeposit,
   useGetOrCreateDepositAddress,
   useListChainDeposits,
+  useListDepositNetworks,
 } from "@/services/api/endpoints/wallet/wallet";
-import type { ChainDepositResponse } from "@/services/api/model";
+import type { ChainDepositResponse, DepositNetwork } from "@/services/api/model";
 
 interface DepositModalProps {
   onClose: () => void;
@@ -22,7 +23,11 @@ type Tab = "crypto" | "manual";
 /** Poll while a deposit is confirming — the user is watching this screen. */
 const IN_FLIGHT_POLL_MS = 15_000;
 
-const CHAIN_LABEL = "TRC-20 (Tron)";
+/** Short names for a deposit row; the full label comes from the API. */
+const CHAIN_SHORT: Record<string, string> = { trc20: "TRC-20", bep20: "BEP-20" };
+
+/** A 32-byte transaction hash, as Tron and BNB Smart Chain both write one. */
+const TX_HASH = /^(0x)?[0-9a-fA-F]{64}$/;
 
 /**
  * Deposit statuses that are still moving. Anything else is settled, and the
@@ -122,14 +127,104 @@ function TabButton({
  * There is deliberately no amount field. The chain reports what arrived, so
  * asking the user to declare it would only create a number that can disagree
  * with reality — which is exactly the weakness of the manual flow below.
+ *
+ * Nor is there a default network. Sending on the wrong one is how deposits
+ * are lost, so no address is shown until the user has chosen the network
+ * they are about to send on, the way exchanges ask for it.
  */
 function CryptoDeposit() {
+  const { data, isPending, error } = useListDepositNetworks();
+  const [chain, setChain] = useState<string | null>(null);
+  const networks = data?.networks ?? [];
+  const selected = networks.find((n) => n.chain === chain) ?? null;
+
+  if (isPending) {
+    return (
+      <div className="flex flex-col items-center gap-3 py-10 text-ink-2">
+        <Loader2 className="h-6 w-6 animate-spin text-ink" />
+        <p className="text-sm">Loading deposit networks…</p>
+      </div>
+    );
+  }
+
+  if (error || networks.length === 0) {
+    return (
+      <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-500">
+        Deposit addresses are temporarily unavailable. Please try again shortly,
+        or use “Need help?” if you have already sent funds.
+      </div>
+    );
+  }
+
+  return (
+    <div className="animate-fade-in">
+      <NetworkPicker networks={networks} selected={chain} onSelect={setChain} />
+      {selected ? (
+        // Keyed by chain: switching network mounts a fresh request, so the
+        // previous network's address can never be shown under the new label.
+        <NetworkAddress key={selected.chain} network={selected} />
+      ) : (
+        <p className="mb-5 rounded-lg bg-bg p-3 text-center text-xs leading-relaxed text-ink-2">
+          Choose the network you will send on. Your wallet or exchange asks for
+          the same choice when you withdraw — pick the same one in both.
+        </p>
+      )}
+      <DepositActivity />
+    </div>
+  );
+}
+
+function NetworkPicker({
+  networks,
+  selected,
+  onSelect,
+}: {
+  networks: DepositNetwork[];
+  selected: string | null;
+  onSelect: (chain: string) => void;
+}) {
+  return (
+    <fieldset className="mb-4">
+      <legend className="mb-2 text-sm font-semibold text-ink-2">Network</legend>
+      <div className="grid gap-2 sm:grid-cols-2" role="radiogroup">
+        {networks.map((network) => {
+          const active = network.chain === selected;
+          return (
+            <button
+              key={network.chain}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              onClick={() => onSelect(network.chain)}
+              className={`min-h-11 rounded-lg border px-3 py-2 text-left text-sm font-semibold transition-colors ${
+                active
+                  ? "border-action bg-action/10 text-ink"
+                  : "border-line bg-bg text-ink-2 hover:border-white hover:text-ink"
+              }`}
+            >
+              {network.label}
+            </button>
+          );
+        })}
+      </div>
+      {networks.some((n) => n.chain === "bep20") && (
+        <p className="mt-2 text-[11px] leading-relaxed text-ink-3">
+          Sending from Binance? Its BEP-20 withdrawal fee is usually lower than
+          TRC-20’s. Check the fee on your exchange’s withdrawal screen.
+        </p>
+      )}
+    </fieldset>
+  );
+}
+
+/** The user's address on one network, with what that network requires. */
+function NetworkAddress({ network }: { network: DepositNetwork }) {
   const addressQuery = useGetOrCreateDepositAddress();
   const { mutate: requestAddress, data: address, isPending, error } = addressQuery;
 
   useEffect(() => {
-    requestAddress({ data: { chain: "trc20", currency: "USDT" } });
-  }, [requestAddress]);
+    requestAddress({ data: { chain: network.chain, currency: network.currency } });
+  }, [requestAddress, network.chain, network.currency]);
 
   if (isPending || (!address && !error)) {
     return (
@@ -151,7 +246,7 @@ function CryptoDeposit() {
 
   if (address.network === "stub") {
     return (
-      <div className="rounded-lg border border-line bg-bg p-4 text-sm leading-relaxed text-ink-2">
+      <div className="mb-5 rounded-lg border border-line bg-bg p-4 text-sm leading-relaxed text-ink-2">
         Automatic deposits are not switched on here yet. Use “Need help?” if
         you have already sent funds.
       </div>
@@ -159,10 +254,11 @@ function CryptoDeposit() {
   }
 
   const testnet = address.network !== "mainnet";
+  const label = network.label;
 
   return (
     <div className="animate-fade-in">
-      {testnet && <TestnetNotice network={address.network} />}
+      {testnet && <TestnetNotice chain={network.chain} network={address.network} />}
 
       {/* Sending on the wrong network is the single most common way a user
           loses a deposit, and it is unrecoverable. So this warning comes
@@ -170,17 +266,19 @@ function CryptoDeposit() {
       <div className="mb-4 flex gap-2 rounded-lg border border-orange-500/20 bg-orange-500/10 p-3 text-sm text-orange-400">
         <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-orange-400" />
         <p className="leading-relaxed">
-          Send <strong>USDT on the {CHAIN_LABEL} network only</strong>. Funds
-          sent on any other network, or any other coin, cannot be recovered.
+          Send <strong>USDT on the {label} network only</strong>.{" "}
+          {network.chain === "bep20" &&
+            "Not Ethereum (ERC-20) or any other chain: the address looks the same there, but nothing sent that way is credited. "}
+          Funds sent on any other network, or any other coin, are not credited.
         </p>
       </div>
 
-      <AddressBlock address={address.address} />
+      <AddressBlock address={address.address} label={label} />
 
       <dl className="mb-4 space-y-1.5 rounded-lg bg-bg p-3 text-xs">
         <Row
           label="Network"
-          value={testnet ? `${CHAIN_LABEL}, ${networkName(address.network)}` : CHAIN_LABEL}
+          value={testnet ? `${label}, ${networkName(network.chain, address.network)}` : label}
         />
         <Row label="Minimum deposit" value={`${address.min_deposit} USDT`} />
         <Row
@@ -190,18 +288,19 @@ function CryptoDeposit() {
       </dl>
 
       <p className="mb-5 text-center text-[11px] leading-relaxed text-ink-3">
-        This address is yours and stays the same — save it and reuse it. Your
-        balance updates automatically once the network confirms your transfer.
+        This address is yours on {label} and stays the same — save it and reuse
+        it. Your balance updates automatically once the network confirms your
+        transfer.
       </p>
-
-      <DepositActivity />
     </div>
   );
 }
 
 /** Testnet names the deposit API can return, as a person would say them. */
-function networkName(network: string): string {
-  return network === "nile" ? "Nile testnet" : `${network} testnet`;
+function networkName(chain: string, network: string): string {
+  if (network === "nile") return "Nile testnet";
+  if (chain === "bep20" && network === "testnet") return "BSC testnet";
+  return `${network} testnet`;
 }
 
 /**
@@ -209,20 +308,20 @@ function networkName(network: string): string {
  * mainnet, so without this a tester could send real USDT here, and a testnet
  * monitor never sees, or credits, a mainnet transfer.
  */
-function TestnetNotice({ network }: { network: string }) {
+function TestnetNotice({ chain, network }: { chain: string; network: string }) {
+  const name = networkName(chain, network);
   return (
     <div className="mb-4 flex gap-2 rounded-lg border border-sky-500/30 bg-sky-500/10 p-3 text-sm text-sky-300">
       <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" />
       <p className="leading-relaxed">
-        <strong>Test environment: {networkName(network)}.</strong> Send only
-        test USDT from the {networkName(network)} faucet. Real USDT sent to this
-        address is never credited.
+        <strong>Test environment: {name}.</strong> Send only test USDT on the{" "}
+        {name}. Real USDT sent to this address is never credited.
       </p>
     </div>
   );
 }
 
-function AddressBlock({ address }: { address: string }) {
+function AddressBlock({ address, label }: { address: string; label: string }) {
   const [copied, setCopied] = useState(false);
   const [qr, setQr] = useState<string | null>(null);
 
@@ -263,7 +362,7 @@ function AddressBlock({ address }: { address: string }) {
           {qr ? (
             <Image
               src={qr}
-              alt={`QR code for your ${CHAIN_LABEL} deposit address`}
+              alt={`QR code for your ${label} deposit address`}
               width={160}
               height={160}
               unoptimized
@@ -343,6 +442,9 @@ function DepositActivity() {
             <div className="min-w-0">
               <p className="text-sm font-bold text-ink">
                 {deposit.amount} {deposit.currency}
+                <span className="ml-1.5 text-[10px] font-semibold text-ink-3">
+                  {CHAIN_SHORT[deposit.chain] ?? deposit.chain.toUpperCase()}
+                </span>
               </p>
               <p className="truncate font-mono text-[10px] text-ink-3">
                 {deposit.tx_hash}
@@ -420,14 +522,18 @@ function describe(deposit: ChainDepositResponse): {
 function ManualDepositClaim() {
   const [amount, setAmount] = useState("");
   const [txHash, setTxHash] = useState("");
+  const [chain, setChain] = useState("");
   const [done, setDone] = useState(false);
+  const { data } = useListDepositNetworks();
+  const networks = data?.networks ?? [];
 
   const { mutate, isPending, error } = useCreateManualDeposit({
     mutation: { onSuccess: () => setDone(true) },
   });
 
+  const hashValid = TX_HASH.test(txHash.trim());
   const submit = () =>
-    mutate({ data: { amount, tx_hash: txHash.trim() } });
+    mutate({ data: { amount, tx_hash: txHash.trim(), chain } });
 
   if (done) {
     return (
@@ -445,6 +551,25 @@ function ManualDepositClaim() {
         detected automatically within minutes. If yours has not shown up, give
         us the transaction hash and we will look into it.
       </p>
+
+      <label htmlFor="manual-deposit-network" className="mb-1 block text-sm font-semibold text-ink-2">
+        Network you sent on
+      </label>
+      <select
+        id="manual-deposit-network"
+        value={chain}
+        onChange={(e) => setChain(e.target.value)}
+        className="mb-4 min-h-11 w-full rounded-xl border border-line bg-bg px-4 py-3 text-sm font-semibold text-ink focus:border-white focus:outline-none"
+      >
+        <option value="" disabled>
+          Choose a network…
+        </option>
+        {networks.map((network) => (
+          <option key={network.chain} value={network.chain}>
+            {network.label}
+          </option>
+        ))}
+      </select>
 
       <label className="mb-1 block text-sm font-semibold text-ink-2">
         Amount sent (USDT)
@@ -470,6 +595,13 @@ function ManualDepositClaim() {
         className="mb-4 w-full rounded-xl border border-line bg-bg px-4 py-3 font-mono text-sm text-ink focus:border-white focus:outline-none"
       />
 
+      {txHash.trim() !== "" && !hashValid && (
+        <p className="-mt-2 mb-4 text-xs text-orange-400">
+          A transaction hash is 64 letters and numbers (0–9, a–f), with or
+          without 0x in front.
+        </p>
+      )}
+
       {error && (
         <p className="mb-4 text-sm text-red-500">{messageFor(error)}</p>
       )}
@@ -477,9 +609,7 @@ function ManualDepositClaim() {
       <Button
         className="w-full bg-action text-action-ink hover:opacity-80 transition-opacity"
         onClick={submit}
-        disabled={
-          isPending || txHash.trim().length < 10 || !amount || Number(amount) <= 0
-        }
+        disabled={isPending || !chain || !hashValid || !amount || Number(amount) <= 0}
       >
         {isPending ? "Submitting…" : "Submit for review"}
       </Button>

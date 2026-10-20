@@ -130,6 +130,8 @@ export * from './decimalString';
 export * from './deleteBotPreset200';
 export * from './depositAddressRequest';
 export * from './depositAddressResponse';
+export * from './depositNetwork';
+export * from './depositNetworksResponse';
 export * from './derivAccountListResponse';
 export * from './derivAccountStatus';
 export * from './derivAppConnection';

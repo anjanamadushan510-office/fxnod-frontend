@@ -36,8 +36,14 @@ export interface ManualDepositCreate {
   /** What the user says they sent. Unverified â€” never credited without operator review. */
   amount: DecimalString;
   /**
-   * @minLength 10
-   * @maxLength 128
+   * The transaction hash, 64 hex characters with or without 0x. Stored lowercase, with 0x only on chains whose explorers write it, so one transfer cannot be filed twice under two spellings.
+   * @minLength 64
+   * @maxLength 70
    */
   tx_hash: string;
+  /**
+   * Network the transfer was sent on, trc20 or bep20. One of the chains the deposit address endpoint serves.
+   * @maxLength 32
+   */
+  chain?: string;
 }
