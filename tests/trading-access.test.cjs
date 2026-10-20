@@ -74,3 +74,62 @@ test('package access distinguishes demo, real, manual and expired access', () =>
   catalog = { isError: true, isSuccess: false, data: { tools: [] } };
   assert.match(hook.useToolTradingAccess('dbot', true).message, /Unable to verify/);
 });
+
+test("team restrictions compare login UUIDs per capability and preserve independent access", () => {
+  let grants = [
+    {
+      source: "team",
+      capabilities: ["bot_real", "bot_demo"],
+      deriv_client_id: "aabb-uuid",
+    },
+  ];
+  const hook = load("src/hooks/useToolTradingAccess.ts", {
+    "./useCommerce": {
+      useCommerce: () => ({
+        isSuccess: true,
+        data: {
+          tools: [
+            {
+              id: "autohub",
+              access: {
+                allowed: true,
+                capabilities: ["bot_real", "bot_demo"],
+                grants,
+              },
+            },
+          ],
+        },
+      }),
+    },
+  });
+  assert.equal(hook.useToolTradingAccess("autohub", false).allowed, false);
+  assert.equal(
+    hook.useToolTradingAccess("autohub", false, "other").allowed,
+    false,
+  );
+  assert.match(
+    hook.useToolTradingAccess("autohub", false, "other").message,
+    /Team package requires/,
+  );
+  assert.equal(
+    hook.useToolTradingAccess("autohub", false, "AABB-UUID").allowed,
+    true,
+  );
+  grants.push({ source: "purchase", capabilities: ["bot_demo"] });
+  assert.equal(
+    hook.useToolTradingAccess("autohub", true, "other").allowed,
+    true,
+  );
+  assert.equal(
+    hook.useToolTradingAccess("autohub", false, "other").allowed,
+    false,
+  );
+  grants = [
+    {
+      source: "team",
+      capabilities: ["bot_real", "bot_demo"],
+      deriv_client_id: null,
+    },
+  ];
+  assert.equal(hook.useToolTradingAccess("autohub", false).allowed, true);
+});

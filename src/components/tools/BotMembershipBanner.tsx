@@ -28,13 +28,27 @@ export function BotMembershipBanner({
                 ? "Demo-account bot access is available"
                 : "Choose a plan to run this tool"}
           </p>
-          <p className={`mt-1 text-xs text-ink-3 ${demo ? "" : "hidden sm:block"}`}>
+          <p
+            className={`mt-1 text-xs text-ink-3 ${demo ? "" : "hidden sm:block"}`}
+          >
             {real
               ? "View your membership and access period in Active Tools."
               : demo
                 ? "Select a demo account to run this package. Upgrade in Discover for real-account trading."
                 : "Review packages, features and access periods in Discover."}
           </p>
+          {toolId === "autohub" &&
+            tool?.access.grants?.some(
+              (g) => g.source === "team" && g.deriv_client_id,
+            ) && (
+              <p className="mt-2 text-xs text-ink-2">
+                Your team access is limited to the Deriv Client ID set by your
+                team owner.{" "}
+                <Link href={"/autohub/team" as Route} className="underline">
+                  View team access
+                </Link>
+              </p>
+            )}
         </div>
       </div>
       <Link

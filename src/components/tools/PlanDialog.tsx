@@ -274,6 +274,7 @@ export function PlanDialog({
                                     · {tier.name}
                                   </p>
                                   <ul className="space-y-2">
+                                    {tier.team_seats > 0 && <li className="flex gap-2"><Check className="h-4 w-4 shrink-0 text-positive" />Owner + {tier.team_seats} team members</li>}
                                     {tier.features.map((feature) => (
                                       <li key={feature} className="flex gap-2">
                                         <Check className="h-4 w-4 shrink-0 text-positive" />

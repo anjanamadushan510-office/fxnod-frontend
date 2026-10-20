@@ -11,6 +11,11 @@ export interface ToolAccess {
   expires_at: string | null;
   source: string | null;
   capabilities: string[];
+  grants?: {
+    source: string;
+    deriv_client_id?: string | null;
+    capabilities: string[];
+  }[];
 }
 export interface CommerceTool {
   id: string;
@@ -32,6 +37,7 @@ export interface Tier {
   capabilities: string[];
   is_free: boolean;
   is_active: boolean;
+  team_seats: number;
 }
 export interface Offer {
   id: string;
@@ -74,8 +80,47 @@ export interface Receipt {
   coupon_code: string | null;
   snapshot: { offer: Offer; tiers: Tier[] };
 }
+export interface TeamMember {
+  id: string;
+  user_id: string;
+  email: string;
+  deriv_client_id: string | null;
+  created_at: string;
+}
+export interface TeamPackage {
+  id: string;
+  tier_name: string;
+  team_seats: number;
+  expires_at: string | null;
+  active: boolean;
+  members: TeamMember[];
+}
+export interface TeamList {
+  owned: TeamPackage[];
+  memberships: {
+    id: string;
+    tier_name: string;
+    expires_at: string | null;
+    active: boolean;
+    deriv_client_id: string | null;
+  }[];
+}
 const root = "/api/v1/wallet/commerce";
 export const commerce = {
+  teams: () => api.get<TeamList>(`${root}/teams`).then((r) => r.data),
+  addMember: (team: string, email: string, deriv_client_id: string | null) =>
+    api.post<TeamMember>(`${root}/teams/${team}/members`, {
+      email,
+      deriv_client_id,
+    }),
+  updateMember: (
+    team: string,
+    member: string,
+    deriv_client_id: string | null,
+  ) =>
+    api.patch(`${root}/teams/${team}/members/${member}`, { deriv_client_id }),
+  removeMember: (team: string, member: string) =>
+    api.delete(`${root}/teams/${team}/members/${member}`),
   catalog: async (): Promise<Catalog> => {
     const data = (await api.get<Catalog>(`${root}/catalog`)).data;
     if (data.activation_configured) return data;

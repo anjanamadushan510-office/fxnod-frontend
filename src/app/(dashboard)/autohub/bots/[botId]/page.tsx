@@ -26,9 +26,7 @@ import { AccountSection } from "@/components/bot/builder/RunPanel";
 import { useDerivStatus } from "@/hooks/useDerivStatus";
 import { useToolTradingAccess } from "@/hooks/useToolTradingAccess";
 import { useDerivAccounts } from "@/hooks/useDerivAccounts";
-import {
-  accountBalanceText,
-} from "@/components/deriv/balancePresentation";
+import { accountBalanceText } from "@/components/deriv/balancePresentation";
 import { BotJourney } from "@/components/autohub/BotJourney";
 import { StartReview } from "@/components/autohub/StartReview";
 import { repeatValues } from "@/components/autohub/journey";
@@ -46,6 +44,10 @@ import {
   getGetAutoHubRunQueryKey,
   useStartAutoHubRun,
 } from "@/services/api/endpoints/auto-hub/auto-hub";
+import {
+  getDerivListConnectionsQueryKey,
+  useDerivListConnections,
+} from "@/services/api/endpoints/trading/trading";
 import { useGetBotLimits } from "@/services/api/endpoints/bots/bots";
 import type {
   AutoHubBot,
@@ -215,7 +217,18 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
   const selectedAccount = accounts.data?.accounts.find(
     (account) => account.deriv_account_id === deriv.accountId,
   );
-  const access = useToolTradingAccess("autohub", deriv.isVirtual);
+  const connections = useDerivListConnections({
+    query: {
+      queryKey: [...getDerivListConnectionsQueryKey(), userId],
+      enabled: !!userId && deriv.linked,
+      staleTime: 15000,
+      refetchInterval: 30000,
+    },
+  });
+  const clientId = connections.data?.connections.find(
+    (connection) => connection.connection_id === selectedAccount?.connection_id,
+  )?.client_id;
+  const access = useToolTradingAccess("autohub", deriv.isVirtual, clientId);
   const activeParams = { state: "active", limit: 100 } as const;
   const runningQuery = useListAutoHubRuns(activeParams, {
     query: {
@@ -360,10 +373,15 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
     setRefreshingReview(true);
     try {
       const latest = await accounts.refetch();
-      if (latest.isError || !latest.data?.accounts?.some(
-        (account) => account.is_selected && account.balance !== undefined,
-      )) {
-        toast.error("Could not load the current Deriv balance. Please try again.");
+      if (
+        latest.isError ||
+        !latest.data?.accounts?.some(
+          (account) => account.is_selected && account.balance !== undefined,
+        )
+      ) {
+        toast.error(
+          "Could not load the current Deriv balance. Please try again.",
+        );
         return;
       }
       setReviewing(true);
@@ -561,7 +579,11 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
         </p>
       </header>
 
-      {!deriv.isLoading && !deriv.linked && <div className="mb-6"><DerivConnectPrompt /></div>}
+      {!deriv.isLoading && !deriv.linked && (
+        <div className="mb-6">
+          <DerivConnectPrompt />
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_22rem] gap-6 items-start">
         <div className="space-y-6 min-w-0">
@@ -655,7 +677,13 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
           )}
 
           <div className="bg-panel border border-line rounded-2xl p-5 space-y-5">
-            {(deriv.linked || deriv.isLoading) ? <AccountSection /> : <p className="text-sm font-medium text-ink">Connect your Deriv account above to continue.</p>}
+            {deriv.linked || deriv.isLoading ? (
+              <AccountSection />
+            ) : (
+              <p className="text-sm font-medium text-ink">
+                Connect your Deriv account above to continue.
+              </p>
+            )}
             {deriv.linked && access.message && (
               <p className="text-xs text-ink-2" role="status">
                 {access.message} <Link href="/tools">View packages</Link>
@@ -711,9 +739,9 @@ function BotSetup({ bot }: { bot: AutoHubBot }) {
             </button>
 
             <p className="text-[11px] leading-relaxed text-ink-3">
-              Real-money bot payouts include FXNOD&apos;s markup. Demo trades carry none. {" "}
-              The bot runs on the server and keeps its limits with this page
-              closed.
+              Real-money bot payouts include FXNOD&apos;s markup. Demo trades
+              carry none. The bot runs on the server and keeps its limits with
+              this page closed.
             </p>
           </div>
         </div>

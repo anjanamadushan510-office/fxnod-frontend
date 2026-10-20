@@ -93,13 +93,24 @@ export default function AutoHubPage() {
   return (
     <section className="space-y-4 p-4 lg:space-y-6 lg:p-6">
       <header>
-        <h1 className="hidden text-xl font-semibold text-ink sm:block sm:text-2xl">Auto Hub</h1>
+        <h1 className="hidden text-xl font-semibold text-ink sm:block sm:text-2xl">
+          Auto Hub
+        </h1>
         <p className="text-sm text-ink-2 sm:mt-1 max-w-2xl leading-relaxed">
-          Browse ready-made bots. Review the stake and risk limits before each run.
+          Browse ready-made bots. Review the stake and risk limits before each
+          run.
         </p>
       </header>
 
       <BotMembershipBanner toolId="autohub" />
+      <div className="flex justify-end">
+        <Link
+          href={"/autohub/team" as Route}
+          className="inline-flex min-h-11 items-center rounded-xl border border-line bg-surface px-4 text-sm font-medium text-ink hover:bg-surface-2"
+        >
+          My team →
+        </Link>
+      </div>
 
       {activeRuns.length > 0 && (
         <div className="space-y-3">
@@ -227,8 +238,8 @@ export default function AutoHubPage() {
       <p className="text-xs leading-relaxed text-ink-3 max-w-2xl">
         Bot access requires an active Auto Hub package from Discover. FXNOD also
         earns a markup that Deriv takes from real-money payouts. Demo trades
-        carry none. No bot can guarantee a profit,
-        and a bot can lose up to the stop loss you give it.
+        carry none. No bot can guarantee a profit, and a bot can lose up to the
+        stop loss you give it.
       </p>
     </section>
   );
