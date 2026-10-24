@@ -9,6 +9,7 @@ import { useDerivStatus, derivStatusKey } from "@/hooks/useDerivStatus";
 import { useDerivUnlink } from "@/services/api/endpoints/trading/trading";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { DisconnectDerivModal } from "./DisconnectDerivModal";
 import {
   AppsGridIcon,
   ClockIcon,
@@ -94,16 +95,15 @@ export function IconSidebar({
   const { linked } = useDerivStatus();
   const unlinkMutation = useDerivUnlink();
 
-  async function disconnectDeriv() {
-    const ok = window.confirm(
-      "Sign out of Deriv? Running bots will stop, and you will need to connect again before trading."
-    );
-    if (!ok) return;
+  const [disconnectModalOpen, setDisconnectModalOpen] = useState(false);
+
+  async function handleConfirmDisconnect() {
     try {
       await unlinkMutation.mutateAsync();
       await queryClient.invalidateQueries({ queryKey: derivStatusKey });
       await queryClient.invalidateQueries();
       toast.success("Signed out of Deriv");
+      setDisconnectModalOpen(false);
       router.push("/venues");
     } catch {
       toast.error("Could not sign out of Deriv. Please try again.");
@@ -181,9 +181,16 @@ export function IconSidebar({
           shortLabel="Disconnect"
           icon={<LogOut className="h-5 w-5" />}
           active={false}
-          onClick={disconnectDeriv}
+          onClick={() => setDisconnectModalOpen(true)}
         />
       </div>
+
+      <DisconnectDerivModal
+        isOpen={disconnectModalOpen}
+        onClose={() => setDisconnectModalOpen(false)}
+        onConfirm={handleConfirmDisconnect}
+        isDisconnecting={unlinkMutation.isPending}
+      />
     </div>
   );
 }
