@@ -3,7 +3,7 @@ import type { Route } from "next";
 import { PublicHeader } from "@/components/layout/PublicHeader";
 import { PublicFooter } from "@/components/layout/PublicFooter";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { readMinutes, type Guide, type GuideBlock, type GuideCta } from "@/content/guides";
+import { readMinutes, type Guide, type GuideBlock, type GuideCta, type GuideProvenance } from "@/content/guides";
 import { formatGuideDateIn, type GuideLabels } from "@/lib/locales";
 import { SITE_NAME, SITE_URL, absoluteUrl } from "@/lib/site";
 
@@ -21,11 +21,19 @@ interface Props {
   related: { href: string; tag: string; title: string }[];
   /** The same guide in other languages, where it exists in any. */
   alternates?: { href: string; label: string; hrefLang: string }[];
+  /** How the guide was checked; omitted where that has not been written for a language yet. */
+  provenance?: GuideProvenance;
 }
 
 /** Article, breadcrumb and FAQ markup, each built from what the page shows. */
-function structuredData(guide: Guide, path: string, labels: GuideLabels): Record<string, unknown>[] {
+function structuredData(
+  guide: Guide,
+  path: string,
+  labels: GuideLabels,
+  provenance?: GuideProvenance,
+): Record<string, unknown>[] {
   const url = absoluteUrl(path);
+  const citation = provenance?.sources.map((source) => source.href) ?? [];
   const organization = { "@type": "Organization", name: SITE_NAME, url: SITE_URL };
   return [
     {
@@ -40,6 +48,7 @@ function structuredData(guide: Guide, path: string, labels: GuideLabels): Record
       publisher: { ...organization, logo: { "@type": "ImageObject", url: absoluteUrl("/assets/fxnod-logo.png") } },
       mainEntityOfPage: url,
       inLanguage: labels.locale,
+      ...(citation.length > 0 ? { citation } : {}),
     },
     {
       "@context": "https://schema.org",
@@ -151,10 +160,10 @@ function Block({ block }: { block: GuideBlock }) {
   }
 }
 
-export function GuideArticle({ guide, path, labels, cta, related, alternates = [] }: Props) {
+export function GuideArticle({ guide, path, labels, cta, related, alternates = [], provenance }: Props) {
   return (
     <div data-theme="dark" className="min-h-screen bg-bg text-ink font-sans antialiased flex flex-col">
-      {structuredData(guide, path, labels).map((data) => (
+      {structuredData(guide, path, labels, provenance).map((data) => (
         <JsonLd key={String(data["@type"])} data={data} />
       ))}
       <PublicHeader />
@@ -210,9 +219,24 @@ export function GuideArticle({ guide, path, labels, cta, related, alternates = [
             {guide.answer}
           </p>
 
-          <div className="rounded-2xl overflow-hidden border border-line bg-panel mb-10">
-            <img src={guide.image} alt="" className="w-full h-48 sm:h-64 object-cover object-center" />
-          </div>
+          {guide.imageAlt ? (
+            <figure className="mb-10">
+              <div className="rounded-2xl overflow-hidden border border-line bg-panel">
+                <img
+                  src={guide.image}
+                  alt={guide.imageAlt}
+                  width={1280}
+                  height={720}
+                  className="w-full h-auto"
+                />
+              </div>
+              <figcaption className="mt-2 text-xs text-zinc-500">{guide.imageAlt}</figcaption>
+            </figure>
+          ) : (
+            <div className="rounded-2xl overflow-hidden border border-line bg-panel mb-10">
+              <img src={guide.image} alt="" className="w-full h-48 sm:h-64 object-cover object-center" />
+            </div>
+          )}
 
           <div className="space-y-5 text-zinc-300 leading-relaxed text-[17px]">
             {guide.body.map((block, i) => (
@@ -233,6 +257,33 @@ export function GuideArticle({ guide, path, labels, cta, related, alternates = [
               ))}
             </dl>
           </section>
+
+          {provenance && (
+            <section aria-labelledby="checked-heading" className="mt-14 text-[15px] text-zinc-400 leading-relaxed">
+              <h2 id="checked-heading" className="font-display text-lg font-semibold text-white mb-3">
+                {labels.howChecked}
+              </h2>
+              <p>{provenance.text}</p>
+              {provenance.sources.length > 0 && (
+                <>
+                  <h3 className="mt-5 mb-2 text-xs uppercase tracking-wider text-zinc-500">{labels.sources}</h3>
+                  <ul className="space-y-1.5">
+                    {provenance.sources.map((source) => (
+                      <li key={source.href}>
+                        <a
+                          href={source.href}
+                          rel="noopener"
+                          className="text-accent hover:text-white transition break-words"
+                        >
+                          {source.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+            </section>
+          )}
 
           <section className="mt-14 rounded-2xl border border-line bg-panel p-6 sm:p-8">
             <h2 className="font-display text-xl font-semibold text-white mb-2">{cta.title}</h2>

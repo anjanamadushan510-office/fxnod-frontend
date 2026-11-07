@@ -49,6 +49,9 @@ export interface GuideLabels {
   byTeam: string;
   questions: string;
   readNext: string;
+  /** Heading of the note on how a guide was checked, and of its source list. */
+  howChecked: string;
+  sources: string;
   allGuides: string;
   getStarted: string;
   months: string[];
@@ -70,6 +73,8 @@ export const GUIDE_LABELS: Record<Locale, GuideLabels> = {
     byTeam: "By the FXNOD team",
     questions: "Questions people ask",
     readNext: "Read next",
+    howChecked: "How this guide was checked",
+    sources: "Sources",
     allGuides: "All guides",
     getStarted: "Get started",
     months: ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"],
@@ -96,6 +101,8 @@ export const GUIDE_LABELS: Record<Locale, GuideLabels> = {
     byTeam: "Por el equipo de FXNOD",
     questions: "Preguntas frecuentes",
     readNext: "Sigue leyendo",
+    howChecked: "Cómo se comprobó esta guía",
+    sources: "Fuentes",
     allGuides: "Todas las guías",
     getStarted: "Empezar",
     months: ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"],
@@ -123,6 +130,8 @@ export const GUIDE_LABELS: Record<Locale, GuideLabels> = {
     byTeam: "Par l'équipe FXNOD",
     questions: "Questions fréquentes",
     readNext: "À lire ensuite",
+    howChecked: "Comment ce guide a été vérifié",
+    sources: "Sources",
     allGuides: "Tous les guides",
     getStarted: "Commencer",
     months: ["JANV.", "FÉVR.", "MARS", "AVR.", "MAI", "JUIN", "JUIL.", "AOÛT", "SEPT.", "OCT.", "NOV.", "DÉC."],
@@ -150,6 +159,8 @@ export const GUIDE_LABELS: Record<Locale, GuideLabels> = {
     byTeam: "FXNOD කණ්ඩායම",
     questions: "නිතර අහන ප්‍රශ්න",
     readNext: "ඊළඟට කියවන්න",
+    howChecked: "මේ guide එක පරීක්ෂා කළ ආකාරය",
+    sources: "මූලාශ්‍ර",
     allGuides: "සියලු guides",
     getStarted: "පටන් ගන්න",
     months: ["ජන", "පෙබ", "මාර්", "අප්‍රේ", "මැයි", "ජූනි", "ජූලි", "අගෝ", "සැප්", "ඔක්", "නොවැ", "දෙසැ"],

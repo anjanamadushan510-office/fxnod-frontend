@@ -13,7 +13,7 @@ export function PublicHeader() {
     <div className="sticky top-0 z-30 bg-bg/85 backdrop-blur-md">
       <header className="site-header min-h-16 border-b border-line flex items-center justify-between gap-3 py-3 sm:py-0 sm:h-16 sm:px-8 lg:px-12">
         <Link href="/" aria-label="FXNOD home" className="shrink-0">
-          <img src="/assets/fxnod-logo.png" alt="FXNOD" className="h-6 sm:h-7 w-auto" />
+          <img src="/assets/fxnod-logo.png" alt="FXNOD" className="h-6 sm:h-7 w-auto" width="84" height="28" />
         </Link>
         <nav className="hidden md:flex items-center gap-8 text-sm text-zinc-400">
           <Link href={"/#product" as Route} className="hover:text-white transition">Product</Link>

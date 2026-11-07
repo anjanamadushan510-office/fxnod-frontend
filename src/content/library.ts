@@ -5,7 +5,7 @@
  * those four. Anything that must know about every guide (the guides page, a
  * guide's own page, the sitemap) reads from here.
  */
-import { GUIDES, type Guide, type GuideCta } from "./guides";
+import { GUIDES, type Guide, type GuideCta, type GuideProvenance, type GuideSource } from "./guides";
 import { AUTOHUB_BOT_GUIDES } from "./autohubBots";
 import { AUTOMATION_GUIDES } from "./learnAutomation";
 import { BASICS_GUIDES } from "./learnBasics";
@@ -14,8 +14,8 @@ import { BOT_MORE_GUIDES } from "./learnBotsMore";
 import { CHART_GUIDES } from "./learnCharts";
 import { CONCEPT_GUIDES } from "./learnConcepts";
 import { CONTRACT_GUIDES } from "./learnContracts";
-import { COUNTRY_GUIDES } from "./learnCountries";
-import { DERIV_GUIDES } from "./learnDeriv";
+import { CHECKED as COUNTRY_CHECKED, COUNTRY_GUIDES } from "./learnCountries";
+import { CHECKED as DERIV_CHECKED, DERIV_GUIDES } from "./learnDeriv";
 import { DERIV_MORE_GUIDES } from "./learnDerivMore";
 import { MARKET_GUIDES } from "./learnMarkets";
 import { MINDSET_GUIDES } from "./learnMindset";
@@ -179,6 +179,104 @@ export const ALL_GUIDES: Guide[] = GUIDE_SECTIONS.flatMap((section) => section.g
 
 export function guideBySlug(slug: string): Guide | undefined {
   return ALL_GUIDES.find((g) => g.slug === slug);
+}
+
+/**
+ * Outside pages a guide can be checked against, each found from what the
+ * guide's own text says it relies on ("Deriv's regulatory page", "the Capital
+ * Markets Authority"). A guide that names none gets no source list rather than
+ * a borrowed one: a link is only added where the text already rests on it.
+ */
+const SOURCE_RULES: { pattern: RegExp; source: GuideSource }[] = [
+  { pattern: /regulatory page/i, source: { label: "Deriv: regulatory information", href: "https://deriv.com/regulatory" } },
+  { pattern: /payment (methods )?page/i, source: { label: "Deriv: payment methods", href: "https://deriv.com/payment-methods" } },
+  { pattern: /help centre/i, source: { label: "Deriv: help centre", href: "https://deriv.com/help-centre" } },
+  { pattern: /contact( us)? page/i, source: { label: "Deriv: contact us", href: "https://deriv.com/contact-us" } },
+  {
+    pattern: /synthetic indices page/i,
+    source: { label: "Deriv: synthetic indices", href: "https://deriv.com/markets/derived-indices/synthetic-indices" },
+  },
+  { pattern: /Deriv's terms/, source: { label: "Deriv: terms and conditions", href: "https://deriv.com/terms-and-conditions" } },
+  { pattern: /Chief Executive Officer/, source: { label: "Deriv: who we are", href: "https://deriv.com/who-we-are" } },
+  {
+    pattern: /Capital Markets Authority/,
+    source: { label: "Capital Markets Authority (Kenya)", href: "https://www.cma.or.ke/" },
+  },
+  {
+    pattern: /Securities and Exchange Commission/,
+    source: { label: "Securities and Exchange Commission (Nigeria)", href: "https://sec.gov.ng/" },
+  },
+  {
+    pattern: /Financial Sector Conduct Authority/,
+    source: { label: "Financial Sector Conduct Authority (South Africa)", href: "https://www.fsca.co.za/" },
+  },
+];
+
+function guideText(guide: Guide): string {
+  const blocks = guide.body.map((block) => {
+    switch (block.type) {
+      case "h2":
+      case "p":
+        return block.text;
+      case "note":
+        return `${block.title} ${block.text}`;
+      case "list":
+        return block.items.join(" ");
+      case "steps":
+        return block.items.map((step) => `${step.title} ${step.text}`).join(" ");
+      case "table":
+        return [block.head, ...block.rows].flat().join(" ");
+      case "links":
+        return block.items.map((item) => `${item.label} ${item.text}`).join(" ");
+    }
+  });
+  return [guide.answer, ...blocks, ...guide.faq.flatMap((item) => [item.q, item.a])].join(" ");
+}
+
+/** Modules whose Deriv statements were read on Deriv's pages, and when. */
+const DERIV_READ_ON = new Map<Guide, string>([
+  ...[...DERIV_GUIDES, ...DERIV_MORE_GUIDES, ...BOT_MORE_GUIDES, ...CONTRACT_GUIDES, ...SYNTHETIC_GUIDES].map(
+    (guide): [Guide, string] => [guide, DERIV_CHECKED],
+  ),
+  ...COUNTRY_GUIDES.map((guide): [Guide, string] => [guide, COUNTRY_CHECKED]),
+]);
+
+const INDEPENDENT =
+  "FXNOD is independent of Deriv. Deriv can change its terms, and what applies to you depends on your country: confirm anything that matters on deriv.com before you act on it.";
+
+/** How a guide was checked, and the outside pages it rests on. */
+export function provenanceFor(guide: Guide): GuideProvenance {
+  const text = guideText(guide);
+  const sources = SOURCE_RULES.filter((rule) => rule.pattern.test(text)).map((rule) => rule.source);
+  if (GUIDES.includes(guide)) {
+    return {
+      text: "Written by the team that builds FXNOD, from the product itself. When a tool changes in a way this page describes, the page changes in the same release.",
+      sources,
+    };
+  }
+  if (AUTOHUB_BOT_GUIDES.includes(guide)) {
+    return {
+      text: "The contract, entry rule, stake plan and stop-loss plans on this page come from FXNOD's Auto Hub bot catalogue, and the page changes when the bot does.",
+      sources,
+    };
+  }
+  const readOn = DERIV_READ_ON.get(guide);
+  if (readOn) {
+    const worked = CONTRACT_GUIDES.includes(guide)
+      ? " Odds and break-even win rates are worked out on the page from the payout, so the arithmetic can be checked."
+      : "";
+    return {
+      text: `Statements about Deriv on this page were read on Deriv's own website on ${readOn} and are written as what Deriv says.${worked} ${INDEPENDENT}`,
+      sources,
+    };
+  }
+  return {
+    text:
+      sources.length > 0
+        ? `A general explanation written by the FXNOD team. Where it relies on a page outside FXNOD, that page is linked below. ${INDEPENDENT}`
+        : "A general explanation written by the FXNOD team. It gives no advice and makes no promise of results.",
+    sources,
+  };
 }
 
 /** A guide's own call to action, or its section's. */

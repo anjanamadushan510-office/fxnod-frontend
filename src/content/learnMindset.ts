@@ -22,7 +22,7 @@ export const MINDSET_GUIDES: Guide[] = [
       "Nothing to learn on a demo account. For real trading, enough that 1% of it is at least the smallest trade your market allows. Worked examples.",
     tag: TAG,
     published: DATE,
-    updated: DATE,
+    updated: "2026-11-08",
     image: "/assets/login-slide-1.jpg",
     answer:
       "You need no money to start learning: a demo account is free. To trade real money sensibly, you need enough that the smallest trade your market allows is about 1% of the account, and it must be money you can afford to lose entirely. That can be under 100 for small-stake options and several thousand for some markets.",
@@ -66,6 +66,24 @@ export const MINDSET_GUIDES: Guide[] = [
         type: "p",
         text: "A small account can teach you to follow rules with real money at low cost. It cannot produce an income. A very good year might be a return of some tens of per cent, which on 200 is the price of a meal. Chasing meaningful money from a small account leads straight to oversized trades.",
       },
+      { type: "h2", text: "If a bot does the trading" },
+      {
+        type: "table",
+        head: ["Cost", "Typical range", "Notes"],
+        rows: [
+          ["The tool", "Free to a monthly fee", "Bot Forge and Auto Hub require an active tool package; review current prices in Discover"],
+          ["Hosting", "Nothing to a monthly fee", "Needed only for bots that run on your own machine or a VPS"],
+          ["Trading capital", "Your choice", "The only cost that is at risk on every trade"],
+        ],
+      },
+      {
+        type: "p",
+        text: "A flat-stake bot needs a balance of at least 50 to 100 times its stake: 50 to 100 at a stake of 1, 500 to 1,000 at a stake of 10. With ten stakes, chance decides the outcome before the strategy can.",
+      },
+      {
+        type: "p",
+        text: "A bot that raises the stake after losses needs far more. For Martingale the balance must cover the whole ladder: doubling from a base of 1 for seven steps needs 127, for ten steps 1,023. Covering the ladder only means you can afford to lose it once, which is why recovery systems are unsuitable for small accounts whatever their advertising says.",
+      },
       { type: "h2", text: "A sensible start" },
       {
         type: "steps",
@@ -90,6 +108,14 @@ export const MINDSET_GUIDES: Guide[] = [
       {
         q: "Should I borrow money to trade?",
         a: "No. Trade only money whose complete loss would not affect your life.",
+      },
+      {
+        q: "How much money do you need to start a trading bot?",
+        a: "None to learn: a demo account runs a bot with virtual funds. For real money, at least 50 to 100 times the bot's stake if the stake is flat, and far more if it raises the stake after losses.",
+      },
+      {
+        q: "How much does a trading bot cost?",
+        a: "From nothing to hundreds a month. Price does not indicate quality. FXNOD's bot tools require a package; current terms appear in Discover.",
       },
     ],
     related: ["how-to-calculate-position-size", "how-to-grow-a-small-trading-account"],

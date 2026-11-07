@@ -363,82 +363,6 @@ export const BOT_MORE_GUIDES: Guide[] = [
   },
 
   {
-    slug: "how-much-money-to-start-a-trading-bot",
-    title: "How much money do you need to start a trading bot?",
-    description:
-      "Nothing to learn on a demo account. For real money, work backwards from the stake: enough for at least 50 to 100 stakes. Costs and worked examples.",
-    tag: TAG,
-    published: DATE,
-    updated: DATE,
-    image: "/assets/login-slide-2.jpg",
-    answer:
-      "You need no money to start: a demo account runs a bot with virtual funds. For real money, work backwards from the stake. A flat-stake bot needs a balance of at least 50 to 100 times its stake to survive ordinary losing streaks. A bot that raises the stake after losses needs far more, set by the largest stake it can reach.",
-    body: [
-      { type: "h2", text: "The three costs" },
-      {
-        type: "table",
-        head: ["Cost", "Typical range", "Notes"],
-        rows: [
-          ["The tool", "Free to a monthly fee", "Bot Forge and Auto Hub require an active tool package; review current prices in Discover"],
-          ["Hosting", "Nothing to a monthly fee", "Needed only for bots that run on your own machine or a VPS"],
-          ["Trading capital", "Your choice", "The only cost that is at risk on every trade"],
-        ],
-      },
-      { type: "h2", text: "Sizing capital for a flat-stake bot" },
-      {
-        type: "table",
-        head: ["Stake", "Balance for 50 stakes", "Balance for 100 stakes"],
-        rows: [
-          ["0.35", "17.50", "35"],
-          ["1", "50", "100"],
-          ["5", "250", "500"],
-          ["10", "500", "1,000"],
-        ],
-      },
-      {
-        type: "p",
-        text: "Fifty stakes lets a session absorb a bad run and still tell you something about the strategy. With ten stakes, chance decides the outcome before the strategy can.",
-      },
-      { type: "h2", text: "Sizing capital for a recovery bot" },
-      {
-        type: "p",
-        text: "For Martingale, the balance must cover the whole ladder. Doubling from a base of 1 for seven steps needs 127, for ten steps 1,023. And covering the ladder only means you can afford to lose it once. That is why recovery systems are unsuitable for small accounts, whatever their advertising says.",
-      },
-      { type: "h2", text: "A sensible way to begin" },
-      {
-        type: "steps",
-        items: [
-          { title: "Spend nothing for the first weeks", text: "Run the bot on demo until you have a few hundred trades recorded." },
-          { title: "Choose an amount you can lose completely", text: "Treat it as the price of the lesson." },
-          { title: "Divide it by 100", text: "That is your stake. If it is below the contract's minimum, the amount is too small for that contract." },
-          { title: "Set the session stop loss", text: "A fraction of the balance, so one session cannot end the account." },
-        ],
-      },
-      { type: "h2", text: "How much do bots make?" },
-      {
-        type: "p",
-        text: "There is no typical figure, and advertised ones are not evidence. A bot's result is the edge of its strategy multiplied by the number of trades, and on a random index the edge is slightly negative. More capital does not change that. It only changes the size of the numbers.",
-      },
-      RISK_NOTE,
-    ],
-    faq: [
-      {
-        q: "Can I start a trading bot with 10 dollars?",
-        a: "With options at a minimum stake of around 0.35, a balance of 10 gives fewer than 30 stakes, which is thin. It is enough to learn the mechanics after demo, and not much more.",
-      },
-      {
-        q: "How much does a trading bot cost?",
-        a: "From nothing to hundreds a month. Price does not indicate quality. FXNOD's bot tools require a package; current terms appear in Discover.",
-      },
-      {
-        q: "Do I need a big balance to make a bot profitable?",
-        a: "No balance makes a bot without an edge profitable. A larger balance only lets it run longer.",
-      },
-    ],
-    related: ["how-to-calculate-position-size", "best-synthetic-index-for-a-small-account"],
-  },
-
-  {
     slug: "bot-works-on-demo-but-not-real",
     title: "Why does my bot work on demo but not on a real account?",
     description:
@@ -1026,6 +950,6 @@ export const BOT_MORE_GUIDES: Guide[] = [
         a: "The technology is legitimate and widely used. Many products sold around it, with guaranteed returns, are not.",
       },
     ],
-    related: ["can-trading-bots-lose-money", "are-trading-bots-legal"],
+    related: ["why-trading-bots-make-losing-trades", "are-trading-bots-legal"],
   },
 ];

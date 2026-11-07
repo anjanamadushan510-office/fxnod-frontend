@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { GuideArticle } from "@/components/guides/GuideArticle";
 import type { Guide } from "@/content/guides";
-import { ctaFor, guideBySlug } from "@/content/library";
+import { ctaFor, guideBySlug, provenanceFor } from "@/content/library";
 import { languagePaths, otherLanguages } from "@/content/localGuides";
 import { GUIDE_LABELS } from "@/lib/locales";
 import { SITE_NAME, pageMetadata } from "@/lib/site";
@@ -44,6 +44,7 @@ export default function GuideDetailPage({ params }: Props) {
       cta={ctaFor(guide)}
       related={related}
       alternates={otherLanguages(guide.slug, "en")}
+      provenance={provenanceFor(guide)}
     />
   );
 }

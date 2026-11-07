@@ -14,7 +14,7 @@ import { RISK_NOTE, type Guide, type GuideBlock } from "./guides";
 
 const TAG = "Deriv questions";
 const DATE = "2026-10-09";
-const CHECKED = "9 October 2026";
+export const CHECKED = "9 October 2026";
 
 export const SOURCE_NOTE: GuideBlock = {
   type: "note",
@@ -595,7 +595,7 @@ export const DERIV_GUIDES: Guide[] = [
         a: "No way is safe. The lowest-risk approach is a demo account. With real money: a small deposit, a small flat stake and a fixed daily loss limit.",
       },
     ],
-    related: ["can-trading-bots-lose-money", "trading-bot-risk-management"],
+    related: ["why-trading-bots-make-losing-trades", "trading-bot-risk-management"],
   },
 
   {

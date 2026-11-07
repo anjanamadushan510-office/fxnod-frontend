@@ -331,72 +331,6 @@ export const BOT_GUIDES: Guide[] = [
   },
 
   {
-    slug: "can-trading-bots-lose-money",
-    title: "Can trading bots lose money?",
-    description:
-      "Yes. A trading bot can lose your whole balance, and faster than you would by hand. The four ways it happens and the settings that limit the damage.",
-    tag: TAG,
-    published: DATE,
-    updated: DATE,
-    image: "/assets/login-slide-3.jpg",
-    answer:
-      "Yes. A trading bot can lose money, including the entire balance of the account it trades. A bot follows its rules without judgment, so a losing rule loses automatically and quickly. No bot can guarantee a profit. What you control is how much a session can lose, through the stake, the stop loss and the way the stake changes after a loss.",
-    body: [
-      { type: "h2", text: "The four ways a bot loses" },
-      {
-        type: "list",
-        items: [
-          "The strategy has no edge. On a contract that pays less than it risks, a rule that wins by chance loses a little on average, on every trade, for ever.",
-          "The stake is too large for the balance. An ordinary losing streak ends the session before the strategy has had a fair number of trades.",
-          "The stake grows after losses. Martingale turns a string of small losses into one very large one.",
-          "Nobody is watching the limits. A bot with no stop loss, or one whose stop loss lives in a browser tab that closed, has no floor.",
-        ],
-      },
-      { type: "h2", text: "Why a bot loses faster than a person" },
-      {
-        type: "p",
-        text: "A person trading by hand places perhaps a few dozen trades in a session, pauses after a loss, and gets tired. A bot on one-tick contracts can place hundreds of trades an hour and never pauses. Speed multiplies whatever the average result per trade is. If that average is slightly negative, speed is the problem.",
-      },
-      { type: "h2", text: "The arithmetic of a small disadvantage" },
-      {
-        type: "p",
-        text: "Take a contract with two equally likely outcomes that pays a profit of 95 for every 100 staked. Over 1,000 trades at a stake of 1 you would expect about 500 wins of 0.95 and 500 losses of 1: a loss of about 25. Nothing dramatic happened on any single trade. That steady drain is what a strategy without an edge looks like, and no stake pattern changes it. Stake patterns only change when the loss arrives.",
-      },
-      { type: "h2", text: "What limits the damage" },
-      {
-        type: "steps",
-        items: [
-          { title: "Set a session stop loss you can afford", text: "Choose it before you start, as money, and treat reaching it as a normal outcome." },
-          { title: "Keep the stake small against the stop loss", text: "A stake of 1% to 2% of the session's stop loss budget leaves room for a losing streak." },
-          { title: "Prefer a flat stake", text: "It is the only sizing where the worst case is easy to see: the stake multiplied by the number of losses." },
-          { title: "Know your worst trade", text: "If the stake can grow, work out the largest single stake the settings allow. That is the amount one trade can lose." },
-        ],
-      },
-      {
-        type: "note",
-        title: "How FXNOD applies limits",
-        text: "A bot cannot be started without a stop loss. Limits are checked on FXNOD's servers before every trade, so they keep working with the page closed. The check happens before each order, which means the last trade of a session can take the loss past the stop loss by up to that trade's stake.",
-      },
-      RISK_NOTE,
-    ],
-    faq: [
-      {
-        q: "Can a bot lose more than my stop loss?",
-        a: "By a limited amount, yes. A stop loss is checked before each trade, so the final trade can carry the session past it by up to that trade's stake. With a flat stake the overshoot is small. With a growing stake it can be large.",
-      },
-      {
-        q: "Can a bot lose more than my account balance?",
-        a: "On Deriv options contracts the most a trade can lose is its stake, so the balance cannot go below zero from those trades. Other products and other brokers work differently. Check the terms of the contract you trade.",
-      },
-      {
-        q: "Is there a bot that never loses?",
-        a: "No. Anyone selling one is selling a bot that has not lost yet, usually a Martingale shown over a short period.",
-      },
-    ],
-    related: ["trading-bot-risk-management", "why-trading-bots-make-losing-trades"],
-  },
-
-  {
     slug: "how-to-test-a-trading-bot",
     title: "How to test a trading bot before using real money",
     description:
@@ -546,7 +480,7 @@ export const BOT_GUIDES: Guide[] = [
         a: "You can, but then the stop loss is the only exit the bot has. A target gives the session a second way to end.",
       },
     ],
-    related: ["can-trading-bots-lose-money", "risk-to-reward-ratio"],
+    related: ["why-trading-bots-make-losing-trades", "risk-to-reward-ratio"],
   },
 
   {
@@ -640,7 +574,7 @@ export const BOT_GUIDES: Guide[] = [
       "Bots lose trades because no rule predicts the next price. Losses are normal; the question is whether the wins pay for them. Six causes explained.",
     tag: TAG,
     published: DATE,
-    updated: DATE,
+    updated: "2026-11-08",
     image: "/assets/login-slide-1.jpg",
     answer:
       "Trading bots make losing trades because no rule can know the next price. Every strategy, good or bad, loses some of its trades. A bot is doing its job when each trade matches its rules, win or lose. The useful question is not why a trade lost but whether the wins, over hundreds of trades, are large enough to pay for the losses.",
@@ -677,14 +611,50 @@ export const BOT_GUIDES: Guide[] = [
           { title: "Compare", text: "If the measured win rate sits below break-even across several hundred trades, it is the strategy." },
         ],
       },
+      { type: "h2", text: "Can a trading bot lose your whole balance?" },
+      {
+        type: "p",
+        text: "Yes, including the entire balance of the account it trades, and faster than you would by hand. A person places perhaps a few dozen trades in a session, pauses after a loss and gets tired. A bot on one-tick contracts can place hundreds of trades an hour and never pauses. Speed multiplies whatever the average result per trade is. If that average is slightly negative, speed is the problem.",
+      },
+      {
+        type: "p",
+        text: "Take a contract with two equally likely outcomes that pays a profit of 95 for every 100 staked. Over 1,000 trades at a stake of 1 you would expect about 500 wins of 0.95 and 500 losses of 1: a loss of about 25. Nothing dramatic happened on any single trade. That steady drain is what a strategy without an edge looks like, and no stake pattern changes it. Stake patterns only change when the loss arrives.",
+      },
       { type: "h2", text: "What to do about it" },
       {
         type: "p",
         text: "Do not raise the stake to win it back, and do not adjust settings after each loss. Stop the bot, return to demo, change one setting, and test again. If no version clears break-even over a few hundred trades, the honest conclusion is that the idea has no edge.",
       },
+      { type: "h2", text: "What limits the damage" },
+      {
+        type: "steps",
+        items: [
+          { title: "Set a session stop loss you can afford", text: "Choose it before you start, as money, and treat reaching it as a normal outcome." },
+          { title: "Keep the stake small against the stop loss", text: "A stake of 1% to 2% of the session's stop loss budget leaves room for a losing streak." },
+          { title: "Prefer a flat stake", text: "It is the only sizing where the worst case is easy to see: the stake multiplied by the number of losses." },
+          { title: "Know your worst trade", text: "If the stake can grow, work out the largest single stake the settings allow. That is the amount one trade can lose." },
+        ],
+      },
+      {
+        type: "note",
+        title: "How FXNOD applies limits",
+        text: "A bot cannot be started without a stop loss. Limits are checked on FXNOD's servers before every trade, so they keep working with the page closed. The check happens before each order, which means the last trade of a session can take the loss past the stop loss by up to that trade's stake.",
+      },
       RISK_NOTE,
     ],
     faq: [
+      {
+        q: "Can trading bots lose money?",
+        a: "Yes. A bot follows its rules without judgment, so a losing rule loses automatically and quickly, up to the whole balance of the account it trades. No bot can guarantee a profit. What you control is how much a session can lose.",
+      },
+      {
+        q: "Can a bot lose more than my stop loss?",
+        a: "By a limited amount, yes. A stop loss is checked before each trade, so the final trade can carry the session past it by up to that trade's stake. With a flat stake the overshoot is small. With a growing stake it can be large.",
+      },
+      {
+        q: "Can a bot lose more than my account balance?",
+        a: "On Deriv options contracts the most a trade can lose is its stake, so the balance cannot go below zero from those trades. Other products and other brokers work differently. Check the terms of the contract you trade.",
+      },
       {
         q: "Is my bot broken if it loses several trades in a row?",
         a: "Usually not. Runs of losses are a normal feature of any strategy. On an even-chance contract, five losses in a row happens about once in every 32 starting points.",
@@ -698,7 +668,7 @@ export const BOT_GUIDES: Guide[] = [
         a: "Most often the demo test was too short to show a losing stretch, or the stake was scaled to a demo balance far larger than the real one.",
       },
     ],
-    related: ["how-to-evaluate-a-trading-strategy", "can-trading-bots-lose-money"],
+    related: ["how-to-evaluate-a-trading-strategy", "trading-bot-risk-management"],
   },
 
   {

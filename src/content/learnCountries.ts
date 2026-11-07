@@ -21,7 +21,7 @@ import { SOURCE_NOTE } from "./learnDeriv";
 
 const TAG = "Deriv by country";
 const DATE = "2026-10-10";
-const CHECKED = "10 October 2026";
+export const CHECKED = "10 October 2026";
 
 const BOT_AFTER_FUNDING = {
   title: "Funded your account? Keep your limits when the phone is off",
@@ -211,7 +211,7 @@ export const COUNTRY_GUIDES: Guide[] = [
       "What a trader in Kenya should know about Deriv: which regulators Deriv names, how to check the CMA register, M-Pesa, agents, and how to start on demo.",
     tag: TAG,
     published: DATE,
-    updated: DATE,
+    updated: "2026-11-08",
     image: "/assets/login-slide-3.jpg",
     answer:
       `Deriv is widely used in Kenya, which third-party traffic estimates rank among its largest markets. On ${CHECKED}, Deriv's own regulatory page named regulators in Labuan, the British Virgin Islands, Vanuatu, Mauritius and the Cayman Islands, and no Kenyan one. To see who is licensed locally, check the Capital Markets Authority's own register. Start on the demo account.`,
@@ -220,6 +220,15 @@ export const COUNTRY_GUIDES: Guide[] = [
       {
         type: "p",
         text: "In Kenya, the Capital Markets Authority licenses online foreign exchange brokers and publishes its list of licensees. Deriv's regulatory page does not name the CMA among its regulators. This guide does not state whether trading with an offshore broker is permitted for you: that is a legal question. Look at the CMA's own list, reached through your own search, and decide with that in front of you.",
+      },
+      { type: "h2", text: "Is Deriv being closed in Kenya?" },
+      {
+        type: "p",
+        text: "No closure has been announced that FXNOD could find. On 8 November 2026, a search of the Capital Markets Authority's website returned no press release or notice naming Deriv. If that changes, it will show on Deriv's site, in your own account, and in the CMA's notices on its own website.",
+      },
+      {
+        type: "p",
+        text: "A message that says Deriv is about to close and tells you to move your balance somewhere quickly is a scam pattern, whoever it claims to come from. Withdraw only through the cashier in your own Deriv account.",
       },
       { type: "h2", text: "What a locally licensed broker changes" },
       {
@@ -274,6 +283,10 @@ export const COUNTRY_GUIDES: Guide[] = [
       {
         q: "Is Deriv legal in Kenya?",
         a: "This guide does not give a legal ruling. Deriv's regulatory page names no Kenyan regulator. Check the Capital Markets Authority's list of licensed brokers and your own circumstances.",
+      },
+      {
+        q: "Is Deriv closing in Kenya?",
+        a: "FXNOD found no notice of it on the Capital Markets Authority's website on 8 November 2026. Treat any message urging you to move money before a closure as a scam.",
       },
       {
         q: "Does Deriv have an office or phone number in Kenya?",

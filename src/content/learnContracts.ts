@@ -23,8 +23,9 @@ export const CONTRACT_GUIDES: Guide[] = [
       "Rise/Fall asks whether the price ends above or below where it started. How entry and exit spots are set, the payout, and the win rate you need.",
     tag: TAG,
     published: DATE,
-    updated: DATE,
-    image: "/assets/login-slide-1.jpg",
+    updated: "2026-11-08",
+    image: "/assets/guides/trade-pilot-rise-fall.jpg",
+    imageAlt: "Trade Pilot in FXNOD with a Rise/Fall ticket on the Volatility 100 Index and its live tick chart, signed out, on 7 November 2026.",
     answer:
       "Rise/Fall is the simplest Deriv option. You predict whether the market price will finish above or below the entry price when the contract ends. If you are right you receive the payout quoted before you bought; if you are wrong you lose the stake. With two roughly equal outcomes, you need to win a little more than half your trades to break even.",
     body: [
@@ -100,8 +101,9 @@ export const CONTRACT_GUIDES: Guide[] = [
       "Higher/Lower asks whether the price ends above or below a target you choose. How the barrier changes the odds and the payout together.",
     tag: TAG,
     published: DATE,
-    updated: DATE,
-    image: "/assets/login-slide-2.jpg",
+    updated: "2026-11-08",
+    image: "/assets/guides/trade-pilot-higher-lower.jpg",
+    imageAlt: "Trade Pilot in FXNOD with a Higher/Lower ticket on the Volatility 100 Index and its live tick chart, signed out, on 7 November 2026.",
     answer:
       "In Higher/Lower you choose a target price, called the barrier, and predict whether the market will finish above it or below it when the contract ends. Moving the barrier changes the odds: an easy target pays little and a hard one pays a lot. Deriv says that if the exit spot equals the barrier, the contract does not win.",
     body: [
@@ -174,8 +176,9 @@ export const CONTRACT_GUIDES: Guide[] = [
       "Touch wins if the price reaches a barrier at any moment before expiry; No Touch wins if it never does. How distance, time and volatility set the odds.",
     tag: TAG,
     published: DATE,
-    updated: DATE,
-    image: "/assets/login-slide-3.jpg",
+    updated: "2026-11-08",
+    image: "/assets/guides/trade-pilot-touch-no-touch.jpg",
+    imageAlt: "Trade Pilot in FXNOD with a Touch/No Touch ticket on the Volatility 100 Index and its live tick chart, signed out, on 7 November 2026.",
     answer:
       "In Touch/No Touch you set a barrier and predict whether the market will reach it at any time before the contract ends. Touch wins the moment the barrier is reached. No Touch wins only if the price stays away for the whole period. The distance to the barrier, the time allowed and the market's volatility decide the odds.",
     body: [
@@ -245,8 +248,9 @@ export const CONTRACT_GUIDES: Guide[] = [
       "Matches wins on one digit in ten; Differs wins on nine in ten. The payout each needs to break even, and why a 90% win rate can still lose.",
     tag: TAG,
     published: DATE,
-    updated: DATE,
-    image: "/assets/login-slide-1.jpg",
+    updated: "2026-11-08",
+    image: "/assets/guides/trade-pilot-matches-differs.jpg",
+    imageAlt: "Trade Pilot in FXNOD with a Matches/Differs ticket on the Volatility 100 Index and its live tick chart, signed out, on 7 November 2026.",
     answer:
       "Matches/Differs is a bet on the last digit of the final tick's price. Matches wins if that digit is the one you picked, a one-in-ten chance that pays several times the stake. Differs wins if it is any other digit, a nine-in-ten chance that pays a small fraction of the stake. One Differs loss cancels about ten wins.",
     body: [
@@ -310,8 +314,9 @@ export const CONTRACT_GUIDES: Guide[] = [
       "Even/Odd is a bet on whether the last digit of the final tick is even or odd. A 50/50 outcome with a payout under double: what that means over time.",
     tag: TAG,
     published: DATE,
-    updated: DATE,
-    image: "/assets/login-slide-2.jpg",
+    updated: "2026-11-08",
+    image: "/assets/guides/trade-pilot-even-odd.jpg",
+    imageAlt: "Trade Pilot in FXNOD with a Even/Odd ticket on the Volatility 100 Index and its live tick chart, signed out, on 7 November 2026.",
     answer:
       "Even/Odd is a bet on the last digit of the final tick. Even wins on 0, 2, 4, 6 or 8 and Odd wins on 1, 3, 5, 7 or 9. Five digits win either way, so the chance is 50%. The payout is a little under double the stake, which means the trade loses slightly on average however you choose.",
     body: [
@@ -382,8 +387,9 @@ export const CONTRACT_GUIDES: Guide[] = [
       "Over/Under is a bet that the last digit is above or below a digit you pick. A table of the win chance and break-even payout for every choice.",
     tag: TAG,
     published: DATE,
-    updated: DATE,
-    image: "/assets/login-slide-3.jpg",
+    updated: "2026-11-08",
+    image: "/assets/guides/trade-pilot-over-under.jpg",
+    imageAlt: "Trade Pilot in FXNOD with a Over/Under ticket on the Volatility 100 Index and its live tick chart, signed out, on 7 November 2026.",
     answer:
       "In Over/Under you pick a digit and predict whether the last digit of the final tick will be greater than it or less than it. The digit you choose sets the odds exactly: Over 3 wins on 4 to 9, six digits in ten. Landing on your chosen digit loses. Easier choices pay less and harder ones pay more.",
     body: [
@@ -458,8 +464,9 @@ export const CONTRACT_GUIDES: Guide[] = [
       "An accumulator grows your stake every tick the price stays in a range and loses it if the price leaves. Growth rates, the range, and when to take profit.",
     tag: TAG,
     published: DATE,
-    updated: DATE,
-    image: "/assets/login-slide-1.jpg",
+    updated: "2026-11-08",
+    image: "/assets/guides/trade-pilot-accumulators.jpg",
+    imageAlt: "Trade Pilot in FXNOD with a Accumulators ticket on the Volatility 100 Index and its live tick chart, signed out, on 7 November 2026.",
     answer:
       "An accumulator option grows your stake by a fixed percentage on every tick that the price stays within a narrow range around the previous tick. If the price moves outside the range, the contract ends and the stake is lost. You choose a growth rate from 1% to 5%, and you can sell at any time to take the profit so far.",
     body: [
@@ -539,8 +546,9 @@ export const CONTRACT_GUIDES: Guide[] = [
       "A multiplier magnifies a price move on your stake, with the loss capped at the stake. The formula, where stop out falls, and the commission.",
     tag: TAG,
     published: DATE,
-    updated: DATE,
-    image: "/assets/login-slide-2.jpg",
+    updated: "2026-11-08",
+    image: "/assets/guides/trade-pilot-multipliers.jpg",
+    imageAlt: "Trade Pilot in FXNOD with a Multipliers ticket on the Volatility 100 Index and its live tick chart, signed out, on 7 November 2026.",
     answer:
       "A Deriv multiplier magnifies the percentage move of a market on your stake. Profit or loss equals the percentage price change times the multiplier times the stake, less a commission. Your loss is capped at the stake: the position is closed automatically at the stop-out price. The higher the multiplier, the smaller the move that wipes out the stake.",
     body: [
@@ -625,8 +633,9 @@ export const CONTRACT_GUIDES: Guide[] = [
       "A turbo pays for every point the price finishes beyond a barrier and is knocked out if the price touches it. How the payout is calculated.",
     tag: TAG,
     published: DATE,
-    updated: DATE,
-    image: "/assets/login-slide-3.jpg",
+    updated: "2026-11-08",
+    image: "/assets/guides/trade-pilot-turbos.jpg",
+    imageAlt: "Trade Pilot in FXNOD with a Turbos ticket on the Volatility 100 Index and its live tick chart, signed out, on 7 November 2026.",
     answer:
       "A turbo option pays according to how far the market finishes from a barrier, as long as the price never touches that barrier during the contract. The payout is the payout per point multiplied by the distance between the final price and the barrier. If the barrier is touched, the contract ends and the stake is lost.",
     body: [
@@ -699,8 +708,9 @@ export const CONTRACT_GUIDES: Guide[] = [
       "A vanilla Call pays if the price finishes above the strike, a Put if it finishes below. How payout per point works and what the strike changes.",
     tag: TAG,
     published: DATE,
-    updated: DATE,
-    image: "/assets/login-slide-1.jpg",
+    updated: "2026-11-08",
+    image: "/assets/guides/trade-pilot-vanillas.jpg",
+    imageAlt: "Trade Pilot in FXNOD with a Vanillas ticket on the Volatility 100 Index and its live tick chart, signed out, on 7 November 2026.",
     answer:
       "A vanilla option on Deriv is a Call or a Put against a strike price. A Call earns a payout if the final price is above the strike at expiry, and a Put if it is below. The payout is the payout per point multiplied by the distance between the final price and the strike. The most you can lose is the stake.",
     body: [

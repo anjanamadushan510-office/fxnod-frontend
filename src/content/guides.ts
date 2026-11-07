@@ -34,6 +34,23 @@ export type GuideBlock =
   /** Links to other pages of the site, each with a line saying what is there. */
   | { type: "links"; items: { href: string; label: string; text: string }[] };
 
+/** A page outside FXNOD that a guide's statements can be checked against. */
+export interface GuideSource {
+  href: string;
+  label: string;
+}
+
+/**
+ * What a reader is told about where a guide's statements come from: one
+ * paragraph, and the outside pages it names. Built in library.ts from what
+ * the guide itself says, never typed per guide, so it cannot drift from the
+ * text it describes.
+ */
+export interface GuideProvenance {
+  text: string;
+  sources: GuideSource[];
+}
+
 /** The box under a guide that says what to do next in FXNOD. */
 export interface GuideCta {
   title: string;
@@ -50,6 +67,12 @@ export interface Guide {
   published: string;
   updated: string;
   image: string;
+  /**
+   * Set only when `image` is a real screenshot of the product. It is shown
+   * whole, with this text as its alt and caption; a decorative image is
+   * cropped and has no alt.
+   */
+  imageAlt?: string;
   answer: string;
   body: GuideBlock[];
   faq: { q: string; a: string }[];
@@ -194,8 +217,9 @@ export const GUIDES: Guide[] = [
       "Trade Pilot is FXNOD's manual trading screen for Deriv: a live chart, a market picker and ten trade types. Here is how to place a trade and what each type means.",
     tag: "Trade Pilot",
     published: "2026-10-06",
-    updated: "2026-10-06",
-    image: "/assets/login-slide-1.jpg",
+    updated: "2026-11-08",
+    image: "/assets/guides/trade-pilot-dtrader-manual-trading.jpg",
+    imageAlt: "Trade Pilot in FXNOD with a Rise/Fall ticket on the Volatility 100 (1s) Index and its live tick chart, signed out, on 7 November 2026.",
     answer:
       "Trade Pilot is FXNOD's manual trading screen for Deriv. Pick a market, pick a trade type such as Rise/Fall or Multipliers, set your stake and duration, read the payout Deriv quotes, and press Buy. The trade is placed on your own Deriv account and stays on the chart until it settles.",
     body: [

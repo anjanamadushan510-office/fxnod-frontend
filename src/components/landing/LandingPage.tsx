@@ -44,7 +44,7 @@ export function LandingPage({ guides }: { guides: LandingGuide[] }) {
       <div className={`landing-header fixed top-[var(--maintenance-banner-height,0px)] left-0 right-0 w-full z-50 bg-bg/50 backdrop-blur-md transition-transform duration-300 ease-in-out ${isVisible ? "translate-y-0" : "-translate-y-full"}`}>
         <header className="site-header w-full flex items-center justify-between gap-3 py-3 sm:py-0 sm:h-16 sm:px-8 lg:px-12">
           <Link href="/" aria-label="FXNOD home" className="shrink-0">
-            <img src="/assets/fxnod-logo.png" alt="FXNOD" className="h-6 sm:h-7 w-auto" width="140" height="28" />
+            <img src="/assets/fxnod-logo.png" alt="FXNOD" className="h-6 sm:h-7 w-auto" width="84" height="28" />
           </Link>
           <nav aria-label="Primary" className="hidden md:flex items-center gap-8 text-sm text-zinc-400">
             <a href="#product" className="hover:text-white transition">Product</a>
@@ -292,7 +292,7 @@ export function LandingPage({ guides }: { guides: LandingGuide[] }) {
       <footer className="border-t border-line px-5 sm:px-8 lg:px-12 py-12">
         <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
           <div className="col-span-2 md:col-span-1">
-            <img src="/assets/fxnod-logo.png" alt="FXNOD" className="h-6 w-auto mb-4" />
+            <img src="/assets/fxnod-logo.png" alt="FXNOD" className="h-6 w-auto mb-4" width="72" height="24" />
             <p className="text-xs text-zinc-500 leading-relaxed">Trading terminal for Deriv accounts. Bybit and Binance coming soon.</p>
           </div>
           <div>
