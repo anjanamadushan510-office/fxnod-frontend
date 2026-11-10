@@ -94,6 +94,40 @@ export const RISK_NOTE: GuideBlock = {
   text: "Options and multipliers are high-risk products. You can lose your entire stake on any trade, and a bot can lose it faster than you would by hand. Nothing on this page is financial advice. Try everything on a Deriv demo account first.",
 };
 
+/**
+ * FXNOD's package prices, copied from production's commerce catalogue on the
+ * date in the note. The pricing and payment guides both show this one table,
+ * so a price change is one edit here (and a new date). The catalogue is not
+ * public, so these pages cannot read it at build time.
+ */
+const PRICE_DATE_NOTE: GuideBlock = {
+  type: "p",
+  text: "Prices on 10 November 2026, in US dollars, paid in USDT. Discover always shows the current price, and the price you pay is the one on the confirmation screen.",
+};
+
+const PRICE_TABLE: GuideBlock = {
+  type: "table",
+  head: ["Package", "1 month", "6 months", "Lifetime"],
+  rows: [
+    ["Trade Pilot, Bot Forge or Auto Hub: Basic", "$10", "$50", "$100"],
+    ["Trade Pilot, Bot Forge or Auto Hub: Pro", "$20", "$100", "$200"],
+    ["Complete toolkit: Pro on all three tools", "$25", "$125", "$250"],
+    ["Auto Hub Team 5: up to 5 members", "$49", "$249", "$499"],
+    ["Auto Hub Team 15: up to 15 members", "$99", "$499", "$999"],
+  ],
+};
+
+const PACKAGE_RULES: GuideBlock = {
+  type: "list",
+  items: [
+    "On Bot Forge and Auto Hub, Basic runs bots on a demo account only. Pro runs them on demo and real accounts.",
+    "Team packages let the owner add members by their verified FXNOD email.",
+    "Every new account gets 7 days of Pro access to all three tools at no cost, so you can try them before you pay.",
+    "A package is one payment for its period. Nothing renews automatically.",
+    "Buying the same package again adds its period to the time you have left. Moving to a higher package starts at once at its full price, and unused time on the lower one is not credited.",
+  ],
+};
+
 /** "Over 4", "Rise / Fall, 5 ticks", "1% Accumulator". */
 function planBotContract(bot: FixedPlanBot): string {
   if (bot.family === "accumulators") return `${bot.growthRate}% Accumulator, closed at ${bot.closeAt}`;
@@ -764,30 +798,12 @@ export const GUIDES: Guide[] = [
         ],
       },
       { type: "h2", text: "Packages and prices" },
+      PRICE_DATE_NOTE,
+      PRICE_TABLE,
+      PACKAGE_RULES,
       {
-        type: "p",
-        text: "Prices on 10 November 2026, in US dollars, paid in USDT. Discover always shows the current price, and the price you pay is the one on the confirmation screen.",
-      },
-      {
-        type: "table",
-        head: ["Package", "1 month", "6 months", "Lifetime"],
-        rows: [
-          ["Trade Pilot, Bot Forge or Auto Hub: Basic", "$10", "$50", "$100"],
-          ["Trade Pilot, Bot Forge or Auto Hub: Pro", "$20", "$100", "$200"],
-          ["Complete toolkit: Pro on all three tools", "$25", "$125", "$250"],
-          ["Auto Hub Team 5: up to 5 members", "$49", "$249", "$499"],
-          ["Auto Hub Team 15: up to 15 members", "$99", "$499", "$999"],
-        ],
-      },
-      {
-        type: "list",
-        items: [
-          "On Bot Forge and Auto Hub, Basic runs bots on a demo account only. Pro runs them on demo and real accounts.",
-          "Team packages let the owner add members by their verified FXNOD email.",
-          "Every new account gets 7 days of Pro access to all three tools at no cost, so you can try them before you pay.",
-          "A package is one payment for its period. Nothing renews automatically.",
-          "Buying the same package again adds its period to the time you have left. Moving to a higher package starts at once at its full price, and unused time on the lower one is not credited.",
-        ],
+        type: "links",
+        items: [{ href: "/guides/fxnod-pricing", label: "FXNOD pricing", text: "What each package includes, and which one fits." }],
       },
       RISK_NOTE,
     ],
@@ -818,6 +834,90 @@ export const GUIDES: Guide[] = [
       },
     ],
     related: ["how-to-start-trading-on-fxnod", "connect-deriv-account", "auto-hub-ready-made-bots"],
+  },
+  {
+    slug: "fxnod-pricing",
+    title: "FXNOD pricing: what each tool costs",
+    description:
+      "FXNOD prices: a free 7-day Pro trial, then Basic from $10 and Pro from $20 a month per tool, or $25 a month for all three. Paid in USDT, never auto-renewed.",
+    tag: "Getting started",
+    published: "2026-11-10",
+    updated: "2026-11-10",
+    image: "/assets/login-slide-2.jpg",
+    answer:
+      "Every new FXNOD account gets 7 days of Pro access to all three tools, Trade Pilot, Bot Forge and Auto Hub, at no cost. After that, each tool needs a package: Basic is $10 a month and Pro is $20 a month per tool, and the Complete toolkit gives Pro on all three for $25 a month. Six-month and lifetime packages cost less per month. Packages are paid in USDT from your FXNOD Wallet and never renew by themselves. There is no sign-up fee.",
+    body: [
+      { type: "h2", text: "Packages and prices" },
+      PRICE_DATE_NOTE,
+      PRICE_TABLE,
+      { type: "h2", text: "What Basic and Pro include" },
+      {
+        type: "table",
+        head: ["Tool", "Basic", "Pro"],
+        rows: [
+          ["Trade Pilot (manual trading)", "Manual options trading and live market data", "The same features as Basic today"],
+          ["Bot Forge (build your own bot)", "Bots on a Deriv demo account", "Bots on demo and real accounts"],
+          ["Auto Hub (ready-made bots)", "Bots on a Deriv demo account", "Bots on demo and real accounts"],
+        ],
+      },
+      {
+        type: "p",
+        text: "Auto Hub Team 5 and Team 15 include Pro access for the owner and let the owner add up to 5 or 15 members by their verified FXNOD email.",
+      },
+      { type: "h2", text: "Which package fits" },
+      {
+        type: "list",
+        items: [
+          "To learn: the 7-day Pro trial covers all three tools. After it, Basic on Bot Forge or Auto Hub keeps bots running on a demo account for $10 a month.",
+          "To trade by hand: Trade Pilot Basic, $10 a month.",
+          "To run bots with real money: Pro on Bot Forge or Auto Hub, $20 a month each.",
+          "To use more than one tool: the Complete toolkit, $25 a month, costs less than two Pro packages bought separately.",
+          "If you will keep using a tool: the six-month package costs as much as five months, and the lifetime package as much as ten.",
+        ],
+      },
+      { type: "h2", text: "How you pay" },
+      {
+        type: "p",
+        text: "Top up your FXNOD Wallet with USDT on TRC-20 (Tron) or BEP-20 (BNB Smart Chain), then buy the package in Discover. The guide on paying for FXNOD walks through each step.",
+      },
+      PACKAGE_RULES,
+      {
+        type: "note",
+        title: "What a package does not include",
+        text: "The money you trade with stays in your Deriv account, and a package does not add to it. Deriv sets the price of every contract you buy. A package pays for the FXNOD tool, not for trading results.",
+      },
+      {
+        type: "links",
+        items: [
+          { href: "/guides/how-to-pay-for-fxnod", label: "How to pay for FXNOD", text: "Top up with USDT and buy a package, step by step." },
+          { href: "/guides/how-to-start-trading-on-fxnod", label: "How to start trading on FXNOD", text: "Sign up, use the trial and connect Deriv." },
+        ],
+      },
+      RISK_NOTE,
+    ],
+    faq: [
+      {
+        q: "How much does FXNOD cost?",
+        a: "Each tool has a Basic package at $10 a month and a Pro package at $20 a month. The Complete toolkit, Pro on all three tools, is $25 a month. Six-month and lifetime packages are also available. Every new account first gets 7 days of Pro access at no cost.",
+      },
+      {
+        q: "Is FXNOD free?",
+        a: "Every new account gets a free 7-day Pro trial of all three tools. After the trial, a tool needs a paid package. There is no sign-up fee.",
+      },
+      {
+        q: "Is FXNOD a subscription?",
+        a: "No. A package is one payment for one month, six months or lifetime. It does not renew automatically; when it ends, the tool locks until you buy another.",
+      },
+      {
+        q: "What is the cheapest way to run a bot on a real account?",
+        a: "Bot Forge Pro or Auto Hub Pro, $20 a month. Basic runs bots on a demo account only.",
+      },
+      {
+        q: "Can I pay for FXNOD with a card?",
+        a: "Not directly. FXNOD is paid in USDT on TRC-20 or BEP-20. Many people buy USDT on an exchange with a card or a local payment method and send it to their FXNOD deposit address.",
+      },
+    ],
+    related: ["how-to-pay-for-fxnod", "how-to-start-trading-on-fxnod", "auto-hub-ready-made-bots"],
   },
 ];
 

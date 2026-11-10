@@ -12,6 +12,7 @@ import { BASICS_GUIDES } from "./learnBasics";
 import { BOT_GUIDES } from "./learnBots";
 import { BOT_MORE_GUIDES } from "./learnBotsMore";
 import { CHART_GUIDES } from "./learnCharts";
+import { CHOOSING_CHECKED, CHOOSING_GUIDES } from "./learnChoosing";
 import { CONCEPT_GUIDES } from "./learnConcepts";
 import { CONTRACT_GUIDES } from "./learnContracts";
 import { CHECKED as COUNTRY_CHECKED, COUNTRY_GUIDES } from "./learnCountries";
@@ -61,7 +62,7 @@ export const GUIDE_SECTIONS: GuideSection[] = [
       title: "Run a bot that keeps its limits",
       text: "FXNOD's bots run on its servers and will not start without a stop loss, so your limits hold when your device is off. Build one in Bot Forge or start a ready-made one in Auto Hub, on your Deriv demo account first.",
     },
-    guides: [...BOT_GUIDES, ...BOT_MORE_GUIDES, ...AUTOMATION_GUIDES],
+    guides: [...CHOOSING_GUIDES, ...BOT_GUIDES, ...BOT_MORE_GUIDES, ...AUTOMATION_GUIDES],
   },
   {
     id: "trading-basics",
@@ -190,6 +191,10 @@ export function guideBySlug(slug: string): Guide | undefined {
 const SOURCE_RULES: { pattern: RegExp; source: GuideSource }[] = [
   { pattern: /regulatory page/i, source: { label: "Deriv: regulatory information", href: "https://deriv.com/regulatory" } },
   { pattern: /payment (methods )?page/i, source: { label: "Deriv: payment methods", href: "https://deriv.com/payment-methods" } },
+  {
+    pattern: /Deriv Bot page/,
+    source: { label: "Deriv: Deriv Bot", href: "https://deriv.com/trading-platforms/deriv-bot" },
+  },
   { pattern: /help centre/i, source: { label: "Deriv: help centre", href: "https://deriv.com/help-centre" } },
   { pattern: /contact( us)? page/i, source: { label: "Deriv: contact us", href: "https://deriv.com/contact-us" } },
   {
@@ -239,6 +244,7 @@ const DERIV_READ_ON = new Map<Guide, string>([
     (guide): [Guide, string] => [guide, DERIV_CHECKED],
   ),
   ...COUNTRY_GUIDES.map((guide): [Guide, string] => [guide, COUNTRY_CHECKED]),
+  ...CHOOSING_GUIDES.map((guide): [Guide, string] => [guide, CHOOSING_CHECKED]),
 ]);
 
 const INDEPENDENT =

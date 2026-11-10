@@ -31,6 +31,9 @@ const ABOUT = `## About
 
 - [How to start trading on FXNOD](${absoluteUrl("/guides/how-to-start-trading-on-fxnod")}): sign-up, the 7-day trial, connecting Deriv.
 - [How to pay for FXNOD](${absoluteUrl("/guides/how-to-pay-for-fxnod")}): USDT top-ups, packages and prices.
+- [FXNOD pricing](${absoluteUrl("/guides/fxnod-pricing")}): what each package costs and includes.
+- [A Deriv bot that keeps running when the browser is closed](${absoluteUrl("/guides/deriv-bot-that-runs-when-browser-is-closed")}): the options, including FXNOD.
+- [Alternatives to Deriv Bot](${absoluteUrl("/guides/deriv-bot-alternatives")}): Deriv Bot, MT5, Deriv's API and hosted tools compared.
 - [About FXNOD](${absoluteUrl("/about")}): what is live and what is coming soon.
 - [Risk warning](${absoluteUrl("/risk-disclosure")}): what the tools do and do not protect a trader from.
 - [Partner programme](${absoluteUrl("/partner")}): how inviting others is paid.

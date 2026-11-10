@@ -62,6 +62,7 @@ const nextConfig = {
       // Merged 2026-11-08: each pair answered the same question, and after a
       // month in Search Console the removed page had no impressions while its
       // sibling had some. The removed page's content lives on in the target.
+      { source: "/pricing", destination: "/guides/fxnod-pricing", permanent: true },
       { source: "/guides/can-trading-bots-lose-money", destination: "/guides/why-trading-bots-make-losing-trades", permanent: true },
       { source: "/guides/how-much-money-to-start-a-trading-bot", destination: "/guides/how-much-money-to-start-trading", permanent: true },
     ];
