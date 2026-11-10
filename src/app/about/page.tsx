@@ -4,7 +4,15 @@ import type { Route } from "next";
 import { PublicHeader } from "@/components/layout/PublicHeader";
 import { PublicFooter } from "@/components/layout/PublicFooter";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, absoluteUrl, pageMetadata } from "@/lib/site";
+import {
+  COMPANY_LEGAL_NAME,
+  CONTACT_EMAIL,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_URL,
+  absoluteUrl,
+  pageMetadata,
+} from "@/lib/site";
 
 export const metadata: Metadata = {
   ...pageMetadata({
@@ -40,6 +48,9 @@ export default function AboutPage() {
             url: SITE_URL,
             logo: absoluteUrl("/assets/fxnod-logo.png"),
             description: SITE_DESCRIPTION,
+            legalName: COMPANY_LEGAL_NAME,
+            email: CONTACT_EMAIL,
+            address: { "@type": "PostalAddress", addressCountry: "LK" },
           },
         }}
       />
@@ -97,6 +108,23 @@ export default function AboutPage() {
               Every new account gets 7 days of Pro access to all three tools at no cost. After that, each tool
               requires an active package, bought in Discover and paid from your FXNOD Wallet, which you top up with
               USDT on TRC-20 or BEP-20. A package is one payment for its period and does not renew by itself.
+            </p>
+
+            <h2 className="font-display text-2xl font-semibold text-white pt-6">Who runs FXNOD</h2>
+            <p>
+              FXNOD is operated by {COMPANY_LEGAL_NAME}, a company in Sri Lanka. The{" "}
+              <Link href={"/terms" as Route} className="text-accent hover:underline">
+                terms of use
+              </Link>{" "}
+              explain how FXNOD is paid, and the{" "}
+              <Link href={"/privacy" as Route} className="text-accent hover:underline">
+                privacy policy
+              </Link>{" "}
+              explains what data FXNOD keeps. Questions:{" "}
+              <a href={`mailto:${CONTACT_EMAIL}`} className="text-accent hover:underline">
+                {CONTACT_EMAIL}
+              </a>
+              .
             </p>
 
             <h2 className="font-display text-2xl font-semibold text-white pt-6">FXNOD and Deriv</h2>

@@ -12,6 +12,11 @@ import type { Metadata } from "next";
 export const SITE_URL = "https://fxnod.com";
 export const SITE_NAME = "FXNOD";
 
+/** The company that operates FXNOD and receives what it earns. */
+export const COMPANY_LEGAL_NAME = "Sribees Lanka (Pvt) Ltd";
+/** The one public address for support, privacy and legal questions. */
+export const CONTACT_EMAIL = "business@fxnod.com";
+
 /** Hosts ending in this are deployment aliases and previews, never the site itself. */
 export const DEPLOYMENT_HOST_SUFFIX = ".vercel.app";
 
@@ -36,7 +41,7 @@ export function absoluteUrl(path: string): string {
  * listed here. A new public page has to be added on purpose; a new app page
  * is safe by default.
  */
-const INDEXABLE_PATHS = new Set(["/", "/guides", "/es/guias", "/fr/guides", "/si/guides", "/blog", "/partner", "/about", "/risk-disclosure"]);
+const INDEXABLE_PATHS = new Set(["/", "/guides", "/es/guias", "/fr/guides", "/si/guides", "/blog", "/partner", "/about", "/risk-disclosure", "/terms", "/privacy"]);
 const INDEXABLE_PREFIXES = ["/guides/", "/es/guias/", "/fr/guides/", "/si/guides/", "/blog/"];
 
 export function isIndexablePath(pathname: string): boolean {

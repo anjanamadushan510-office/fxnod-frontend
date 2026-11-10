@@ -3,7 +3,16 @@ import { LandingPage } from "@/components/landing/LandingPage";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { GUIDES, formatGuideDate } from "@/content/guides";
 import { HOME_FAQ } from "@/content/homeFaq";
-import { OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_URL, absoluteUrl, pageMetadata } from "@/lib/site";
+import {
+  COMPANY_LEGAL_NAME,
+  CONTACT_EMAIL,
+  OG_IMAGE,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_URL,
+  absoluteUrl,
+  pageMetadata,
+} from "@/lib/site";
 
 const TITLE = "FXNOD — Deriv trading terminal: Trade Pilot, Bot Forge and Auto Hub";
 
@@ -27,6 +36,9 @@ const STRUCTURED_DATA: Record<string, unknown>[] = [
     url: SITE_URL,
     logo: absoluteUrl("/assets/fxnod-logo.png"),
     description: SITE_DESCRIPTION,
+    legalName: COMPANY_LEGAL_NAME,
+    email: CONTACT_EMAIL,
+    address: { "@type": "PostalAddress", addressCountry: "LK" },
   },
   {
     "@context": "https://schema.org",

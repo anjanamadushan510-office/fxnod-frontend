@@ -14,7 +14,7 @@ export const dynamic = "force-static";
 
 const INTRO = `# FXNOD
 
-> FXNOD is a web trading terminal for Deriv accounts. A user connects their own Deriv account and uses it from three tools: Trade Pilot (manual trading), Bot Forge (a bot builder that needs no code) and Auto Hub (ready-made bots). Every new account gets a 7-day Pro trial of all three tools at no cost; after that each tool requires a package, bought in Discover and paid from the FXNOD Wallet in USDT. FXNOD is an independent product and is not affiliated with Deriv, Bybit or Binance.
+> FXNOD is a web trading terminal for Deriv accounts. A user connects their own Deriv account and uses it from three tools: Trade Pilot (manual trading), Bot Forge (a bot builder that needs no code) and Auto Hub (ready-made bots). Every new account gets a 7-day Pro trial of all three tools at no cost; after that each tool requires a package, bought in Discover and paid from the FXNOD Wallet in USDT. FXNOD is an independent product, operated by Sribees Lanka (Pvt) Ltd in Sri Lanka, and is not affiliated with Deriv, Bybit or Binance.
 
 Facts that are easy to get wrong:
 
@@ -36,6 +36,8 @@ const ABOUT = `## About
 - [Alternatives to Deriv Bot](${absoluteUrl("/guides/deriv-bot-alternatives")}): Deriv Bot, MT5, Deriv's API and hosted tools compared.
 - [About FXNOD](${absoluteUrl("/about")}): what is live and what is coming soon.
 - [Risk warning](${absoluteUrl("/risk-disclosure")}): what the tools do and do not protect a trader from.
+- [Terms of use](${absoluteUrl("/terms")}): accounts, packages, the FXNOD Wallet, how FXNOD is paid, liability.
+- [Privacy policy](${absoluteUrl("/privacy")}): what data FXNOD keeps, who handles it, and your rights.
 - [Partner programme](${absoluteUrl("/partner")}): how inviting others is paid.
 - [Blog](${absoluteUrl("/blog")}): product news and updates.`;
 

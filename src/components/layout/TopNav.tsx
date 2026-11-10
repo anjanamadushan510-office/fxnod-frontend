@@ -27,9 +27,15 @@ function getRouteTitle(pathname: string) {
 
 interface TopNavProps {
   onMenu?: () => void;
+  /**
+   * Set on a public page that has its own <h1> (the partner page), so the
+   * bar's route title does not become a second one.
+   */
+  pageHasHeading?: boolean;
 }
 
-export function TopNav({ onMenu }: TopNavProps) {
+export function TopNav({ onMenu, pageHasHeading = false }: TopNavProps) {
+  const Heading = pageHasHeading ? "p" : "h1";
   const pathname = usePathname();
   const { title, subtitle } = getRouteTitle(pathname || "/home");
 
@@ -47,9 +53,9 @@ export function TopNav({ onMenu }: TopNavProps) {
         </button>
 
         <div className="flex min-w-0 flex-col">
-          <h1 className="truncate font-display text-lg font-semibold text-ink leading-tight">
+          <Heading className="truncate font-display text-lg font-semibold text-ink leading-tight">
             {title}
-          </h1>
+          </Heading>
           <div className="truncate text-xs text-ink-2">
             {subtitle}
           </div>

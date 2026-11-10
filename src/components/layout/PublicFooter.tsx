@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Route } from "next";
+import { COMPANY_LEGAL_NAME } from "@/lib/site";
 
 /**
  * The footer of the public reading pages (guides, blog, about, risk warning).
@@ -16,6 +17,8 @@ const LINKS: { label: string; href: string }[] = [
   { label: "Partner programme", href: "/partner" },
   { label: "About", href: "/about" },
   { label: "Risk warning", href: "/risk-disclosure" },
+  { label: "Terms", href: "/terms" },
+  { label: "Privacy", href: "/privacy" },
 ];
 
 export function PublicFooter() {
@@ -30,7 +33,7 @@ export function PublicFooter() {
           ))}
         </nav>
         <p className="text-[11px] text-zinc-600 leading-relaxed max-w-3xl">
-          &copy; {new Date().getFullYear()} FXNOD. Trading involves risk and you can lose your entire stake. FXNOD is an
+          &copy; {new Date().getFullYear()} FXNOD, operated by {COMPANY_LEGAL_NAME}. Trading involves risk and you can lose your entire stake. FXNOD is an
           independent product and is not affiliated with Deriv, Bybit or Binance.
         </p>
       </div>

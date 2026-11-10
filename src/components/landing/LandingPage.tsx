@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { useAuthStore } from "@/stores/authStore";
 import { HOME_FAQ } from "@/content/homeFaq";
+import { COMPANY_LEGAL_NAME } from "@/lib/site";
 
 /** What the landing page shows of a guide. Passed in by the server page so the full guide text stays out of the client bundle. */
 export interface LandingGuide {
@@ -311,6 +312,8 @@ export function LandingPage({ guides }: { guides: LandingGuide[] }) {
               <li><Link href={"/blog" as Route} className="hover:text-white transition">Blog</Link></li>
               <li><Link href={"/partner" as Route} className="hover:text-white transition">Partner programme</Link></li>
               <li><Link href={"/risk-disclosure" as Route} className="hover:text-white transition">Risk warning</Link></li>
+              <li><Link href={"/terms" as Route} className="hover:text-white transition">Terms</Link></li>
+              <li><Link href={"/privacy" as Route} className="hover:text-white transition">Privacy</Link></li>
             </ul>
           </div>
           <div>
@@ -327,7 +330,7 @@ export function LandingPage({ guides }: { guides: LandingGuide[] }) {
             </ul>
           </div>
         </div>
-        <p className="max-w-6xl mx-auto text-[11px] text-zinc-600 leading-relaxed">© 2026 FXNOD. Trading involves risk and you can lose your entire stake. FXNOD is an independent product and is not affiliated with Deriv, Bybit or Binance.</p>
+        <p className="max-w-6xl mx-auto text-[11px] text-zinc-600 leading-relaxed">© {new Date().getFullYear()} FXNOD, operated by {COMPANY_LEGAL_NAME}. Trading involves risk and you can lose your entire stake. FXNOD is an independent product and is not affiliated with Deriv, Bybit or Binance.</p>
       </footer>
     </div>
   );

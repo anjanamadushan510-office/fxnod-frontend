@@ -262,6 +262,18 @@ export function RegisterForm() {
                 </div>
               </label>
               
+              <p className="text-xs text-zinc-400 leading-relaxed">
+                By creating an account you agree to the{" "}
+                <Link href={"/terms" as Route} target="_blank" className="text-accent hover:underline">
+                  Terms of Use
+                </Link>{" "}
+                and the{" "}
+                <Link href={"/privacy" as Route} target="_blank" className="text-accent hover:underline">
+                  Privacy Policy
+                </Link>
+                .
+              </p>
+
               <p id="auth-error" className="text-xs text-negative min-h-[1rem]">
                 {generalError}
               </p>

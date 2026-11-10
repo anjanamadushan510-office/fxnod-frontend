@@ -47,7 +47,7 @@ const TIERS = [
 export default function PartnerProgrammePage() {
   return (
     <div className="min-h-screen bg-[#f8f6f0]">
-      <TopNav />
+      <TopNav pageHasHeading />
 
       <main className="mx-auto max-w-4xl px-6 py-16 lg:px-8">
         <h1 className="m-0 text-4xl font-extrabold tracking-tight text-[#0a0f1c]">
