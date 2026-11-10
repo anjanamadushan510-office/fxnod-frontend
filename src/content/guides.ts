@@ -122,6 +122,106 @@ function planBotTable(family: BotFamily): GuideBlock {
 
 export const GUIDES: Guide[] = [
   {
+    slug: "how-to-start-trading-on-fxnod",
+    title: "How to start trading on FXNOD, step by step",
+    description:
+      "From sign-up to your first trade on FXNOD: confirm your email, use the 7-day Pro trial, connect your Deriv account and start on demo.",
+    tag: "Getting started",
+    published: "2026-11-10",
+    updated: "2026-11-10",
+    image: "/assets/login-slide-1.jpg",
+    answer:
+      "Create an FXNOD account with your email and confirm it with the code FXNOD emails you. Every new account gets 7 days of Pro access to all three tools, Trade Pilot, Bot Forge and Auto Hub, at no cost and with no payment details. Then open Connected Accounts, press Connect Deriv and approve access on Deriv's own page. Select your Deriv demo account and try a tool with virtual funds before you use real money.",
+    body: [
+      { type: "h2", text: "What you need" },
+      {
+        type: "list",
+        items: [
+          "A Deriv account. FXNOD trades on your own Deriv account and does not open one for you. Every Deriv login includes a demo account with virtual funds.",
+          "An email address you can open. FXNOD sends a code to it before you can sign in.",
+          "A browser, on a phone or a computer. There is nothing to install.",
+        ],
+      },
+      { type: "h2", text: "From sign-up to your first trade" },
+      {
+        type: "steps",
+        items: [
+          {
+            title: "Create your FXNOD account",
+            text: "Open fxnod.com and choose Sign up. Enter your name, email and a password. Sign-up is by email; signing up with Google or Apple is not available yet.",
+          },
+          {
+            title: "Confirm your email",
+            text: "FXNOD emails you a code from no-reply@fxnod.com. Enter it on the next screen. You cannot sign in with your password until the email is confirmed. If the mail does not arrive, look in your spam folder.",
+          },
+          {
+            title: "Your 7-day Pro trial starts",
+            text: "Every new account gets 7 days of Pro access to Trade Pilot, Bot Forge and Auto Hub. It costs nothing, needs no card and no wallet top-up, and does not renew into a paid plan. Active Tools shows each tool and the date its access ends.",
+          },
+          {
+            title: "Connect your Deriv account",
+            text: "Open Connected Accounts and press Connect Deriv. You sign in on Deriv's own page, so FXNOD never sees your Deriv password. Approve access and you return to FXNOD with your Deriv accounts listed.",
+          },
+          {
+            title: "Select the demo account",
+            text: "Choose the demo account first. It trades Deriv's virtual funds, so you can learn each tool without risking money. You can switch to a real account later from inside FXNOD.",
+          },
+          {
+            title: "Pick a tool",
+            text: "Trade Pilot places trades by hand. Bot Forge lets you build your own bot without code. Auto Hub starts a bot FXNOD has already built: you choose a market and one of its plans. Bots run on FXNOD's servers, so closing the page does not stop them.",
+          },
+          {
+            title: "Keep a tool after the trial",
+            text: "When the 7 days end, a tool stays locked until you buy a package for it. You pay from your FXNOD Wallet, which you top up with USDT. The guide on paying for FXNOD explains each step.",
+          },
+        ],
+      },
+      { type: "h2", text: "What the trial includes" },
+      {
+        type: "table",
+        head: ["Tool", "What it does", "During the trial"],
+        rows: [
+          ["Trade Pilot", "Manual trading on your Deriv account", "Manual trading"],
+          ["Bot Forge", "Build your own bot without code", "Bots on demo and real accounts"],
+          ["Auto Hub", "Start a ready-made bot", "Bots on demo and real accounts"],
+        ],
+      },
+      {
+        type: "p",
+        text: "The trial is given once per account. An account that already had a package for a tool does not get a trial for that tool.",
+      },
+      {
+        type: "note",
+        title: "Where your money is",
+        text: "Your trading balance stays in your Deriv account. FXNOD places trades on it but does not hold it. The FXNOD Wallet is separate, and it is only used to pay for tool packages.",
+      },
+      RISK_NOTE,
+    ],
+    faq: [
+      {
+        q: "Is the FXNOD trial free?",
+        a: "Yes. Every new account gets 7 days of Pro access to Trade Pilot, Bot Forge and Auto Hub at no cost. No card or wallet top-up is needed, and it does not turn into a paid plan by itself.",
+      },
+      {
+        q: "Do I need a Deriv account to use FXNOD?",
+        a: "Yes. FXNOD places trades on your own Deriv account through Deriv's API. Create a Deriv account on deriv.com first, then connect it to FXNOD.",
+      },
+      {
+        q: "Why can't I sign in after signing up?",
+        a: "Your email is not confirmed yet. Enter the code FXNOD emailed you. If it did not arrive, check your spam folder.",
+      },
+      {
+        q: "What happens when the trial ends?",
+        a: "The tools lock until you buy a package in Discover. Nothing is charged automatically, and your Deriv account and its balance are not affected.",
+      },
+      {
+        q: "Should I start on a real account?",
+        a: "No. Start on your Deriv demo account, which uses virtual funds. Move to a real account only when you understand how the tool behaves and how much you can lose.",
+      },
+    ],
+    related: ["connect-deriv-account", "how-to-pay-for-fxnod", "auto-hub-ready-made-bots"],
+  },
+  {
     slug: "connect-deriv-account",
     title: "How to connect your Deriv account to FXNOD (demo or real)",
     description:
@@ -298,7 +398,7 @@ export const GUIDES: Guide[] = [
       },
       {
         q: "Do I need to deposit money into FXNOD to trade?",
-        a: "No. Trade Pilot uses the balance in your Deriv account. On a demo account that is Deriv's virtual money.",
+        a: "No. Trade Pilot trades with the balance in your Deriv account; on a demo account that is Deriv's virtual money. The FXNOD Wallet is only used to pay for tool packages.",
       },
       {
         q: "Can I use Trade Pilot on a phone?",
@@ -585,6 +685,139 @@ export const GUIDES: Guide[] = [
       },
     ],
     related: ["build-a-deriv-bot-with-dbot", "connect-deriv-account", "nine-lives-bot", "high-five-bot"],
+  },
+  {
+    slug: "how-to-pay-for-fxnod",
+    title: "How to pay for FXNOD: top up with USDT and buy a package",
+    description:
+      "Pay for FXNOD tools: top up your FXNOD Wallet with USDT on TRC-20 or BEP-20, then buy a package in Discover. Prices, steps and what to avoid.",
+    tag: "Getting started",
+    published: "2026-11-10",
+    updated: "2026-11-10",
+    image: "/assets/login-slide-2.jpg",
+    answer:
+      "FXNOD tools are paid for from your FXNOD Wallet, and the wallet is topped up with USDT. Open Wallet, press Top up, choose TRC-20 (Tron) or BEP-20 (BNB Smart Chain) and send USDT on that network to the address shown. The wallet is credited automatically once the network confirms the transfer. Then open Discover, choose a tool and a package, and confirm. Each package is one payment for its period and never renews by itself.",
+    body: [
+      { type: "h2", text: "Two balances, two jobs" },
+      {
+        type: "list",
+        items: [
+          "Your Deriv account holds the money you trade with. FXNOD places trades on it but never holds it. You fund it on Deriv, with the methods listed on Deriv's payment methods page.",
+          "Your FXNOD Wallet holds the money you pay FXNOD with. It is used to buy tool packages, and it is topped up with USDT.",
+        ],
+      },
+      {
+        type: "p",
+        text: "Money in the FXNOD Wallet cannot be moved to Deriv yet; that is coming soon. Top up only what you plan to spend on packages.",
+      },
+      { type: "h2", text: "Step 1: top up your FXNOD Wallet" },
+      {
+        type: "steps",
+        items: [
+          {
+            title: "Open Wallet and press Top up",
+            text: "Sign in, open Wallet from the menu and press Top up. The same button is on the Dashboard.",
+          },
+          {
+            title: "Choose the network",
+            text: "Pick TRC-20 (Tron) or BEP-20 (BNB Smart Chain). Choose the same network on the exchange or wallet you are sending from. If you send from Binance, its BEP-20 withdrawal fee is usually lower than TRC-20's; check the fee on your exchange's withdrawal screen.",
+          },
+          {
+            title: "Copy your deposit address",
+            text: "FXNOD shows an address that belongs to your account on that network, with a QR code. It stays the same, so you can save it and use it again. The minimum deposit is 1 USDT.",
+          },
+          {
+            title: "Send USDT on that network only",
+            text: "Send USDT, and only USDT, on the network you chose. Ethereum (ERC-20) addresses look the same, but USDT sent on Ethereum or any other chain, and any other coin, is not credited.",
+          },
+          {
+            title: "Wait for the confirmations",
+            text: "The wallet is credited automatically after 19 confirmations on Tron or 15 on BNB Smart Chain, usually within a few minutes. The deposit screen lists each transfer and how far it has got.",
+          },
+        ],
+      },
+      {
+        type: "note",
+        title: "A deposit that has not appeared",
+        text: "Open Top up, choose Need help? and paste the transaction ID (TxID) from your exchange or wallet. FXNOD's team reviews it and credits the wallet when the transfer is found on the chain. A transfer is never credited twice.",
+      },
+      { type: "h2", text: "Step 2: buy a package in Discover" },
+      {
+        type: "steps",
+        items: [
+          {
+            title: "Open Discover",
+            text: "Discover lists every tool with its packages, features and access periods.",
+          },
+          {
+            title: "Choose a tool and a package",
+            text: "Pick the package and the access period: one month, six months or lifetime. Enter a coupon code if you have one.",
+          },
+          {
+            title: "Review and confirm",
+            text: "FXNOD shows the total. The price is held for 10 minutes, and nothing is taken until you press Confirm. The amount is paid from your FXNOD Wallet balance.",
+          },
+          {
+            title: "Start using the tool",
+            text: "The package starts at once. Active Tools shows each tool and the date its access ends.",
+          },
+        ],
+      },
+      { type: "h2", text: "Packages and prices" },
+      {
+        type: "p",
+        text: "Prices on 10 November 2026, in US dollars, paid in USDT. Discover always shows the current price, and the price you pay is the one on the confirmation screen.",
+      },
+      {
+        type: "table",
+        head: ["Package", "1 month", "6 months", "Lifetime"],
+        rows: [
+          ["Trade Pilot, Bot Forge or Auto Hub: Basic", "$10", "$50", "$100"],
+          ["Trade Pilot, Bot Forge or Auto Hub: Pro", "$20", "$100", "$200"],
+          ["Complete toolkit: Pro on all three tools", "$25", "$125", "$250"],
+          ["Auto Hub Team 5: up to 5 members", "$49", "$249", "$499"],
+          ["Auto Hub Team 15: up to 15 members", "$99", "$499", "$999"],
+        ],
+      },
+      {
+        type: "list",
+        items: [
+          "On Bot Forge and Auto Hub, Basic runs bots on a demo account only. Pro runs them on demo and real accounts.",
+          "Team packages let the owner add members by their verified FXNOD email.",
+          "Every new account gets 7 days of Pro access to all three tools at no cost, so you can try them before you pay.",
+          "A package is one payment for its period. Nothing renews automatically.",
+          "Buying the same package again adds its period to the time you have left. Moving to a higher package starts at once at its full price, and unused time on the lower one is not credited.",
+        ],
+      },
+      RISK_NOTE,
+    ],
+    faq: [
+      {
+        q: "How do I pay for FXNOD?",
+        a: "Top up your FXNOD Wallet with USDT on TRC-20 or BEP-20, then buy a package in Discover. The package is paid from the wallet balance.",
+      },
+      {
+        q: "Can I pay FXNOD with a card, PayPal or M-Pesa?",
+        a: "Not directly. FXNOD accepts USDT on TRC-20 and BEP-20. Many people buy USDT on an exchange with their local payment method and send it to their FXNOD deposit address.",
+      },
+      {
+        q: "Which network should I use for USDT?",
+        a: "TRC-20 (Tron) or BEP-20 (BNB Smart Chain). Choose the same network in FXNOD and on the exchange you send from. Never send on Ethereum (ERC-20): it is not credited.",
+      },
+      {
+        q: "How long does a deposit take?",
+        a: "Usually a few minutes. The wallet is credited after 19 confirmations on Tron or 15 on BNB Smart Chain.",
+      },
+      {
+        q: "Does a package renew automatically?",
+        a: "No. Each package is one payment for its period. When it ends, the tool locks until you buy another.",
+      },
+      {
+        q: "Is my FXNOD Wallet my trading balance?",
+        a: "No. You trade with the balance in your Deriv account. The FXNOD Wallet only pays for FXNOD packages, and its funds cannot be moved to Deriv yet.",
+      },
+    ],
+    related: ["how-to-start-trading-on-fxnod", "connect-deriv-account", "auto-hub-ready-made-bots"],
   },
 ];
 

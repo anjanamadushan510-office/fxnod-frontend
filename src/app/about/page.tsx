@@ -94,8 +94,9 @@ export default function AboutPage() {
 
             <h2 className="font-display text-2xl font-semibold text-white pt-6">What it costs</h2>
             <p>
-              Each tool requires an active package. Discover shows current prices, features and access periods.
-              Choose a package with demo access to practise with virtual funds before trading real money.
+              Every new account gets 7 days of Pro access to all three tools at no cost. After that, each tool
+              requires an active package, bought in Discover and paid from your FXNOD Wallet, which you top up with
+              USDT on TRC-20 or BEP-20. A package is one payment for its period and does not renew by itself.
             </p>
 
             <h2 className="font-display text-2xl font-semibold text-white pt-6">FXNOD and Deriv</h2>
